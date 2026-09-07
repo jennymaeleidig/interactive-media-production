@@ -40,6 +40,22 @@
 	--font-display: 'Fraunces', Georgia, serif;
 	--font-sans: 'Schibsted Grotesk', Arial, sans-serif;
 	--font-mono: 'JetBrains Mono', 'Courier New', monospace; /* the authority voice */
+
+	/*
+	 * Systemic z-index layers — the only sanctioned z-index values
+	 * (plume-design-language guardrail: z-index is for systemic layers only,
+	 * no per-component escalation). Bottom → top:
+	 *   take-over (30) — full-screen nav take-over: covers page content only.
+	 *   nav       (40) — floating header: above the take-over so the
+	 *                    hamburger/close control stays visible and clickable.
+	 *   assistant (50) — AI Sales Assistant bubble + panel: ALWAYS on top,
+	 *                    per the map's standing decision — the nav take-over
+	 *                    never covers the widget. Consume via the documented
+	 *                    arbitrary-property syntax: z-(--z-index-*).
+	 */
+	--z-index-take-over: 30;
+	--z-index-nav: 40;
+	--z-index-assistant: 50;
 }
 
 @layer base {

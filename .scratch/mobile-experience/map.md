@@ -24,6 +24,7 @@ The site is usable and on-brand on a phone: a hamburger opens the **nav take-ove
 <!-- one line per resolved ticket: [title](issues/NN-slug.md): gist -->
 
 - [Build the mobile nav take-over](issues/01-mobile-nav-take-over.md): hamburger below md opens a full-screen cream take-over (hairline flat list, full-width pill CTA) in Nav.svelte — APG disclosure focus contract, z-40 so the assistant widget stays on top.
+- [Assistant rides above the nav take-over](issues/02-assistant-above-take-over.md): z-index layering tokenized in app.css @theme (`--z-index-take-over` 30 < `--z-index-nav` 40 < `--z-index-assistant` 50), consumed via `z-(--z-index-*)`; contract test pins the assistant-always-on-top order.
 
 ## Not yet specified
 

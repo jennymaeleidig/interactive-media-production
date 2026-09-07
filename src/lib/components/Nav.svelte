@@ -13,9 +13,9 @@
 	//
 	// Below md the links collapse into a hamburger opening the full-screen
 	// nav take-over (cream, hairline-divided flat list, full-width pill CTA —
-	// the subject vendor's mobile menu pattern). The take-over sits at z-40,
-	// under the assistant widget's z-50: the assistant is always on top
-	// (map standing decision). No accordion chevrons — the graph is flat.
+	// the subject vendor's mobile menu pattern). Layering is tokenized in
+	// app.css @theme: take-over < nav < assistant — the assistant is always
+	// on top (map standing decision). No accordion chevrons — the graph is flat.
 	let {
 		theme = 'dark',
 		overlay = theme
@@ -86,7 +86,7 @@
 	}}
 />
 
-<header class="gutter fixed inset-x-0 top-0 z-50 pt-4">
+<header class="gutter fixed inset-x-0 top-0 z-(--z-index-nav) pt-4">
 	<nav
 		aria-label="Main"
 		class="mx-auto flex max-w-[82rem] items-center justify-between rounded-2xl px-6 py-3 transition-all duration-300 {open
@@ -144,13 +144,14 @@
 </header>
 
 {#if open}
-	<!-- Nav take-over: full-screen cream panel below the header, above
-	     nothing but the page — z-40 keeps the assistant widget (z-50) on top. -->
+	<!-- Nav take-over: full-screen cream panel — z-(--z-index-take-over) covers
+	     page content but sits under the header (hamburger stays clickable) and
+	     under the assistant widget, which is always on top (app.css @theme). -->
 	<div
 		bind:this={panel}
 		id="mobile-nav-take-over"
 		tabindex="-1"
-		class="fixed inset-0 z-40 bg-paper text-forest md:hidden"
+		class="fixed inset-0 z-(--z-index-take-over) bg-paper text-forest md:hidden"
 	>
 		<div class="gutter flex min-h-[100dvh] flex-col pt-24 pb-8">
 			<ul class="divide-y divide-forest/16">

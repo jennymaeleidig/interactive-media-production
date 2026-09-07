@@ -47,7 +47,11 @@
 />
 
 {#if page.url.pathname !== '/'}
-	<div class="fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
+	<!-- z-(--z-index-assistant): the topmost systemic layer (app.css @theme) —
+	     the nav take-over and header always sit beneath the widget. -->
+	<div
+		class="fixed right-4 bottom-4 z-(--z-index-assistant) flex flex-col items-end gap-3 sm:right-6 sm:bottom-6"
+	>
 		{#if assistant.open}
 			<div
 				bind:this={panel}
