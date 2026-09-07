@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: interactive-media-production
+type: software
+license: CC0-1.0
+repository-code: 'https://github.com/jennyleidig/interactive-media-production'
+authors:
+  - name: Jenny Leidig
+    alias: jennyleidig
+keywords:
+  - sveltekit
+  - svelte5
+  - satire

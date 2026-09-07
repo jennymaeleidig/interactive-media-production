@@ -1,3 +1,26 @@
-.scratch/
-docs/
-AGENTS.md
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# npm config can carry auth tokens — local only
+.npmrc
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

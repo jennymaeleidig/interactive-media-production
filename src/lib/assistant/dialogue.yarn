@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: CC0-1.0
+//
+// Placeholder dialogue for the Plume AI Sales Assistant widget. Structure
+// mirrors the subject vendor's sales-assistant flow (greeting → demo →
+// support); the copy is Plume-voice placeholder pending the owner-authored
+// pass. The node titles GetADemo / Support are contract: the persistent
+// chips jump to them, and the assistant session validates these titles
+// against the compiled program's node table at startup
+// (see src/lib/state/assistant.svelte.ts).
+//
+// Feature surface exercised on purpose — conditions, <<set>>/<<declare>>,
+// <<once>>, <<jump>>, visited(), and {expr} interpolation — it is the
+// scaffold's own smoke test.
+
+title: Start
+---
+<<declare $demoRequested = false>>
+<<declare $supportVisited = false>>
+<<declare $sessionRef = random_range(10000, 99999)>>
+<<if visited("Start")>>
+	Assistant: Welcome back. Everything is already together.
+<<else>>
+	Assistant: Welcome to Plume.
+	Assistant: I'm the Plume AI Sales Assistant.
+<<endif>>
+Assistant: What would you like to know? Your session reference is {$sessionRef}.
+-> What is PlumeOS?
+	Assistant: One map. Every camera, every alert, every agency — PlumeOS keeps it all already together.
+	Assistant: Nothing to assemble. Nothing to reconcile.
+	-> Get a Demo
+		<<jump GetADemo>>
+	-> Something else
+		Assistant: Of course.
+		<<jump Start>>
+-> About my demo <<if $demoRequested>>
+	Assistant: Your demonstration is scheduled — reference {$sessionRef}.
+	Assistant: A Plume representative will arrive shortly.
+	-> Something else
+		<<jump Start>>
+	-> That's all
+		<<jump Wrapup>>
+-> Get a Demo
+	<<jump GetADemo>>
+-> Support
+	<<jump Support>>
+===
+
+title: GetADemo
+---
+<<set $demoRequested to true>>
+Assistant: A demonstration. Of course.
+Assistant: A Plume representative will configure a live PlumeOS environment for your jurisdiction — sample data included, your consent already on file.
+-> Book it
+	Assistant: Consider it booked. Your reference is {$sessionRef}.
+	-> Something else
+		<<jump Start>>
+	-> That's all
+		<<jump Wrapup>>
+-> Maybe later
+	Assistant: Later is also noted.
+	-> Something else
+		<<jump Start>>
+	-> That's all
+		<<jump Wrapup>>
+===
+
+title: Support
+---
+<<set $supportVisited to true>>
+Assistant: Support. The Plume care team is reachable through the following channels:
+Assistant: By phone: 1-800-PLUME-01.
+Assistant: By email: care@plume.example.
+Assistant: This conversation is retained for quality and assurance purposes.
+-> Something else
+	<<jump Start>>
+-> That's all
+	<<jump Wrapup>>
+===
+
+title: Wrapup
+---
+Assistant: Thank you for your interest in Plume. It has already been recorded.
+===

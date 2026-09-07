@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Coding standards
+
+Coding rules for this SvelteKit/Svelte 5 repo live in root `CODING_STANDARDS.md` — follow it whenever writing or editing code, and run its "before finishing" checks before calling any change done.
+
 ## Agent skills
 
 ### Issue tracker
