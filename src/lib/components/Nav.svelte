@@ -29,6 +29,8 @@
 		{ label: 'Trust', href: '/trust' }
 	];
 
+	const close = () => (open = false);
+
 	// Resting ink (what's underneath) vs scrolled ink (page theme). While the
 	// take-over is open the header melts into its cream ground, so the ink is
 	// forced to the light tone and the panel goes transparent.
@@ -39,16 +41,28 @@
 			: { wordmark: 'text-forest', link: 'text-forest/80 hover:text-forest' };
 	});
 
+	// Resting and open states share the invisible panel treatment; scrolling
+	// solidifies it in the page theme's ink. (Open always wins: the header
+	// melts into the take-over's cream ground.)
+	const panelClass = $derived.by(() => {
+		if (open || !scrolled) return 'border border-transparent bg-transparent';
+		return theme === 'dark'
+			? 'border border-fog/10 bg-abyss/90 shadow-lg shadow-black/20 backdrop-blur'
+			: 'border border-forest/16 bg-paper/90 shadow-lg shadow-forest/10 backdrop-blur';
+	});
+
 	let panel = $state<HTMLElement | undefined>();
 	let hamburger = $state<HTMLButtonElement | undefined>();
 
 	// Focus contract (APG disclosure): focus lands in the take-over when it
 	// opens and returns to the hamburger when it closes — but never steals
-	// focus on initial mount.
+	// focus on initial mount. On open it lands on the first link, not the
+	// bare container, so screen readers announce a menu entry.
 	let wasOpen = $state(false);
 	$effect(() => {
 		if (open) {
-			panel?.focus();
+			const first = panel?.querySelector<HTMLElement>('a[href], button');
+			(first ?? panel)?.focus();
 			wasOpen = true;
 		} else if (wasOpen) {
 			hamburger?.focus();
@@ -56,16 +70,41 @@
 		}
 	});
 
+	// The take-over covers the whole page, so for keyboard users it behaves as
+	// modal: Tab cycles across the visible header controls (wordmark, close X)
+	// and the take-over's links + CTA instead of falling through into the
+	// focusable page content hidden beneath the fixed panel.
+	function cycleTakeOverFocus(event: KeyboardEvent) {
+		if (!panel) return;
+		const roots = [hamburger?.closest('nav'), panel];
+		const focusables = roots
+			.flatMap((root) =>
+				Array.from(root?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [])
+			)
+			.filter((el) => el.offsetParent !== null);
+		if (focusables.length === 0) return;
+		const at = focusables.findIndex((el) => el === document.activeElement);
+		event.preventDefault();
+		const next = event.shiftKey
+			? at <= 0
+				? focusables.length - 1
+				: at - 1
+			: at === -1 || at === focusables.length - 1
+				? 0
+				: at + 1;
+		focusables[next].focus();
+	}
+
 	// The take-over only exists below the desktop breakpoint; crossing md
 	// while it's open closes it instead of stranding an invisible overlay.
 	$effect(() => {
 		if (!open) return;
 		const desktop = window.matchMedia('(min-width: 768px)');
-		const close = () => {
+		const autoClose = () => {
 			if (desktop.matches) open = false;
 		};
-		desktop.addEventListener('change', close);
-		return () => desktop.removeEventListener('change', close);
+		desktop.addEventListener('change', autoClose);
+		return () => desktop.removeEventListener('change', autoClose);
 	});
 
 	// Scroll lock while the take-over is up.
@@ -82,20 +121,16 @@
 <svelte:window
 	onscroll={() => (scrolled = window.scrollY > 24)}
 	onkeydown={(event) => {
-		if (event.key === 'Escape' && open) open = false;
+		if (!open) return;
+		if (event.key === 'Escape') open = false;
+		else if (event.key === 'Tab') cycleTakeOverFocus(event);
 	}}
 />
 
 <header class="gutter fixed inset-x-0 top-0 z-(--z-index-nav) pt-4">
 	<nav
 		aria-label="Main"
-		class="mx-auto flex max-w-[82rem] items-center justify-between rounded-2xl px-6 py-3 transition-all duration-300 {open
-			? 'border border-transparent bg-transparent'
-			: scrolled
-				? theme === 'dark'
-					? 'border border-fog/10 bg-abyss/90 shadow-lg shadow-black/20 backdrop-blur'
-					: 'border border-forest/16 bg-paper/90 shadow-lg shadow-forest/10 backdrop-blur'
-				: 'border border-transparent bg-transparent'}"
+		class="mx-auto flex max-w-[82rem] items-center justify-between rounded-2xl px-6 py-3 transition-all duration-300 {panelClass}"
 	>
 		<!-- Left group: wordmark + direct page links, subject-style (links sit
 		     beside the logo, not centered) -->
@@ -103,7 +138,7 @@
 			<a
 				href="/home"
 				class="font-display text-[1.75rem] leading-none {ink.wordmark}"
-				onclick={() => (open = false)}
+				onclick={close}
 			>
 				Plume
 			</a>
@@ -151,6 +186,7 @@
 		bind:this={panel}
 		id="mobile-nav-take-over"
 		tabindex="-1"
+		aria-label="Site menu"
 		class="fixed inset-0 z-(--z-index-take-over) bg-paper text-forest md:hidden"
 	>
 		<div class="gutter flex min-h-[100dvh] flex-col pt-24 pb-8">
@@ -160,7 +196,7 @@
 						<a
 							href={link.href}
 							class="block py-5 font-display text-3xl font-light transition-opacity hover:opacity-70"
-							onclick={() => (open = false)}
+							onclick={close}
 						>
 							{link.label}
 						</a>
@@ -171,7 +207,7 @@
 			<a
 				href="/trust#contact"
 				class="btn btn-primary mt-8 w-full justify-center rounded-full"
-				onclick={() => (open = false)}
+				onclick={close}
 			>
 				Book a demo
 			</a>

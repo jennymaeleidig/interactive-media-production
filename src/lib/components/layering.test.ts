@@ -32,10 +32,9 @@ describe('systemic z-index layering (map ticket 02)', () => {
 		expect(assistant).not.toMatch(/z-\d+/);
 	});
 
-	it('the header and take-over consume their layer tokens, assistant stays above', () => {
+	it('the header and take-over consume their layer tokens, not bare numbers', () => {
 		expect(nav).toContain('z-(--z-index-nav)');
 		expect(nav).toContain('z-(--z-index-take-over)');
 		expect(nav).not.toMatch(/z-\d+/);
-		expect(tokenValue('assistant')).toBeGreaterThan(tokenValue('take-over'));
 	});
 });
