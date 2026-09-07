@@ -1,7 +1,7 @@
 # Build the mobile nav take-over
 
 Type: task
-Status: open
+Status: resolved
 Blocked by:
 
 ## Question
@@ -13,3 +13,14 @@ Blocked by:
 - Follow the map's standing decisions: flat list, assistant always on top (do not raise the take-over above the widget), `plume-design-language` skill for treatment, `CODING_STANDARDS.md` before finishing.
 
 Resolved when: on a phone-shaped viewport the hamburger opens/closes the take-over with correct semantics and focus handling, all links route to built pages, and the checks in `CODING_STANDARDS.md` ("before finishing") pass.
+
+## Answer
+
+Built entirely in `src/lib/components/Nav.svelte` (no new component file — the hamburger and take-over share one focus contract, so one file kept it cohesive):
+
+- **Hamburger** below `md` in the header panel (lucide `Menu`/`X`, one button morphing between them, so the close X and the toggle are the same control): `aria-expanded`, `aria-controls="mobile-nav-take-over"`, sr-only label. While open, the header panel goes transparent with light-theme ink so it melts into the cream take-over (the header's wordmark serves as the take-over's wordmark; its "Book a demo" hides — the take-over carries the full-width pill).
+- **Take-over**: full-screen `bg-paper` panel, hairline-divided flat list (PlumeOS, Trust — serif-300 rows, no chevrons), full-width pill "Book a demo" CTA after the list, `min-h-[100dvh]`. Layered at **z-40**, deliberately below the assistant widget's z-50 — the assistant is always on top (map standing decision; ticket 02 will formalize the z-index tokens).
+- **APG contract**: focus moves into the take-over panel on open, returns to the hamburger on close (never steals focus on mount — same `wasOpen` pattern as `AssistantWidget`); Escape closes; body scroll locks while open; SPA link clicks and the wordmark close the take-over; crossing the `md` breakpoint while open auto-closes (media-query listener with cleanup).
+- **Checks** (CODING_STANDARDS "before finishing"): prettier applied, `npm run check` 0 errors/0 warnings, `npm test` 2/2, `npm run build` passes.
+
+Deviation: none of substance. The only judgment call beyond the literal ticket is auto-close on breakpoint crossing and hiding the header CTA while open (avoids duplicate CTAs over the cream ground).

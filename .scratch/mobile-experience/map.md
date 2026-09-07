@@ -23,6 +23,8 @@ The site is usable and on-brand on a phone: a hamburger opens the **nav take-ove
 
 <!-- one line per resolved ticket: [title](issues/NN-slug.md): gist -->
 
+- [Build the mobile nav take-over](issues/01-mobile-nav-take-over.md): hamburger below md opens a full-screen cream take-over (hairline flat list, full-width pill CTA) in Nav.svelte — APG disclosure focus contract, z-40 so the assistant widget stays on top.
+
 ## Not yet specified
 
 - **Assistant widget on small viewports** — its own sizing/behavior (panel height, keyboard overlap, safe areas) needs a look on a real phone viewport before it can be phrased as a question.
