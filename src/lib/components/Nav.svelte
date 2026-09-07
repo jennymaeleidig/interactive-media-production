@@ -12,8 +12,9 @@
 	// /products/plume-os — every nav link routes to a built page.
 	//
 	// Below md the links collapse into a hamburger opening the full-screen
-	// nav take-over (cream, hairline-divided flat list, full-width pill CTA —
-	// the subject vendor's mobile menu pattern). Layering is tokenized in
+	// nav take-over (stone body under a paper header strip — the two-tone
+	// analog of the subject vendor's mobile menu — hairline-divided flat list,
+	// full-width pill CTA). Layering is tokenized in
 	// app.css @theme: take-over < nav < assistant — the assistant is always
 	// on top (map standing decision). No accordion chevrons — the graph is flat.
 	let {
@@ -32,8 +33,9 @@
 	const close = () => (open = false);
 
 	// Resting ink (what's underneath) vs scrolled ink (page theme). While the
-	// take-over is open the header melts into its cream ground, so the ink is
-	// forced to the light tone and the panel goes transparent.
+	// take-over is open the ink is forced to the light tone: the header panel
+	// carries its own solid paper fill above the stone take-over body (the
+	// two-tone strip-over-body pattern — forest ink on paper stays readable).
 	const ink = $derived.by(() => {
 		const tone = open ? 'light' : scrolled ? theme : overlay;
 		return tone === 'dark'
@@ -41,11 +43,12 @@
 			: { wordmark: 'text-forest', link: 'text-forest/80 hover:text-forest' };
 	});
 
-	// Resting and open states share the invisible panel treatment; scrolling
-	// solidifies it in the page theme's ink. (Open always wins: the header
-	// melts into the take-over's cream ground.)
+	// Resting = invisible panel; scrolling solidifies it in the page theme's
+	// ink. Open always wins: the header keeps its own solid paper fill — the
+	// lighter strip over the deeper stone take-over body (ticket 03 two-tone).
 	const panelClass = $derived.by(() => {
-		if (open || !scrolled) return 'border border-transparent bg-transparent';
+		if (open) return 'border border-forest/16 bg-paper shadow-lg shadow-forest/10';
+		if (!scrolled) return 'border border-transparent bg-transparent';
 		return theme === 'dark'
 			? 'border border-fog/10 bg-abyss/90 shadow-lg shadow-black/20 backdrop-blur'
 			: 'border border-forest/16 bg-paper/90 shadow-lg shadow-forest/10 backdrop-blur';
@@ -179,15 +182,17 @@
 </header>
 
 {#if open}
-	<!-- Nav take-over: full-screen cream panel — z-(--z-index-take-over) covers
-	     page content but sits under the header (hamburger stays clickable) and
-	     under the assistant widget, which is always on top (app.css @theme). -->
+	<!-- Nav take-over: full-screen stone panel (one tone deeper than the
+	     paper header strip above it — two-tone, ticket 03) —
+	     z-(--z-index-take-over) covers page content but sits under the header
+	     (hamburger stays clickable) and under the assistant widget, which is
+	     always on top (app.css @theme). -->
 	<div
 		bind:this={panel}
 		id="mobile-nav-take-over"
 		tabindex="-1"
 		aria-label="Site menu"
-		class="fixed inset-0 z-(--z-index-take-over) bg-paper text-forest md:hidden"
+		class="fixed inset-0 z-(--z-index-take-over) bg-stone text-forest md:hidden"
 	>
 		<div class="gutter flex min-h-[100dvh] flex-col pt-24 pb-8">
 			<ul class="divide-y divide-forest/16">

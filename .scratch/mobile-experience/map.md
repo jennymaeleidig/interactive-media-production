@@ -25,6 +25,7 @@ The site is usable and on-brand on a phone: a hamburger opens the **nav take-ove
 
 - [Build the mobile nav take-over](issues/01-mobile-nav-take-over.md): hamburger below md opens a full-screen cream take-over (hairline flat list, full-width pill CTA) in Nav.svelte — APG disclosure focus contract, layered beneath the assistant widget (see ticket 02 for the z-index tokens).
 - [Assistant rides above the nav take-over](issues/02-assistant-above-take-over.md): z-index layering tokenized in app.css @theme (`--z-index-take-over` 30 < `--z-index-nav` 40 < `--z-index-assistant` 50), consumed via `z-(--z-index-*)`; contract test pins the assistant-always-on-top order.
+- [Two-tone header and take-over](issues/03-two-tone-header-and-take-over.md): while the take-over is open the header panel carries a solid `bg-paper` fill (rounded floating panel kept) above a `bg-stone` take-over body — the vendor's strip-over-body two-tone; forest ink on paper, stale "melts into the cream ground" comments rewritten, z-index tokens untouched (verified in Playwright at 390/320px).
 
 ## Not yet specified
 
