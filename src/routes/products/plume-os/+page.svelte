@@ -72,7 +72,7 @@
 			<div class="mx-auto max-w-[82rem]">
 				<p class="eyebrow text-paper"><!-- COPY-PENDING -->PlumeOS</p>
 				<h1
-					class="mt-3 max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
+					class="mt-3 max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
 					use:blurWords={{ stagger: 92, immediate: true }}
 				>
 					<!-- COPY-PENDING -->
@@ -101,7 +101,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -120,7 +120,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -157,7 +157,7 @@
 						from the same picture before the first call ended."
 					</p>
 				</blockquote>
-				<figcaption class="mt-6 text-[0.9375rem] text-haze">
+				<figcaption class="mt-6 text-body text-haze">
 					<!-- COPY-PENDING -->
 					Placeholder: commander, western regional agency
 				</figcaption>
@@ -169,7 +169,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[52rem]">
 			<h2
-				class="font-display text-[2.75rem] leading-[1] font-light"
+				class="font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -178,7 +178,7 @@
 			<div class="mt-8">
 				{#each faqs as faq (faq.q)}
 					<FaqItem question={faq.q} tone="light">
-						<p class="max-w-[60ch] text-[0.9375rem] text-forest/80">{faq.a}</p>
+						<p class="max-w-[60ch] text-body text-forest/80">{faq.a}</p>
 					</FaqItem>
 				{/each}
 			</div>

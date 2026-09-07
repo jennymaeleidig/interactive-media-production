@@ -90,12 +90,12 @@
 				>
 					{#each assistant.messages as message}
 						{#if message.role === 'assistant'}
-							<p class="w-fit max-w-[85%] rounded-xl rounded-tl-sm bg-oat px-3 py-2 text-sm">
+							<p class="w-fit max-w-[85%] rounded-xl rounded-tl-sm bg-oat px-3 py-2 text-body">
 								{message.text}
 							</p>
 						{:else}
 							<p
-								class="ml-auto w-fit max-w-[85%] rounded-xl rounded-tr-sm bg-accent px-3 py-2 text-sm text-paper"
+								class="ml-auto w-fit max-w-[85%] rounded-xl rounded-tr-sm bg-accent px-3 py-2 text-body text-paper"
 							>
 								{message.text}
 							</p>
@@ -134,7 +134,7 @@
 								{/each}
 							</div>
 						{:else}
-							<span aria-hidden="true" class="flex-1 text-sm text-forest/40">
+							<span aria-hidden="true" class="flex-1 text-body text-forest/40">
 								Enter a message
 							</span>
 						{/if}
@@ -145,7 +145,7 @@
 				<div class="flex justify-end border-t border-forest/10 px-4 py-2.5">
 					<a
 						href="/trust"
-						class="text-xs text-forest/60 underline underline-offset-2 transition-colors hover:text-forest"
+						class="text-sm text-forest/60 underline underline-offset-2 transition-colors hover:text-forest"
 					>
 						Privacy Policy
 					</a>

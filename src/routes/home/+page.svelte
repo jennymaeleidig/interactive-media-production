@@ -80,7 +80,7 @@
 		<div class="gutter relative w-full pb-16">
 			<div class="mx-auto max-w-[82rem]">
 				<h1
-					class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
+					class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
 					use:blurWords={{ stagger: 92, immediate: true }}
 				>
 					<!-- COPY-PENDING -->
@@ -114,7 +114,7 @@
 						<!-- COPY-PENDING -->
 						{card.numeral}
 					</p>
-					<p class="mt-2 max-w-[15ch] text-[0.9375rem] text-forest/80">{card.caption}</p>
+					<p class="mt-2 max-w-[15ch] text-body text-forest/80">{card.caption}</p>
 				</a>
 			{/each}
 		</div>
@@ -124,7 +124,9 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<div class="grid gap-6 md:grid-cols-4">
-				<h2 class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light md:col-span-1">
+				<h2
+					class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem] md:col-span-1"
+				>
 					<!-- COPY-PENDING -->
 					Public safety works better together
 				</h2>
@@ -149,7 +151,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 			>
 				<!-- COPY-PENDING -->
 				Raising the bar
@@ -176,12 +178,12 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 			>
 				<!-- COPY-PENDING -->
 				Results that matter
 			</h2>
-			<p class="mt-4 max-w-[60ch] text-[0.9375rem] font-light text-forest/80">
+			<p class="mt-4 max-w-[60ch] text-body font-light text-forest/80">
 				<!-- COPY-PENDING -->
 				Placeholder: one paragraph framing the stats below.
 			</p>
@@ -193,7 +195,7 @@
 						>
 							<div class="stat-glass relative m-4 rounded-[8px] p-6 backdrop-blur-xl">
 								<p
-									class="font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
+									class="font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
 								>
 									<!-- COPY-PENDING -->
 									{stat.numeral}
@@ -217,12 +219,12 @@
 		<div class="mx-auto max-w-[82rem] text-center">
 			<p class="eyebrow"><!-- COPY-PENDING -->Powerful technology needs clear boundaries</p>
 			<h2
-				class="mx-auto mt-3 max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="mx-auto mt-3 max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 			>
 				<!-- COPY-PENDING -->
 				Accountability built in
 			</h2>
-			<p class="mx-auto mt-4 max-w-[60ch] text-[0.9375rem] font-light text-forest/80">
+			<p class="mx-auto mt-4 max-w-[60ch] text-body font-light text-forest/80">
 				<!-- COPY-PENDING -->
 				Placeholder: every search is logged. Every policy is transparent.
 			</p>
@@ -236,7 +238,7 @@
 		<div class="mx-auto max-w-[82rem]">
 			<p class="eyebrow text-fog"><!-- COPY-PENDING -->Plume Platform</p>
 			<h2
-				class="mt-3 max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light text-paper"
+				class="mt-3 max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light text-paper max-md:text-[3.125rem]"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -253,7 +255,7 @@
 							<div class="frame aspect-[3/2] transition-opacity group-hover:opacity-90">
 								<span class="sr-only">Placeholder: {product.label} product frame</span>
 							</div>
-							<p class="mt-3 flex items-center gap-2 text-[0.9375rem] font-medium text-signal">
+							<p class="mt-3 flex items-center gap-2 text-body font-medium text-signal">
 								{product.label}
 								<span aria-hidden="true" class="transition-transform group-hover:translate-x-1"
 									>→</span
@@ -266,14 +268,14 @@
 							<div class="frame aspect-[3/2]">
 								<span class="sr-only">Placeholder: {product.label} product frame</span>
 							</div>
-							<p class="mt-3 text-[0.9375rem] font-medium text-signal/60">{product.label}</p>
+							<p class="mt-3 text-body font-medium text-signal/60">{product.label}</p>
 						</div>
 					{/if}
 				{/each}
 			</div>
 			<a
 				href="/products/plume-os"
-				class="mt-10 inline-flex h-11 items-center gap-1.5 text-[0.8125rem] font-light text-signal hover:text-paper"
+				class="mt-10 inline-flex h-11 items-center gap-1.5 text-[0.875rem] font-light text-signal hover:text-paper"
 			>
 				<!-- COPY-PENDING -->
 				See how Plume works

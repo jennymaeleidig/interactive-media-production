@@ -42,6 +42,16 @@
 	--font-mono: 'JetBrains Mono', 'Courier New', monospace; /* the authority voice */
 
 	/*
+	 * Body text size — the fluid counterpart to the root scale (ticket 04).
+	 * The root interpolates 14px → 16px, but 1rem would land body copy at
+	 * 14px on a phone — below the ~15px comfort floor — while 1.0625rem
+	 * flat would inflate desktop to 17px. This token counter-slopes a small
+	 * vw term so body copy reads 15px at 390px and 16px at 1440px (desktop
+	 * pixel-identical), clamped to [1rem, 1.0625rem]. Consume as text-body.
+	 */
+	--text-body: clamp(1rem, calc(1.1034rem - 0.115vw), 1.0625rem);
+
+	/*
 	 * Systemic z-index layers — the only sanctioned z-index values
 	 * (plume-design-language guardrail: z-index is for systemic layers only,
 	 * no per-component escalation). Bottom → top:
@@ -60,8 +70,11 @@
 
 @layer base {
 	html {
-		/* Fluid root scale — every rem unit breathes with the viewport */
-		font-size: calc(0.625rem + 0.4166vw);
+		/* Fluid root scale — every rem unit breathes with the viewport.
+		   Linear ~14px at 390px → 16px at 1440px, fluid beyond. The previous
+		   mechanic (0.625rem + 0.4166vw) floored at ~11.6px on a phone,
+		   shrinking every rem-based size ~27% versus desktop (ticket 04). */
+		font-size: calc(0.828rem + 0.191vw);
 	}
 
 	body {
@@ -104,7 +117,7 @@
 		gap: 0.5rem;
 		padding: 0.75rem 1.5rem;
 		border-radius: 1rem;
-		font-size: 0.875rem;
+		font-size: var(--text-body);
 		font-weight: 500;
 		transition:
 			background-color 0.4s,
@@ -133,8 +146,10 @@
 	}
 
 	.eyebrow {
-		/* Quiet eyebrow per the homepage baseline: 11px, 400, wide-tracked, 70% */
-		font-size: 0.6875rem;
+		/* Quiet eyebrow per the homepage baseline: ~11px, 400, wide-tracked, 70%.
+		   0.75rem tracks the fluid root (~10.6px at 390px, 12px at desktop) so
+		   the micro-label stays legible on the raised mobile floor (ticket 04). */
+		font-size: 0.75rem;
 		font-weight: 400;
 		letter-spacing: 0.04rem;
 		text-transform: uppercase;

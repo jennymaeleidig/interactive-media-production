@@ -121,7 +121,7 @@
 	<section class="gutter pt-32 pb-16 md:pt-40">
 		<div class="mx-auto max-w-[82rem]">
 			<h1
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 				use:blurWords={{ stagger: 92, immediate: true }}
 			>
 				<!-- COPY-PENDING -->
@@ -144,7 +144,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -163,7 +163,7 @@
 							<!-- COPY-PENDING -->
 							{p.title}
 						</h3>
-						<p class="mt-2 max-w-[35ch] text-[0.9375rem] text-forest/80">{p.text}</p>
+						<p class="mt-2 max-w-[35ch] text-body text-forest/80">{p.text}</p>
 					</div>
 				{/each}
 			</div>
@@ -174,7 +174,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -187,11 +187,13 @@
 	     the whole card with the accent tint (story-card motif) -->
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
-			<h2 class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light">
+			<h2
+				class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
+			>
 				<!-- COPY-PENDING -->
 				How we put trust into practice
 			</h2>
-			<p class="mt-4 max-w-[60ch] text-[0.9375rem] font-light text-forest/80">
+			<p class="mt-4 max-w-[60ch] text-body font-light text-forest/80">
 				<!-- COPY-PENDING -->
 				Placeholder: we build limits into the system, give local agencies control, and make usage reviewable.
 			</p>
@@ -204,9 +206,9 @@
 							<!-- COPY-PENDING -->
 							{practice.title}
 						</h3>
-						<p class="mt-3 max-w-[60ch] text-[0.9375rem] text-forest/80">{practice.text}</p>
+						<p class="mt-3 max-w-[60ch] text-body text-forest/80">{practice.text}</p>
 						{#if practice.plain}
-							<p class="mt-4 text-[0.9375rem] text-forest/80">
+							<p class="mt-4 text-body text-forest/80">
 								<span class="font-medium text-forest">That means:</span>
 								{practice.plain}
 							</p>
@@ -222,11 +224,13 @@
 		<div class="mx-auto grid max-w-[82rem] gap-10 md:grid-cols-[1fr_2fr]">
 			<div>
 				<p class="eyebrow"><!-- COPY-PENDING -->Our beliefs</p>
-				<h2 class="mt-3 max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light">
+				<h2
+					class="mt-3 max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
+				>
 					<!-- COPY-PENDING -->
 					Built in from the beginning
 				</h2>
-				<p class="mt-4 max-w-[45ch] text-[0.9375rem] font-light text-forest/80">
+				<p class="mt-4 max-w-[45ch] text-body font-light text-forest/80">
 					<!-- COPY-PENDING -->
 					Placeholder: public safety and individual civil liberties should go together. We build our technology
 					with that balance in mind.
@@ -235,7 +239,7 @@
 			<ul>
 				{#each beliefs as belief, i (belief)}
 					<li class="flex items-baseline gap-6 border-t border-forest/16 py-5 last:border-b">
-						<span class="font-mono text-[0.8125rem] text-forest/60"
+						<span class="font-mono text-[0.875rem] text-forest/60"
 							>{String(i + 1).padStart(2, '0')}</span
 						>
 						<span class="font-display text-[1.35rem] font-light">
@@ -254,12 +258,12 @@
 		<div class="mx-auto max-w-[82rem] text-center">
 			<p class="eyebrow"><!-- COPY-PENDING -->Questions welcome</p>
 			<h2
-				class="mx-auto mt-3 max-w-[24ch] font-display text-[clamp(3rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="mx-auto mt-3 max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
 			>
 				<!-- COPY-PENDING -->
 				Have questions about how this works?
 			</h2>
-			<p class="mx-auto mt-4 max-w-[60ch] text-[0.9375rem] font-light text-forest/80">
+			<p class="mx-auto mt-4 max-w-[60ch] text-body font-light text-forest/80">
 				<!-- COPY-PENDING -->
 				Placeholder: reach out and we'll walk through the safeguards, the controls, and what's reviewable
 				together.
@@ -275,7 +279,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[52rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -284,7 +288,7 @@
 			<div class="mt-8">
 				{#each faqs as faq (faq.q)}
 					<FaqItem question={faq.q} tone="light">
-						<p class="max-w-[60ch] text-[0.9375rem] text-forest/80">{faq.a}</p>
+						<p class="max-w-[60ch] text-body text-forest/80">{faq.a}</p>
 					</FaqItem>
 				{/each}
 			</div>

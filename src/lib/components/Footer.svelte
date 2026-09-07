@@ -37,7 +37,7 @@
 		</div>
 	</div>
 	<div class="gutter bg-pine">
-		<div class="mx-auto max-w-[82rem] py-6 text-[0.84rem] text-haze">
+		<div class="mx-auto max-w-[82rem] py-6 text-[0.875rem] text-haze">
 			<p>© 2026 Plume. A work of satire.</p>
 		</div>
 	</div>
