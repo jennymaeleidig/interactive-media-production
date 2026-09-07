@@ -40,6 +40,7 @@ Legacy syntax fails here — runes mode is enforced project-wide (except `node_m
 - `src/app.css` is the single stylesheet entry — `@import 'tailwindcss';` plus project tokens in `@theme`. Components never define their own CSS except for genuinely un-representable cases (keyframes, exotic selectors), and then via a scoped `<style>` block with a comment saying why.
 - Styling is utility classes in markup. `@apply` only in `app.css` for a repeated multi-utility pattern with a real name.
 - No inline `style` attributes for design values — those belong in `@theme` tokens so they stay consistent.
+- z-index is for systemic layers only, never per-component escalation. Consume the `--z-index-*` tokens from `app.css` `@theme` via `z-(--z-index-*)`; no bare `z-<number>` in components. New overlapping layering goes through a new token there, documented in that comment block.
 - Class order and wrapping are Prettier's job (`prettier-plugin-tailwindcss`); never hand-sort.
 
 ## Accessibility
