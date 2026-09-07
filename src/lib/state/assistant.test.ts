@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
 import { compileSource, type Program } from 'yarnspinner-typescript';
-import program from '$lib/assistant/dialogue.yarn';
 import { createAssistantSession, type Clock } from './assistant.svelte';
 import { describe, expect, it } from 'vitest';
 
@@ -33,13 +32,6 @@ function scriptedProgram(): Program {
 	return result.program;
 }
 
-/** A program with none of the chip contract's node titles. */
-function chiplessProgram(): Program {
-	const result = compileSource('title: Other\n---\nAssistant: x\n===\n');
-	if (!result.program) throw new Error('chipless dialogue failed to compile');
-	return result.program;
-}
-
 /** Manual clock: reveals fire only when the test flushes — no timers. */
 function manualClock(): Clock & { flush(): void } {
 	const queued: Array<() => void> = [];
@@ -61,12 +53,9 @@ function manualClock(): Clock & { flush(): void } {
 }
 
 function session(clock: Clock & { flush(): void }) {
-	// Scripted chip set: the default CHIPS target the real dialogue's nodes;
-	// the scripted program carries its own titles.
 	return createAssistantSession({
 		program: scriptedProgram(),
-		clock,
-		chips: [{ label: 'Go on', node: 'Wrapup' }]
+		clock
 	});
 }
 
@@ -97,24 +86,5 @@ describe('assistant session (headless, manual clock)', () => {
 		expect(s.typing).toBe(true);
 		clock.flush();
 		expect(s.messages.at(-1)?.text).toBe('You chose Go on.');
-	});
-
-	it('chips jump to their node and the click lands as the user bubble', () => {
-		const clock = manualClock();
-		const s = createAssistantSession({ program, clock }); // the real dialogue
-		s.show();
-		clock.flush();
-		s.jumpToChip({ label: 'Support', node: 'Support' });
-		expect(s.messages.at(-1)?.text).toBe('Support');
-		clock.flush();
-		const texts = s.messages.map((m) => m.text);
-		expect(texts).toContain(
-			'Support. The Plume care team is reachable through the following channels:'
-		);
-	});
-
-	it('a chip pointing at a missing node fails when the session is built', () => {
-		const clock = manualClock();
-		expect(() => createAssistantSession({ program: chiplessProgram(), clock })).toThrow(/GetADemo/);
 	});
 });

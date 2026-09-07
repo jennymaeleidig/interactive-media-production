@@ -14,9 +14,7 @@ import program from '$lib/assistant/dialogue.yarn';
  * one adapter over the real program and real timers.
  *
  * The widget is choices-only: the `Dialogue` runtime's option set is the
- * one reply mechanism, and the persistent chips are `<<jump>>`s into the
- * contract node titles (GetADemo / Support) — validated against the
- * program's node table when the session is built.
+ * one reply mechanism.
  */
 
 export interface AssistantMessage {
@@ -28,12 +26,6 @@ export interface AssistantChoice {
 	/** Position in the runtime's full option set — what `selectOption` takes. */
 	index: number;
 	text: string;
-}
-
-export interface AssistantChip {
-	label: string;
-	/** Node title in dialogue.yarn — the chip contract. */
-	node: string;
 }
 
 /** Schedules the turn reveal; the returned function cancels it. */
@@ -53,33 +45,11 @@ export interface AssistantSessionOptions {
 	program: Program;
 	/** Schedules the typing reveal; defaults to real timers. */
 	clock?: Clock;
-	/** Persistent chips to validate against the program and expose;
-	 *  defaults to the site's chip set. */
-	chips?: readonly AssistantChip[];
 }
 
 /** Turn-reveal delay: the typing indicator runs before a batch lands.
  *  Kept above the dots' 1.4s animation cycle so the wave completes. */
 const TYPING_DELAY_MS = 1800;
-
-/** The persistent chips (source-widget mimicry): always visible, node jumps. */
-const CHIPS: readonly AssistantChip[] = [
-	{ label: 'Get a Demo', node: 'GetADemo' },
-	{ label: 'Support', node: 'Support' }
-];
-
-/** Chip nodes must exist in the program's node table — fail when the
- *  session is built, not at click time (`setNode` only logs a missing
- *  title, which would leave the widget silently jumping nowhere). */
-function resolveChips(chips: readonly AssistantChip[], program: Program): AssistantChip[] {
-	const missing = chips.filter((chip) => !(chip.node in program.nodes));
-	if (missing.length > 0) {
-		throw new Error(
-			`dialogue.yarn is missing chip node(s): ${missing.map((chip) => chip.node).join(', ')}`
-		);
-	}
-	return [...chips];
-}
 
 class AssistantSession {
 	/** Panel visibility. Closing keeps the dialogue mid-flight; reopening resumes. */
@@ -88,25 +58,22 @@ class AssistantSession {
 	messages = $state<AssistantMessage[]>([]);
 	/** The current option set — the only reply mechanism (no free text). */
 	choices = $state<AssistantChoice[]>([]);
-	/** True while the next batch is "being typed". Chips disable during it. */
+	/** True while the next batch is "being typed". Choices disable during it. */
 	typing = $state(false);
-	/** Persistent chips, validated against the program's nodes. */
-	readonly chips: AssistantChip[];
 
 	#program: Program;
 	#clock: Clock;
 	#dialogue: Dialogue | null = null;
 	// One storage instance across reconstructions: visit counts, once-state,
-	// and variables survive chip jumps that rebuild the Dialogue.
+	// and variables survive session rebuilds.
 	#storage: InMemoryVariableStorage | null = null;
 	#cancelReveal: (() => void) | null = null;
 	#complete = false;
 	#pendingChoices: AssistantChoice[] | null = null;
 
-	constructor({ program, clock = realClock, chips = CHIPS }: AssistantSessionOptions) {
+	constructor({ program, clock = realClock }: AssistantSessionOptions) {
 		this.#program = program;
 		this.#clock = clock;
-		this.chips = resolveChips(chips, program);
 	}
 
 	toggle(): void {
@@ -141,28 +108,10 @@ class AssistantSession {
 		this.#runTurn();
 	}
 
-	/** Persistent chip: jump to its contract node (or rebuild the dialogue there). */
-	jumpToChip(chip: AssistantChip): void {
-		if (this.typing) return;
-		const dialogue = this.#dialogue;
-		if (dialogue && !this.#complete && dialogue.currentNode === chip.node) {
-			return; // already there — replaying would only repeat itself
-		}
-		// The chip click is the user's visible choice, like the source widget:
-		// it lands as their bubble before the assistant responds.
-		this.messages.push({ role: 'user', text: chip.label });
-		if (!dialogue || this.#complete) {
-			this.#begin(chip.node);
-		} else {
-			dialogue.setNode(chip.node);
-		}
-		this.#runTurn();
-	}
-
-	/** Fresh (or rebuilt) dialogue at `startAt`; storage reuse keeps history. */
-	#begin(startAt?: string): void {
+	/** Fresh dialogue; storage reuse keeps history. */
+	#begin(): void {
 		this.#storage ??= new InMemoryVariableStorage();
-		this.#dialogue = new Dialogue(this.#program, { startAt, variableStorage: this.#storage });
+		this.#dialogue = new Dialogue(this.#program, { variableStorage: this.#storage });
 		this.#complete = false;
 		this.#runTurn();
 	}

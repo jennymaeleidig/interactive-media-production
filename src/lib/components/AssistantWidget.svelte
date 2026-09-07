@@ -2,15 +2,17 @@
 <!--
 	The Plume AI Sales Assistant: a site-wide floating bubble opening a
 	choices-only dialogue panel, mimicking the subject vendor's sales-
-	assistant widget (avatar header, agent bubbles, persistent chips,
+	assistant widget (avatar header, agent bubbles, pseudo message entry,
 	privacy footer) — with no free-text input: the runtime's option set is
-	the one reply mechanism. Panel stays light (paper) on both page themes,
-	like the source widget. Suppressed on the gate page (/).
+	the one reply mechanism, presented inside an input-styled box.
+	Panel stays light (paper) on both page themes, like the source widget.
+	Suppressed on the gate page (/).
 -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import X from 'lucide-svelte/icons/x';
 	import { assistant } from '$lib/state/assistant.svelte';
+	import Send from 'lucide-svelte/icons/send';
 
 	let panel = $state<HTMLElement | undefined>();
 	let bubble = $state<HTMLElement | undefined>();
@@ -107,40 +109,39 @@
 					{/if}
 				</div>
 
-				{#if assistant.choices.length > 0}
-					<!-- Contextual choices: the one reply mechanism — the user's
-					     picked option lands as their bubble above the chips. -->
+				<!-- Pseudo message entry: mimics the source widget's free-text
+					     input, but the contextual choices are the only content —
+					     the user's picked option lands as their bubble above, and
+					     the send icon is decorative. -->
+				<div class="px-4 py-2">
 					<div
-						class="flex flex-wrap justify-end gap-2 px-4 py-2"
-						role="group"
-						aria-label="Reply choices"
+						class="flex items-center gap-2 rounded-xl border border-forest/15 bg-paper px-3 py-2"
 					>
-						{#each assistant.choices as choice (choice.index)}
-							<button
-								type="button"
-								class="rounded-full bg-accent px-3.5 py-1.5 text-sm font-medium text-paper transition-colors hover:bg-fern"
-								onclick={() => assistant.choose(choice.index)}
-							>
-								{choice.text}
-							</button>
-						{/each}
+						{#if assistant.choices.length > 0}
+							<div class="flex flex-1 flex-wrap gap-2" role="group" aria-label="Reply choices">
+								{#each assistant.choices as choice (choice.index)}
+									<button
+										type="button"
+										class="rounded-full bg-accent px-3.5 py-1.5 text-sm font-medium text-paper transition-colors hover:bg-fern"
+										onclick={() => assistant.choose(choice.index)}
+									>
+										{choice.text}
+									</button>
+								{/each}
+							</div>
+						{:else}
+							<span aria-hidden="true" class="flex-1 text-sm text-forest/40">
+								Enter a message
+							</span>
+						{/if}
+						<Send class="size-5 shrink-0 text-forest/40" aria-hidden="true" />
 					</div>
-				{/if}
+				</div>
 
-				<div class="flex items-center gap-2 border-t border-forest/10 px-4 py-2.5">
-					{#each assistant.chips as chip (chip.node)}
-						<button
-							type="button"
-							disabled={assistant.typing}
-							class="rounded-lg bg-forest px-3 py-1.5 text-sm font-medium text-accent-soft transition-colors hover:bg-pine disabled:opacity-50"
-							onclick={() => assistant.jumpToChip(chip)}
-						>
-							{chip.label}
-						</button>
-					{/each}
+				<div class="flex justify-end border-t border-forest/10 px-4 py-2.5">
 					<a
 						href="/trust"
-						class="ml-auto text-xs text-forest/60 underline underline-offset-2 transition-colors hover:text-forest"
+						class="text-xs text-forest/60 underline underline-offset-2 transition-colors hover:text-forest"
 					>
 						Privacy Policy
 					</a>
