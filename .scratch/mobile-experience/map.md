@@ -31,7 +31,7 @@ The site is usable and on-brand on a phone: a hamburger opens the **nav take-ove
 - **Assistant widget on small viewports** — its own sizing/behavior (panel height, keyboard overlap, safe areas) needs a look on a real phone viewport before it can be phrased as a question.
 - **Gate page (`/`) mobile layout** — suspected work, but it hangs on how the take-over turns out; revisit after the frontier advances.
 - **Tablet breakpoints** — the current `hidden md:flex` cutoff may be wrong once the take-over exists; needs a viewport pass to spec.
-- **Small-screen polish below the fold** — footer, heroes, and section layouts on narrow screens; part of "usable on a phone" but not yet sharp enough to ticket.
+- **Small-screen polish below the fold** — footer and section layouts on narrow screens (hero/heading type scale graduated to its own ticket); part of "usable on a phone" but not yet sharp enough to ticket.
 
 ## Out of scope
 
