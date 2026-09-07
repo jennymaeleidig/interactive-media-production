@@ -17,7 +17,7 @@
 				<div>
 					<p class="font-display text-[2rem] leading-none text-paper">Plume</p>
 					<!-- COPY-PENDING -->
-					<p class="mt-4 max-w-[28ch] text-[1.05rem] text-haze">Everything, already together.</p>
+					<p class="mt-4 max-w-[28ch] text-body text-haze">Everything, already together.</p>
 				</div>
 				{#each groups as group (group.title)}
 					<nav aria-label={group.title}>
@@ -25,9 +25,7 @@
 						<ul class="space-y-2">
 							{#each group.links as link (link.label)}
 								<li>
-									<a href={link.href} class="text-[1.05rem] text-fog hover:text-paper"
-										>{link.label}</a
-									>
+									<a href={link.href} class="text-body text-fog hover:text-paper">{link.label}</a>
 								</li>
 							{/each}
 						</ul>

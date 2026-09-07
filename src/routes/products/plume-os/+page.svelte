@@ -72,7 +72,7 @@
 			<div class="mx-auto max-w-[82rem]">
 				<p class="eyebrow text-paper"><!-- COPY-PENDING -->PlumeOS</p>
 				<h1
-					class="mt-3 max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
+					class="mt-3 max-w-[24ch] font-display text-display leading-[1] font-light text-paper"
 					use:blurWords={{ stagger: 92, immediate: true }}
 				>
 					<!-- COPY-PENDING -->
@@ -101,7 +101,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-display leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -120,7 +120,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-display leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -132,7 +132,7 @@
 			<ul class="mt-10 grid gap-x-12 md:grid-cols-2">
 				{#each capabilities as capability (capability)}
 					<li
-						class="flex items-center gap-3 border-t border-forest/16 py-4 text-[1.05rem] last:border-b md:[&:nth-last-child(2)]:border-b"
+						class="flex items-center gap-3 border-t border-forest/16 py-4 text-body last:border-b md:[&:nth-last-child(2)]:border-b"
 					>
 						<Check class="h-4 w-4 shrink-0 text-accent" strokeWidth={2} aria-hidden="true" />
 						<!-- COPY-PENDING -->
@@ -169,7 +169,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[52rem]">
 			<h2
-				class="font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
+				class="font-display text-display-mid leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->

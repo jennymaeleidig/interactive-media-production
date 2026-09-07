@@ -80,7 +80,7 @@
 		<div class="gutter relative w-full pb-16">
 			<div class="mx-auto max-w-[82rem]">
 				<h1
-					class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
+					class="max-w-[24ch] font-display text-display leading-[1] font-light text-paper"
 					use:blurWords={{ stagger: 92, immediate: true }}
 				>
 					<!-- COPY-PENDING -->
@@ -124,9 +124,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<div class="grid gap-6 md:grid-cols-4">
-				<h2
-					class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem] md:col-span-1"
-				>
+				<h2 class="max-w-[24ch] font-display text-display-mid leading-[1] font-light md:col-span-1">
 					<!-- COPY-PENDING -->
 					Public safety works better together
 				</h2>
@@ -150,9 +148,7 @@
 	<!-- Commitments: hairline rows, serif-300 items, plain text — subject-native -->
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
-			<h2
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
-			>
+			<h2 class="max-w-[24ch] font-display text-display leading-[1] font-light">
 				<!-- COPY-PENDING -->
 				Raising the bar
 			</h2>
@@ -177,9 +173,7 @@
 	     panel; numerals at heading scale (giant-stat treatment is dead) -->
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
-			<h2
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
-			>
+			<h2 class="max-w-[24ch] font-display text-display leading-[1] font-light">
 				<!-- COPY-PENDING -->
 				Results that matter
 			</h2>
@@ -194,9 +188,7 @@
 							class="stat-ground relative flex aspect-[4/4.3] flex-col justify-end overflow-hidden rounded-[8px]"
 						>
 							<div class="stat-glass relative m-4 rounded-[8px] p-6 backdrop-blur-xl">
-								<p
-									class="font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light text-paper"
-								>
+								<p class="font-display text-display leading-[1] font-light text-paper">
 									<!-- COPY-PENDING -->
 									{stat.numeral}
 								</p>
@@ -218,9 +210,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem] text-center">
 			<p class="eyebrow"><!-- COPY-PENDING -->Powerful technology needs clear boundaries</p>
-			<h2
-				class="mx-auto mt-3 max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
-			>
+			<h2 class="mx-auto mt-3 max-w-[24ch] font-display text-display leading-[1] font-light">
 				<!-- COPY-PENDING -->
 				Accountability built in
 			</h2>
@@ -238,7 +228,7 @@
 		<div class="mx-auto max-w-[82rem]">
 			<p class="eyebrow text-fog"><!-- COPY-PENDING -->Plume Platform</p>
 			<h2
-				class="mt-3 max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light text-paper max-md:text-[3.125rem]"
+				class="mt-3 max-w-[24ch] font-display text-display-mid leading-[1] font-light text-paper"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->

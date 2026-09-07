@@ -52,6 +52,28 @@
 	--text-body: clamp(1rem, calc(1.1034rem - 0.115vw), 1.0625rem);
 
 	/*
+	 * Display heading size — the shared clamp tier for hero H1s, section H2s,
+	 * and stat numerals (ticket 04 raised its floor 3rem → 3.25rem so headings
+	 * fill a phone screen). Tokenized after the same scale change had to be
+	 * hand-applied to a dozen scattered arbitrary values; the next scale move
+	 * is a one-line edit here. Consume as text-display.
+	 */
+	--text-display: clamp(3.25rem, 2.75rem + 1.25vw, 3.875rem);
+
+	/*
+	 * Mid-tier heading size — the fixed section H2s (gallery intro, product
+	 * band, practice, beliefs, FAQs). Desktop reads the old fixed 2.75rem
+	 * (44px at the 1440px root, pixel-identical); the counter-sloped vw term
+	 * lifts small viewports to the 3.25rem display floor — 45.5px at 390px,
+	 * clearing the ~44px mobile bar the old max-md:text-[3.125rem] boost
+	 * (43.7px) just missed — and hands off to the 2.75rem floor at 768px,
+	 * which also removes the boost's size discontinuity at the md boundary.
+	 * (Tablet sizes shift a few px within the 390–768 slope; tablet remains
+	 * the map's open breakpoints item.) Consume as text-display-mid.
+	 */
+	--text-display-mid: clamp(2.75rem, 3.8231rem - 2.0576vw, 3.25rem);
+
+	/*
 	 * Systemic z-index layers — the only sanctioned z-index values
 	 * (plume-design-language guardrail: z-index is for systemic layers only,
 	 * no per-component escalation). Bottom → top:

@@ -121,7 +121,7 @@
 	<section class="gutter pt-32 pb-16 md:pt-40">
 		<div class="mx-auto max-w-[82rem]">
 			<h1
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-display leading-[1] font-light"
 				use:blurWords={{ stagger: 92, immediate: true }}
 			>
 				<!-- COPY-PENDING -->
@@ -144,7 +144,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-display leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -174,7 +174,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
+				class="max-w-[24ch] font-display text-display leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
@@ -187,9 +187,7 @@
 	     the whole card with the accent tint (story-card motif) -->
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem]">
-			<h2
-				class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
-			>
+			<h2 class="max-w-[24ch] font-display text-display-mid leading-[1] font-light">
 				<!-- COPY-PENDING -->
 				How we put trust into practice
 			</h2>
@@ -224,9 +222,7 @@
 		<div class="mx-auto grid max-w-[82rem] gap-10 md:grid-cols-[1fr_2fr]">
 			<div>
 				<p class="eyebrow"><!-- COPY-PENDING -->Our beliefs</p>
-				<h2
-					class="mt-3 max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
-				>
+				<h2 class="mt-3 max-w-[24ch] font-display text-display-mid leading-[1] font-light">
 					<!-- COPY-PENDING -->
 					Built in from the beginning
 				</h2>
@@ -257,9 +253,7 @@
 	<section id="contact" class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[82rem] text-center">
 			<p class="eyebrow"><!-- COPY-PENDING -->Questions welcome</p>
-			<h2
-				class="mx-auto mt-3 max-w-[24ch] font-display text-[clamp(3.25rem,2.75rem+1.25vw,3.875rem)] leading-[1] font-light"
-			>
+			<h2 class="mx-auto mt-3 max-w-[24ch] font-display text-display leading-[1] font-light">
 				<!-- COPY-PENDING -->
 				Have questions about how this works?
 			</h2>
@@ -279,7 +273,7 @@
 	<section class="gutter py-16 md:py-20">
 		<div class="mx-auto max-w-[52rem]">
 			<h2
-				class="max-w-[24ch] font-display text-[2.75rem] leading-[1] font-light max-md:text-[3.125rem]"
+				class="max-w-[24ch] font-display text-display-mid leading-[1] font-light"
 				use:blurWords={{ stagger: 58 }}
 			>
 				<!-- COPY-PENDING -->
