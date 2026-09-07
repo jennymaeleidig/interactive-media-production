@@ -11,3 +11,5 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 **Satire skin** — the design-and-voice treatment that reproduces a real vendor's design language and copy register for the parody, while reusing nothing ownable (marks, photography, copy, claims). Governed by the `plume-design-language` and `corporate-jargon-voice` skills.
 
 **Plume AI Sales Assistant** — the site-wide chat widget imitating the subject vendor's AI sales assistant: a floating bubble opening a choices-only conversation panel (no free-text input). Its dialogue is Yarn Spinner 3.x content, compiled at build time and run by the owner's local yarnspinner-ts library.
+
+**Nav take-over** — the mobile navigation pattern: a hamburger in the floating header opens a full-screen take-over listing the site's pages, in the subject vendor's design language (cream ground, hairline row dividers, full-width pill CTA). Flat list, not accordions — the link graph is small. The Plume AI Sales Assistant always layers above it.
