@@ -38,6 +38,7 @@ Decisions settled while charting (2026-09-09, charting session):
 - **Dead collection roots**: `/ebooks`, `/webinar`, `/video`, `/events` 404 while their item pages are live — whether the Recreation reproduces them as routes or drops them; decide in ticket 05. (Research also ruled: no locale variants exist; www host only — subdomain surfaces out.)
 - **Cookie-consent UX**: research recommends stripping the whole OneTrust stack including the banner (nothing left to consent to); final call folds into ticket 05.
 - **Per-template behavioral contracts**: ticket 02 walked the homepage only; the 855 posts, product pages, and campaign LPs may carry behaviors it never saw (embedded video, carousels, tabs, per-template GSAP attributes). Not researchable until captures exist — graduates to a research ticket out of ticket 03's pilot/full runs (sample one capture per template family).
+- **Chat lead-capture depth**: ticket 06 walked the widget up to the email gate and stopped (covenant: no real data to Flock's CRM); the post-gate booker/panes were never observed, and no agent can walk them without live-firing a submission — this gap is permanent, observation-capped. Decide with the user in ticket 04 or at spec: how far the mimic's demo-request flow goes, and what the in-chat email capture POSTs to (presumably a local API route, per the forms decision).
 
 ## Out of scope
 
