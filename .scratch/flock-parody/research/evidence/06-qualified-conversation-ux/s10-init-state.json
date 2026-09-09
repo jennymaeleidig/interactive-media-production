@@ -1,0 +1,93 @@
+{
+ "agentsAvailable": false,
+ "aiSdr": {
+  "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+  "jobTitle": "AI Sales Assistant",
+  "name": "Flock"
+ },
+ "anyUserAvailable": false,
+ "avatarUrls": [
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/e3817e129743a1a497c642f8140c053fbaf33e4d479f9b68799da23fc1eece78.png",
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/b86804d2c44322bacf3dd27f8095bc90859c002f9c2381e3cb69a142028657ab.png",
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/f15835353fbf8c5fd946811ae29fafa98d0b4b48f39e08768e130e0ea6f6c765.png",
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/42efa63b93964133b7f24172f7f7f0e82251be59049aecfa7f652997864e881b.png",
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/d8511d3295ef7788f253d6fc2de2a630e39c76e4fae9159d6e9e998077c2b86b.png"
+ ],
+ "canInitiateVideoChat": null,
+ "coldStartQuestions": null,
+ "coldStartVisibleLimit": null,
+ "companyName": "Flock",
+ "conversationModeFailover": null,
+ "conversations": [
+  {
+   "aiSdr": {
+    "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+    "jobTitle": "AI Sales Assistant",
+    "name": "Flock"
+   },
+   "aiStrategyButtonCtas": [],
+   "createdAt": "2026-09-09T13:53:03.562Z",
+   "encodedId": "RpUUZu9p8xoqM7fypZAoUn7XF33aaZRd7HG71PgS9u6bH3Ebd1Yg8rNmQ",
+   "id": "1996373881355880136",
+   "initialClientState": "collapsed",
+   "locale": "en",
+   "script": {
+    "botType": "automatic",
+    "id": "1901764260148135659"
+   },
+   "type": "chat"
+  }
+ ],
+ "countryCode": "us",
+ "dailyCallObjectBundleUrl": "https://assets.qualified.com/packs/js/daily/call-machine-object-bundle-0.83.1.js",
+ "dailyWsProxyUrl": "https://voice-calls.qualified.com",
+ "demoFeatures": null,
+ "disableClose": null,
+ "disableTitleFlash": false,
+ "formJoinIdUnique": null,
+ "greetingAvatarUrls": [
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/e3817e129743a1a497c642f8140c053fbaf33e4d479f9b68799da23fc1eece78.png",
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/ee68f9ff304676bcdb85ec87d754b6afa2a188b12a84f6bd57a90644fabc97f7.png",
+  "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/83855dcdc5588adc51d953027b961f0c190daee232fcb78abcd0d947f38d5a38.png"
+ ],
+ "hasCustomVoiceGreeting": false,
+ "meetings": [],
+ "messages": [
+  {
+   "aiStrategyIds": [],
+   "botStep": 0,
+   "conversationId": "1996373881355880136",
+   "createdAt": "2026-09-09T13:53:03.601Z",
+   "eventType": "waiting",
+   "executionStep": [
+    "1901764260148135659",
+    0
+   ],
+   "id": "1996373881675499214",
+   "isOwn": false,
+   "isRead": false,
+   "scriptId": "1901764260148135659",
+   "scrollPercentage": 15,
+   "source": "standard",
+   "type": "event",
+   "waitingEvent": "scrollPercentage"
+  }
+ ],
+ "multimodalModalityPreference": "text",
+ "multimodalStartingConversationMode": "text",
+ "multimodalTrack": null,
+ "orbConfig": null,
+ "owner": null,
+ "pounceCandidates": null,
+ "pounceInactivityThresholdMs": null,
+ "previewVideoSrc": "https://assets.qualified.com/static-media/piperx-loading/Ruby.mp4",
+ "qualified": false,
+ "readReceipt": null,
+ "routingMedium": null,
+ "scriptLocale": "en",
+ "scriptState": null,
+ "selectedReplicaId": null,
+ "themeConfig": null,
+ "uiState": null,
+ "useNewMessengerStyling": false
+}

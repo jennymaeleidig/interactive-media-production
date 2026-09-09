@@ -1,0 +1,26 @@
+[
+ {
+  "t": 2,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=6755ae02-d80e-475b-aa77-595ad4dec0a4&wu=eb511d6f-"
+ },
+ {
+  "t": 6,
+  "m": "page loaded"
+ },
+ {
+  "t": 6,
+  "m": "offer banner present (1)"
+ },
+ {
+  "t": 6,
+  "m": "waiting for pounce (1920x1200, mode=walk)"
+ },
+ {
+  "t": 24,
+  "m": "LAUNCHER appeared (no pounce)"
+ },
+ {
+  "t": 26,
+  "m": "FATAL: page is not defined |     at file:///work/capture06.mjs:122:14 <=     at main (file:///work/capture06.mjs:280:44)"
+ }
+]

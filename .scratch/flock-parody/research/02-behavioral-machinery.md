@@ -2,11 +2,11 @@
 
 Wayfinding ticket: [issues/02-behavioral-machinery.md](../issues/02-behavioral-machinery.md) · Resolved 2026-09-09
 
-Widget evidence (13 screenshots + raw DOM/network/cookie JSON): **[02-evidence/](02-evidence/)** (same directory)
+Widget evidence (13 screenshots + raw DOM/network/cookie JSON): **[evidence/02-behavioral-machinery/](evidence/02-behavioral-machinery/)** (same directory)
 
 ## Answer
 
-Researched 2026-09-09. Evidence tags: **[capture]** = static analysis of `.scratch/flock-parody/research/flocksafety/index.html` (post-render singlefile DOM, scripts stripped); **[live]** = live flocksafety.com observed same day via CDP-driven headless Chromium 124 in Docker (screenshots and JSON in `02-evidence/`); **[srcdoc]** = the Qualified messenger's inlined iframe document extracted from the capture. The site is **Webflow** (`data-wf-*`, `w-mod-ix3`) + injected runtimes (Lenis, GSAP suite, Qualified, OneTrust, Marketo).
+Researched 2026-09-09. Evidence tags: **[capture]** = static analysis of `.scratch/flock-parody/research/flocksafety/index.html` (post-render singlefile DOM, scripts stripped); **[live]** = live flocksafety.com observed same day via CDP-driven headless Chromium 124 in Docker (screenshots and JSON in `evidence/02-behavioral-machinery/`); **[srcdoc]** = the Qualified messenger's inlined iframe document extracted from the capture. The site is **Webflow** (`data-wf-*`, `w-mod-ix3`) + injected runtimes (Lenis, GSAP suite, Qualified, OneTrust, Marketo).
 
 ### 1. Qualified chat assistant ("Flock — AI Sales Assistant")
 
@@ -102,4 +102,4 @@ All of the following fired on a plain US visit — **STRIP** (does not block tic
 - The conversation beyond the greeting was **not** walked (no typing/submission per brief). Operator-side visuals (typing dots, agent join) are evidenced only by keyframes and pack names.
 - Widget internals use hashed Emotion/Panda classes (`css-*`, `q-*`) — brittle as copy targets; the token layer (`--THEME_*`, keyframes) is the stable contract.
 - Homepage-only per ticket scope; other pages may carry video/sliders/forms (Finsweet cmsslider + Marketo forms2 are loaded site-wide). Marketo form behavior was not exercised.
-- Screenshots + raw JSON evidence: preserved in `research/02-evidence/` — `01-top.png`, `02-bottom.png`, `07-collapsed.png`, `11-greeting.png`, `12-greeting-card.png`, `13-conversation.png`, `evidence.json`, `ux-flow.json`, `dom-greeting.json`, `dom-open.json`, `widget-mount.json`, `cookies.json`.
+- Screenshots + raw JSON evidence: preserved in `research/evidence/02-behavioral-machinery/` — `01-top.png`, `02-bottom.png`, `07-collapsed.png`, `11-greeting.png`, `12-greeting-card.png`, `13-conversation.png`, `evidence.json`, `ux-flow.json`, `dom-greeting.json`, `dom-open.json`, `widget-mount.json`, `cookies.json`.

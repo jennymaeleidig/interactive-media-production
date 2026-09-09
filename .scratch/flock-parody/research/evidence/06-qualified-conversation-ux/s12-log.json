@@ -1,0 +1,34 @@
+[
+ {
+  "t": 2,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=130fb9b0-0938-445f-8298-bcf58e8d21f4&wu=171d3bc0-"
+ },
+ {
+  "t": 5,
+  "m": "page loaded"
+ },
+ {
+  "t": 5,
+  "m": "offer banner present (1)"
+ },
+ {
+  "t": 5,
+  "m": "waiting for pounce (1440x900, mode=demo)"
+ },
+ {
+  "t": 38,
+  "m": "POUNCED (greeting card)"
+ },
+ {
+  "t": 39,
+  "m": "greeting: 1 msgs, 5 btns"
+ },
+ {
+  "t": 39,
+  "m": "demo mode: clicked Get a Demo"
+ },
+ {
+  "t": 48,
+  "m": "demo capture done — NOT filling any form"
+ }
+]

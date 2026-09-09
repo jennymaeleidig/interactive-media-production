@@ -1,0 +1,67 @@
+[
+ {
+  "t": 37,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "apForArComposer": "first_auto_pounce",
+   "botStep": null,
+   "buttonText": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:49:27.223Z",
+    "encodedId": "RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996372109104473801",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996372109104473801",
+   "createdAt": "2026-09-09T13:50:01.125Z",
+   "executionStep": null,
+   "id": "1996372386831746756",
+   "isAp": false,
+   "isOwn": false,
+   "isPounce": null,
+   "isRead": false,
+   "modality": null,
+   "originalText": null,
+   "plainText": "Hey there! I'm Flock, your friendly AI Sales Assistant. What questions do you have about Flock's offerings today?",
+   "replyToId": null,
+   "scriptId": "1901764260148135659",
+   "source": "auto_respond",
+   "text": "Hey there! I'm Flock, your friendly AI Sales Assistant. What questions do you have about Flock's offerings today?",
+   "title": null,
+   "type": "text",
+   "userId": null,
+   "visitorId": null
+  }
+ }
+]

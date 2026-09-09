@@ -1,0 +1,362 @@
+[
+ {
+  "t": 2,
+  "dir": "open",
+  "url": "wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=8e63215b-1a6d-4082-979e-29c6a7bfc5aa&wu=f7e9c7e0-1dae-493a-bfa9-e738d44833a7&ca=2026-09-09T13%3A49%3A25.845Z&tz=America%2FLos_Angeles&bis=5&referrer=&pv=1&fv=2"
+ },
+ {
+  "t": 2,
+  "dir": "<",
+  "frame": "{\"type\":\"welcome\",\"sid\":\"43957cda-c358-4898-b035-04a9a03c96c7\"}"
+ },
+ {
+  "t": 2,
+  "dir": ">",
+  "frame": "{\"command\":\"subscribe\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\"}"
+ },
+ {
+  "t": 2,
+  "dir": ">",
+  "frame": "{\"command\":\"subscribe\",\"identifier\":\"{\\\"channel\\\":\\\"CoBrowse::VisitorChannel\\\"}\"}"
+ },
+ {
+  "t": 2,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"type\":\"confirm_subscription\"}"
+ },
+ {
+  "t": 2,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"wu\\\":\\\"f7e9c7e0-1dae-493a-bfa9-e738d44833a7\\\",\\\"url\\\":\\\"https://www.flocksafety.com/?utm_source=google&utm_medium=cpc&utm_campaign=brand_search\\\",\\\"single_page_app\\\":false,\\\"wv\\\":9,\\\"referrer\\\":\\\"\\\",\\\"reconnecting\\\":false,\\\"rebroadcast\\\":false,\\\"has_custom_form_data\\\":true,\\\"redirect_count\\\":0,\\\"traceparent\\\":\\\"00-5ef64257794a47188103b016e00b2efd-382886c6e8c0fc80-00\\\",\\\"action\\\":\\\"record_page_view\\\"}\"}"
+ },
+ {
+  "t": 2,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"CoBrowse::VisitorChannel\\\"}\",\"type\":\"confirm_subscription\"}"
+ },
+ {
+  "t": 3,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"spans\\\":[{\\\"name\\\":\\\"Widget Long Task\\\",\\\"attributes\\\":{\\\"name\\\":\\\"self\\\"},\\\"duration\\\":67}],\\\"action\\\":\\\"record_long_task_spans\\\"}\"}"
+ },
+ {
+  "t": 3,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"initOffers\",\"payload\":[{\"currentVersion\":{\"backgroundImageConfig\":{\"cropPxHeight\":100,\"cropPxWidth\":1000,\"cropPxX\":0,\"cropPxY\":0,\"originalPxHeight\":100,\"originalPxWidth\":1000,\"type\":\"background\"},\"backgroundImageUrl\":\"https://customer-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/4c7f0e292d8efc888f317882e34270980d389c85f810610518e4f888999d5f30.png\",\"backgroundType\":\"IMAGE\",\"content\":{\"animation\":{\"type\":\"PUSH_DOWN\"},\"dismissOptions\":{\"allowDismiss\":true,\"hideOnDismiss\":true,\"hideOnSubmit\":true},\"variation\":{\"assetDeliveryType\":\"NEW_PAGE\",\"buttonStyle\":{\"backgroundColor\":\"#536E47\",\"borderColor\":\"rgb(250, 249, 245)\",\"borderRadius\":\"13.825px\",\"borderTopColor\":null,\"color\":\"rgb(250, 249, 245)\",\"fontFamily\":\"Denimink\"},\"buttonText\":\"\\u003cdiv\\u003eRead Now\\u003c/div\\u003e\",\"buttonUrl\":\"https://www.flocksafety.com/blog/flock-guardrails-address-lpr-privacy-concerns-and-police-transparency\",\"headlineStyle\":{\"backgroundColor\":\"#183129\",\"borderColor\":null,\"borderRadius\":null,\"borderTopColor\":null,\"color\":\"#ffffff\",\"fontFamily\":\"Denimink\"},\"headlineText\":\"\\u003cdiv\\u003e\\u003cem\\u003eRead about Flock's latest privacy, security, and accountability updates here.\\u003c/em\\u003e\\u003c/div\\u003e\",\"originalButtonUrl\":\"https://www.flocksafety.com/blog/flock-guardrails-address-lpr-privacy-concerns-and-police-transparency\",\"type\":\"HEADLINE_BUTTON\"}},\"ctaType\":\"BUTTON\",\"foregroundImageConfig\":{\"cropPxHeight\":null,\"cropPxWidth\":null,\"cropPxX\":null,\"cropPxY\":null,\"originalPxHeight\":null,\"originalPxWidth\":null,\"placement\":{\"type\":\"NONE\"},\"position\":{\"type\":\"FIXED\"},\"type\":\"foreground\"},\"foregroundImageUrl\":\"\",\"formApiName\":null,\"id\":\"1977231800641464020\",\"location\":\"HEADER\",\"messengerImageUrl\":\"\",\"qualifiedFormConfig\":null,\"target\":{\"devices\":[{\"name\":0}],\"duration\":{\"endedAt\":\"2026-09-15T03:59:59.999Z\",\"startedAt\":\"2026-08-13T04:00:00.000Z\",\"timezone\":\"America/New_York\",\"type\":\"DATE_RANGE\"},\"location\":{\"excludeUrls\":[],\"includeUrls\":[{\"normalizedUrl\":\"flocksafety.com\",\"type\":0,\"url\":\"https://flocksafety.com\"}],\"type\":\"INCLUDE_EXCLUDE\"},\"trigger\":{\"delay\":0,\"type\":\"AFTER_PAGE_LOAD\"}}},\"id\":\"1976693316518217467\",\"name\":\"Flock Blog Launch \",\"position\":1,\"privacyDisclosureId\":null,\"privacyDisclosureText\":null}]}]}"
+ },
+ {
+  "t": 3,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"endLoadingState\",\"payload\":{}}]}"
+ },
+ {
+  "t": 3,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"spans\\\":[{\\\"name\\\":\\\"Widget Long Task\\\",\\\"attributes\\\":{\\\"name\\\":\\\"cross-origin-ancestor\\\"},\\\"duration\\\":75}],\\\"action\\\":\\\"record_long_task_spans\\\"}\"}"
+ },
+ {
+  "t": 4,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"botProcessEnded\",\"payload\":{}},{\"event\":\"initState\",\"payload\":{\"agentsAvailable\":false,\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"anyUserAvailable\":false,\"avatarUrls\":[\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/77a967d0e1103efcadbe88821ee27baab1f9b2a869dbb264b4a4171dba6986db.png\",\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/f8d5c241d6ad9a41e3e0fb0ba264c6dcae098dc39dd747b1c160800ca78fbd95.png\",\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/42efa63b93964133b7f24172f7f7f0e82251be59049aecfa7f652997864e881b.png\",\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/373ce46a89c1e9d5f1d478f4f65751b1551bb08fea16ed669d293bbe9dc3c022.png\",\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/745c1201128dac64b0ef7b888005be42dd6e48c5b40ce51eded929fdb79c0298.png\"],\"canInitiateVideoChat\":null,\"coldStartQuestions\":null,\"coldStartVisibleLimit\":null,\"companyName\":\"Flock\",\"conversationModeFailover\":null,\"conversations\":[{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"type\":\"chat\"}],\"countryCode\":\"us\",\"dailyCallObjectBundleUrl\":\"https://assets.qualified.com/packs/js/daily/call-machine-object-bundle-0.83.1.js\",\"dailyWsProxyUrl\":\"https://voice-calls.qualified.com\",\"demoFeatures\":null,\"disableClose\":null,\"disableTitleFlash\":false,\"formJoinIdUnique\":null,\"greetingAvatarUrls\":[\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/312fa9ab3e21ecf8b2d5da44da9c2ecf23544250fc9d01eacd354ef1db3e490d.png\",\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/e3817e129743a1a497c642f8140c053fbaf33e4d479f9b68799da23fc1eece78.png\",\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/3eca404621a6f425e207f0790c6a1bc1e6db8d7561050919c6c6e9002ea8721e.png\"],\"hasCustomVoiceGreeting\":false,\"meetings\":[],\"messages\":[{\"aiStrategyIds\":[],\"botStep\":0,\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:49:27.257Z\",\"eventType\":\"waiting\",\"executionStep\":[\"1901764260148135659\",0],\"id\":\"1996372109384034031\",\"isOwn\":false,\"isRead\":false,\"scriptId\":\"1901764260148135659\",\"scrollPercentage\":15,\"source\":\"standa"
+ },
+ {
+  "t": 4,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"recordPrivacyDisclosure\\\",\\\"payload\\\":{\\\"messenger_theme_id\\\":\\\"1797028323689154293\\\",\\\"target\\\":\\\"MESSENGER\\\"}}\"}"
+ },
+ {
+  "t": 4,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"activity_type\\\":\\\"offer_shown\\\",\\\"offer_version_id\\\":\\\"1977231800641464020\\\",\\\"action\\\":\\\"record_page_view_activity\\\"}\"}"
+ },
+ {
+  "t": 6,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961770}"
+ },
+ {
+  "t": 6,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"heartbeat\\\",\\\"payload\\\":{\\\"client_activity_at\\\":\\\"2026-09-09T13:49:25.845Z\\\",\\\"page_visible\\\":true}}\"}"
+ },
+ {
+  "t": 9,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961773}"
+ },
+ {
+  "t": 12,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961776}"
+ },
+ {
+  "t": 15,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961779}"
+ },
+ {
+  "t": 18,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961782}"
+ },
+ {
+  "t": 18,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"heartbeat\\\",\\\"payload\\\":{\\\"client_activity_at\\\":\\\"2026-09-09T13:49:40.244Z\\\",\\\"page_visible\\\":true}}\"}"
+ },
+ {
+  "t": 21,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961785}"
+ },
+ {
+  "t": 24,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961788}"
+ },
+ {
+  "t": 27,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961791}"
+ },
+ {
+  "t": 30,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961794}"
+ },
+ {
+  "t": 30,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"heartbeat\\\",\\\"payload\\\":{\\\"client_activity_at\\\":\\\"2026-09-09T13:49:51.126Z\\\",\\\"page_visible\\\":true}}\"}"
+ },
+ {
+  "t": 33,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961797}"
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"aiStrategyButtonCtas\":null,\"aiStrategyIds\":[],\"artifactMessageId\":null,\"botStep\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":null,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":null},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:49:58.540Z\",\"disableClose\":null,\"eventType\":\"scrollPercentage\",\"executionStep\":null,\"id\":\"1996372365664978650\",\"isOwn\":true,\"isRead\":false,\"modality\":null,\"notProcessing\":null,\"plainText\":null,\"replyToId\":null,\"scriptId\":null,\"scrollPercentage\":null,\"source\":\"standard\",\"text\":null,\"type\":\"event\",\"userId\":null,\"visitorId\":\"1996372099879167689\",\"waitingEvent\":null,\"waitingUntil\":null}}]}"
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"botProcessStarted\",\"payload\":{}}]}"
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"text\":\"Support\"}],\"aiStrategyIds\":[\"1936416393716467435\",\"1844490847992358648\",\"1844491566498260730\",\"1844486653969467127\"],\"artifactMessageId\":null,\"botStep\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:49:58.774Z\",\"disableClose\":null,\"eventType\":\"startChatBot\",\"executionStep\":null,\"id\":\"1996372367576205029\",\"isOwn\":false,\"isRead\":false,\"modality\":null,\"notProcessing\":null,\"plainText\":null,\"replyToId\":null,\"scriptId\":\"1901764260148135659\",\"scrollPercentage\":null,\"source\":\"standard\",\"text\":null,\"type\":\"event\",\"userId\":null,\"visitorId\":null,\"waitingEvent\":null,\"waitingUntil\":null}},{\"event\":\"message\",\"payload\":{\"aiStrategyButtonCtas\":null,\"aiStrategyIds\":[],\"artifactMessageId\":null,\"botStep\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:49:58.790Z\",\"disableClose\":null,\"eventType\":\"showWidget\",\"executionStep\":null,\"id\":\"1996372367700936423\",\"isOwn\":false,\"isRead\":false,\"modality\":null,\"notProcessing\":null,\"plainText\":null,\"replyToId\":null,\"scriptId\":\"1901764260148135659\",\"scrollPercentage\":null,\"source\":\"standard\",\"text\":null,\"type\":\"event\",\"userId\":null,\"visi"
+ },
+ {
+  "t": 36,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961800}"
+ },
+ {
+  "t": 37,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"apForArComposer\":\"first_auto_pounce\",\"botStep\":null,\"buttonText\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:01.125Z\",\"executionStep\":null,\"id\":\"1996372386831746756\",\"isAp\":false,\"isOwn\":false,\"isPounce\":null,\"isRead\":false,\"modality\":null,\"originalText\":null,\"plainText\":\"Hey there! I'm Flock, your friendly AI Sales Assistant. What questions do you have about Flock's offerings today?\",\"replyToId\":null,\"scriptId\":\"1901764260148135659\",\"source\":\"auto_respond\",\"text\":\"Hey there! I'm Flock, your friendly AI Sales Assistant. What questions do you have about Flock's offerings today?\",\"title\":null,\"type\":\"text\",\"userId\":null,\"visitorId\":null}}]}"
+ },
+ {
+  "t": 39,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961803}"
+ },
+ {
+  "t": 39,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"recordPrivacyDisclosure\\\",\\\"payload\\\":{\\\"messenger_theme_id\\\":\\\"1797028323689154293\\\",\\\"target\\\":\\\"MESSENGER\\\"}}\"}"
+ },
+ {
+  "t": 39,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372386831746756\\\"}}\"}"
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"aiStrategyButtonCtas\":null,\"aiStrategyIds\":[],\"artifactMessageId\":null,\"botStep\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:03.242Z\",\"disableClose\":null,\"eventType\":\"open\",\"executionStep\":null,\"id\":\"1996372404242106076\",\"isOwn\":true,\"isRead\":false,\"modality\":null,\"notProcessing\":null,\"plainText\":null,\"replyToId\":null,\"scriptId\":null,\"scrollPercentage\":null,\"source\":\"standard\",\"text\":null,\"type\":\"event\",\"userId\":null,\"visitorId\":\"1996372099879167689\",\"waitingEvent\":null,\"waitingUntil\":null}}]}"
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372386831746756\"}]}"
+ },
+ {
+  "t": 40,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372386831746756\\\"}}\"}"
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372386831746756\"}]}"
+ },
+ {
+  "t": 42,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961806}"
+ },
+ {
+  "t": 42,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"heartbeat\\\",\\\"payload\\\":{\\\"client_activity_at\\\":\\\"2026-09-09T13:49:59.577Z\\\",\\\"page_visible\\\":true}}\"}"
+ },
+ {
+  "t": 42,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"typing\\\",\\\"payload\\\":{\\\"message\\\":\\\"H\\\"}}\"}"
+ },
+ {
+  "t": 43,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"typing\\\",\\\"payload\\\":{\\\"message\\\":\\\"Hi\\\"}}\"}"
+ },
+ {
+  "t": 43,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"typing\\\",\\\"payload\\\":{\\\"message\\\":\\\"\\\"}}\"}"
+ },
+ {
+  "t": 43,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"typing\\\",\\\"payload\\\":{\\\"message\\\":\\\"What can you help me with?\\\"}}\"}"
+ },
+ {
+  "t": 43,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"typing\\\",\\\"payload\\\":{\\\"message\\\":\\\"\\\"}}\"}"
+ },
+ {
+  "t": 43,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372386831746756\\\"}}\"}"
+ },
+ {
+  "t": 43,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372386831746756\"}]}"
+ },
+ {
+  "t": 43,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":{\"event\":\"typingStarted\"}}"
+ },
+ {
+  "t": 43,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"conversationEvent\",\"payload\":{\"data\":{\"bot\":{\"id\":1901764259845662500,\"name\":\"AI SDR - Homepage\"},\"bot_conversation_id\":\"RpUUZu9p8ZPS8AUG9Fg7YbNFKPRoNsxQGt6ZzmasjMPjtJBWDNMLQZoKm\",\"field_values\":{\"utm_campaign\":\"brand_search\",\"utm_medium\":\"cpc\",\"utm_source\":\"google\"},\"message\":{\"text\":null},\"rep_conversation_id\":null,\"sender\":{\"rep_name\":null,\"type\":null}},\"name\":\"Conversation Started\"}}]}"
+ },
+ {
+  "t": 43,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"apForArComposer\":null,\"botStep\":null,\"buttonText\":null,\"clientId\":\"1c3fb8c8-41de-45a5-b88c-3c31f02736f5\",\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:06.717Z\",\"executionStep\":null,\"id\":\"1996372432642598613\",\"isAp\":false,\"isOwn\":true,\"isPounce\":null,\"isRead\":false,\"modality\":null,\"originalText\":null,\"plainText\":\"What can you help me with?\",\"replyToId\":null,\"scriptId\":null,\"source\":\"standard\",\"text\":\"What can you help me with?\",\"title\":null,\"type\":\"text\",\"userId\":null,\"visitorId\":\"1996372099879167689\"}}]}"
+ },
+ {
+  "t": 43,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"recordPrivacyDisclosureConsent\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372432642598613\\\"}}\"}"
+ },
+ {
+  "t": 45,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961809}"
+ },
+ {
+  "t": 47,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"apForArComposer\":null,\"botStep\":null,\"buttonText\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:10.718Z\",\"executionStep\":null,\"id\":\"1996372465430882037\",\"isAp\":false,\"isOwn\":false,\"isPounce\":null,\"isRead\":false,\"modality\":null,\"originalText\":null,\"plainText\":\"I can assist you with information about Flock's public safety technology, including our license plate readers, video and audio solutions, and more. If you have specific questions about our products or how they can benefit your community or organization, feel free to ask!\",\"replyToId\":null,\"scriptId\":\"1901764260148135659\",\"source\":\"auto_respond\",\"text\":\"I can assist you with information about Flock's public safety technology, including our license plate readers, video and audio solutions, and more. If you have specific questions about our products or how they can benefit your community or organization, feel free to ask!\",\"title\":null,\"type\":\"text\",\"userId\":null,\"visitorId\":null}}]}"
+ },
+ {
+  "t": 47,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372465430882037\\\"}}\"}"
+ },
+ {
+  "t": 47,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372465430882037\"}]}"
+ },
+ {
+  "t": 48,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961812}"
+ },
+ {
+  "t": 51,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961815}"
+ },
+ {
+  "t": 51,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372465430882037\\\"}}\"}"
+ },
+ {
+  "t": 52,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372465430882037\"}]}"
+ },
+ {
+  "t": 52,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":{\"event\":\"typingStarted\"}}"
+ },
+ {
+  "t": 52,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"apForArComposer\":null,\"botStep\":null,\"buttonText\":null,\"clientId\":\"2645b2d8-166d-4962-a031-1d6575fbb180\",\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:15.457Z\",\"executionStep\":null,\"id\":\"1996372504237344499\",\"isAp\":false,\"isOwn\":true,\"isPounce\":null,\"isRead\":false,\"modality\":null,\"originalText\":null,\"plainText\":\"Support\",\"replyToId\":null,\"scriptId\":null,\"source\":\"standard\",\"text\":\"Support\",\"title\":null,\"type\":\"text\",\"userId\":null,\"visitorId\":\"1996372099879167689\"}}]}"
+ },
+ {
+  "t": 52,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"recordPrivacyDisclosureConsent\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372504237344499\\\"}}\"}"
+ },
+ {
+  "t": 54,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961818}"
+ },
+ {
+  "t": 54,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"heartbeat\\\",\\\"payload\\\":{\\\"client_activity_at\\\":\\\"2026-09-09T13:49:59.577Z\\\",\\\"page_visible\\\":true}}\"}"
+ },
+ {
+  "t": 55,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"aiStrategyButtonCtas\":null,\"aiStrategyIds\":[],\"artifactMessageId\":null,\"botStep\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:18.852Z\",\"disableClose\":null,\"eventType\":\"activateAiStrategy\",\"executionStep\":null,\"id\":\"1996372532068255465\",\"isOwn\":false,\"isRead\":false,\"modality\":null,\"notProcessing\":null,\"plainText\":null,\"replyToId\":null,\"scriptId\":\"1901764260148135659\",\"scrollPercentage\":null,\"source\":\"standard\",\"text\":null,\"type\":\"event\",\"userId\":null,\"visitorId\":null,\"waitingEvent\":null,\"waitingUntil\":null}}]}"
+ },
+ {
+  "t": 55,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372532068255465\\\"}}\"}"
+ },
+ {
+  "t": 55,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372532068255465\"}]}"
+ },
+ {
+  "t": 56,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"message\",\"payload\":{\"apForArComposer\":null,\"botStep\":null,\"buttonText\":null,\"clientId\":null,\"conversation\":{\"aiSdr\":{\"avatarUrl\":\"https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png\",\"jobTitle\":\"AI Sales Assistant\",\"name\":\"Flock\"},\"aiStrategyButtonCtas\":[{\"aiStrategyId\":\"1844486653969467127\",\"baseText\":\"Get a Demo\",\"text\":\"Get a Demo\"},{\"aiStrategyId\":\"1844490847992358648\",\"baseText\":\"Support\",\"text\":\"Support\"}],\"createdAt\":\"2026-09-09T13:49:27.223Z\",\"encodedId\":\"RpUUZu9p8ZPS8AUCyTHsWFqXMfeVPhCxePsx6MJJJU8kAgfursvUfn61M\",\"endedAt\":null,\"gptAutoRespondEnabled\":true,\"id\":\"1996372109104473801\",\"initialClientState\":\"collapsed\",\"initialMessage\":null,\"locale\":\"en\",\"script\":{\"botType\":\"automatic\",\"id\":\"1901764260148135659\"},\"triggeredByBotType\":null,\"type\":\"chat\",\"user\":null,\"widgetShowing\":true},\"conversationId\":\"1996372109104473801\",\"createdAt\":\"2026-09-09T13:50:20.299Z\",\"executionStep\":null,\"id\":\"1996372543922341600\",\"isAp\":false,\"isOwn\":false,\"isPounce\":null,\"isRead\":false,\"modality\":null,\"originalText\":null,\"plainText\":\"You can reach out to Flock's support team through the following channels: Call us at +1 (866) 901-1781 or email us at support@flocksafety.com. Is there anything specific you'd like help with, or do you have more questions about our products?\",\"replyToId\":null,\"scriptId\":\"1901764260148135659\",\"source\":\"auto_respond\",\"text\":\"You can reach out to Flock's support team through the following channels: Call us at +1 (866) 901-1781 or email us at support@flocksafety.com. Is there anything specific you'd like help with, or do you have more questions about our products?\",\"title\":null,\"type\":\"text\",\"userId\":null,\"visitorId\":null}}]}"
+ },
+ {
+  "t": 56,
+  "dir": ">",
+  "frame": "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"data\":\"{\\\"event\\\":\\\"messageRead\\\",\\\"payload\\\":{\\\"message_id\\\":\\\"1996372543922341600\\\"}}\"}"
+ },
+ {
+  "t": 57,
+  "dir": "<",
+  "frame": "{\"identifier\":\"{\\\"channel\\\":\\\"Visitors::WidgetChannel\\\"}\",\"message\":[{\"event\":\"messageRead\",\"payload\":\"1996372543922341600\"}]}"
+ },
+ {
+  "t": 57,
+  "dir": "<",
+  "frame": "{\"type\":\"ping\",\"message\":1788961821}"
+ }
+]

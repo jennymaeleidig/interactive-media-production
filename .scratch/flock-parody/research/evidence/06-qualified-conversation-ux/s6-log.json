@@ -1,0 +1,90 @@
+[
+ {
+  "t": 2,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=1d38dade-8c69-4d6c-a234-c4d084b7d9c2&wu=37cf81b8-"
+ },
+ {
+  "t": 5,
+  "m": "page loaded"
+ },
+ {
+  "t": 5,
+  "m": "offer banner present (1)"
+ },
+ {
+  "t": 5,
+  "m": "waiting for pounce (1440x900, mode=walk)"
+ },
+ {
+  "t": 38,
+  "m": "LAUNCHER appeared (no pounce)"
+ },
+ {
+  "t": 40,
+  "m": "after launcher click: 412x296"
+ },
+ {
+  "t": 42,
+  "m": "greeting: 1 msgs, 5 btns"
+ },
+ {
+  "t": 43,
+  "m": "expanded: 538x480 @ 902,420 dock="
+ },
+ {
+  "t": 45,
+  "m": "SIDEBAR DOCK OBSERVED"
+ },
+ {
+  "t": 45,
+  "m": "message sent (button): What can you help me with?"
+ },
+ {
+  "t": 90,
+  "m": "user bubble never confirmed"
+ },
+ {
+  "t": 90,
+  "m": "no typing indicator observed"
+ },
+ {
+  "t": 90,
+  "m": "no bot reply within window"
+ },
+ {
+  "t": 90,
+  "m": "quick replies below last message: 2 -> Get a Demo | Support"
+ },
+ {
+  "t": 90,
+  "m": "clicking quick reply: Support"
+ },
+ {
+  "t": 90,
+  "m": "quick reply click: ok"
+ },
+ {
+  "t": 125,
+  "m": "close clicked: true"
+ },
+ {
+  "t": 127,
+  "m": "after close: 92x92"
+ },
+ {
+  "t": 129,
+  "m": "REOPEN: 3/3 prior messages retained"
+ },
+ {
+  "t": 129,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=1d38dade-8c69-4d6c-a234-c4d084b7d9c2&wu=b75b3c8e-"
+ },
+ {
+  "t": 134,
+  "m": "reloaded — watching for restoration"
+ },
+ {
+  "t": 134,
+  "m": "no widget restoration after reload within window"
+ }
+]

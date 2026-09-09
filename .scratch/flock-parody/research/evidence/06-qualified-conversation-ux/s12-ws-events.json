@@ -1,0 +1,831 @@
+[
+ {
+  "t": 4,
+  "dir": "<",
+  "event": "initOffers",
+  "payload": [
+   {
+    "currentVersion": {
+     "backgroundImageConfig": {
+      "cropPxHeight": 100,
+      "cropPxWidth": 1000,
+      "cropPxX": 0,
+      "cropPxY": 0,
+      "originalPxHeight": 100,
+      "originalPxWidth": 1000,
+      "type": "background"
+     },
+     "backgroundImageUrl": "https://customer-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/4c7f0e292d8efc888f317882e34270980d389c85f810610518e4f888999d5f30.png",
+     "backgroundType": "IMAGE",
+     "content": {
+      "animation": {
+       "type": "PUSH_DOWN"
+      },
+      "dismissOptions": {
+       "allowDismiss": true,
+       "hideOnDismiss": true,
+       "hideOnSubmit": true
+      },
+      "variation": {
+       "assetDeliveryType": "NEW_PAGE",
+       "buttonStyle": {
+        "backgroundColor": "#536E47",
+        "borderColor": "rgb(250, 249, 245)",
+        "borderRadius": "13.825px",
+        "borderTopColor": null,
+        "color": "rgb(250, 249, 245)",
+        "fontFamily": "Denimink"
+       },
+       "buttonText": "<div>Read Now</div>",
+       "buttonUrl": "https://www.flocksafety.com/blog/flock-guardrails-address-lpr-privacy-concerns-and-police-transparency",
+       "headlineStyle": {
+        "backgroundColor": "#183129",
+        "borderColor": null,
+        "borderRadius": null,
+        "borderTopColor": null,
+        "color": "#ffffff",
+        "fontFamily": "Denimink"
+       },
+       "headlineText": "<div><em>Read about Flock's latest privacy, security, and accountability updates here.</em></div>",
+       "originalButtonUrl": "https://www.flocksafety.com/blog/flock-guardrails-address-lpr-privacy-concerns-and-police-transparency",
+       "type": "HEADLINE_BUTTON"
+      }
+     },
+     "ctaType": "BUTTON",
+     "foregroundImageConfig": {
+      "cropPxHeight": null,
+      "cropPxWidth": null,
+      "cropPxX": null,
+      "cropPxY": null,
+      "originalPxHeight": null,
+      "originalPxWidth": null,
+      "placement": {
+       "type": "NONE"
+      },
+      "position": {
+       "type": "FIXED"
+      },
+      "type": "foreground"
+     },
+     "foregroundImageUrl": "",
+     "formApiName": null,
+     "id": "1977231800641464020",
+     "location": "HEADER",
+     "messengerImageUrl": "",
+     "qualifiedFormConfig": null,
+     "target": {
+      "devices": [
+       {
+        "name": 0
+       }
+      ],
+      "duration": {
+       "endedAt": "2026-09-15T03:59:59.999Z",
+       "startedAt": "2026-08-13T04:00:00.000Z",
+       "timezone": "America/New_York",
+       "type": "DATE_RANGE"
+      },
+      "location": {
+       "excludeUrls": [],
+       "includeUrls": [
+        {
+         "normalizedUrl": "flocksafety.com",
+         "type": 0,
+         "url": "https://flocksafety.com"
+        }
+       ],
+       "type": "INCLUDE_EXCLUDE"
+      },
+      "trigger": {
+       "delay": 0,
+       "type": "AFTER_PAGE_LOAD"
+      }
+     }
+    },
+    "id": "1976693316518217467",
+    "name": "Flock Blog Launch ",
+    "position": 1,
+    "privacyDisclosureId": null,
+    "privacyDisclosureText": null
+   }
+  ]
+ },
+ {
+  "t": 4,
+  "dir": "<",
+  "event": "endLoadingState",
+  "payload": {}
+ },
+ {
+  "t": 4,
+  "dir": "<",
+  "event": "botProcessEnded",
+  "payload": {}
+ },
+ {
+  "t": 4,
+  "dir": "<",
+  "event": "initState",
+  "payload": {
+   "agentsAvailable": false,
+   "aiSdr": {
+    "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+    "jobTitle": "AI Sales Assistant",
+    "name": "Flock"
+   },
+   "anyUserAvailable": false,
+   "avatarUrls": [
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/373ce46a89c1e9d5f1d478f4f65751b1551bb08fea16ed669d293bbe9dc3c022.png",
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/b86804d2c44322bacf3dd27f8095bc90859c002f9c2381e3cb69a142028657ab.png",
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/d9c6a03291a4eaaa1f7b8fa3a4f7c77290b71ad00f1523296a4bef9efd4ed314.png",
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/55463dd652f6b2394425c934eed48d41eba9f43ac1c1414e13283a229ac0286c.png",
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/b7796b112c3d121b8c5f5cf4d4b0984ba22a33337a380db0f917d10eca07661d.png"
+   ],
+   "canInitiateVideoChat": null,
+   "coldStartQuestions": null,
+   "coldStartVisibleLimit": null,
+   "companyName": "Flock",
+   "conversationModeFailover": null,
+   "conversations": [
+    {
+     "aiSdr": {
+      "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+      "jobTitle": "AI Sales Assistant",
+      "name": "Flock"
+     },
+     "aiStrategyButtonCtas": [],
+     "createdAt": "2026-09-09T13:56:08.787Z",
+     "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+     "id": "1996375398721996528",
+     "initialClientState": "collapsed",
+     "locale": "en",
+     "script": {
+      "botType": "automatic",
+      "id": "1901764260148135659"
+     },
+     "type": "chat"
+    }
+   ],
+   "countryCode": "us",
+   "dailyCallObjectBundleUrl": "https://assets.qualified.com/packs/js/daily/call-machine-object-bundle-0.83.1.js",
+   "dailyWsProxyUrl": "https://voice-calls.qualified.com",
+   "demoFeatures": null,
+   "disableClose": null,
+   "disableTitleFlash": false,
+   "formJoinIdUnique": null,
+   "greetingAvatarUrls": [
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/f15835353fbf8c5fd946811ae29fafa98d0b4b48f39e08768e130e0ea6f6c765.png",
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/e93bd8c49eec4c19bb2667072da26499b5658f47713ed7d32be9ac82545edd17.png",
+    "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/42efa63b93964133b7f24172f7f7f0e82251be59049aecfa7f652997864e881b.png"
+   ],
+   "hasCustomVoiceGreeting": false,
+   "meetings": [],
+   "messages": [
+    {
+     "aiStrategyIds": [],
+     "botStep": 0,
+     "conversationId": "1996375398721996528",
+     "createdAt": "2026-09-09T13:56:08.825Z",
+     "eventType": "waiting",
+     "executionStep": [
+      "1901764260148135659",
+      0
+     ],
+     "id": "1996375399033194216",
+     "isOwn": false,
+     "isRead": false,
+     "scriptId": "1901764260148135659",
+     "scrollPercentage": 15,
+     "source": "standard",
+     "type": "event",
+     "waitingEvent": "scrollPercentage"
+    }
+   ],
+   "multimodalModalityPreference": "text",
+   "multimodalStartingConversationMode": "text",
+   "multimodalTrack": null,
+   "orbConfig": null,
+   "owner": null,
+   "pounceCandidates": null,
+   "pounceInactivityThresholdMs": null,
+   "previewVideoSrc": "https://assets.qualified.com/static-media/piperx-loading/Ruby.mp4",
+   "qualified": false,
+   "readReceipt": null,
+   "routingMedium": null,
+   "scriptLocale": "en",
+   "scriptState": null,
+   "selectedReplicaId": null,
+   "themeConfig": null,
+   "uiState": null,
+   "useNewMessengerStyling": false
+  }
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "aiStrategyButtonCtas": null,
+   "aiStrategyIds": [],
+   "artifactMessageId": null,
+   "botStep": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": null,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": null
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:40.112Z",
+   "disableClose": null,
+   "eventType": "scrollPercentage",
+   "executionStep": null,
+   "id": "1996375655372752588",
+   "isOwn": true,
+   "isRead": false,
+   "modality": null,
+   "notProcessing": null,
+   "plainText": null,
+   "replyToId": null,
+   "scriptId": null,
+   "scrollPercentage": null,
+   "source": "standard",
+   "text": null,
+   "type": "event",
+   "userId": null,
+   "visitorId": "1996375389226395350",
+   "waitingEvent": null,
+   "waitingUntil": null
+  }
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "event": "botProcessStarted",
+  "payload": {}
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "aiStrategyButtonCtas": [
+    {
+     "aiStrategyId": "1844486653969467127",
+     "text": "Get a Demo"
+    },
+    {
+     "aiStrategyId": "1844490847992358648",
+     "text": "Support"
+    }
+   ],
+   "aiStrategyIds": [
+    "1936416393716467435",
+    "1844490847992358648",
+    "1844491566498260730",
+    "1844486653969467127"
+   ],
+   "artifactMessageId": null,
+   "botStep": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:40.452Z",
+   "disableClose": null,
+   "eventType": "startChatBot",
+   "executionStep": null,
+   "id": "1996375658131842772",
+   "isOwn": false,
+   "isRead": false,
+   "modality": null,
+   "notProcessing": null,
+   "plainText": null,
+   "replyToId": null,
+   "scriptId": "1901764260148135659",
+   "scrollPercentage": null,
+   "source": "standard",
+   "text": null,
+   "type": "event",
+   "userId": null,
+   "visitorId": null,
+   "waitingEvent": null,
+   "waitingUntil": null
+  }
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "aiStrategyButtonCtas": null,
+   "aiStrategyIds": [],
+   "artifactMessageId": null,
+   "botStep": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:40.468Z",
+   "disableClose": null,
+   "eventType": "showWidget",
+   "executionStep": null,
+   "id": "1996375658245916373",
+   "isOwn": false,
+   "isRead": false,
+   "modality": null,
+   "notProcessing": null,
+   "plainText": null,
+   "replyToId": null,
+   "scriptId": "1901764260148135659",
+   "scrollPercentage": null,
+   "source": "standard",
+   "text": null,
+   "type": "event",
+   "userId": null,
+   "visitorId": null,
+   "waitingEvent": null,
+   "waitingUntil": null
+  }
+ },
+ {
+  "t": 35,
+  "dir": "<",
+  "event": "botProcessEnded",
+  "payload": {}
+ },
+ {
+  "t": 38,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "apForArComposer": "first_auto_pounce",
+   "botStep": null,
+   "buttonText": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:42.804Z",
+   "executionStep": null,
+   "id": "1996375677391873762",
+   "isAp": false,
+   "isOwn": false,
+   "isPounce": null,
+   "isRead": false,
+   "modality": null,
+   "originalText": null,
+   "plainText": "Hey! I’m Flock, your AI Sales Assistant. I noticed you were checking out our site—anything specific you’d like to know about our solutions?",
+   "replyToId": null,
+   "scriptId": "1901764260148135659",
+   "source": "auto_respond",
+   "text": "Hey! I’m Flock, your AI Sales Assistant. I noticed you were checking out our site—anything specific you’d like to know about our solutions?",
+   "title": null,
+   "type": "text",
+   "userId": null,
+   "visitorId": null
+  }
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "event": "messageRead",
+  "payload": "1996375677391873762"
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "aiStrategyButtonCtas": null,
+   "aiStrategyIds": [],
+   "artifactMessageId": null,
+   "botStep": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:44.684Z",
+   "disableClose": null,
+   "eventType": "open",
+   "executionStep": null,
+   "id": "1996375692913510112",
+   "isOwn": true,
+   "isRead": false,
+   "modality": null,
+   "notProcessing": null,
+   "plainText": null,
+   "replyToId": null,
+   "scriptId": null,
+   "scrollPercentage": null,
+   "source": "standard",
+   "text": null,
+   "type": "event",
+   "userId": null,
+   "visitorId": "1996375389226395350",
+   "waitingEvent": null,
+   "waitingUntil": null
+  }
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "event": "messageRead",
+  "payload": "1996375677391873762"
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "event": "messageRead",
+  "payload": "1996375677391873762"
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "event": "conversationEvent",
+  "payload": {
+   "data": {
+    "bot": {
+     "id": 1901764259845662500,
+     "name": "AI SDR - Homepage"
+    },
+    "bot_conversation_id": "RpUUZu9p9raYRTGYwDeS1PtXFeYS4tPyZFW5ZAzWeZs5fCXBNws8rVBAi",
+    "field_values": {
+     "utm_campaign": "brand_search",
+     "utm_medium": "cpc",
+     "utm_source": "google"
+    },
+    "message": {
+     "text": null
+    },
+    "rep_conversation_id": null,
+    "sender": {
+     "rep_name": null,
+     "type": null
+    }
+   },
+   "name": "Conversation Started"
+  }
+ },
+ {
+  "t": 40,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "apForArComposer": null,
+   "botStep": null,
+   "buttonText": null,
+   "clientId": "33c217ed-9b9c-4e08-9c99-a69c3778c097",
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:45.013Z",
+   "executionStep": null,
+   "id": "1996375695483053799",
+   "isAp": false,
+   "isOwn": true,
+   "isPounce": null,
+   "isRead": false,
+   "modality": null,
+   "originalText": null,
+   "plainText": "Get a Demo",
+   "replyToId": null,
+   "scriptId": null,
+   "source": "standard",
+   "text": "Get a Demo",
+   "title": null,
+   "type": "text",
+   "userId": null,
+   "visitorId": "1996375389226395350"
+  }
+ },
+ {
+  "t": 43,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "aiStrategyButtonCtas": null,
+   "aiStrategyIds": [],
+   "artifactMessageId": null,
+   "botStep": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:47.994Z",
+   "disableClose": null,
+   "eventType": "activateAiStrategy",
+   "executionStep": null,
+   "id": "1996375719908902610",
+   "isOwn": false,
+   "isRead": false,
+   "modality": null,
+   "notProcessing": null,
+   "plainText": null,
+   "replyToId": null,
+   "scriptId": "1901764260148135659",
+   "scrollPercentage": null,
+   "source": "standard",
+   "text": null,
+   "type": "event",
+   "userId": null,
+   "visitorId": null,
+   "waitingEvent": null,
+   "waitingUntil": null
+  }
+ },
+ {
+  "t": 43,
+  "dir": "<",
+  "event": "messageRead",
+  "payload": "1996375719908902610"
+ },
+ {
+  "t": 45,
+  "dir": "<",
+  "event": "message",
+  "payload": {
+   "apForArComposer": null,
+   "botStep": null,
+   "buttonText": null,
+   "clientId": null,
+   "conversation": {
+    "aiSdr": {
+     "avatarUrl": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/60154eeff5531b15da4019df9170036e1c9e369f7657309e4d76082b92527111.png",
+     "jobTitle": "AI Sales Assistant",
+     "name": "Flock"
+    },
+    "aiStrategyButtonCtas": [
+     {
+      "aiStrategyId": "1844486653969467127",
+      "baseText": "Get a Demo",
+      "text": "Get a Demo"
+     },
+     {
+      "aiStrategyId": "1844490847992358648",
+      "baseText": "Support",
+      "text": "Support"
+     }
+    ],
+    "createdAt": "2026-09-09T13:56:08.787Z",
+    "encodedId": "RpUUZu9p9raYRTGU7mRh2Z7vLqWSeJicneXH2WszSfnq4mcaiWJH4GGiU",
+    "endedAt": null,
+    "gptAutoRespondEnabled": true,
+    "id": "1996375398721996528",
+    "initialClientState": "collapsed",
+    "initialMessage": null,
+    "locale": "en",
+    "script": {
+     "botType": "automatic",
+     "id": "1901764260148135659"
+    },
+    "triggeredByBotType": null,
+    "type": "chat",
+    "user": null,
+    "widgetShowing": true
+   },
+   "conversationId": "1996375398721996528",
+   "createdAt": "2026-09-09T13:56:49.805Z",
+   "executionStep": null,
+   "id": "1996375734748735187",
+   "isAp": false,
+   "isOwn": false,
+   "isPounce": null,
+   "isRead": false,
+   "modality": null,
+   "originalText": null,
+   "plainText": "I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further.",
+   "replyToId": null,
+   "scriptId": "1901764260148135659",
+   "source": "auto_respond",
+   "text": "I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further.",
+   "title": null,
+   "type": "text",
+   "userId": null,
+   "visitorId": null
+  }
+ },
+ {
+  "t": 45,
+  "dir": "<",
+  "event": "messageRead",
+  "payload": "1996375734748735187"
+ }
+]

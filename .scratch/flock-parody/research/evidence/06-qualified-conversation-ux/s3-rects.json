@@ -1,0 +1,1842 @@
+[
+ {
+  "t": 5,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 7,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 9,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 11,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 13,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 15,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 16,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 18,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 20,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 22,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 24,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 25,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 27,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 29,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 31,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 33,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 35,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 36,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 38,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 40,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 42,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 44,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 45,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 47,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 49,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 51,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 53,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 54,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 56,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 58,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 60,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 62,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 64,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 65,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 67,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 69,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 71,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 73,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 74,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 76,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 78,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 80,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 82,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 83,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 85,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 87,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 89,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 91,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 93,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 94,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 96,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 98,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 100,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 102,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 103,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 105,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 107,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 109,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 111,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 112,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 114,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 116,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 118,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 120,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 121,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 123,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 125,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 127,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 129,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 131,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 132,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 134,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 136,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 138,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 140,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 141,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 143,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 145,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 147,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ },
+ {
+  "t": 149,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ],
+  "noFrameDiag": {
+   "hostKids": [
+    "STYLE#qualified-multimodal-host-css",
+    "DIV",
+    "DIV"
+   ],
+   "qroot": false,
+   "qrootShadow": false
+  }
+ }
+]

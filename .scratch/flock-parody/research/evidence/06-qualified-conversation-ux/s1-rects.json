@@ -1,0 +1,1122 @@
+[
+ {
+  "t": 5,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 7,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 9,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 11,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 12,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 14,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 16,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 18,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 20,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 22,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 23,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 25,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 27,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 29,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 31,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 32,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 34,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 36,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 38,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 40,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 42,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 43,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 45,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 47,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 49,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 51,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 52,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 54,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 56,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 58,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 60,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 61,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 63,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 65,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 67,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 69,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 70,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 72,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 74,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 76,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 78,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 80,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 81,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 83,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 85,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 87,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 89,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 90,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 92,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 94,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 96,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 98,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 99,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 101,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 103,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 105,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 107,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 108,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 110,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 112,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 114,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 116,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 118,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 119,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 121,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 123,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 125,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 127,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 128,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 130,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 132,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 134,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 136,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 137,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 139,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 141,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 143,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 145,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 146,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ },
+ {
+  "t": 148,
+  "tag": "wait",
+  "frame": null,
+  "dock": "",
+  "offerHosts": 1,
+  "htmlShift": "--qualified-offer-header-height: 52px;",
+  "hostRect": [
+   0,
+   0,
+   1440,
+   900
+  ]
+ }
+]

@@ -1,0 +1,26 @@
+[
+ {
+  "t": 2,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=6f9acf17-68b8-4f36-a5a1-bf40b5132524&wu=6901b108-"
+ },
+ {
+  "t": 5,
+  "m": "page loaded"
+ },
+ {
+  "t": 5,
+  "m": "offer banner present (1)"
+ },
+ {
+  "t": 5,
+  "m": "waiting for pounce (1440x900, mode=walk)"
+ },
+ {
+  "t": 150,
+  "m": "NO POUNCE within 150s — ending session"
+ },
+ {
+  "t": 151,
+  "m": "FATAL: no pounce |     at main (file:///work/capture06.mjs:261:102) <=     at async file:///work/capture06.mjs:467:1"
+ }
+]

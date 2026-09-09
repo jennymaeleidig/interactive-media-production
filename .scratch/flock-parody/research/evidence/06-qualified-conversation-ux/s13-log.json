@@ -1,0 +1,98 @@
+[
+ {
+  "t": 2,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=b2fbcd56-328c-44f1-b6f6-1e270f8db037&wu=8d051966-"
+ },
+ {
+  "t": 5,
+  "m": "page loaded"
+ },
+ {
+  "t": 5,
+  "m": "offer banner present (1)"
+ },
+ {
+  "t": 6,
+  "m": "banner dismiss: no-shadow"
+ },
+ {
+  "t": 7,
+  "m": "waiting for pounce (1440x900, mode=banner)"
+ },
+ {
+  "t": 37,
+  "m": "POUNCED (greeting card)"
+ },
+ {
+  "t": 39,
+  "m": "greeting: 1 msgs, 5 btns"
+ },
+ {
+  "t": 41,
+  "m": "expanded: 538x480 @ 902,420 dock="
+ },
+ {
+  "t": 42,
+  "m": "SIDEBAR DOCK OBSERVED"
+ },
+ {
+  "t": 42,
+  "m": "message sent (button): What can you help me with?"
+ },
+ {
+  "t": 43,
+  "m": "USER bubble confirmed via wire (own text echo)"
+ },
+ {
+  "t": 52,
+  "m": "scroll-to-top: no-scroller"
+ },
+ {
+  "t": 52,
+  "m": "BOT REPLY: I can assist you with information about Flock's public safety technology, such as our lice"
+ },
+ {
+  "t": 52,
+  "m": "no typing indicator observed"
+ },
+ {
+  "t": 52,
+  "m": "quick replies below last message: 2 -> Get a Demo | Support"
+ },
+ {
+  "t": 52,
+  "m": "clicking quick reply: Support"
+ },
+ {
+  "t": 52,
+  "m": "quick reply click: ok"
+ },
+ {
+  "t": 60,
+  "m": "quick reply produced new messages: 5"
+ },
+ {
+  "t": 60,
+  "m": "close clicked: true"
+ },
+ {
+  "t": 62,
+  "m": "after close: 92x92"
+ },
+ {
+  "t": 64,
+  "m": "REOPEN: 5/5 prior messages retained"
+ },
+ {
+  "t": 64,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=b2fbcd56-328c-44f1-b6f6-1e270f8db037&wu=a774a6d1-"
+ },
+ {
+  "t": 69,
+  "m": "reloaded — watching for restoration"
+ },
+ {
+  "t": 70,
+  "m": "RESTORED after reload: 5/5 messages retained"
+ }
+]

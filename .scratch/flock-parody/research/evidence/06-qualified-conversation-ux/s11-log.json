@@ -1,0 +1,94 @@
+[
+ {
+  "t": 2,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=2819b58c-c4b0-4bcd-b5e7-6f8c9e7d0ff7&wu=18fdeec1-"
+ },
+ {
+  "t": 5,
+  "m": "page loaded"
+ },
+ {
+  "t": 5,
+  "m": "offer banner present (1)"
+ },
+ {
+  "t": 6,
+  "m": "waiting for pounce (2560x1440, mode=walk)"
+ },
+ {
+  "t": 25,
+  "m": "POUNCED (greeting card)"
+ },
+ {
+  "t": 27,
+  "m": "greeting: 1 msgs, 5 btns"
+ },
+ {
+  "t": 28,
+  "m": "expanded: 538x480 @ 2022,960 dock="
+ },
+ {
+  "t": 30,
+  "m": "SIDEBAR DOCK OBSERVED"
+ },
+ {
+  "t": 30,
+  "m": "message sent (button): What can you help me with?"
+ },
+ {
+  "t": 31,
+  "m": "USER bubble confirmed via wire (own text echo)"
+ },
+ {
+  "t": 38,
+  "m": "scroll-to-top: no-scroller"
+ },
+ {
+  "t": 39,
+  "m": "BOT REPLY: I can assist you with information about Flock Safety's products and services, help clarify"
+ },
+ {
+  "t": 39,
+  "m": "no typing indicator observed"
+ },
+ {
+  "t": 39,
+  "m": "quick replies below last message: 2 -> Get a Demo | Support"
+ },
+ {
+  "t": 39,
+  "m": "clicking quick reply: Support"
+ },
+ {
+  "t": 39,
+  "m": "quick reply click: ok"
+ },
+ {
+  "t": 44,
+  "m": "quick reply produced new messages: 5"
+ },
+ {
+  "t": 44,
+  "m": "close clicked: true"
+ },
+ {
+  "t": 46,
+  "m": "after close: 92x92"
+ },
+ {
+  "t": 48,
+  "m": "REOPEN: 5/5 prior messages retained"
+ },
+ {
+  "t": 49,
+  "m": "ws open: wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=2819b58c-c4b0-4bcd-b5e7-6f8c9e7d0ff7&wu=147008b2-"
+ },
+ {
+  "t": 53,
+  "m": "reloaded — watching for restoration"
+ },
+ {
+  "t": 55,
+  "m": "RESTORED after reload: 5/5 messages retained"
+ }
+]
