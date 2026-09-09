@@ -7,6 +7,15 @@ authors:
   - name: Jenny Leidig
     alias: jennyleidig
 keywords:
-  - sveltekit
-  - svelte5
-  - satire
+  - nextjs
+  - react
+  - parody
+  - recreation
+references:
+  - type: software
+    title: taste-skill
+    authors:
+      - name: Leonxlnx
+    url: 'https://github.com/Leonxlnx/taste-skill'
+    license: MIT
+    note: 'Vendored verbatim at .pi/skills/taste-skill (design-language skill for the parody phase).'

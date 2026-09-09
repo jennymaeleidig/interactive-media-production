@@ -1,0 +1,193 @@
+{
+ "collapsed": {
+  "rect": {
+   "x": 1420,
+   "y": 880,
+   "width": 20,
+   "height": 20,
+   "top": 880,
+   "right": 1440,
+   "bottom": 900,
+   "left": 1420
+  },
+  "style": "height: 20px !important; width: 20px !important; color-scheme: auto;"
+ },
+ "opened": {
+  "rect": {
+   "x": 1420,
+   "y": 880,
+   "width": 20,
+   "height": 20,
+   "top": 880,
+   "right": 1440,
+   "bottom": 900,
+   "left": 1420
+  },
+  "style": "height: 20px !important; width: 20px !important; color-scheme: auto;"
+ },
+ "hostSide": {
+  "multimodalHost": {
+   "style": "position: fixed; top: 0px; left: 0px; bottom: 0px; right: var(--q-docked-right-offset, 0px); contain: layout; pointer-events: none; z-index: 2147483642;",
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "width": 1440,
+    "height": 900,
+    "top": 0,
+    "right": 1440,
+    "bottom": 900,
+    "left": 0
+   }
+  },
+  "offerHosts": [],
+  "htmlShift": null
+ },
+ "qnet": [
+  {
+   "m": "GET",
+   "u": "https://js.qualified.com/qualified.js?token=PkqDRmLsN1JZW8p3"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "post": "{\"event\":\"widget_time_to_init_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":1523.3999999985099,\"tags\":{\"consumer\":\"hosted\"}}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "post": "{\"event\":\"script_time_to_start_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":1357.6999999955297,\"tags\":{\"consumer\":\"hosted\"}}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "post": "{\"event\":\"widget_time_to_domready_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":10}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_time_to_visitor_ready_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":16.899999998509884}}"
+  },
+  {
+   "ws": "wss://ws7.qualified.com/cable?wv=9&token=PkqDRmLsN1JZW8p3&vu=193ca9f6-14d2-475c-b39e-fafab0304230&wu=8437c765-fd71-41dc-8027-dbfc919cb601&ca=2026-09-09T04%3A30%3A39.625Z&"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_time_to_cable_connected_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":374.19999999552965}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/messenger?uuid=193ca9f6-14d2-475c-b39e-fafab0304230"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_time_to_init_tracker_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":379.1000000014901}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_time_to_pre_multimodal_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":380.5}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://js.qualified.com/packs/js/analytics-38eb7165.js"
+  },
+  {
+   "m": "GET",
+   "u": "https://js.qualified.com/packs/js/multimodal_v2-fa404816.js"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/static-media/piperx-orb/orb-animation.mp4"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_analytics_init_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":46.100000001490116}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/static-media/piperx-orb/orb-animation.mp4"
+  },
+  {
+   "m": "GET",
+   "u": "https://js.qualified.com/packs/js/9925-2bb51e71.js"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_multimodal_init_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":115}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/packs/css/widget/sandboxed/messenger-72e01873.css"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/packs/js/widget/sandboxed/messenger-ebb782c2.js"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/packs/media/Inter-Regular.f1f0c35b32.woff2"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/packs/media/Inter-SemiBold.fcb100c760.woff2"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/static-media/piperx-orb/orb-animation.mp4"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_iframe_init_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":461.5}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_chunked_assets_load_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":461.80000000447035}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_time_to_emitter_started_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":842.6999999955297}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://js.qualified.com/packs/js/offers-c3bdecb1.js"
+  },
+  {
+   "m": "GET",
+   "u": "https://customer-assets.qualified.com/cdn-cgi/image/trim.left=0,trim.top=0,trim.width=1000,trim.height=100/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/4c7f0e292d8efc888"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"widget_initialized\",\"type\":\"log\",\"extra\":{\"method\":\"inc\",\"tags\":{\"status\":\"success\"}}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/4a007c6b9e102511552a596d95cc4b1d8912e56f8cb86d1969b61a8ce3dfbea7.png"
+  },
+  {
+   "m": "GET",
+   "u": "https://messenger-assets.qualified.com/uploads/7utUtzj9JLnsERETowrxR99ci1RxwVhjSRHe5/579ab5157ad41b13c212e5a4e5efbdf2690582ddbf587c4444a38e83ba4c1f94.png"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"Page view activity emitted with type: offer_shown\",\"type\":\"log\",\"extra\":{}}"
+  },
+  {
+   "m": "POST",
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=8437c765-fd71-41dc-8027-dbfc919cb601&uuid=193ca9f6-14d2-475c-b39e-fafab0304230",
+   "post": "{\"event\":\"offers_time_to_init_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":1719.1000000014901}}"
+  },
+  {
+   "m": "GET",
+   "u": "https://assets.qualified.com/packs/media/Inter-roman.var.b2129c009c.woff2"
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "mounted": {
+  "frame": false,
+  "offer": [],
+  "host": false,
+  "winQ": true,
+  "qKeys": []
+ },
+ "qreq": [
+  {
+   "u": "https://opps-widget.getwarmly.com/warmly.js?clientId=09498bc4200663b93b9dbba125cb153c",
+   "m": "GET"
+  },
+  {
+   "u": "https://dx.mountain.com/spx?dxver=4.0.0&shaid=39227&tdr=&plh=https%3A%2F%2Fwww.flocksafety.com%2F&cb=95230812212905180term=value",
+   "m": "GET"
+  },
+  {
+   "u": "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
+   "m": "GET"
+  },
+  {
+   "u": "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack-marketo-forms.min.js",
+   "m": "GET"
+  },
+  {
+   "u": "https://js.qualified.com/qualified.js?token=PkqDRmLsN1JZW8p3",
+   "m": "GET"
+  },
+  {
+   "u": "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack-qualified.min.js",
+   "m": "GET"
+  },
+  {
+   "resp": "https://js.qualified.com/qualified.js?token=PkqDRmLsN1JZW8p3",
+   "status": 200
+  },
+  {
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "m": "POST",
+   "post": "{\"event\":\"widget_time_to_init_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":601.8999999985099,\"tags\":{\"consumer\":\"hosted\"}}}"
+  },
+  {
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "m": "POST",
+   "post": "{\"event\":\"script_time_to_start_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":516.7000000029802,\"tags\":{\"consumer\":\"hosted\"}}}"
+  },
+  {
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "m": "POST",
+   "post": "{\"event\":\"widget_time_to_domready_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":9.600000001490116}}"
+  },
+  {
+   "u": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=3fe87b6a-eb63-4ba6-8625-8a16aceb9731&uuid=75000178-46ac-4c59-8d2e-f534895a8b7c",
+   "m": "POST",
+   "post": "{\"event\":\"widget_time_to_visitor_ready_ms\",\"type\":\"log\",\"extra\":{\"method\":\"dist\",\"operand\":15.200000002980232}}"
+  },
+  {
+   "resp": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "status": 204
+  },
+  {
+   "resp": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "status": 204
+  },
+  {
+   "resp": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=",
+   "status": 204
+  },
+  {
+   "resp": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/visitor_events?wu=3fe87b6a-eb63-4ba6-8625-8a16aceb9731&uuid=75000178-46ac-4c59-8d2e-f534895a8b7c",
+   "status": 204
+  }
+ ]
+}

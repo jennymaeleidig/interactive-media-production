@@ -4,12 +4,8 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 
 ## Terms
 
-**Plume** — the satirical surveillance vendor this project imitates. A parody brand: bird-adjacent naming, deadpan register, original marks and copy. Exists for commentary on ALPR surveillance; must never be mistaken for, or used to impersonate, a real vendor.
-
-**PlumeOS** — Plume's platform product, the analog of a real-time crime center offered as "one map" software. The fidelity target of the vendor-mimicry prototype. Tagline: "Everything, already together."
-
-**Satire skin** — the design-and-voice treatment that reproduces a real vendor's design language and copy register for the parody, while reusing nothing ownable (marks, photography, copy, claims). Governed by the `plume-design-language` and `corporate-jargon-voice` skills.
-
-**Plume AI Sales Assistant** — the site-wide chat widget imitating the subject vendor's AI sales assistant: a floating bubble opening a choices-only conversation panel (no free-text input). Its dialogue is Yarn Spinner 3.x content, compiled at build time and run by the owner's local yarnspinner-ts library.
-
-**Nav take-over** — the mobile navigation pattern: a hamburger in the floating header opens a full-screen take-over listing the site's pages, in the subject vendor's design language (a two-tone ground — the header strip reads one tone lighter than the take-over body — with hairline row dividers and a full-width pill CTA). Flat list, not accordions — the link graph is small. The Plume AI Sales Assistant always layers above it. _Avoid_: "mobile menu".
+- **Capture** — a SingleFile snapshot of a live flocksafety.com page; the ground truth the Recreation is verified against.
+- **Recreation** — the word-for-word, CSS-exact, function-by-function rebuild of flocksafety.com as a Next.js app; the art piece's first milestone. The user's phrase: "EXACT recreation".
+- **Parody layer** — the reserved seam where the Recreation will later diverge into the art piece; deliberately unspecified until its own effort.
+- **Chat mimic** — the cloned chat assistant (the real site's is Qualified), powered by a yarnspinner-ts wrapper instead of a live backend. Yarn script content is a separate future effort written by the user.
+- **Link policy** — captured internal links repoint at Recreation routes; external links remain untouched.

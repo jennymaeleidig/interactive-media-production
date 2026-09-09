@@ -1,0 +1,96 @@
+{
+ "url": "https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/messenger?uuid=24de355b-586f-4d52-9bd2-45b49a7678f8",
+ "title": "Qualified",
+ "text": "Flock\nAI Sales Assistant\n\nHey there! I'm Flock, your AI Sales Assistant. What questions do you have about our solutions at Flock?\n\nSaw that you're interested in Flock Safety. I'm available if you have questions or want to chat!\n\nAsk a question\nGet a Demo\nSupport\n\nFlock's Privacy Policy",
+ "els": [
+  {
+   "tag": "TEXTAREA",
+   "cls": "css-1wak61c e139nbt120",
+   "label": "Ask a question",
+   "ph": "Ask a question",
+   "text": "",
+   "rect": [
+    93,
+    243,
+    254,
+    21
+   ]
+  },
+  {
+   "tag": "DIV",
+   "cls": "message is-expanded-preview",
+   "label": "Message preview - click to open messenger and view options. Message preview contents:  Hey there! I'm Flock, your AI Sales Assistant. What questions do you have about our solutions at Flock?",
+   "rect": [
+    80,
+    80,
+    300,
+    67
+   ]
+  },
+  {
+   "tag": "DIV",
+   "cls": "message is-expanded-preview",
+   "label": "Message preview - click to open messenger and view options. Message preview contents:  Saw that you're interested in Flock Safety. I'm available if you have questions or want to chat!",
+   "rect": [
+    80,
+    147,
+    300,
+    47
+   ]
+  },
+  {
+   "tag": "BUTTON",
+   "cls": "css-phwils",
+   "label": "Close messenger",
+   "rect": [
+    28,
+    28,
+    24,
+    24
+   ]
+  },
+  {
+   "tag": "BUTTON",
+   "cls": "css-1dcvokq e139nbt113",
+   "text": "Get a Demo",
+   "rect": [
+    80,
+    206,
+    88,
+    24
+   ]
+  },
+  {
+   "tag": "BUTTON",
+   "cls": "css-1dcvokq e139nbt113",
+   "text": "Support",
+   "rect": [
+    172,
+    206,
+    66,
+    24
+   ]
+  },
+  {
+   "tag": "BUTTON",
+   "cls": "css-gjf1xt e139nbt13",
+   "label": "Send",
+   "rect": [
+    347,
+    243,
+    20,
+    21
+   ]
+  },
+  {
+   "tag": "DIV",
+   "cls": "close-button e1n2cc8h0 css-hi2yyv",
+   "rect": [
+    20,
+    20,
+    28,
+    307
+   ]
+  }
+ ]
+}
