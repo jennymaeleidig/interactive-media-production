@@ -57,6 +57,68 @@ describe('serving a captured page at its original path', () => {
   });
 });
 
+describe('forms & mock routes (ticket 02)', () => {
+  let demo: Response;
+  let demoBody: string;
+
+  beforeAll(async () => {
+    demo = await fetch(base + '/book-a-demo');
+    demoBody = await demo.text();
+  });
+
+  it('serves the form page with the injected local POST action on the main-flow form', async () => {
+    expect(demo.status).toBe(200);
+    expect(demoBody).toContain('action="/api/forms/book-a-demo/mktoForm_1009" method="post" id=mktoForm_1009');
+    // Marketo forms render fully styled from the Capture's own stylesheets
+    expect(demoBody).toContain('<style id=mktoForms2BaseStyle nonce>');
+    expect(demoBody).toContain('background-color:#3FC919!important');
+  });
+
+  it('keeps hidden clones and filter forms inert — no action injected', () => {
+    for (const tag of demoBody.match(/<form\b[^>]*>/gi) ?? []) {
+      if (tag.includes('id=mktoForm_1009')) continue; // the routed main-flow form
+      expect(tag).not.toMatch(/\baction\s*=/i);
+    }
+    expect(demoBody).toContain('visibility:hidden;position:absolute;top:-500px;left:-1000px');
+    expect(demoBody).toContain('fs-cmsfilter-element=filters');
+  });
+
+  it('POSTs the submission to the mock route, which swallows it and 303s to the captured thank-you page', async () => {
+    const res = await fetch(base + '/api/forms/book-a-demo/mktoForm_1009', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'FirstName=Test&Email=test%40example.com&Company=Acme',
+      redirect: 'manual',
+    });
+    expect(res.status).toBe(303);
+    expect(res.headers.get('location')).toBe('/thank-you');
+    // swallowed: nothing of the submission comes back
+    expect(await res.text()).toBe('');
+  });
+
+  it('lands on the captured thank-you page when the redirect is followed', async () => {
+    const res = await fetch(base + '/api/forms/book-a-demo/mktoForm_1009', {
+      method: 'POST',
+      body: 'FirstName=Test',
+    });
+    expect(res.status).toBe(200);
+    expect(res.url).toBe(base + '/thank-you');
+    expect(await res.text()).toContain('Thank You | Flock Safety');
+  });
+
+  it('404s unknown form keys and 405s non-POST methods on the mock route', async () => {
+    expect((await fetch(base + '/api/forms/book-a-demo/mktoForm_9999', { method: 'POST', body: 'x=1' })).status).toBe(404);
+    expect((await fetch(base + '/api/forms/no/such/key', { method: 'POST', body: 'x=1' })).status).toBe(404);
+    expect((await fetch(base + '/api/forms/book-a-demo/mktoForm_1009')).status).toBe(405);
+  });
+
+  it('never lets a submission leave the machine — no external action in any served form', () => {
+    for (const tag of demoBody.match(/<form\b[^>]*>/gi) ?? []) {
+      expect(tag).not.toMatch(/\baction\s*=\s*("|')?(?:https?:)?\/\//i);
+    }
+  });
+});
+
 describe('route classes', () => {
   it('serves deep paths from the mirrored tree', async () => {
     const res = await fetch(base + '/products/gun-detection');

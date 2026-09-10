@@ -61,7 +61,7 @@ export async function setup() {
   const { runPipeline } = await import('../pipeline/build.mjs');
   const { log } = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you'],
     outDir: SERVED_DIR,
   });
   if (log.some((e) => e.error)) throw new Error('fixture pipeline failed: ' + JSON.stringify(log));

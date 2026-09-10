@@ -4,7 +4,7 @@
 
 **Blocked by:** 01.
 
-**Status:** open
+**Status:** claimed
 Label: ready-for-agent
 
 - [ ] A served main-flow form preserves the captured markup exactly.

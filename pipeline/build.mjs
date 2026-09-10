@@ -10,6 +10,13 @@
 //                construction — the audit pass asserts it per page.
 //   2. rewrite — internal hrefs https://(www.)flocksafety.com/X → /X
 //                (Recreation routes); external links stay live.
+//   3. forms   — captured lead forms carry no action (their live submission
+//                went through the stripped JS), so the pass injects a POST to
+//                a local mock API route keyed per form; the mock route
+//                swallows the submission and 303-redirects to the captured
+//                thank-you page (spec, Forms). Nothing ever leaves the
+//                machine: the only actions in served bytes are the injected
+//                local ones, and the audit counts any external form action.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -58,6 +65,10 @@ const AUDIT_RES = {
   qualified: /qualified/i,
   onetrust: /onetrust-(?:banner|pc|consent|style|accept|reject|close|privacy|policy|customize|filter)|ot-sdk|ot-sync/i,
   'known trackers': /googletagmanager\.com|google-analytics\.com|hotjar\.com|hockeystack\.com|bing\.com\/bat|linkedin\.com\/px|connect\.facebook\.net|snap\.licdn\.com|6sense\.com|marketo\.com|munchkin\.marketo/i,
+  // a form action that leaves the machine (ticket 02): absolute or
+  // protocol-relative. Injected mock actions are root-relative /api/... and
+  // never match; the count must stay zero on every page.
+  externalFormActions: /<form\b[^>]*?\saction\s*=\s*("|')?(?:https?:)?\/\//i,
 };
 
 // ---- helpers ----------------------------------------------------------------
@@ -206,12 +217,68 @@ function auditHtml(html) {
   }
   return audit;
 }
-
 /** Script census: only `type=application/ld+json` blocks are allowed to remain. */
 function scriptCensus(html) {
   const openTags = html.match(/<script\b[^>]*>/gi) ?? [];
   const executable = openTags.filter((t) => !LD_JSON_TYPE.test(t)).length;
   return { total: openTags.length, executable, ldJson: openTags.length - executable };
+}
+
+// ---- form routing (ticket 02) ------------------------------------------------
+
+// The captured demo flow's thank-you page — the one redirect target the live
+// site's main flow observably lands on. Per-page overrides go in the table
+// below as capture evidence for other flows arrives; until then every routed
+// form points here (the capture's markup itself never reveals the target —
+// the live choice lived in the stripped JS).
+const THANKYOU_DEFAULT = '/thank-you';
+const THANKYOU_BY_PAGE = {}; // original page path → thank-you path
+
+// A form routes iff its id is in this allowlist AND it is not Webflow filter
+// furniture (fs-cmsfilter-element, a client-side filter whose original
+// behavior was JS, not submission). Hidden Marketo clones carry no id, so the
+// allowlist keeps them inert by construction — never touched, as captured.
+const ROUTED_FORM_ID = /^(?:mktoForm_\d+|wf-form-[A-Za-z0-9_-]+|email-form)$/;
+
+/** Original page path → URL-safe manifest-key segment ("/" → "index"). */
+function pageKeyFor(pagePath) {
+  return pagePath === '/' ? 'index' : pagePath.replace(/^\//, '');
+}
+
+function thankyouFor(pagePath) {
+  return THANKYOU_BY_PAGE[pagePath] ?? THANKYOU_DEFAULT;
+}
+
+/**
+ * Inject `action` + `method=post` on every routable form; return the per-page
+ * routing records and the manifest additions. Tags whose attrs carry `&quot;`
+ * are HTML-escaped pseudo-forms (nested chat markup inside an attribute
+ * value) — never real DOM forms, left untouched.
+ */
+function formsPass(html, entry, pagePath, manifest) {
+  const routed = [];
+  html = html.replace(/<form\b([^>]*)>/gi, (tag, attrs) => {
+    if (/&quot;/i.test(attrs)) return tag; // escaped pseudo-form, not a real form open tag
+    const idMatch = /\bid\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs);
+    const formId = idMatch ? (idMatch[2] ?? idMatch[3] ?? idMatch[4] ?? '') : '';
+    if (!ROUTED_FORM_ID.test(formId)) return tag;
+    if (/\bfs-cmsfilter-element\b/i.test(attrs)) return tag; // filter furniture — inert
+    if (routed.some((r) => r.formId === formId)) return tag; // already routed (duplicate id)
+    const key = `${pageKeyFor(pagePath)}/${formId}`;
+    const action = `/api/forms/${key}`;
+    const redirectTo = thankyouFor(pagePath);
+    if (/\baction\s*=/i.test(attrs)) {
+      // no captured form in this corpus carries an action (census: 0); if a
+      // future capture ever does, it must not survive — replace, don't append
+      entry.warnings.push(`${formId}: captured action replaced with the local mock route`);
+      attrs = attrs.replace(/\s*action\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, '');
+    }
+    routed.push({ key, formId, action, redirectTo });
+    manifest[key] = { page: pagePath, formId, redirectTo };
+    return `<form action="${action}" method="post"${attrs}>`;
+  });
+  if (routed.length > 0) entry.forms = routed;
+  return html;
 }
 
 // ---- pipeline ----------------------------------------------------------------
@@ -225,6 +292,7 @@ function scriptCensus(html) {
  * @property {Record<string, number>} [stripped]  Strip target → bytes (or element count) removed.
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
+ * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number}} [scripts]  Script census of served bytes.
@@ -242,6 +310,7 @@ function scriptCensus(html) {
 export async function runPipeline(opts) {
   const { runDir, pages, outDir } = opts;
   const log = [];
+  const formsManifest = {}; // form route key → { page, formId, redirectTo }
 
   for (const page of pages) {
     const src = captureFileFor(runDir, page);
@@ -256,6 +325,8 @@ export async function runPipeline(opts) {
     html = stripPass(html, entry);
 
     html = rewritePass(html, entry);
+
+    html = formsPass(html, entry, page, formsManifest);
 
     // Write pass: captures are truncated before </body></html> (SingleFile CLI
     // never emits them) — restore whichever closing tags the capture lacks.
@@ -278,6 +349,9 @@ export async function runPipeline(opts) {
 
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'build-log.json'), JSON.stringify(log, null, 2));
+  // The mock route's redirect table (ticket 02): written even when empty so
+  // the route answers cleanly (unknown key → 404) on every build.
+  fs.writeFileSync(path.join(outDir, 'forms-manifest.json'), JSON.stringify(formsManifest, null, 2));
   return { log };
 }
 

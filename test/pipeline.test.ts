@@ -20,7 +20,7 @@ beforeAll(async () => {
   await rm(path.join(HERE, '.tmp/pipeline'), { recursive: true, force: true });
   result = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/missing'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/missing'],
     outDir: OUT,
   });
 });
@@ -117,6 +117,79 @@ describe('rewrite pass', () => {
   });
 });
 
+describe('forms pass (ticket 02)', () => {
+  it('injects a POST action to the local mock route into the main-flow Marketo form, leaving the rest of the captured tag byte-identical', async () => {
+    const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
+    expect(html).toContain(
+      '<form action="/api/forms/book-a-demo/mktoForm_1009" method="post" id=mktoForm_1009 class="mktoForm mktoHasWidth mktoLayoutLeft" novalidate style=font-family:Helvetica,Arial,sans-serif;font-size:13px;color:rgb(51,51,51);width:2531px>'
+    );
+  });
+
+  it('keeps the captured form fields and submit button verbatim', async () => {
+    const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
+    expect(html).toContain('<input id=FirstName name=FirstName maxlength=20 aria-labelledby="LblFirstName InstructFirstName" type=text class="mktoField mktoTextField mktoHasWidth mktoRequired" aria-required=true style=width:150px value>');
+    expect(html).toContain('<input id=Email name=Email maxlength=255');
+    expect(html).toContain('<button type=submit class=mktoButton>Submit</button>');
+  });
+
+  it('leaves the hidden Marketo clone inert — no action, no method', async () => {
+    const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
+    expect(html).toContain('<form class="mktoForm mktoHasWidth mktoLayoutLeft" novalidate style=font-family:Helvetica,Arial,sans-serif;font-size:13px;color:rgb(51,51,51);visibility:hidden;position:absolute;top:-500px;left:-1000px;width:1265px>');
+    expect(html).toContain('id=EmailClone');
+  });
+
+  it('leaves the Webflow filter form inert — filter furniture, not a lead form', async () => {
+    const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
+    expect(html).toContain('<form id=wf-form-0 name=wf-form-0 data-name=(0) fs-cmsfilter-element=filters class=filters-wrapper-general aria-label=(0)>');
+  });
+
+  it('keeps the escaped chat pseudo-form out of the served bytes (stripped with the chat machinery)', async () => {
+    const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
+    expect(html).not.toContain('css-1d6gwie');
+  });
+
+  it('renders Marketo forms fully styled from the Capture\'s own stylesheets — no authored mock CSS', async () => {
+    const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
+    expect(html).toContain('<style id=mktoForms2BaseStyle nonce>');
+    expect(html).toContain('<style id=mktoForms2ThemeStyle nonce>');
+    expect(html).toContain('.mktoForm .mktoButton{margin-top:0!important;width:100%!important;border-radius:3rem!important;background-color:#3FC919!important;color:black!important}');
+  });
+
+  it('routes Webflow lead forms too — every served form behaves like the original', async () => {
+    const html = await readFile(path.join(OUT, 'gsx.html'), 'utf8');
+    expect(html).toContain('<form action="/api/forms/gsx/wf-form-Book-a-Demo" method="post" id=wf-form-Book-a-Demo name=wf-form-Book-a-Demo');
+  });
+
+  it('logs form routing per page and leaves formless pages unlogged', () => {
+    const demo = result.log.find((e) => e.page === '/book-a-demo');
+    if (!demo || demo.error) throw new Error('unreachable: fixture book-a-demo must log cleanly');
+    expect(demo.forms).toEqual([
+      { key: 'book-a-demo/mktoForm_1009', formId: 'mktoForm_1009', action: '/api/forms/book-a-demo/mktoForm_1009', redirectTo: '/thank-you' },
+    ]);
+    const gsx = result.log.find((e) => e.page === '/gsx');
+    if (!gsx || gsx.error) throw new Error('unreachable: fixture gsx must log cleanly');
+    expect(gsx.forms).toEqual([
+      { key: 'gsx/wf-form-Book-a-Demo', formId: 'wf-form-Book-a-Demo', action: '/api/forms/gsx/wf-form-Book-a-Demo', redirectTo: '/thank-you' },
+    ]);
+    expect(result.log.find((e) => e.page === '/')?.forms).toBeUndefined();
+  });
+
+  it('writes forms-manifest.json beside the served tree — the mock route\'s redirect table', async () => {
+    const manifest = JSON.parse(await readFile(path.join(OUT, 'forms-manifest.json'), 'utf8'));
+    expect(manifest['book-a-demo/mktoForm_1009']).toEqual({ page: '/book-a-demo', formId: 'mktoForm_1009', redirectTo: '/thank-you' });
+    expect(manifest['gsx/wf-form-Book-a-Demo']).toEqual({ page: '/gsx', formId: 'wf-form-Book-a-Demo', redirectTo: '/thank-you' });
+  });
+
+  it('keeps zero-outbound by construction — no served form may carry an external action', async () => {
+    for (const page of ['book-a-demo', 'gsx', 'thank-you']) {
+      const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
+      for (const tag of html.match(/<form\b[^>]*>/gi) ?? []) {
+        expect(tag, page).not.toMatch(/\baction\s*=\s*("|')?(?:https?:)?\/\//i);
+      }
+    }
+  });
+});
+
 describe('write pass & mutation log', () => {
   it('restores the closing tags SingleFile truncates away', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
@@ -137,7 +210,7 @@ describe('write pass & mutation log', () => {
     expect(home.linksRewritten).toBe(4); // 4 internal nav links; the offer-host link was stripped with its subtree
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
-    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, 'known trackers': 0 });
+    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, 'known trackers': 0, externalFormActions: 0 });
     expect(home.scripts).toEqual({ total: 2, executable: 0, ldJson: 2 });
   });
 
@@ -151,6 +224,6 @@ describe('write pass & mutation log', () => {
   it('logs a missing capture as a per-page error instead of throwing', () => {
     const missing = result.log.find((e) => e.page === '/missing');
     expect(missing).toEqual({ page: '/missing', error: 'capture file missing' });
-    expect(result.log.filter((e) => !e.error)).toHaveLength(2);
+    expect(result.log.filter((e) => !e.error)).toHaveLength(5);
   });
 });
