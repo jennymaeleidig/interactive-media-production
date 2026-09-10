@@ -43,3 +43,4 @@ cart UI in the corpus (only FontAwesome's `fa-cart-*` icon CSS).
 - **Docs**: spec strip list, story 25, and Out of Scope updated;
   CODING_STANDARDS gained the "account surfaces are stripped, never mocked"
   rule and the audit invariant; CONTEXT's Strip decision term lists the chrome.
+  The decision itself is recorded as **ADR-0001** (`docs/adr/0001-no-account-features.md`).

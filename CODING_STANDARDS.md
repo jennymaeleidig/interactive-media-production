@@ -91,7 +91,7 @@ degrade to the captured end-state with JavaScript disabled.
   unmodified (no per-request transformation), and `npm run routes` asserts
   byte-identity over HTTP for every page — same bytes ⇒ same pixels, so the
   visual result is fixed by the build, not the request.
-- **Account surfaces are stripped, never mocked.** The live site's Sign In
+- **Account surfaces are stripped, never mocked** (ADR-0001). The live site's Sign In
   chrome (header button, footer link) points at `users.flocksafety.com` and
   its auth host `login.flocksafety.com`; both go, wholesale (chrome) or
   unwrapped (inline copy keeps its words). No account page, no mock login, no
