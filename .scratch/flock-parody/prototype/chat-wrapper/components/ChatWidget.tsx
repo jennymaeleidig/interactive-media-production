@@ -1,17 +1,23 @@
 "use client";
 
 // PROTOTYPE (ticket 04) — throwaway UI shell over lib/chat-engine's API.
-// Visual contract: ticket 02 + 06 research (rendered values are ground truth):
-// launcher 92×92 → pounce card 412×296 → panel 538×N, all flush bottom-right;
-// bot bubble #F1F4F7/text #101010 radius 3px; own bubble #ECEFEF/#183129;
-// card ✕ top-left half-outside, panel ✕ inside top-right.
+// Visual contract: ticket 02 + 06 research, rendered values as ground truth,
+// cross-checked against the user's screenshot of the live widget (2026-09-09):
+// launcher 92×92 → pounce card 412×296 → panel 538×N, flush bottom-right;
+// header band #ecefeb (HEADER_BACKGROUND_COLOR) with bare dark ✕
+// (HEADER_ICON_BUTTON_COLOR #183129); bot bubble #F1F4F7/text #101010/radius
+// 3px/padding 12px 16px with small avatar outside at top; own bubble
+// #ECEFEF/text #183129/radius 3px; timestamp + footer text #6E7879; composer
+// box with placeholder #6E7879 and paper-plane send icon #888F91
+// (MESSENGER_COMPOSER_SEND_BUTTON_ICON_COLOR); Inter var 13px.
 //
-// UI direction from the user (2026-09-09): NO composer, NO persistent chips.
-// The only choices are the yarn script's pending options, rendered as
-// user-style bubbles sitting IN the composer slot — clicking one looks like
-// sending what you typed. The original replies in ~4s via auto_respond with
-// no typing indicator — this prototype replies instantly (delay not under
-// test). Sounds (sent/received hooks) intentionally omitted.
+// UI direction from the user (2026-09-09): every choice is a Yarn option
+// (`->`) authored in the script, rendered as user-style chips INSIDE the
+// composer box — which stays visually present with its send icon, but is
+// INERT: the icon does nothing, there is no free text. Clicking a chip sends
+// it. The original replies in ~4s via auto_respond, no typing indicator —
+// this prototype replies instantly (delay not under test). Sounds and the
+// real avatar PNG (URL captured in evidence) intentionally stubbed.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChatResponse } from "@/lib/chat-engine";
@@ -20,6 +26,18 @@ type Msg = { id: number; from: "bot" | "me"; text: string };
 type Mode = "launcher" | "card" | "panel";
 
 let nextId = 1;
+
+function BirdMark({ size = 40 }: { size?: number }) {
+  // Stub for the captured avatar asset (BOT_AVATAR_BACKGROUND_IMAGE in the
+  // theme evidence — the real PNG URL is recorded for the Recreation).
+  return (
+    <span className="qw-mark" style={{ width: size, height: size }} aria-hidden>
+      <svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} fill="#ecefeb">
+        <path d="M12 2c2 3 5 4 5 8a5 5 0 0 1-10 0c0-4 3-5 5-8zM7 21c1.5-3 3-4 5-4s3.5 1 5 4H7z" />
+      </svg>
+    </span>
+  );
+}
 
 export default function ChatWidget() {
   const [mode, setMode] = useState<Mode>("launcher");
@@ -87,6 +105,8 @@ export default function ChatWidget() {
     post({ type: "option", sessionId, optionIndex: o.index });
   };
 
+  const expanded = messages.length > 0;
+
   return (
     <>
       {debug && (
@@ -100,24 +120,28 @@ export default function ChatWidget() {
 
       {mode !== "launcher" && (
         <div className={`qw qw-${mode}`}>
-          {mode === "card" ? (
-            <button className="qw-close-card" aria-label="Close" onClick={() => setMode("launcher")}>✕</button>
-          ) : (
-            <button className="qw-close-panel" aria-label="Close messenger" onClick={() => setMode("launcher")}>✕</button>
-          )}
           <div className="qw-header">
-            <div className="qw-avatar" />
-            <div>
+            <BirdMark />
+            <div className="qw-header-text">
               <div className="qw-name">Flock</div>
               <div className="qw-role">AI Sales Assistant</div>
             </div>
+            {mode === "panel" ? (
+              <button className="qw-close" aria-label="Close messenger" onClick={() => setMode("launcher")}>
+                <svg viewBox="0 0 24 24" width="12" height="12" stroke="#183129" strokeWidth="3" fill="none">
+                  <path d="M4 4l16 16M20 4L4 20" />
+                </svg>
+              </button>
+            ) : (
+              <button className="qw-close qw-close-card" aria-label="Close" onClick={() => setMode("launcher")}>✕</button>
+            )}
           </div>
           {mode === "panel" && <div className="qw-divider">Today, {new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</div>}
           <div className="qw-log" ref={logRef}>
             {messages.map((m) =>
               m.from === "bot" ? (
                 <div className="qw-row" key={m.id}>
-                  <div className="qw-avatar qw-avatar-sm" />
+                  <BirdMark size={20} />
                   <div className="qw-bubble-bot">{m.text}</div>
                 </div>
               ) : (
@@ -127,31 +151,38 @@ export default function ChatWidget() {
               ),
             )}
           </div>
-          {/* The composer slot: pending yarn options as user-style bubbles —
-              clicking one reads as sending your own typed message. */}
-          <div className="qw-slot">
-            {options?.map((o) => (
-              <button key={o.index} className="qw-choice" onClick={() => clickOption(o)}>{o.text}</button>
-            ))}
-          </div>
-          {mode === "card" && (
-            <div className="qw-footer">
-              <a href="https://www.flocksafety.com/privacy-policy" target="_blank">Flock&apos;s Privacy Policy</a>
+          {/* Composer box: visually the original's input (placeholder +
+              send icon), but INERT — the only interactive things are the
+              yarn-option chips inside it. */}
+          <div className="qw-composer">
+            <div className="qw-chips">
+              {options?.map((o) => (
+                <button key={o.index} className="qw-choice" onClick={() => clickOption(o)}>{o.text}</button>
+              ))}
+              {!options && <span className="qw-placeholder">{complete ? "" : mode === "card" ? "Ask a question" : "Enter a message"}</span>}
             </div>
-          )}
+            <span className="qw-send" aria-hidden>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888F91" strokeWidth="1.8">
+                <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </div>
+          <div className="qw-footer">
+            Flock&apos;s <a href="https://www.flocksafety.com/privacy-policy" target="_blank">Privacy Policy</a>
+          </div>
         </div>
       )}
 
       {mode === "launcher" && (
         <button
           className="qw-launcher"
-          aria-label={messages.length > 0 ? "Re-open conversation" : "Open chat"}
+          aria-label={expanded ? "Re-open conversation" : "Open chat"}
           onClick={() => {
             setMode("panel");
             if (!sessionId) post({ type: "start" }).catch(() => {});
           }}
         >
-          <span className="qw-bird">F</span>
+          <BirdMark size={44} />
         </button>
       )}
     </>

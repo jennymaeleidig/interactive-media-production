@@ -17,7 +17,7 @@ Link the prototype as an asset; record the interface decisions in the answer.
 
 ## Answer
 
-Resolved 2026-09-09 — prototype built, walked by the user, reworked to their UI direction, and re-verified end-to-end. Prototype (throwaway, runnable): **`prototypes/chat-wrapper/`** — see its [README](../../prototypes/chat-wrapper/README.md) for the full decision write-out and environment facts. `lib/chat-engine.ts` is the liftable part.
+Resolved 2026-09-09 — prototype built, walked by the user, reworked to their UI direction, and re-verified end-to-end. Prototype (throwaway, runnable): **`.scratch/flock-parody/prototype/chat-wrapper/`** — see its [README](../prototype/chat-wrapper/README.md) for the full decision write-out and environment facts. `lib/chat-engine.ts` is the liftable part.
 
 1. **Runtime: server-side, SSR startup-singleton** (user ratified). `loadYarnProject()` compiles once at API-route module load; one `Dialogue` per session in a module-level Map (server memory — session survives page reload exactly like Qualified's server-side session). Zero bundler config; identical under Turbopack and webpack, dev and build. The vite plugin is **not** used: webpack-mode loader shim only would work, Turbopack has no seam, and the plugin's own doc assigns deployment-data content to the SSR path.
 2. **Dependency: npm `file:` on the local sibling via absolute system path** (user: local for now, publish later). Relative `file:../../…` specifiers DO NOT survive npm resolution here — workspace-root inference produces a dangling symlink; absolute paths work. Dev reads the sibling live (no reinstall on its edits).
@@ -27,6 +27,8 @@ Resolved 2026-09-09 — prototype built, walked by the user, reworked to their U
 6. **Environment facts for the real app** (full list in the README): `WATCHPACK_POLLING=true` is required for `next dev` under the sandbox (native watcher denial silently blanks the dev route manifest); a `browserslist` package field is required (the CSS config-walk otherwise climbs out of the fence and dies on EPERM); **a `//` comment placed between Yarn options silently drops every option after it** — keep comments at line level (verified; no diagnostic fires).
 
 Not carried into code (deliberate): the ~4s `auto_respond` reply delay, sent/received sounds, operator/typing-dot path — hooks noted in the widget source, none under test.
+
+**Post-resolution refinement (same day, user direction):** the composer box stays visually present — a bordered input-style box with the paper-plane send icon, both INERT — with the yarn-option chips rendered inside it (placeholder "Ask a question"/"Enter a message" shows when no chips are pending). Styling was reworked from eyeball-approximation to the captured values: 94-prop `--THEME_*` set + rendered bubble values + the user's screenshot of the live widget; the real messenger CSS pack (URLs in ticket 06's network evidence) gets lifted wholesale at Recreation build time — the chat's CSS is copied directly, same fidelity bar as the site. Prototype moved to `.scratch/flock-parody/prototype/chat-wrapper/` (kept with the effort).
 
 ## Comments
 

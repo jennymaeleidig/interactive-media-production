@@ -1,8 +1,9 @@
 # PROTOTYPE: chat wrapper binding (wayfinder ticket 04)
 
-**Throwaway.** This app answers one question — *how does the cloned Qualified
-chat widget bind to yarnspinner-ts?* — and then dies. It is not production
-code and not the piece.
+**Throwaway.** Lives with the effort at
+`.scratch/flock-parody/prototype/chat-wrapper/`. This app answers one
+question — *how does the cloned Qualified chat widget bind to yarnspinner-ts?*
+— and then dies. It is not production code and not the piece.
 
 ## Run it
 
@@ -39,12 +40,21 @@ panel exposes the server-side session state.
    resolution here (workspace-root inference produces a dangling symlink);
    absolute paths do. Dev servers read the sibling live, so its edits need no
    reinstall.
-5. **No composer, no persistent chips.** UI direction from the user
-   (2026-09-09): every choice is a Yarn option (`->`) authored in the script;
-   the wrapper renders the pending set as user-style bubbles sitting in the
-   composer slot — clicking one reads as sending your own typed message.
-   Clicks are `selectOption()`; sessions live in server memory, so the
-   node-top-restart caveat only bites across server restarts.
+5. **No free text; chips inside an inert composer box.** UI direction from
+   the user (2026-09-09, refined after live walk-through): every choice is a
+   Yarn option (`->`) authored in the script; the wrapper renders the pending
+   set as user-style chips INSIDE the composer box — which stays visually
+   present (placeholder + paper-plane send icon) but is inert: the icon does
+   nothing, there is no free text. Clicking a chip sends it via
+   `selectOption()`; sessions live in server memory, so the node-top-restart
+   caveat only bites across server restarts.
+6. **Styling is copied from the capture, not invented.** Same fidelity bar as
+   the site: the widget's values come from ticket 06's 94-prop `--THEME_*`
+   set with rendered values as ground truth (bot bubble #F1F4F7/radius 3px,
+   header band #ecefeb, composer placeholder #6E7879, send icon #888F91),
+   cross-checked against the user's screenshot of the live widget. The real
+   messenger CSS pack (URLs in ticket 06's network evidence) gets lifted
+   wholesale at Recreation build time.
 
 ## Yarn authoring gotcha (bites the user's future script)
 
@@ -67,7 +77,7 @@ comments at line level or node top. Verified 2026-09-09.
 
 `dialogue/flock.yarn` transcribes one observed live session (PINNED strings:
 s9 greeting, s10 support/general walk, s12 demo ask — evidence in
-`.scratch/flock-parody/research/evidence/06-qualified-conversation-ux/`).
+`../../research/evidence/06-qualified-conversation-ux/`).
 GLUE-marked strings and choices are structural filler, not observed copy. The
 demo path stops at the email gate, mirroring the research covenant. Every
 node ends in a Yarn option set; choices loop back through demo/support or
