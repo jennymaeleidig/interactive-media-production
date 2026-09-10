@@ -316,7 +316,8 @@ function storyHookPass(html, entry, source) {
   } else {
     html = html + '\n' + tag;
   }
-  entry.injected = ['story-hook seam (inline, dormant)'];
+  entry.injected = (entry.injected ?? []);
+  entry.injected.push('story-hook seam (inline, dormant)');
   return html;
 }
 

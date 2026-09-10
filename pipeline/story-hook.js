@@ -39,9 +39,9 @@
         console.debug('[flockParody] selector not found, patch skipped:', p.selector);
         continue;
       }
-      if ('text' in p) el.textContent = p.text;
-      if ('html' in p) el.innerHTML = p.html;
-      if ('src' in p) el.setAttribute('src', p.src);
+      if (p.text !== undefined) el.textContent = p.text;
+      if (p.html !== undefined) el.innerHTML = p.html;
+      if (p.src !== undefined) el.setAttribute('src', p.src);
       if (p.style) for (var k in p.style) el.style[k] = p.style[k];
       applied += 1;
     }

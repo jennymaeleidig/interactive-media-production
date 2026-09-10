@@ -27,7 +27,10 @@ degrade to the captured end-state with JavaScript disabled.
 - The build pipeline (`pipeline/`) is **plain Node ESM JavaScript with JSDoc
   types** — no separate compile step, no bundler coupling. It is a **pure
   transformation**: capture run in → served tree + per-page mutation log out.
-  No network access, no live-site calls, no wall-clock input.
+  No network access, no live-site calls, no wall-clock input. The injected
+  browser runtimes it inlines (e.g. `pipeline/story-hook.js`, ticket 03) are
+  the documented exception: plain browser JavaScript, kept ES5-safe, read as
+  text and inlined verbatim — no `.mjs`/JSDoc requirement, no bundling.
 - One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
   which capture run the build serves from. Moving to a fresh run is a
   one-value change plus a re-run of the passes.

@@ -140,6 +140,13 @@ describe('missing selectors are skipped, never thrown', () => {
     expect(seam.apply(null)).toBe(0);
     expect(seam.apply([])).toBe(0);
   });
+
+  it('treats an undefined-valued op as absent instead of writing “undefined” into the page', async () => {
+    const { dom, seam } = await seamDom('<!DOCTYPE html><html><body><p id="p">captured</p></body></html>');
+    const applied = seam.apply([{ selector: '#p', text: undefined, html: undefined }]);
+    expect(applied).toBe(1); // the selector resolved — the patch located its element
+    expect(dom.window.document.querySelector('#p')!.textContent).toBe('captured');
+  });
 });
 
 describe('the return value counts applied patches', () => {
