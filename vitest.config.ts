@@ -1,0 +1,23 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    projects: [
+      {
+        test: {
+          name: 'pipeline',
+          include: ['test/pipeline.test.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'serving-seam',
+          include: ['test/serving.seam.test.ts'],
+          globalSetup: ['test/seam-global-setup.ts'],
+          testTimeout: 30_000,
+          hookTimeout: 120_000,
+        },
+      },
+    ],
+  },
+});

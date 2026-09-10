@@ -1,0 +1,169 @@
+# Spec: Recreation — flocksafety.com, the entire site, with Chat mimic
+
+Label: ready-for-agent
+Effort: flock-parody-impl (implementation). Wayfinding journey retired: `.scratch/flock-parody/`.
+Tickets: `issues/01`–`12`.
+
+## Problem Statement
+
+The art piece's first milestone is a **Recreation** of flocksafety.com — the entire site, 1,199 live pages — word-for-word, CSS-exact, function-by-function. Hand-rebuilding a thousand pages cannot hit that bar: copy drifts, CSS approximates, and every page carries third-party machinery — trackers, a live GPT sales chat, cookie consent, lead-capture forms wired to real CRMs — that the piece must never operate. No visitor data may ever reach Flock's systems, and no page may phone home. The user needs a build method where fidelity to the original is true by construction, the site never makes an outbound request, and the one piece of live behavior that matters — the chat assistant — is mimicked locally without a backend.
+
+## Solution
+
+**Serve the Captures.** Every page is a SingleFile Capture taken from the live site; the Recreation is a Next.js app whose build pipeline passes each Capture through five mechanical passes — strip trackers and the Qualified widget, rewrite internal links to Recreation routes, point forms at local mock routes, inject the motion layer and the dormant story-hook seam — and serves the result verbatim at the original URL paths. Because Captures carry zero executable scripts, the zero-outbound guarantee is true by construction, not by audit alone.
+
+The one live surface is the **Chat mimic**: the Qualified assistant's exact UX — launcher, pounce card, expanded panel, bubble styling lifted wholesale from the Capture — driven by a yarnspinner-ts runtime behind a small message API, with one fixed, pinned string set (the real assistant's copy is GPT-generated per session; the mimic pins one observed session). Every conversational choice is a Yarn option rendered as a chip inside a visually-present but inert composer; the demo branch ends at the email gate with a single "Maybe later" chip, and nothing in the rendered UI marks the divergence.
+
+Pages ship as static captured end-states; motion returns as a cheap mimic layer — CSS plus one shared IntersectionObserver snippet with declarative annotations, never the original GSAP/Lenis runtime — honoring reduced-motion. Serving is verified by a 0-pixel serving gate at three viewports plus a human-reviewed strip report, and the whole system stays synced to the drifting live site through the capture refresh runbook. The story-hook seam ships dormant, ready for the Parody layer effort.
+
+## User Stories
+
+Pages and navigation:
+
+1. As a visitor, I want every page of flocksafety.com to exist at its original path, so that the Recreation is navigable exactly like the original.
+2. As a visitor, I want each page to render word-for-word and pixel-exact against the original, so that I cannot tell the Recreation from the real site.
+3. As a visitor, I want internal links to take me to the corresponding Recreation route, so that site navigation works end to end.
+4. As a visitor, I want external links (social profiles, the privacy portal) to still lead to their real destinations, so that off-site behavior matches the original.
+5. As a visitor following a legacy URL, I want the same 301 redirect the live site performs, so that old links land in the right place.
+6. As a visitor hitting a dead collection root, I want a 404 like the live site gives, so that even the site's broken edges are faithfully reproduced.
+7. As a visitor, I want every page's real static title (not the runtime-swapped one), so that tabs and history read like the original site's truth.
+
+Chat:
+
+8. As a visitor, I want the chat launcher bubble sitting flush bottom-right, so that the page feels alive like the original.
+9. As a visitor, I want the pounce card to appear greeting me, so that the signature Qualified moment is reproduced.
+10. As a visitor, I want to open the expanded panel and converse, so that the assistant experience carries over.
+11. As a visitor, I want to answer using option chips that read as my own sent messages, so that conversing feels natural.
+12. As a visitor, I want the composer box present but inert, so that the UI looks exactly like the original's input area.
+13. As a visitor, I want my conversation to persist across page reloads, so that the chat behaves like the original's server-side session.
+14. As a visitor choosing "book a demo", I want the assistant to ask for my email and then offer only "Maybe later", so that the flow ends gracefully and harmlessly.
+15. As a visitor, I want replies to appear as complete messages, so that the conversation reads like the original's auto-responses.
+
+Motion and interactions:
+
+16. As a visitor, I want the hero split-text to animate on load and reveals to play on scroll, so that pages feel like the live site.
+17. As a visitor, I want smooth scrolling for anchor jumps, so that in-page movement feels like the original.
+18. As a visitor, I want tabs, dropdowns, accordions, and sliders to operate, so that interactive page furniture functions.
+19. As a visitor, I want hover states to tween like the original, so that fine-grained polish carries over.
+20. As a visitor with reduced motion enabled, I want fully static pages, so that the piece respects my system setting.
+21. As a visitor, I want pages to render complete and styled with JavaScript disabled, so that nothing depends on the stripped runtime.
+
+Safety and forms:
+
+22. As a visitor, I want zero requests to leave my machine from any page, so that browsing the piece never feeds trackers or Flock's systems.
+23. As a visitor submitting any form, I want identical form markup that lands me on the captured thank-you page, so that the flow completes while nothing is actually submitted.
+24. As a visitor, I want Marketo forms rendered fully styled exactly as captured, so that even the forms look real.
+25. As a visitor, I want no cookie-consent banner, so that the page shows only what the strip decision kept.
+
+The artist:
+
+26. As the artist, I want the Recreation built mechanically from Captures rather than by hand, so that the fidelity bar holds across 1,199 pages.
+27. As the artist, I want zero new copy anywhere in the Recreation, so that this milestone stays a pure Recreation.
+28. As the artist, I want the chat's copy pinned to one observed Qualified session, so that the mimic is deterministic.
+29. As the artist, I want no visible marker of where the chat diverges from the original, so that the illusion is never broken.
+30. As the artist, I want the chat powered by Yarn scripts I will write later, so that the wrapper is content-agnostic.
+31. As the artist, I want the story-hook seam shipped dormant on every page, so that the Parody layer can drive DOM changes without touching the serving machinery.
+32. As the artist, I want an automated 0-px serving gate and a human-reviewable strip report, so that regressions and strip deltas are caught before I ever look.
+33. As the artist, I want a human side-by-side at each phase gate, so that runtime feel — animations, chat overlay — gets a signoff no diff can give.
+34. As the artist, I want Captures out of git but reproducible from the runbook, so that the repo stays light and the ground truth regenerable.
+35. As the artist, I want a capture refresh runbook, so that the Recreation tracks the live site's drift without re-deriving method.
+
+Future efforts:
+
+36. As the Parody layer effort, I want the documented story-hook contract, so that dialogue events can patch page DOM declaratively.
+37. As the Parody layer effort, I want per-turn chat events and variables surfaced, so that I can bind patches and branching to conversation beats.
+38. As the Parody layer effort, I want the chat's CSS lifted wholesale from the Capture, so that zero new styling is authored.
+
+Build sessions:
+
+39. As a build session, I want every pipeline mutation logged per page, so that strip and motion changes are auditable.
+40. As a build session, I want a single capture-pointer config value, so that moving the build to a new capture run is one switch.
+41. As a build session, I want a changed page to invalidate exactly its own route, so that a scoped refresh never rebuilds the world.
+42. As a build session, I want the yarnspinner dependency resolved locally, so that the build works today and can move to a published package later.
+
+## Implementation Decisions
+
+**Build method — serve the Captures**
+
+- The Recreation is a Next.js/React app (npm) that serves SingleFile Captures verbatim through a five-pass build: strip DOM → rewrite links → inject form actions → inject motion + story-hook seam → write with a per-page mutation log. Proven end-to-end by the snapshot-serving prototype.
+- Captures carry zero executable scripts, so "zero outbound requests from any served page" is true by construction; the strip audit confirms no tracker residue (Qualified = 0 everywhere; OneTrust's one survivor is the footer "Your Privacy Choices" link, which is site content and stays under the link policy).
+- The strip list is the converged audit set: the Qualified offer host, the chat launcher custom element with its inlined CSS, focus sentinels, all Qualified style blocks including orphaned layout CSS, Qualified-smeared attributes and the header-height var, and the OneTrust banner/consent stack entirely (nothing is left to consent to).
+- Static-frozen end-states are the ratified fidelity floor: served pages are fully static; the Recreation's runtime is the Chat mimic, the story-hook seam, and the motion layer — nothing else executes. The captured "Message from Flock Safety" title swaps were the pounce script's doing and are gone with the scripts; Captures carry static titles restored from inventory ground truth.
+- Captures are truncated before the closing body/html tags; the build pass appends them back.
+
+**Serving and links**
+
+- A single catch-all serving route resolves the served tree at original paths; a redirect manifest built from the capture run's uncaptured manifest serves the 56 redirect stubs as 301s to their (already local) targets. Dead collection roots 404 — reproducing observed behavior is the fidelity bar. Scaffold/test pages are dropped from serving entirely.
+- Link policy: absolute internal hrefs rewrite to Recreation routes; external links stay live; asset/meta/JSON-LD URLs are untouched (assets are inlined data-URIs). One internal link's Qualified tracking parameter is kept verbatim — word-for-word bar, inert locally.
+- Assets are inlined into each snapshot; no separate asset hosting exists in this model (revisit parked for publication).
+
+**Forms**
+
+- Main-flow forms keep identical markup; the build injects a POST to a local mock API route keyed per form, which swallows the submission and 303-redirects to the captured thank-you page. Nothing ever leaves the machine.
+- Marketo forms render fully styled from the Capture itself — all five captured Marketo CSS blocks are live in the served page, so the "static styled mock" reduces to the captured form as-is plus the injected action. No authored mock CSS. Hidden Marketo clones and the scheduler embed stay inert.
+- The chat makes no POST at all (see chat decisions).
+
+**Chat mimic**
+
+- Runtime lives server-side as an SSR startup-singleton: the Yarn project compiles once at route-module load via the node loader; one Dialogue instance per session lives in server memory, so sessions survive reloads exactly like the original's server-side session. Zero bundler configuration (the Vite-plugin path is rejected — Turbopack has no loader seam). From the chat-wrapper prototype.
+- The yarnspinner-ts packages are installed as an npm file: dependency on the local sibling repo by absolute path (relative specifiers break under npm resolution); publish later, repoint then.
+- Message API (from the prototype): one POST per turn — `{type: start | resume | option, …}` → the turn's batch of lines, the pending choice set, or completion, plus `state.vars` surfaced every turn as the storage's entries. `start` is idempotent: a live session resumes rather than resets.
+- UI contract (user direction, from the prototype): no free text, no persistent chips. Every choice is a Yarn option authored in the script, rendered as a user-style bubble sitting in the composer slot; the composer box and send icon stay visually present but inert, with a placeholder showing when no chips are pending. Clicking a chip is an option selection.
+- Copy is pinned, not live: greeting, general reply, support reply, and the demo ask are transcribed strings from one observed Qualified session (evidence in the Qualified-UX research). All replies are fixed strings delivered as complete bubbles — no typing indicator, no sounds (hooks noted in the prototype, deliberately unshipped).
+- Demo branch depth (grilling, ratified): it ends at the email gate — the pinned demo-ask reply, then a single "Maybe later" chip returning to the hub option set. The gate never dead-ends the widget. **No divergence notice of any kind in the rendered UI — prohibited.** No mock email capture, no booker, no POST. The stop is stated declaratively in the Yarn comment at the gate node, so builders can tell the intentional stop from an unfinished one while no visitor sees any trace.
+- The wrapper ships with a minimal throwaway Yarn fixture (the pinned session's shape); real Yarn content is the user's future effort. Chat CSS is lifted wholesale from the Capture — the full 94-prop theme token set plus rendered bubble values; zero new styling.
+- Yarn authoring constraint carried from the prototype: a comment placed between options silently drops every following option — keep comments at line level.
+
+**Motion mimicry layer** (tier table ratified in the motion ticket)
+
+- Tier 1, CSS-only: smooth-scroll feel for anchor jumps; the captured CSS-keyframe animations play for free with no JS; hover tweens authored as transitions at build time.
+- Tier 2, shared reveal snippet: one IntersectionObserver runtime plus declarative annotations, injected by the build pass; per-pattern from-states come from the behavioral census's captured values. The hero split re-fires the original visibility class so the captured transition CSS plays verbatim; scroll word-splits (including the masked variant) get per-word stagger indices; fades and clip reveals fire one-shot.
+- Interactions, delegated clicks: tabs, dropdowns, accordions, and sliders all function — geometry and classes from the Capture; the license-plate-reader accordion is function-only (no height tween).
+- Tier 3, end-state only: the two pages carrying real scroll-scrubbed timelines ship as captured; their scrub-driven labels are frozen at scale(0,0) — accepted dead-path status, and a ready-made story-hook target for the Parody layer.
+- The build pass normalizes every captured from-state to its end-state in the static DOM before injecting the layer (a no-JS page is the styled end-state, by construction), plus a generic sweep of inline zero-opacity from-states tagged for the observer — all logged per page and surfaced through the strip report.
+- Reduced motion: the runtime adds no motion class, every from-state rule stays inert — the page ships static. No JS: same. The layer mirrors the story-hook seam's shape — shared snippet + declarative keys, zero per-page bespoke logic.
+
+**Story-hook seam (dormant)**
+
+- Injected on every served page, exposing `window.flockParody.apply(patches)` with patches of `{selector, text | html | src | style}`: text sets text content, html sets inner HTML, src sets the attribute, style merges camelCase props. Array order; a missing selector is skipped with a console debug, never throws; returns the count applied; safe before DOM-ready (queues until DOMContentLoaded); DOM-only, no network. Dormant in the Recreation — the Parody layer's dialogue events will drive it.
+
+**Verification**
+
+- Serving gate (automated, 0-px tolerance): served-over-http vs the same bytes from disk, rendered by the same headless chromium, at 1440×900, 768×1024, 390×844 — with the motion layer aboard and gate shots forced to reduced motion, so the gate measures the static contract. Control renders prove the renderer is deterministic, which is what makes 0 px meaningful.
+- Strip report (informational, human-reviewed): raw Capture vs served page — deltas must stay confined to the strip-list regions (the Qualified offer bar, the OneTrust consent card, and the reclaimed header-height reflow). The motion layer contributes zero new deltas.
+- Human side-by-side at each phase gate: the only check covering runtime feel — animations playing, chat overlay, pounce timing.
+
+**Keeping ground truth alive**
+
+- The capture refresh runbook governs drift: full re-inventory (robots → sitemap → nav crawl → pagination walks, same column format) plus diff at spec freeze and at each build phase gate; added/retitled/newly-live pages re-captured immediately as a scoped run; one full re-capture before the final screenshot-diff signoff; never mid-phase — a refresh invalidates routes, so it happens between phases. Proposed by the runbook ticket; this spec adopts it (flagged in Further Notes).
+- A changed page invalidates exactly its own Recreation route: re-run the five passes on that page from the fresh Capture, then its serving-gate diff. The capture pointer (which run folder the build serves from) is a single config value. Captures remain out of git; inventories, CSVs, and markdown stay tracked.
+
+## Testing Decisions
+
+- A good test asserts external behavior only: what an HTTP request returns, what pixels render, what a chat POST replies, what the DOM looks like after a story-hook application — never pipeline internals or module structure.
+- The seams, in order of height:
+  1. **The rendered-pixel seam** — the whole system, top: the serving gate (http vs disk, 0 px, three viewports, forced reduced-motion) and the strip report (raw Capture vs served, deltas confined to reviewed regions). This is the fidelity bar's automated instrument and the primary regression check; every build pass must keep it green and its strip deltas reviewed.
+  2. **The HTTP serving seam** — request → response: 200/301/404 behavior per route class, form POSTs 303 to thank-you pages, served bytes carrying no executable scripts and no tracker residue, links rewritten, story-hook and motion layer present. Everything page-shaped is assertable here without a browser.
+  3. **The chat message API seam** — POST start/resume/option → turn batches, choice sets, surfaced variables, session persistence across calls, the email-gate branch shape. Drives the Dialogue runtime, session store, and gate behavior headlessly.
+  4. **The story-hook DOM seam** — apply() contract tests: each op mutates as documented, order honored, missing selectors skipped without throwing, pre-DOM calls queue.
+  The ideal is one seam; the pixel gate is that whole-system seam — the other three exist because the chat (server state) and the story-hook (DOM contract) are genuinely separate surfaces.
+- Modules under test: the build pipeline (as a pure transformation — capture run in, served tree + mutation log out, with the strip audit as an invariant), the serving layer, the chat engine behind its message API, and the story-hook runtime.
+- Prior art: the snapshot-serving prototype's regression harness (screenshot shoot + pixel diff, the 0-px methodology standing on the proven deterministic renderer, forced-reduced-motion gate shots) and the chat-wrapper prototype's end-to-end start/resume/option smoke walks. Both are proven and liftable.
+- Not automated, deliberately: runtime feel (animation playback, chat overlay behavior, pounce timing) — covered by the human side-by-side at phase gates.
+
+## Out of Scope
+
+- **Parody content and concept** — every divergence from the original, including all story-hook patch content. The Recreation ships the seam dormant; the parody returns as a fresh effort.
+- **Yarn script content** for the Chat mimic — the wrapper ships with the minimal fixture only; the user writes the real scripts later.
+- **Publication and deployment** — hosting, domain, and the asset-rights revisit that inlined assets will trigger at publication.
+- Subdomain surfaces of flocksafety.com; the ten auth-gated event test pages (manifest entries only); any live backend traffic — Qualified's real API, CRMs, analytics, cookie consent, scheduling, video playback (posters and facades are the whole video story).
+- Free-text chat input, typing indicators, sounds, operator handoff, and any post-email-gate booker machinery.
+- Wheel-driven smooth scrolling beyond CSS anchor behavior — not CSS-reproducible; accepted.
+
+## Further Notes
+
+- The behavioral census's scrub worry resolved in the motion ticket's live check: the homepage-adjacent "scroll" system is click-tabs, and the only real scrub timelines are the two tier-3 pages — the mimic's one-shot model is exact for everything else.
+- The capture refresh policy is adopted from the runbook ticket's proposal, which was queued for ratification at spec: it stands unless vetoed here.
+- Two sandbox/toolchain facts bind every build and gate session: dev servers need watchpack polling enabled and the package needs a browserslist field (both proven in the prototypes); headless-Chromium work runs via Docker.
+- The prototype assets live with the effort and are throwaway; the liftable parts are the five-pass pipeline script, the motion CSS/runtime pair, the regression harness, and the chat engine module.
+- This is the repo's first implementation effort under the Next.js pivot — CODING_STANDARDS.md is filled in by this effort, per the repo's AGENTS.md.
