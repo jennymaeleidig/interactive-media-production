@@ -22,9 +22,14 @@ npm run typecheck  # tsc --noEmit
 npm run routes     # full-scale route check over HTTP: every live page 200,
                    #   every legacy stub 301, every dead root / dropped
                    #   scaffold-test page 404
-npm run gate       # fidelity gate: route check, then control renders + serving
-                   #   gate (0 px, 3 viewports, reduced motion) + strip report —
-                   #   needs Docker/colima, the capture run, and a fresh build
+npm run gate       # fidelity gate: full-scale route check, then control
+                   #   renders + serving gate (0 px, 3 viewports, reduced
+                   #   motion) + strip report — needs Docker/colima, the
+                   #   capture run, and a fresh build. On a constrained
+                   #   machine, run the full-family pixel sample instead:
+                   #     npm run gate -- --list regression/sample-pages.txt --no-strip
+                   #   (the route check still covers all 1,180 pages; the
+                   #   exhaustive strip sweep is the ticket-12 phase gate)
 ```
 
 ## How it works

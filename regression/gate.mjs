@@ -17,12 +17,20 @@
 //            report writes a red-marked diff image and per-region bands per
 //            page and viewport; it never fails the run (spec, Verification).
 //
+// The gate also runs the full-scale route check first (ticket 07): a routing
+// mistake fails cheaply, before the pixel matrix.
+//
 // Exit code 0 only when the control and gate comparisons are all 0 px.
 // The whole check runs against the real capture run and Docker — by design,
 // it is the gate run itself, not part of `npm test` (fresh-clone rule).
 //
-// Usage: node regression/gate.mjs [--pages /a,/b]   (default: every page in
-//        served/build-log.json)  [--control /]  [--out .tmp/gate]
+// Usage: node regression/gate.mjs [--pages /a,/b | --list <file>]  (default:
+//        every page in served/build-log.json)  [--control /]  [--out .tmp/gate]
+//        [--no-strip]   skip the informational strip report (the raw-Capture
+//                       renders + diff images) — the 0-px serving gate is
+//                       unchanged, so a full-family sample is cheap on a
+//                       constrained machine; the exhaustive strip sweep is
+//                       the ticket-12 phase-gate run.
 // SPDX-License-Identifier: CC0-1.0
 import fs from 'node:fs';
 import path from 'node:path';
@@ -87,6 +95,12 @@ async function main() {
   const outDir = path.resolve(ROOT, arg('--out') ?? '.tmp/gate');
   const shotsDir = path.join(outDir, 'shots');
   const controlPage = arg('--control') ?? '/';
+  // --no-strip skips the informational strip report (the raw-Capture renders +
+  // diff images, the heaviest third of the run). The serving gate — the 0-px
+  // contract this ticket must keep green — is unchanged. Use it for cheap
+  // full-family samples on constrained hardware; the exhaustive strip sweep is
+  // the human phase-gate run (ticket 12).
+  const noStrip = argv.includes('--no-strip');
 
   // ---- preconditions ---------------------------------------------------------
   if (!dockerAvailable()) fail('docker unreachable — the gate renders headless chromium in Docker (colima up; see CODING_STANDARDS)');
@@ -100,7 +114,9 @@ async function main() {
 
   const pages = arg('--pages')
     ? arg('--pages').split(',').map((s) => s.trim()).filter(Boolean)
-    : JSON.parse(fs.readFileSync(buildLogPath, 'utf8')).filter((e) => !e.error).map((e) => e.page);
+    : arg('--list')
+      ? fs.readFileSync(path.resolve(ROOT, arg('--list')), 'utf8').split('\n').map((s) => s.trim()).filter((s) => s && !s.startsWith('#'))
+      : JSON.parse(fs.readFileSync(buildLogPath, 'utf8')).filter((e) => !e.error).map((e) => e.page);
   if (pages.length === 0) fail('no pages to check — build log empty?');
 
   // captured per-page motion normalizations (logFor), surfaced beside each
@@ -129,11 +145,11 @@ async function main() {
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(shotsDir, { recursive: true });
 
-  console.log('Fidelity gate (ticket 06) — control + serving gate + strip report');
+  console.log(`Fidelity gate (ticket 06) — control + serving gate${noStrip ? '' : ' + strip report'}`);
   console.log(`  capture run: ${path.relative(ROOT, runDir)}`);
   console.log(`  served tree: ${path.relative(ROOT, servedDir)} (${pages.length} page(s))`);
   console.log(`  shots + report: ${path.relative(ROOT, outDir)}`);
-  console.log(`  viewports: ${VIEWPORTS.map(VIEWPORT_TAG).join(' ')} · reduced motion forced · 0-px tolerance\n`);
+  console.log(`  viewports: ${VIEWPORTS.map(VIEWPORT_TAG).join(' ')} · reduced motion forced · 0-px tolerance${noStrip ? ' · strip report skipped (--no-strip)' : ''}\n`);
 
   /** @type {import('./compare.mjs').GateReport} */
   const report = { control: [], gate: [], strip: [] };
@@ -186,7 +202,9 @@ async function main() {
       console.log(`\n${page}`);
       for (const vp of VIEWPORTS) {
         const tag = VIEWPORT_TAG(vp);
-        shoot({ shotsDir, mountDir: runDir, url: `file:///capsule/${rel}`, viewport: vp, outPath: `raw_${slug}_${tag}.png` });
+        // shot stems: raw_ = the capture tree as captured; srvfile_ = the served
+        // tree read from disk; srvhttp_ = the served tree over HTTP
+        if (!noStrip) shoot({ shotsDir, mountDir: runDir, url: `file:///capsule/${rel}`, viewport: vp, outPath: `raw_${slug}_${tag}.png` });
         shoot({ shotsDir, mountDir: servedDir, url: `file:///capsule/${rel}`, viewport: vp, outPath: `srvfile_${slug}_${tag}.png` });
         // the container reaches the host server via host.docker.internal
         shoot({ shotsDir, url: `http://${host}${page}`, viewport: vp, outPath: `srvhttp_${slug}_${tag}.png` });
@@ -195,6 +213,7 @@ async function main() {
         report.gate.push(gate);
         console.log(`  ${gate.error ? '✗' : gate.px === 0 ? '✓' : '✗'} GATE  @${tag}: ${gate.error ?? gate.px + ' px'}${gate.px > 0 ? ` → ${gate.diff}` : ''}`);
 
+        if (noStrip) continue;
         const strip = compareShots(shotsDir, `raw_${slug}_${tag}.png`, `srvhttp_${slug}_${tag}.png`, { page, viewport: tag }, { overlayPath: `diff_strip_${slug}_${tag}.png` });
         report.strip.push(strip);
         const bandStr = strip.bands?.map((b) => `[${fmtBand(b)}]`).join(' ') ?? strip.error;
@@ -210,7 +229,7 @@ async function main() {
   const v = verdict(report);
   console.log('\n' + (v.ok ? '✓ Gate green — serving layer pixel-invisible, renderer deterministic.' : '✗ Gate FAILED:'));
   for (const f of v.failures) console.log(`  ${f}`);
-  console.log(`\nStrip report is informational — review the diff images and bands in ${path.relative(ROOT, outDir)}/report.md against the strip-list regions (offer bar, consent card, header reflow) before signing off.`);
+  console.log(`\n${noStrip ? 'Strip report skipped (--no-strip).' : 'Strip report is informational — review the diff images and bands in ' + path.relative(ROOT, outDir) + '/report.md against the strip-list regions (offer bar, consent card, header reflow) before signing off.'}`);
   if (!v.ok) process.exit(1);
 }
 

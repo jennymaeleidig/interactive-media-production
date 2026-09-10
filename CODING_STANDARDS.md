@@ -38,7 +38,15 @@ degrade to the captured end-state with JavaScript disabled.
   report in → verdict out) is unit-tested at `test/gate.test.ts`; the shot
   mechanics (`regression/shoot.mjs` + `cdp-shot.mjs`) are the gate run
   itself, verified against the real capture run, never in `npm test` (the
-  suite must stay green on a fresh clone).
+  suite must stay green on a fresh clone). The full-scale route check
+  (`regression/routes.mjs`) is part of the gate's preflight and also runs
+  standalone (`npm run routes`); its pure core is `test/routes.test.ts`.
+- **The pixel gate is expensive** (a headless render per shot). Every served
+  page is covered cheaply by `npm run routes` (HTTP status classes + strip
+  audit); the 0-px pixel proof runs over `regression/sample-pages.txt` (one
+  page per template family + the hard cases) with `--no-strip` on constrained
+  machines. The exhaustive 1,180-page raw-vs-served strip sweep is the
+  ticket-12 phase-gate run, not a per-ticket step.
 - One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
   which capture run the build serves from. Moving to a fresh run is a
   one-value change plus a re-run of the passes. The same file's
