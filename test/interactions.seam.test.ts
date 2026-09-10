@@ -294,6 +294,22 @@ describe('Webflow tabs switch panes with the captured classes and pairings', () 
     expect(ptzPane.classList.contains('sf-hidden')).toBe(false);
   });
 
+  it('a link whose pane is missing mutates nothing — pairing validated before any state changes', () => {
+    const dom = domOf(PAGE, { reduced: true });
+    const doc = (dom.window as Win).document;
+    const orphan = doc.createElement('a');
+    orphan.setAttribute('data-w-tab', 'Ghost');
+    orphan.className = 'w-tab-link';
+    doc.querySelector('.w-tab-menu')!.appendChild(orphan);
+    const ptzLink = doc.getElementById('w-tabs-1-data-w-tab-0')!;
+    const ptzPane = doc.getElementById('w-tabs-1-data-w-pane-0')!;
+    clickIn(dom.window, orphan);
+    expect(ptzLink.classList.contains('w--current')).toBe(true); // current link untouched
+    expect(ptzLink.getAttribute('aria-selected')).toBe('true');
+    expect(doc.querySelector('.w-tabs')!.getAttribute('data-current')).toBe('PTZ');
+    expect(ptzPane.classList.contains('w--tab-active')).toBe(true);
+  });
+
   it('a click mid-fade is ignored until the switch completes (never double-armed)', async () => {
     const dom = domOf(PAGE);
     const doc = (dom.window as Win).document;

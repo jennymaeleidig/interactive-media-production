@@ -537,6 +537,23 @@ function normalizeGenericZeroOpacity(seg, counts) {
 
 const MOTION_INJECTED = 'motion layer (style+script, inline)';
 
+/**
+ * Insert `tag` inline before </body> — or append at EOF when the capture is
+ * truncated (the write pass restores the closing tags after it) — and log
+ * `label` under the page's injected list. Shared by every injection pass.
+ */
+function injectBeforeClose(html, entry, label, tag) {
+  const closeBody = html.lastIndexOf('</body>');
+  if (closeBody >= 0) {
+    html = html.slice(0, closeBody) + tag + '\n' + html.slice(closeBody);
+  } else {
+    html = html + '\n' + tag;
+  }
+  entry.injected = entry.injected ?? [];
+  entry.injected.push(label);
+  return html;
+}
+
 /** The motion pass: normalize → annotate → tag → inject the CSS+runtime pair. */
 function motionPass(html, entry, css, runtime) {
   const counts = {};
@@ -558,16 +575,7 @@ function motionPass(html, entry, css, runtime) {
   entry.motion = counts;
 
   const motionTag = `<style data-flock-parody="motion">\n${css}\n</style>\n<script data-flock-parody="motion">\n${runtime}\n</script>`;
-  const closeBody = html.lastIndexOf('</body>');
-  if (closeBody >= 0) {
-    html = html.slice(0, closeBody) + motionTag + '\n' + html.slice(closeBody);
-  } else {
-    // capture truncated before </body> — inject at EOF; the write pass appends the closing tags after it
-    html = html + '\n' + motionTag;
-  }
-  entry.injected = entry.injected ?? [];
-  entry.injected.push(MOTION_INJECTED);
-  return html;
+  return injectBeforeClose(html, entry, MOTION_INJECTED, motionTag);
 }
 
 // ---- interactions layer (ticket 05) ------------------------------------------
@@ -576,22 +584,13 @@ const INTERACTIONS_INJECTED = 'interactions layer (style+script, inline)';
 
 /**
  * Inject the delegated interaction runtime + its suppress-only CSS inline,
- * verbatim, after the motion layer and before the story-hook seam (or at EOF
- * when the capture is truncated — the write pass appends the closing tags
- * after it). Pure injection: the layer reads the captured DOM it finds, so
- * unlike the motion pass this one makes no per-page mutations to log.
+ * verbatim, after the motion layer and before the story-hook seam. Pure
+ * injection: the layer reads the captured DOM it finds, so unlike the motion
+ * pass this one makes no per-page mutations to log.
  */
 function interactionsPass(html, entry, css, runtime) {
   const tag = `<style data-flock-parody="interactions">\n${css}\n</style>\n<script data-flock-parody="interactions">\n${runtime}\n</script>`;
-  const closeBody = html.lastIndexOf('</body>');
-  if (closeBody >= 0) {
-    html = html.slice(0, closeBody) + tag + '\n' + html.slice(closeBody);
-  } else {
-    html = html + '\n' + tag;
-  }
-  entry.injected = entry.injected ?? [];
-  entry.injected.push(INTERACTIONS_INJECTED);
-  return html;
+  return injectBeforeClose(html, entry, INTERACTIONS_INJECTED, tag);
 }
 
 // ---- story-hook seam (ticket 03) ----------------------------------------------
@@ -606,15 +605,7 @@ const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
  */
 function storyHookPass(html, entry, source) {
   const tag = `<script ${STORY_HOOK_MARKER}>\n${source}\n</script>`;
-  const closeBody = html.lastIndexOf('</body>');
-  if (closeBody >= 0) {
-    html = html.slice(0, closeBody) + tag + '\n' + html.slice(closeBody);
-  } else {
-    html = html + '\n' + tag;
-  }
-  entry.injected = (entry.injected ?? []);
-  entry.injected.push('story-hook seam (inline, dormant)');
-  return html;
+  return injectBeforeClose(html, entry, 'story-hook seam (inline, dormant)', tag);
 }
 
 // ---- pipeline ----------------------------------------------------------------

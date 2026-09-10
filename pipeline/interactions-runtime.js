@@ -53,6 +53,7 @@
   'use strict';
 
   var MENU_ITEM_SUFFIX = '-menu-item';
+  var SLIDE_EPSILON = 0.01; // px — float-slop guard for the scroll-box clamp
 
   function reducedMotion() {
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -153,16 +154,16 @@
     var menu = link.closest('.w-tab-menu') || root;
     var links = menu.querySelectorAll('.w-tab-link');
     var panes = root.querySelectorAll('.w-tab-pane');
-    var fromLink = null, toPane = null, fromPane = null, i;
-    for (i = 0; i < links.length; i++) {
-      if (links[i] === link) setTabLink(links[i], true);
-      else if (links[i].classList.contains('w--current')) { fromLink = links[i]; setTabLink(links[i], false); }
-    }
+    var fromPane = null, toPane = null, i;
     for (i = 0; i < panes.length; i++) {
       if (panes[i].getAttribute('data-w-tab') === name) toPane = panes[i];
       else if (panes[i].classList.contains('w--tab-active')) fromPane = panes[i];
     }
-    if (!toPane) return;
+    if (!toPane) return; // validate the pairing BEFORE touching any state — never highlight a pane-less tab
+    for (i = 0; i < links.length; i++) {
+      if (links[i] === link) setTabLink(links[i], true);
+      else if (links[i].classList.contains('w--current')) setTabLink(links[i], false);
+    }
     root.setAttribute('data-current', name);
     if (reducedMotion() || !fromPane) {
       hideTabPane(fromPane);
@@ -257,8 +258,12 @@
     if (el.getAttribute('data-slider') === 'pagination') return; // the container is not a control
     var wrapper = wrapperFor(el);
     if (!wrapper) return;
-    var back = el.getAttribute('data-slider') === 'back' || el.hasAttribute('data-swiper-prev');
-    slideTo(wrapper, currentIndex(wrapper) + (back ? -1 : 1), el);
+    slideTo(wrapper, currentIndex(wrapper) + (isBackControl(el) ? -1 : 1), el);
+  }
+
+  /** Each captured control vocabulary names its own retreat control. */
+  function isBackControl(el) {
+    return el.getAttribute('data-slider') === 'back' || el.hasAttribute('data-swiper-prev');
   }
 
   function sliderBullet(pagination, target) {
@@ -321,7 +326,7 @@
     // the leftmost visible slide is the active one (end-clamp aware)
     var active = 0, acc = 0;
     for (i = 0; i < slides.length; i++) {
-      if (acc <= at + 0.01) active = i;
+      if (acc <= at + SLIDE_EPSILON) active = i;
       acc += stepOf(slides[i]);
     }
     wrapper.style.transform = 'translate3d(' + (at > 0 ? '-' + at : '0') + 'px, 0px, 0px)';
@@ -370,8 +375,7 @@
     if (clicked && bound.indexOf(clicked) < 0) bound.push(clicked);
     for (i = 0; i < bound.length; i++) {
       var btn = bound[i];
-      var back = btn.getAttribute('data-slider') === 'back' || btn.hasAttribute('data-swiper-prev');
-      var stuck = back ? at <= 0.01 : max > 0 && at >= max - 0.01;
+      var stuck = isBackControl(btn) ? at <= SLIDE_EPSILON : max > 0 && at >= max - SLIDE_EPSILON;
       setDisabled(btn, stuck);
     }
   }
