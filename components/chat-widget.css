@@ -1,0 +1,467 @@
+/* SPDX-License-Identifier: CC0-1.0
+ *
+ * The Chat mimic's widget stylesheet (ticket 09).
+ *
+ * PROVENANCE — where every value here comes from, and what it is NOT:
+ *  - The `:root` block below is LIFTED VERBATIM from the Capture. It is the
+ *    live widget's own 94-property `--THEME_*` token set plus the two inlined
+ *    assets (`--sf-img-2`, the Flock mark, and `--PLACEHOLDER_AVATAR_URL`).
+ *    Source: the messenger iframe document inlined in the raw site Capture
+ *    (.scratch/flock-parody/research/flocksafety/2026-09-09/index.html, the
+ *    iframe's `srcdoc`), cross-checked against the computed theme captured in
+ *    evidence/06-qualified-conversation-ux/s9-opened-convo.json. The remote
+ *    asset URLs the live page used are replaced with the Capture's OWN inlined
+ *    data URIs, so nothing here phones home.
+ *  - The layout rules below are transcribed from the Capture's RENDERED
+ *    VALUES: the captured conversation DOM (s9-opened-dom.html), the captured
+ *    computed styles and geometry (s9/s10/s11-*-convo.json, *-rects.json), and
+ *    the captured screenshots (s9-01-greeting.png, s9-09-opened-full.png,
+ *    s10-10-opened-full.png). Every size, color, radius, and weight traces to
+ *    one of those; none is invented.
+ *  - WHY THE RULES ARE TRANSCRIBED RATHER THAN COPIED: the widget's layout CSS
+ *    is emotion-generated at runtime and was never part of a Capture — the
+ *    snapshot carries only the theme tokens, the inlined assets, and the base
+ *    keyframe/hover sheet (the 13 KB `data-emotion` block, which contributed
+ *    the CTA hover values used below). The rendered boxes were captured
+ *    instead, and the rules below reproduce them. This is the one documented
+ *    gap: no runtime CSS existed to lift, so the rendered values are the
+ *    capture-of-record.
+ *  - Geometry note: the research table's 92x92 / 412x296 / 538xN figures are
+ *    the HOST IFRAME rects. The visible boxes measured from the captured
+ *    screenshots are the fidelity target: a 54px launcher circle, a 332x252
+ *    pounce card, and a 343px-wide content-height panel, each inset 17px from
+ *    the bottom-right corner. Both are recorded; the visible box wins because
+ *    the side-by-side (ticket 09 checkbox 7) compares pixels.
+ *
+ * The widget is a React component (components/ChatWidget.tsx). It renders no
+ * network assets and no executable script; this file is inert CSS.
+ */
+
+/* ===================================================================== */
+/* CAPTURE'S THEME TOKEN SET — lifted verbatim (see provenance above)     */
+/* ===================================================================== */
+:root {
+  --sf-img-2: url("data:image/png;base64,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");
+  --MEETING_REQUEST_PHONE_BUTTON_HOVER_BORDER_COLOR: transparent;
+  --BUTTON_TEXT_COLOR: #ffffff;
+  --theme-font-family: 'Inter var';
+  --MESSAGE_BUBBLE_OWN_TEXT_COLOR: #183129;
+  --MESSENGER_PROMPT_CTA_HOVER_BACKGROUND: #070f0c;
+  --BUTTON_BORDER_RADIUS: 4px;
+  --MESSAGE_BUBBLE_BOT_TEXT_COLOR: #122124;
+  --MEETING_BOOKER_TEXT_COLOR: #183129;
+  --MESSENGER_PROMPT_CTA_CHAT_ONLY_TEXT_COLOR: #ffffff;
+  --MESSENGER_PROMPT_CTA_CHAT_ONLY_HOVER_BORDER_COLOR: transparent;
+  --MESSAGE_BUBBLE_OWN_BACKGROUND_COLOR: #ecefeb;
+  --CALENDAR_CARD_CONFIRM_BUTTON_HOVER_BORDER_COLOR: transparent;
+  --PLACEHOLDER_AVATAR_URL: url("data:image/svg+xml,%3Csvg\ width=\'154\'\ height=\'240\'\ viewBox=\'0\ 0\ 154\ 240\'\ fill=\'none\'\ xmlns=\'http://www.w3.org/2000/svg\'%3E%3Crect\ width=\'154\'\ height=\'154\'\ rx=\'77\'\ fill=\'%23C0C5C9\'/%3E%3Cpath\ d=\'M100.294\ 88.7586L89.1459\ 85.6821C88.2571\ 85.4466\ 87.4505\ 84.9691\ 86.8151\ 84.3021C86.1798\ 83.6352\ 85.7405\ 82.805\ 85.5458\ 81.9031L84.8509\ 78.5795C87.4808\ 77.4594\ 89.7283\ 75.5938\ 91.3183\ 73.211C92.9082\ 70.8283\ 93.7717\ 68.0318\ 93.8029\ 65.164V58.3811C93.7868\ 54.392\ 92.234\ 50.5639\ 89.4696\ 47.6983C86.7053\ 44.8328\ 82.9438\ 43.1521\ 78.9729\ 43.0082C74.8644\ 42.8746\ 70.8686\ 44.3696\ 67.8493\ 47.17C66.3899\ 48.5219\ 65.2239\ 50.1615\ 64.4243\ 51.9863C63.6246\ 53.8111\ 63.2085\ 55.7819\ 63.2019\ 57.7755V65.164C63.2314\ 68.0315\ 64.093\ 70.8283\ 65.6812\ 73.2119C67.2695\ 75.5954\ 69.5155\ 77.4624\ 72.1443\ 78.5843L71.459\ 81.9031C71.2635\ 82.8041\ 70.8239\ 83.6333\ 70.1886\ 84.2993C69.5533\ 84.9653\ 68.7471\ 85.4422\ 67.8589\ 85.6772L56.6966\ 88.7537C55.648\ 89.0269\ 54.7179\ 89.6388\ 54.0499\ 90.4951C53.3819\ 91.3514\ 53.0129\ 92.4045\ 53\ 93.492V104.538C53.0139\ 105.204\ 53.2899\ 105.836\ 53.7676\ 106.298C54.2452\ 106.759\ 54.8854\ 107.011\ 55.5481\ 107H101.452C102.115\ 107.011\ 102.755\ 106.759\ 103.232\ 106.298C103.71\ 105.836\ 103.986\ 105.204\ 104\ 104.538V93.492C103.986\ 92.4053\ 103.617\ 91.3533\ 102.949\ 90.498C102.281\ 89.6427\ 101.351\ 89.0315\ 100.303\ 88.7586H100.294Z\'\ fill=\'white\'/%3E%3C/svg%3E");
+  --TEXT_FIELD_SEND_BUTTON_HOVER_TEXT_COLOR: #ffffff;
+  --DARKENED_MEETING_BOOKER_COLOR: #dfe4dd;
+  --BOT_BACKGROUND_COLOR_FOR_AVATAR_BACKGROUND: #ecefeb;
+  --STRING_FIELD_SEND_BUTTON_TEXT_COLOR: #ffffff;
+  --MESSENGER_PROMPT_CTA_SOLID_ONLY_COLOR: #183129;
+  --AVAILABLE_EVENTS_BUTTON_HOVER_TEXT_COLOR: #ffffff;
+  --LAUNCHER_IMAGE_BACKGROUND_URL: var(--sf-img-2);
+  --TEXT_FIELD_SEND_BUTTON_HOVER_BORDER_COLOR: transparent;
+  --MESSENGER_PROMPT_CTA_CHAT_ONLY_BORDER_COLOR: transparent;
+  --MEETING_BOOKER_COLOR: #ecefeb;
+  --MEETING_BOOKER_CONTINUE_BUTTON_TEXT_COLOR: #ffffff;
+  --MESSENGER_PROMPT_CTA_BORDER_COLOR: transparent;
+  --MEETING_REQUEST_PHONE_BUTTON_BACKGROUND_COLOR: #183129;
+  --PICKLIST_FIELD_BUTTON_HOVER_OR_SELECTED_BACKGROUND_COLOR: #070f0c;
+  --STRING_FIELD_SEND_BUTTON_HOVER_BACKGROUND_COLOR: #070f0c;
+  --MESSENGER_PROMPT_CTA_SOLID_ONLY_HOVER_TEXT_COLOR: #183129;
+  --AVAILABLE_EVENTS_BUTTON_HOVER_BACKGROUND: #070f0c;
+  --MEETING_REQUEST_WEB_BUTTON_HOVER_TEXT_COLOR: #ffffff;
+  --BOT_AVATAR_BACKGROUND_IMAGE: var(--sf-img-2);
+  --PICKLIST_FIELD_BUTTON_HOVER_OR_SELECTED_TEXT_COLOR: #ffffff;
+  --HEADER_TEXT_COLOR: #183129;
+  --MEETING_BOOKER_CONTINUE_BUTTON_BORDER_COLOR: transparent;
+  --MEETING_REQUEST_PHONE_BUTTON_ICON_COLOR: #ffffff;
+  --TEXT_FIELD_SEND_BUTTON_HOVER_BACKGROUND_COLOR: #070f0c;
+  --MEETING_REQUEST_WEB_BUTTON_BORDER_COLOR: transparent;
+  --TEXT_FIELD_SEND_BUTTON_BACKGROUND_COLOR: #183129;
+  --MESSENGER_PROMPT_CTA_CHAT_ONLY_HOVER_BACKGROUND_COLOR: #070f0c;
+  --MEETING_REQUEST_CANCEL_BUTTON_TEXT_COLOR: #122124;
+  --MESSAGE_BUBBLE_BOT_BORDER_COLOR: transparent;
+  --BUTTON_PRIMARY_COLOR: #183129;
+  --CALLBOX_BACKGROUND_COLOR: #ecefeb;
+  --MESSAGE_BUBBLE_OWN_BORDER_COLOR: #ecefeb;
+  --MESSENGER_PROMPT_CTA_TEXT_COLOR: #ffffff;
+  --MESSENGER_PROMPT_CTA_SOLID_ONLY_BACKGROUND_COLOR: #FFFFFF;
+  --MESSENGER_PROMPT_CTA_SOLID_ONLY_BORDER_COLOR: transparent;
+  --AVAILABLE_EVENTS_BUTTON_BORDER_COLOR: transparent;
+  --TEXT_FIELD_SEND_BUTTON_BORDER_COLOR: transparent;
+  --THEME_TEXT_COLOR: #183129;
+  --MESSENGER_FOOTER_TEXT_COLOR: #6E7879;
+  --CALENDAR_CARD_CONFIRM_BUTTON_HOVER_TEXT_COLOR: #ffffff;
+  --PICKLIST_FIELD_BUTTON_TEXT_COLOR: #ffffff;
+  --MESSENGER_PROMPT_CTA_CHAT_ONLY_BACKGROUND_COLOR: #183129;
+  --CALENDAR_CARD_CONFIRM_BUTTON_BACKGROUND_COLOR: #183129;
+  --HEADER_ICON_BUTTON_COLOR: #183129;
+  --STRING_FIELD_SEND_BUTTON_BORDER_COLOR: transparent;
+  --AVAILABLE_EVENTS_BUTTON_TEXT_COLOR: #ffffff;
+  --CALENDAR_CARD_DAY_CONTROL_BUTTON_TEXT_COLOR: #122124;
+  --LAUNCHER_BACKGROUND_COLOR: #ecefeb;
+  --STRING_FIELD_SEND_BUTTON_HOVER_BORDER_COLOR: transparent;
+  --MESSENGER_PROMPT_CTA_SOLID_ONLY_HOVER_BACKGROUND_COLOR: #e6e6e6;
+  --MEETING_REQUEST_PHONE_BUTTON_HOVER_ICON_COLOR: #ffffff;
+  --MESSAGE_BUBBLE_BOT_BACKGROUND_COLOR: rgba(236,239,235,0.25);
+  --THEME_PRIMARY_COLOR: #ecefeb;
+  --PICKLIST_FIELD_BUTTON_BACKGROUND_COLOR: #183129;
+  --MESSENGER_COMPOSER_SEND_BUTTON_ICON_COLOR: #888F91;
+  --CALENDAR_CARD_CONFIRM_BUTTON_HOVER_BACKGROUND_COLOR: #070f0c;
+  --CALENDAR_CARD_DAY_CONTROL_BUTTON_ICON_COLOR: #888F91;
+  --MEETING_REQUEST_WEB_BUTTON_HOVER_BACKGROUND_COLOR: #070f0c;
+  --PICKLIST_FIELD_BUTTON_HOVER_OR_SELECTED_BORDER_COLOR: transparent;
+  --MESSENGER_PROMPT_CTA_HOVER_TEXT_COLOR: #ffffff;
+  --COMPANY_LOGO_BACKGROUND_URL: var(--sf-img-2);
+  --CALENDAR_CARD_CONFIRM_BUTTON_TEXT_COLOR: #ffffff;
+  --MEETING_REQUEST_PHONE_BUTTON_HOVER_BACKGROUND_COLOR: #070f0c;
+  --MESSENGER_PROMPT_CTA_BACKGROUND_COLOR: #183129;
+  --NON_BOT_BACKGROUND_COLOR_FOR_AVATAR_BACKGROUND: #ecefeb;
+  --AVAILABLE_EVENTS_BUTTON_BACKGROUND_COLOR: #183129;
+  --MEETING_REQUEST_WEB_BUTTON_HOVER_BORDER_COLOR: transparent;
+  --MEETING_REQUEST_PHONE_BUTTON_BORDER_COLOR: transparent;
+  --MESSENGER_PROMPT_CTA_CHAT_ONLY_HOVER_TEXT_COLOR: #ffffff;
+  --AVAILABLE_EVENTS_BUTTON_HOVER_BORDER_COLOR: transparent;
+  --HEADER_BACKGROUND_COLOR: #ecefeb;
+  --CALENDAR_CARD_BACK_BUTTON_TEXT_COLOR: #122124;
+  --MEETING_REQUEST_WEB_BUTTON_BACKGROUND_COLOR: #183129;
+  --MEETING_BOOKER_CONTINUE_BUTTON_BACKGROUND_COLOR: #183129;
+  --PICKLIST_FIELD_BUTTON_BORDER_COLOR: transparent;
+  --CALENDAR_CARD_CONFIRM_BUTTON_BORDER_COLOR: transparent;
+  --TEXT_FIELD_SEND_BUTTON_TEXT_COLOR: #ffffff;
+  --STRING_FIELD_SEND_BUTTON_HOVER_TEXT_COLOR: #ffffff;
+  --STRING_FIELD_SEND_BUTTON_BACKGROUND_COLOR: #183129;
+  --MEETING_REQUEST_WEB_BUTTON_TEXT_COLOR: #ffffff;
+  --FOOTER_BAR_ICON_BUTTON_COLOR: #888F91;
+}
+
+/* ===================================================================== */
+/* LAYOUT — transcribed from the Capture's rendered values               */
+/* ===================================================================== */
+
+.fpc-root,
+.fpc-root *,
+.fpc-root *::before,
+.fpc-root *::after {
+  box-sizing: border-box;
+}
+
+/* The host surface: fixed, bottom-right, above page furniture. The captured
+   host used z-index 2147483642; 2147483000 keeps the widget above the served
+   pages (whose own layers top out well below that) without colliding with the
+   story-hook/motion layer's z-indexes. */
+.fpc-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  font-family: var(--theme-font-family), sans-serif;
+  font-size: 13px;
+  line-height: 1.15;
+  color: var(--THEME_TEXT_COLOR);
+  -webkit-font-smoothing: antialiased;
+}
+.fpc-root button {
+  font-family: inherit;
+}
+
+/* ---- launcher: visible box of the captured 92x92 iframe: a 54px circle,
+   17px in from the corner, filled with the captured Flock mark. ---- */
+.fpc-launcher {
+  pointer-events: auto;
+  position: absolute;
+  right: 17px;
+  bottom: 17px;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: var(--LAUNCHER_BACKGROUND_COLOR);
+  background-image: var(--LAUNCHER_IMAGE_BACKGROUND_URL);
+  background-size: cover;
+  background-position: center;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 5px 20px 0;
+}
+
+/* ---- the card and the panel share one surface ---- */
+.fpc-surface {
+  pointer-events: auto;
+  position: absolute;
+  right: 17px;
+  bottom: 17px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 5px 20px 0;
+}
+/* pounce card: exactly the captured 332x252. The captured greeting card is
+   252 tall and carries no choice chips — its composer holds the placeholder —
+   so the captured height is the card's own; the mimic's chip slot is taller
+   than the captured placeholder, so the message area absorbs the difference
+   and a longer thread scrolls inside the card, exactly as the panel does. The
+   card is the captured PREVIEW surface: a larger greeting set than the panel
+   (the captured card greeting renders ~3 lines at 15px), with the avatar only
+   in the header — the captured preview shows no avatar beside the message. */
+.fpc-surface--card {
+  width: 332px;
+  height: 252px;
+}
+.fpc-surface--card .fpc-header {
+  padding: 10px 16px;
+  gap: 12px;
+}
+.fpc-surface--card .fpc-avatar {
+  width: 32px;
+  height: 32px;
+}
+.fpc-surface--card .fpc-name {
+  font-size: 17px;
+}
+.fpc-surface--card .fpc-role {
+  font-size: 14px;
+}
+.fpc-surface--card .fpc-log {
+  padding: 0 16px;
+}
+.fpc-surface--card .fpc-messages {
+  padding: 4px 0;
+}
+.fpc-surface--card .fpc-bubble-avatar {
+  display: none;
+}
+.fpc-surface--card .fpc-bubble--bot {
+  max-width: 100%;
+  padding: 0;
+  background: transparent;
+  border-color: transparent;
+  font-size: 15px;
+  line-height: 1.32;
+}
+/* expanded panel: 343px wide, content-driven height, floored at the captured
+   413px single-greeting panel and capped at the capture's viewportH - 150px
+   ceiling. */
+.fpc-surface--panel {
+  width: 343px;
+  min-height: 413px;
+  max-height: calc(100vh - 150px);
+}
+
+/* ---- header: captured band, avatar, name/role, close ---- */
+.fpc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  padding: 10px 12px;
+  background: var(--HEADER_BACKGROUND_COLOR);
+}
+.fpc-avatar {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--BOT_BACKGROUND_COLOR_FOR_AVATAR_BACKGROUND);
+  background-image: var(--COMPANY_LOGO_BACKGROUND_URL);
+  background-size: cover;
+  background-position: center;
+}
+.fpc-heading {
+  flex: 1;
+  min-width: 0;
+}
+.fpc-name {
+  display: block;
+  color: var(--HEADER_TEXT_COLOR);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.fpc-role {
+  display: block;
+  color: var(--HEADER_TEXT_COLOR);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  opacity: 0.72;
+}
+.fpc-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--HEADER_ICON_BUTTON_COLOR);
+}
+/* panel close: bare dark cross inside the header (captured top-right). */
+.fpc-close__icon {
+  display: block;
+  width: 12px;
+  height: 12px;
+}
+/* card close: dark-green circle half outside the card's top-left corner
+   (captured greeting state). */
+.fpc-close--corner {
+  position: absolute;
+  top: -13px;
+  left: -13px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--MESSENGER_PROMPT_CTA_BACKGROUND_COLOR);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* ---- log ---- */
+.fpc-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+.fpc-divider {
+  flex: none;
+  padding: 12px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--MESSENGER_FOOTER_TEXT_COLOR);
+}
+.fpc-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+}
+.fpc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+}
+.fpc-row--me {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+.fpc-bubble-avatar {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background-color: var(--BOT_BACKGROUND_COLOR_FOR_AVATAR_BACKGROUND);
+  background-image: var(--BOT_AVATAR_BACKGROUND_IMAGE);
+  background-size: cover;
+  background-position: center;
+}
+/* bubble values are the captured RENDERED values (the token layer differs:
+   --MESSAGE_BUBBLE_BOT_BACKGROUND_COLOR is rgba(236,239,235,0.25); the
+   rendered bubble is #F1F4F7). Rendered wins, per the research. */
+.fpc-bubble {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.fpc-bubble--bot {
+  background: #f1f4f7;
+  border: 1px solid #f1f4f7;
+  color: #101010;
+}
+.fpc-bubble--me {
+  background: var(--MESSAGE_BUBBLE_OWN_BACKGROUND_COLOR);
+  border: 1px solid var(--MESSAGE_BUBBLE_OWN_BORDER_COLOR);
+  color: var(--MESSAGE_BUBBLE_OWN_TEXT_COLOR);
+}
+/* the card's greeting is the captured click-to-open preview: same box, a
+   button so it is focusable. */
+.fpc-bubble--preview {
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---- composer: the original's input chrome, INERT. The pending Yarn choice
+   set renders as user-style chips inside its slot; the placeholder shows when
+   no chips are pending; the send button does nothing (captured send icon
+   color). There is no separate CTA row: the chips ARE the choices, so a second
+   button row would double-represent them. ---- */
+.fpc-form {
+  flex: none;
+  padding: 0 16px 10px;
+}
+.fpc-composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 10px 6px 14px;
+  border: 1px solid #e3e5e2;
+  border-radius: 10px;
+  background: #fff;
+}
+.fpc-slot {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+/* the chips read as the visitor's own sent messages: same captured values as
+   the own bubble. */
+.fpc-chip {
+  padding: 8px 12px;
+  border: 1px solid var(--MESSAGE_BUBBLE_OWN_BORDER_COLOR);
+  border-radius: 3px;
+  background: var(--MESSAGE_BUBBLE_OWN_BACKGROUND_COLOR);
+  color: var(--MESSAGE_BUBBLE_OWN_TEXT_COLOR);
+  font-size: 13px;
+  line-height: 1.15;
+  cursor: pointer;
+}
+.fpc-placeholder {
+  color: var(--MESSENGER_FOOTER_TEXT_COLOR);
+  font-size: 15px;
+}
+.fpc-send {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  padding: 2px;
+  color: var(--MESSENGER_COMPOSER_SEND_BUTTON_ICON_COLOR);
+  cursor: default;
+}
+
+/* ---- footer ---- */
+.fpc-footer {
+  flex: none;
+  padding: 10px 0;
+  background: #f4f5f3;
+  text-align: center;
+  font-size: 13px;
+  color: var(--MESSENGER_FOOTER_TEXT_COLOR);
+}
+.fpc-footer a {
+  color: var(--MESSENGER_FOOTER_TEXT_COLOR);
+  text-decoration: underline;
+}
