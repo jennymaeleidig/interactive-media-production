@@ -1,0 +1,64 @@
+title: Start
+---
+// PROTOTYPE FIXTURE (ticket 04) — throwaway. Real script content is the
+// user's future effort. Strings marked PINNED are transcribed verbatim from
+// one observed live session (evidence s9 greeting, s10 support/general walk,
+// s12 demo ask — .scratch/flock-parody/research/evidence/06-qualified-
+// conversation-ux/, 2026-09-09). Strings marked GLUE are structural filler
+// the prototype needs to exercise branching; they are NOT observed copy.
+//
+// ALL choices live in the script as Yarn options (->): the wrapper renders
+// the pending option set as user-style bubbles in the composer slot. No
+// persistent CTA row, no composer, no free text.
+Flock: Hey there! I’m Flock, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?
+-> What can you help me with?
+    <<jump general>>
+-> Get a Demo
+    <<jump demo>>
+-> Support
+    <<jump support>>
+===
+title: general
+---
+Flock: I’m here to assist with any questions you have about Flock’s safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
+// GLUE: unobserved exit choice below, so the loop has an end.
+-> Get a Demo
+    <<jump demo>>
+-> Support
+    <<jump support>>
+-> That’s all for now
+    <<jump end>>
+===
+title: support
+---
+Flock: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you’d like assistance with, or any other way I can help you today?
+// GLUE: unobserved exit choice below, so the loop has an end.
+-> Get a Demo
+    <<jump demo>>
+-> That’s all for now
+    <<jump end>>
+===
+title: demo
+---
+// PINNED (s12): the live bot asks for an email in-chat. The prototype stops
+// at the gate exactly like the research did — no booker, nothing submitted.
+Flock: I’d be happy to help you book a demo! Could you please provide your email address?
+-> Here’s my email
+    <<jump demo_email>>
+-> Maybe later
+    // GLUE: unobserved exit line, so the "Maybe later" branch has an end.
+    Flock: No problem — I’m here whenever you’re ready.
+    <<jump end>>
+===
+title: demo_email
+---
+// GLUE + deliberate divergence: the live widget opens a meeting booker here
+// (deferred per ticket 06 — never observed, nothing was ever submitted).
+Flock: Perfect — thanks! (PROTOTYPE: the live widget opens a meeting booker here; deferred per the research covenant.)
+// GLUE: exit choice.
+-> That’s all for now
+    <<jump end>>
+===
+title: end
+---
+===

@@ -1,0 +1,8 @@
+{
+  "projectFileVersion": 4,
+  "projectName": "FlockParodyPrototype",
+  "sourceFiles": [
+    "*.yarn"
+  ],
+  "baseLanguage": "en"
+}
