@@ -31,6 +31,14 @@ degrade to the captured end-state with JavaScript disabled.
   browser runtimes it inlines (e.g. `pipeline/story-hook.js`, ticket 03) are
   the documented exception: plain browser JavaScript, kept ES5-safe, read as
   text and inlined verbatim — no `.mjs`/JSDoc requirement, no bundling.
+- The fidelity gate (`regression/`, one command `npm run gate`) is plain Node
+  ESM + JSDoc too, but **not a pure transformation**: it drives headless
+  chromium in Docker, starts the production server, and compares real pixels.
+  Its pure core (`regression/compare.mjs` — PNG pair in → diff stats out,
+  report in → verdict out) is unit-tested at `test/gate.test.ts`; the shot
+  mechanics (`regression/shoot.mjs` + `cdp-shot.mjs`) are the gate run
+  itself, verified against the real capture run, never in `npm test` (the
+  suite must stay green on a fresh clone).
 - One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
   which capture run the build serves from. Moving to a fresh run is a
   one-value change plus a re-run of the passes.
@@ -85,6 +93,10 @@ degrade to the captured end-state with JavaScript disabled.
   suite must be green on a fresh clone.
 - Red → green, one slice at a time. New behavior starts as a failing test at
   an agreed seam.
+- The gate's compare/verdict logic is tested on synthetic PNGs
+  (`test/gate.test.ts`); the full gate run itself is the rendered-pixel seam
+  exercised against the real capture run — an instrument check, not a test
+  suite member.
 
 ## TypeScript & code style
 

@@ -36,6 +36,12 @@ export default defineConfig({
           include: ['test/interactions.seam.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'gate',
+          include: ['test/gate.test.ts'],
+        },
+      },
     ],
   },
 });

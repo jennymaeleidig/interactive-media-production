@@ -18,6 +18,7 @@
     "build": "next build",
     "start": "next start",
     "pipeline": "node pipeline/build.mjs",
+    "gate": "node regression/gate.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -29,9 +30,12 @@
   "devDependencies": {
     "@types/jsdom": "^30.0.0",
     "@types/node": "^24.7.2",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "jsdom": "^30.0.1",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
     "single-file-cli": "^2.10.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

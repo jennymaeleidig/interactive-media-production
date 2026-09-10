@@ -17,6 +17,9 @@ npm run dev        # dev server (WATCHPACK_POLLING baked in — sandbox needs it
 
 npm test           # full suite: pipeline unit tests + HTTP serving-seam tests
 npm run typecheck  # tsc --noEmit
+npm run gate       # fidelity gate: control renders + serving gate (0 px,
+                   #   3 viewports, reduced motion) + strip report — needs
+                   #   Docker/colima, the capture run, and a fresh build
 ```
 
 ## How it works
@@ -27,12 +30,19 @@ npm run typecheck  # tsc --noEmit
 2. **Build** (`pipeline/build.mjs`) — per page: strip the third-party
    machinery (Qualified offer host + chat launcher + styles, OneTrust consent
    stack, any surviving executable script), rewrite internal links to
-   Recreation routes, restore the closing tags SingleFile truncates, and log
-   every mutation to `served/build-log.json`. Later passes (forms, story-hook
-   seam, motion, delegated interactions) land per their tickets.
+   Recreation routes, route forms to local mock APIs, normalize captured
+   animation from-states to their end-states, inject the motion,
+   interactions, and story-hook layers inline, restore the closing tags
+   SingleFile truncates, and log every mutation to `served/build-log.json`.
 3. **Serve** (`app/[[...path]]/route.ts`) — a catch-all route answers
    original site paths from `served/`; unknown paths 404, reproducing the
    live site's observed behavior.
+4. **Verify** (`regression/`, one command: `npm run gate`) — the serving
+   gate renders the served tree over HTTP and from disk in the same headless
+   chromium at 1440×900 / 768×1024 / 390×844 (reduced motion forced) and
+   compares pixels at zero tolerance; control renders of identical content
+   prove the renderer is deterministic first; the strip report diffs each raw
+   Capture against its served page for human review.
 
 Coding rules: [CODING_STANDARDS.md](CODING_STANDARDS.md). Domain vocabulary:
 [CONTEXT.md](CONTEXT.md).
