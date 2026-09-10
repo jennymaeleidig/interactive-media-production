@@ -1,0 +1,5 @@
+# Pipeline output (derivable from the capture run — rebuild with `npm run pipeline`)
+served/
+# Regression screenshots + diffs (derivable — rebuild with shoot.sh + npm run diff)
+regression/shots/
+.port
