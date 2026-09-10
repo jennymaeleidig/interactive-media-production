@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: prototype
 Blocked by: 03
 
@@ -14,3 +14,12 @@ What is the repeatable pipeline from the capture run to a served page that hits 
 - **Regression diff**: automated screenshot diff (2–3 viewports) proving served == capture minus the strip list; the human side-by-side at the phase gate covers runtime behavior (animations, chat overlay).
 
 Product: the pipeline, proven once, that the spec describes as the build method for every page — plus the story-hook contract written down for the parody effort.
+
+## Answer
+
+Resolved 2026-09-09 — pipeline built, verified end-to-end, and walked. Prototype (throwaway, runnable): `.scratch/flock-parody/prototype/snapshot-serving/` — full decision write-out in its [README](../prototype/snapshot-serving/README.md); every per-page mutation logged in `served/build-log.json`.
+
+- **Pipeline**: strip DOM → rewrite links → inject form actions → inject story-hook seam → write. Captures carry **zero executable scripts** (SingleFile stripped them at capture time), so zero-outbound is true by construction. Post-strip audit: `qualified=0`; `onetrust=1` (footer "Your Privacy Choices" link — site content, stays per link policy). Strip finds: the chat launcher lives in a separate `<q-root>` element (~1.8 MB/page); the "Message from Flock Safety" title-swap was Qualified's pounce script — closed; captures are truncated before `</body>` (the pass appends closing tags back).
+- **Serving**: optional catch-all route (served tree → 200) + `redirects.json` from the run manifest (56 stubs → 301, targets already local) + mock form route (swallow POST → 303 to captured thank-you). Dead collection roots **404** — ratified: the live site 404s them; item pages stay served.
+- **Regression**: two comparisons, three renders per viewport through the same chromium (control: identical renders = 0 px). **Serving gate** (http vs disk, ~0 tolerance): **0 px at 1440×900, 768×1024, 390×844**. **Strip report** (raw vs served, informational + diff PNGs): deltas confined to the Qualified offer bar, the OneTrust consent card, and a 52 px header-offset reflow; hero/nav/stat cards/mobile pixel-identical.
+- **Ratified by user (2026-09-09)**: dead roots 404; story-hook contract (`flockParody.apply([{selector, text|html|src|style}…])`, queued pre-DOM, never throws, dormant in Recreation); **static-frozen pages as the fidelity floor** — served pages are fully static, animations sit at captured end-state. Motion returns as a cheap mimic layer (CSS + IntersectionObserver annotations, original GSAP/Lenis runtime excluded), ticketed as [10-motion-mimicry-tier](10-motion-mimicry-tier.md), blocked by ticket 08's animation-pattern census. Marketo forms: **static styled mock of the rendered end-state posting to local mock routes**; delay-injecting real Marketo ruled out (violates never-live/zero-outbound).
