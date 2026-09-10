@@ -16,4 +16,4 @@ You are a pi research agent for effort `flock-parody` in this repo. Work alone (
    - Append one line under `## Decisions so far` in `.scratch/flock-parody/map.md`:
      `- [Behavioral machinery of flocksafety.com](issues/02-behavioral-machinery.md): <one-line gist>`
 
-Later tickets depend on this: the chat-wrapper prototype (04) needs the widget's UX flow and visual tokens; the extraction prototype (05) needs the font/animation/video checklist and the strip-list.
+Later tickets depend on this: the chat-wrapper prototype (04) needs the widget's UX flow and visual tokens; the snapshot-serving pipeline prototype (05) needs the font/animation/video checklist and the strip-list.
