@@ -1,11 +1,4 @@
-# Small, representative page subset for the serving tracer (ticket 01).
-# One page per template family + the form proof page. Empty this file to
-# process the full capture list (all 1,199) — whole-site scale is ticket 07.
-/
-/book-a-demo
-/thank-you
-/products/license-plate-readers
-/products/video-cameras
-/press-center
-/blog/how-effective-is-flock
-/chilipiper-2
+# Page subset for a scoped build. Empty = the full capture list (every page
+# in the run's capture-list.txt) — the whole-site build is the default
+# (ticket 07). Add one path per line (e.g. /products/license-plate-readers)
+# to rebuild a single route from a fresh Capture, as the refresh runbook does.

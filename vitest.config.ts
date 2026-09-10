@@ -42,6 +42,12 @@ export default defineConfig({
           include: ['test/gate.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'routes',
+          include: ['test/routes.test.ts'],
+        },
+      },
     ],
   },
 });

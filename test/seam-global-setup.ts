@@ -37,7 +37,7 @@ function nextBuildFresh() {
   if (!existsSync(buildId)) return false;
   const buildTime = statSync(buildId).mtimeMs;
   const sources: string[] = [];
-  for (const p of ['app', 'next.config.ts', 'package.json']) {
+  for (const p of ['app', 'lib', 'next.config.ts', 'package.json']) {
     const full = path.join(ROOT, p);
     if (statSync(full).isDirectory()) {
       sources.push(...readdirSync(full, { recursive: true }).map((f) => path.join(full, f as string)));
@@ -61,7 +61,10 @@ export async function setup() {
   const { runPipeline } = await import('../pipeline/build.mjs');
   const { log } = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/form-test'],
+    // the scaffold/test fixture page is dropped from serving, exactly as the
+    // real build drops pipeline/config.mjs DROPPED_PAGES
+    dropPages: ['/form-test'],
     outDir: SERVED_DIR,
   });
   if (log.some((e) => e.error)) throw new Error('fixture pipeline failed: ' + JSON.stringify(log));

@@ -45,17 +45,26 @@
 //                the pass restores the closing tags; every mutation lands in
 //                build-log.json, per page.
 //
-// Later passes land here per their tickets: whole-site scale + redirect
-// manifest (07).
+// Build-level outputs (ticket 07):
+//   redirects.json  — the run's uncaptured manifest filtered to legacy
+//                     redirect stubs → local targets; the serving route
+//                     answers them with a permanent redirect.
+//   build-summary.json — requested / served / dropped / error counts, the
+//                     redirect count, and any warning (invalid or dangling
+//                     redirect targets). The whole-site count check reads it.
+//   Scaffold/test pages (pipeline/config.mjs DROPPED_PAGES) are not written
+//   and any stale served file for one is removed — dropped from serving
+//   entirely.
 //
 // Usage: node pipeline/build.mjs [--run <captureRunDir>] [--out <dir>]
 //                                [--pages /a,/b] [--list <file>]
 //   Defaults: --run pipeline/config.mjs CAPTURE_RUN, --out served,
-//             pages from pipeline/pages.list.
+//             pages from pipeline/pages.list (empty = the full capture list).
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseUncapturedManifest } from './run-manifest.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -80,12 +89,14 @@ const STRIP_TARGETS = [
 ];
 
 // Post-strip audit regexes — any hit suggests strip-list incompleteness.
-// onetrust targets the consent-stack MACHINERY (ids/classes/scripts), not the
-// brand string: the footer "Your Privacy Choices" link (a
-// privacyportal.onestrust.com webform URL) is site content and stays under the
-// link policy, so the bare word "onestrust" may remain inside it.
+// Both vendor keys target the MACHINERY (ids/classes/scripts/var names), not
+// the English word: the footer "Your Privacy Choices" link keeps the brand
+// string, and page copy legitimately says "qualified" ("qualified
+// electrician", "qualified applicants" — corpus: 16 pages), so a bare-word
+// match would flag content as residue. Machinery markers, by contrast, must
+// be zero.
 const AUDIT_RES = {
-  qualified: /qualified/i,
+  qualified: /qualified-offer-|qualified\.com|_qualified-|q-root\b|q-focus-sentinel|q-launcher|q-messenger-frame/i,
   onetrust: /onetrust-(?:banner|pc|consent|style|accept|reject|close|privacy|policy|customize|filter)|ot-sdk|ot-sync/i,
   'known trackers': /googletagmanager\.com|google-analytics\.com|hotjar\.com|hockeystack\.com|bing\.com\/bat|linkedin\.com\/px|connect\.facebook\.net|snap\.licdn\.com|6sense\.com|marketo\.com|munchkin\.marketo/i,
   // a form action that leaves the machine (ticket 02): absolute or
@@ -177,6 +188,18 @@ function stripPass(html, entry) {
     // the var may have been a style attribute's only content — drop the now-empty attr
     html = html.replace(/\sstyle=(""|''|(?=[>\s]))/g, '');
     entry.stripped['qualified header-height var'] = varHits.length;
+  }
+  // …and Qualified also injected REFERENCES to its header vars into real
+  // elements' inline styles — corpus: 4 pages carry the Vocal Video popover's
+  // `top: calc(0px + var(--qualified-offer-header-inline-style-offset,
+  // var(--qualified-offer-header-height,0px)))`. With the assignment gone the
+  // reference resolves to its innermost 0px fallback — the reclaimed
+  // header-height state — so the whole var() reference is replaced with that
+  // fallback instead of leaving machinery DNA (and the strip audit red).
+  const refHits = html.match(/var\(--qualified-offer-header-/g);
+  if (refHits) {
+    html = html.replace(/var\(--qualified-offer-header-[a-z-]+(?:\([^()]*\)|[^()])*\)/g, '0px');
+    entry.stripped['qualified header-height var references'] = refHits.length;
   }
 
   // Strip every remaining executable <script>. Captures should carry zero
@@ -629,15 +652,38 @@ function storyHookPass(html, entry, source) {
  */
 
 /**
+ * Build-level summary (ticket 07): the whole-site counts and the route classes
+ * the serving layer answers beside the mirrored tree.
+ * @typedef {Object} BuildSummary
+ * @property {string} captureRun  Capture run the build read, relative to the repo root.
+ * @property {number} requested  Pages the caller listed, before dropping.
+ * @property {number} served  Pages written (requested − dropped − errors).
+ * @property {string[]} dropped  Scaffold/test pages dropped from serving (those the request listed).
+ * @property {string[]} errors  Requested pages that failed to build (missing capture, …).
+ * @property {{count: number, invalid: string[], dangling: string[]}} redirects  Legacy stubs → local targets, plus warnings.
+ * @property {string[]} deadRoots  Dead collection roots (404, as the live site).
+ * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
+ */
+
+/**
  * Run the build over `pages` from the capture run at `runDir`, writing the
  * served tree to `outDir`. Returns the per-page mutation log (also written to
- * <outDir>/build-log.json).
+ * <outDir>/build-log.json) and the build summary (<outDir>/build-summary.json).
  *
- * @param {{runDir: string, pages: string[], outDir: string}} opts
- * @returns {Promise<{ log: LogEntry[] }>}
+ * `dropPages` are removed from the build and their served files deleted even
+ * when the caller listed them — "dropped from serving entirely" (spec, Serving
+ * and links). The CLI passes pipeline/config.mjs DROPPED_PAGES.
+ *
+ * @param {{runDir: string, pages: string[], outDir: string, dropPages?: string[]}} opts
+ * @returns {Promise<{ log: LogEntry[], summary: BuildSummary }>}
  */
 export async function runPipeline(opts) {
-  const { runDir, pages, outDir } = opts;
+  const { runDir, pages, outDir, dropPages = [] } = opts;
+  const dropSet = new Set(dropPages);
+  // A dropped page must not be reachable, even if an earlier build wrote its
+  // served file: remove it before building, and never write it.
+  for (const page of dropSet) fs.rmSync(servedFileFor(outDir, page), { force: true });
+  const buildPages = pages.filter((p) => !dropSet.has(p));
   const log = [];
   const formsManifest = {}; // form route key → { page, formId, redirectTo }
   // read once — every page inlines the same runtime bytes verbatim
@@ -647,7 +693,7 @@ export async function runPipeline(opts) {
   const interactionsCss = fs.readFileSync(path.join(HERE, 'interactions.css'), 'utf8');
   const interactionsRuntime = fs.readFileSync(path.join(HERE, 'interactions-runtime.js'), 'utf8');
 
-  for (const page of pages) {
+  for (const page of buildPages) {
     const src = captureFileFor(runDir, page);
     if (!fs.existsSync(src)) {
       log.push({ page, error: 'capture file missing' });
@@ -688,17 +734,63 @@ export async function runPipeline(opts) {
     log.push(entry);
   }
 
+  // The run's route classes: legacy redirect stubs become the serving route's
+  // 301 table; dead roots and auth-gated stubs stay unserved (404).
+  const uncaptured = loadRunManifest(runDir);
+  const redirects = uncaptured.redirects;
+  const served = log.filter((e) => !e.error).map((e) => e.page);
+  const servedSet = new Set(served);
+  // A redirect target that no served page (and no other redirect) answers
+  // would send a visitor into a 404 — surface it instead of letting the gate
+  // discover it by pixels.
+  const dangling = Object.entries(redirects)
+    .filter(([, target]) => !servedSet.has(target) && !(target in redirects))
+    .map(([p, target]) => `${p} → ${target}`);
+  const errors = log.filter((e) => e.error).map((e) => e.page);
+
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'build-log.json'), JSON.stringify(log, null, 2));
   // The mock route's redirect table (ticket 02): written even when empty so
   // the route answers cleanly (unknown key → 404) on every build.
   fs.writeFileSync(path.join(outDir, 'forms-manifest.json'), JSON.stringify(formsManifest, null, 2));
-  return { log };
+  // The serving route's permanent-redirect table (ticket 07), written even
+  // when empty so the route answers cleanly on every build.
+  fs.writeFileSync(path.join(outDir, 'redirects.json'), JSON.stringify(redirects, null, 2));
+
+  /** @type {BuildSummary} */
+  const summary = {
+    captureRun: path.relative(ROOT, runDir),
+    requested: pages.length,
+    served: served.length,
+    // the dropped pages among the requested list — the count identity is
+    // served + dropped + errors === requested. (Pages the config drops that a
+    // scoped subset build never requested are absent from the tree too; the
+    // route check asserts every configured drop 404s.)
+    dropped: pages.filter((p) => dropSet.has(p)),
+    errors,
+    redirects: { count: Object.keys(redirects).length, invalid: uncaptured.invalidRedirects, dangling },
+    deadRoots: uncaptured.dead,
+    authGated: uncaptured.authGated,
+  };
+  fs.writeFileSync(path.join(outDir, 'build-summary.json'), JSON.stringify(summary, null, 2));
+  return { log, summary };
+}
+
+/**
+ * Read the run's uncaptured manifest, or an empty route set when the run has
+ * none (fixture runs) — the build stays a pure transformation of what exists.
+ * @param {string} runDir
+ * @returns {import('./run-manifest.mjs').UncapturedManifest}
+ */
+function loadRunManifest(runDir) {
+  const file = path.join(runDir, 'manifest-uncaptured.csv');
+  if (!fs.existsSync(file)) return { redirects: {}, dead: [], authGated: [], invalidRedirects: [] };
+  return parseUncapturedManifest(fs.readFileSync(file, 'utf8'));
 }
 
 // ---- summary (CLI) ------------------------------------------------------------
 
-function summarize(log) {
+function summarize(log, summary) {
   for (const e of log) {
     if (e.error) {
       console.log(`✗ ${e.page}: ${e.error}`);
@@ -715,6 +807,16 @@ function summarize(log) {
     );
   }
   console.log(`\n${log.length} page(s) processed`);
+  const dropped = summary.dropped.length;
+  console.log(
+    `build summary: ${summary.served} served + ${dropped} dropped = ${summary.requested} requested`
+    + (summary.errors.length > 0 ? ` (${summary.errors.length} error(s): ${summary.errors.join(', ')})` : '')
+  );
+  console.log(
+    `route classes: ${summary.redirects.count} redirect(s) → 301, ${summary.deadRoots.length} dead root(s) 404, `
+    + `${summary.authGated.length} auth-gated 404`
+  );
+  for (const w of [...summary.redirects.invalid, ...summary.redirects.dangling]) console.log(`⚠ redirect: ${w}`);
 }
 
 // ---- CLI ----------------------------------------------------------------------
@@ -726,7 +828,7 @@ async function main() {
     return i >= 0 ? argv[i + 1] : null;
   }
 
-  const { CAPTURE_RUN } = await import('./config.mjs');
+  const { CAPTURE_RUN, DROPPED_PAGES } = await import('./config.mjs');
   const runDir = path.resolve(ROOT, arg('--run') ?? CAPTURE_RUN);
   const outDir = path.resolve(ROOT, arg('--out') ?? 'served');
 
@@ -750,8 +852,8 @@ async function main() {
     }
   }
 
-  const { log } = await runPipeline({ runDir, pages, outDir });
-  summarize(log);
+  const { log, summary } = await runPipeline({ runDir, pages, outDir, dropPages: DROPPED_PAGES });
+  summarize(log, summary);
 }
 
 const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;

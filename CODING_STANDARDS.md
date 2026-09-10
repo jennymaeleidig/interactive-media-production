@@ -41,7 +41,9 @@ degrade to the captured end-state with JavaScript disabled.
   suite must stay green on a fresh clone).
 - One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
   which capture run the build serves from. Moving to a fresh run is a
-  one-value change plus a re-run of the passes.
+  one-value change plus a re-run of the passes. The same file's
+  `DROPPED_PAGES` lists the scaffold/test pages dropped from serving; it is
+  explicit so a stale entry fails review, never a runtime heuristic.
 
 ## Pipeline discipline
 
@@ -49,6 +51,11 @@ degrade to the captured end-state with JavaScript disabled.
   targets with removed byte counts, links rewritten, closing tags restored,
   warnings for anything left in place, the post-strip audit, and the script
   census. If the build changed served bytes, the log says so.
+- **Build-level route artifacts** sit beside the log: `redirects.json` (the
+  run manifest's legacy stubs → local targets, written even when empty) and
+  `build-summary.json` (requested / served / dropped / errors, the redirect
+  count, dead roots, auth-gated stubs). The routes check reads them, so the
+  serving layer is measured against what the build actually produced.
 - **The strip audit is an invariant**: after the passes, tracker machinery
   counts (Qualified, OneTrust stack, known tracker domains) must be zero on
   every page. A failing audit means the strip list is incomplete — fix the
@@ -72,7 +79,10 @@ degrade to the captured end-state with JavaScript disabled.
   through the injection passes (tickets 03/04/05), never by un-freezing the
   captured DOM.
 - Unknown paths 404. Reproducing observed live-site behavior is the fidelity
-  bar — including its dead ends.
+  bar — including its dead ends. The catch-all resolves 200 (served tree) →
+  301 (redirect manifest) → 404 (dead roots, auth-gated stubs, dropped
+  scaffold/test pages), in that order; a served file always wins over a
+  manifest entry.
 
 ## Testing
 
@@ -94,9 +104,10 @@ degrade to the captured end-state with JavaScript disabled.
 - Red → green, one slice at a time. New behavior starts as a failing test at
   an agreed seam.
 - The gate's compare/verdict logic is tested on synthetic PNGs
-  (`test/gate.test.ts`); the full gate run itself is the rendered-pixel seam
-  exercised against the real capture run — an instrument check, not a test
-  suite member.
+  (`test/gate.test.ts`); the route check's expectation builder and count
+  invariant are tested pure (`test/routes.test.ts`). The full gate run and the
+  full-scale route check are the rendered-pixel and HTTP seams exercised
+  against the real capture run — instruments, not test-suite members.
 
 ## TypeScript & code style
 
@@ -139,6 +150,7 @@ dev/build for everyone:
 2. `npm test` — full suite green (not just the files you touched).
 3. `npm run build` — production build succeeds.
 4. If the pipeline or served bytes changed: `npm run pipeline` + spot-check
-   the mutation log and strip audit.
+   the mutation log and strip audit; run `npm run routes` for the full-scale
+   route classes (build first).
 5. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to
    the current branch — staging only files the ticket touched.

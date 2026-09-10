@@ -153,7 +153,44 @@ describe('story-hook seam present & dormant on served pages (ticket 03)', () => 
   });
 });
 
-describe('route classes', () => {
+describe('route classes (ticket 07: redirect manifest, dead roots, dropped pages)', () => {
+  it('permanently redirects a legacy stub to its local target (301)', async () => {
+    const res = await fetch(base + '/legal/privacy-notice', { redirect: 'manual' });
+    expect(res.status).toBe(301);
+    expect(res.headers.get('location')).toBe('/thank-you');
+    // local target: following it serves the captured page
+    const followed = await fetch(base + '/legal/privacy-notice');
+    expect(followed.status).toBe(200);
+    expect(await followed.text()).toContain('Thank You | Flock Safety');
+  });
+
+  it('does not redirect a served path that also exists in the manifest — the served tree wins', async () => {
+    const res = await fetch(base + '/thank-you', { redirect: 'manual' });
+    expect(res.status).toBe(200);
+  });
+
+  it('404s dead collection roots — the live site 404s them', async () => {
+    expect((await fetch(base + '/ebooks', { redirect: 'manual' })).status).toBe(404);
+  });
+
+  it('404s auth-gated stubs (not captured, not served)', async () => {
+    expect((await fetch(base + '/events/test-event', { redirect: 'manual' })).status).toBe(404);
+  });
+
+  it('drops scaffold/test pages from serving entirely — 404, no captured body', async () => {
+    const res = await fetch(base + '/form-test', { redirect: 'manual' });
+    expect(res.status).toBe(404);
+    expect(await res.text()).not.toContain('Form Test');
+  });
+
+  it('builds the redirect table from the run manifest — no table means no redirects', async () => {
+    // the table the running server reads is the fixture build's own output
+    const table = JSON.parse(readFileSync(path.join(ROOT, '.tmp/seam/served/redirects.json'), 'utf8')) as Record<string, string>;
+    expect(table).toEqual({ '/legal/privacy-notice': '/thank-you' });
+  });
+});
+
+describe('path resolution', () => {
   it('serves deep paths from the mirrored tree', async () => {
     const res = await fetch(base + '/products/gun-detection');
     const body = await res.text();

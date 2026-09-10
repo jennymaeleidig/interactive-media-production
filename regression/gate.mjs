@@ -24,13 +24,13 @@
 // Usage: node regression/gate.mjs [--pages /a,/b]   (default: every page in
 //        served/build-log.json)  [--control /]  [--out .tmp/gate]
 // SPDX-License-Identifier: CC0-1.0
-import { spawn } from 'node:child_process';
 import fs from 'node:fs';
-import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { PNG } from 'pngjs';
 import { diffPixels, verdict } from './compare.mjs';
+import { checkRoutes } from './routes.mjs';
+import { startServer } from './server.mjs';
 import { dockerAvailable, shoot } from './shoot.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -53,73 +53,8 @@ function fail(msg) {
   process.exit(1);
 }
 
-/** failure once the server child exists — throws so `finally` can reap it (no orphaned port squatter) */
-function bail(msg) {
-  throw new Error(msg);
-}
-
 /** one contiguous diff region, formatted identically for console + report */
 const fmtBand = (b) => `y ${b.y0}–${b.y1} × x ${b.x0}–${b.x1}: ${b.px.toLocaleString('en-US')} px`;
-
-function freePort() {
-  return new Promise((resolve, reject) => {
-    const srv = net.createServer();
-    srv.listen(0, '127.0.0.1', () => {
-      const addr = srv.address();
-      if (addr && typeof addr === 'object') {
-        const { port } = addr;
-        srv.close(() => resolve(port));
-      } else {
-        srv.close(() => reject(new Error('unexpected listen address')));
-      }
-    });
-    srv.on('error', reject);
-  });
-}
-
-/**
- * Start the production server on a free port (the gate measures the serving
- * layer as visitors get it) and resolve once it answers. Dies with the
- * command — the sandbox forbids orphaned port squatters.
- */
-async function startServer() {
-  if (!fs.existsSync(path.join(ROOT, '.next/BUILD_ID'))) {
-    fail('.next/BUILD_ID missing — run `npm run build` first (the gate serves the production build)');
-  }
-  const port = await freePort();
-  const child = spawn('npx', ['next', 'start', '-p', String(port)], {
-    cwd: ROOT,
-    stdio: 'ignore',
-    detached: false,
-  });
-  const base = `http://127.0.0.1:${port}`;
-  const deadline = Date.now() + 60_000;
-  // every failure past the spawn throws (bail, not fail/exit): the caller's
-  // finally stops the child, so no path can orphan it
-  for (;;) {
-    if (child.exitCode !== null) bail(`next start exited early (${child.exitCode})`);
-    try {
-      await fetch(base + '/');
-      break; // any response means it is up — route status is the tests' business
-    } catch (e) {
-      if (Date.now() > deadline) bail('next start did not become ready in 60s');
-      await new Promise((r) => setTimeout(r, 300));
-    }
-  }
-  return {
-    base,
-    async stop() {
-      child.kill('SIGTERM');
-      await new Promise((resolve) => {
-        child.once('exit', resolve);
-        setTimeout(() => {
-          try { child.kill('SIGKILL'); } catch { /* already gone */ }
-          resolve();
-        }, 3000);
-      });
-    },
-  };
-}
 
 /**
  * diff two shot files; returns the entry for the report. With `overlayPath`,
@@ -158,6 +93,9 @@ async function main() {
   if (!fs.existsSync(servedDir)) fail('served/ missing — run `npm run pipeline` first');
   const buildLogPath = path.join(servedDir, 'build-log.json');
   if (!fs.existsSync(buildLogPath)) fail('served/build-log.json missing — run `npm run pipeline` first');
+  for (const artifact of ['build-summary.json', 'redirects.json']) {
+    if (!fs.existsSync(path.join(servedDir, artifact))) fail(`served/${artifact} missing — run \`npm run pipeline\` first`);
+  }
   if (!fs.existsSync(runDir)) fail(`capture run missing at ${runDir} — the capture pointer (pipeline/config.mjs) is stale`);
 
   const pages = arg('--pages')
@@ -204,6 +142,14 @@ async function main() {
   try {
     server = await startServer();
     const host = `host.docker.internal:${new URL(server.base).port}`;
+
+    // ---- route classes first: cheap, and a routing mistake should fail
+    // before the pixel matrix spends hours rendering (ticket 07) -------------
+    console.log('ROUTES — every route class over HTTP (200 / 301 / 404)');
+    const routes = await checkRoutes(server.base, { servedDir, runDir });
+    console.log(`  ${routes.failures.length === 0 ? '✓' : '✗'} ${routes.checked} route(s): ${routes.counts.served} served 200 · ${routes.counts.redirects} stub 301 · ${routes.counts.dropped} dropped/test 404 · ${routes.counts.dead} dead 404 · ${routes.counts.authGated} auth-gated 404`);
+    for (const f of routes.failures) console.log(`    ✗ ${f}`);
+    if (routes.failures.length > 0) throw new Error(`${routes.failures.length} route-class failure(s) — fix routing before the pixel matrix`);
 
     // ---- control: determinism proof, first ------------------------------------
     // A nonzero control aborts before the matrix: those results would be

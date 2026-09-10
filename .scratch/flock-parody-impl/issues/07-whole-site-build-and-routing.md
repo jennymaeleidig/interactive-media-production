@@ -4,7 +4,7 @@
 
 **Blocked by:** 02, 03, 04, 05, 06.
 
-**Status:** open
+**Status:** claimed
 Label: ready-for-agent
 
 - [ ] Every live path from the inventory returns 200 and serves its captured page.

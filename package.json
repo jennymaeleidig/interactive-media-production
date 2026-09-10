@@ -18,6 +18,7 @@
     "build": "next build",
     "start": "next start",
     "pipeline": "node pipeline/build.mjs",
+    "routes": "node regression/routes.mjs",
     "gate": "node regression/gate.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

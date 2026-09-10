@@ -6,7 +6,7 @@
 // stack, truncated tail).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { rm, readFile } from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runPipeline, type LogEntry } from '../pipeline/build.mjs';
@@ -29,7 +29,7 @@ beforeAll(async () => {
   await rm(path.join(HERE, '.tmp/pipeline'), { recursive: true, force: true });
   result = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/chilipiper-2', '/missing'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/chilipiper-2', '/var-ref', '/missing'],
     outDir: OUT,
   });
 });
@@ -87,6 +87,22 @@ describe('strip pass', () => {
     expect(html).toContain('<div class=word style="color:rgb(142,168,184);opacity:0.45">Safety</div>');
     expect(html).toContain('We are flocksafety.com, in text.');
     expect(html).toContain('Flock Safety | Safer Together');
+  });
+
+  it('replaces Qualified header-var references with their 0px fallback, and never mistakes the English word "qualified" for residue', async () => {
+    // corpus find (ticket 07): 4 pages carry the Vocal Video popover's
+    // `top: calc(0px + var(--qualified-offer-header-inline-style-offset,
+    // var(--qualified-offer-header-height,0px)))` on a real element; the
+    // assignment strip left the nested reference behind, so the audit went red
+    const html = await readFile(path.join(OUT, 'var-ref.html'), 'utf8');
+    expect(html).not.toContain('qualified-offer');
+    expect(html).toContain('top:calc(0px + 0px)');
+    // the English word in page copy is content, not machinery — it survives
+    expect(html).toContain('A qualified electrician should install this device.');
+    const entry = result.log.find((e) => e.page === '/var-ref');
+    if (!entry || entry.error) throw new Error('unreachable: fixture var-ref must log cleanly');
+    expect(entry.stripped!['qualified header-height var references']).toBe(2); // outer + inner var()
+    expect(entry.audit!.qualified).toBe(0);
   });
 
   it('strips the same machinery from deep pages', async () => {
@@ -489,6 +505,61 @@ describe('write pass & mutation log', () => {
   it('logs a missing capture as a per-page error instead of throwing', () => {
     const missing = result.log.find((e) => e.page === '/missing');
     expect(missing).toEqual({ page: '/missing', error: 'capture file missing' });
-    expect(result.log.filter((e) => !e.error)).toHaveLength(6);
+    expect(result.log.filter((e) => !e.error)).toHaveLength(7);
+  });
+});
+
+describe('build-level routing & scaffolding (ticket 07)', () => {
+  const DROP_OUT = path.join(HERE, '.tmp/pipeline/drop');
+  let dropRun: { log: LogEntry[]; summary: { requested: number; served: number; dropped: string[]; errors: string[] } };
+
+  beforeAll(async () => {
+    // seed a stale served file for the dropped page (an earlier build wrote it)
+    mkdirSync(DROP_OUT, { recursive: true });
+    writeFileSync(path.join(DROP_OUT, 'form-test.html'), '<html>stale</html>');
+    dropRun = await runPipeline({
+      runDir: FIXTURES,
+      pages: ['/', '/thank-you', '/form-test'],
+      dropPages: ['/form-test'],
+      outDir: DROP_OUT,
+    });
+  });
+
+  it('drops scaffold/test pages from serving entirely — never built, stale file removed', () => {
+    expect(dropRun.log.map((e) => e.page)).not.toContain('/form-test');
+    expect(existsSync(path.join(DROP_OUT, 'form-test.html'))).toBe(false);
+  });
+
+  it('accounts for every requested page in the summary', () => {
+    expect(dropRun.summary).toMatchObject({ requested: 3, served: 2, dropped: ['/form-test'], errors: [] });
+    expect(dropRun.summary.served + dropRun.summary.dropped.length + dropRun.summary.errors.length).toBe(dropRun.summary.requested);
+  });
+
+  it('writes redirects.json from the run manifest and surfaces the route classes in the summary', async () => {
+    const table = JSON.parse(await readFile(path.join(DROP_OUT, 'redirects.json'), 'utf8'));
+    expect(table).toEqual({ '/legal/privacy-notice': '/thank-you' });
+    const summary = JSON.parse(await readFile(path.join(DROP_OUT, 'build-summary.json'), 'utf8'));
+    expect(summary.redirects).toEqual({ count: 1, invalid: [], dangling: [] });
+    expect(summary.deadRoots).toEqual(['/ebooks']);
+    expect(summary.authGated).toEqual(['/events/test-event']);
+    expect(summary.captureRun).toBe('test/fixtures/capture-run');
+  });
+
+  it('warns about a redirect whose target is not served (a visitor would hit a 404)', async () => {
+    const { summary } = await runPipeline({
+      runDir: FIXTURES,
+      pages: ['/'], // /thank-you deliberately not built → the stub dangles
+      outDir: path.join(HERE, '.tmp/pipeline/dangling'),
+    });
+    expect(summary.redirects.dangling).toEqual(['/legal/privacy-notice → /thank-you']);
+  });
+
+  it('leaves the redirect table empty when the run has no uncaptured manifest', async () => {
+    const NO_MANIFEST = path.join(HERE, '.tmp/pipeline/no-manifest-run');
+    mkdirSync(NO_MANIFEST, { recursive: true });
+    writeFileSync(path.join(NO_MANIFEST, 'index.html'), '<html><head><title>Bare</title></head><body>x</body></html>');
+    const { summary } = await runPipeline({ runDir: NO_MANIFEST, pages: ['/'], outDir: path.join(HERE, '.tmp/pipeline/no-manifest') });
+    expect(summary.redirects.count).toBe(0);
+    expect(JSON.parse(await readFile(path.join(HERE, '.tmp/pipeline/no-manifest/redirects.json'), 'utf8'))).toEqual({});
   });
 });
