@@ -73,6 +73,11 @@ export async function startServer() {
   return {
     base,
     async stop() {
+      // Unregister before reaping: the run continues after stop() (the gate
+      // writes its report), and a later signal must not run a handler for a
+      // child that is already gone.
+      process.off('SIGINT', onSignal);
+      process.off('SIGTERM', onSignal);
       child.kill('SIGTERM');
       await new Promise((resolve) => {
         child.once('exit', resolve);

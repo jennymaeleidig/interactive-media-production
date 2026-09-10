@@ -20,9 +20,10 @@
 // SPDX-License-Identifier: CC0-1.0
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { DROPPED_PAGES } from '../pipeline/config.mjs';
 import { startServer } from './server.mjs';
+import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -34,11 +35,33 @@ const ROOT = path.resolve(HERE, '..');
  */
 
 /**
+ * The route classes a build produces — the shape `routeExpectations` consumes
+ * and `checkRoutes` counts (a `RouteClasses` born from `UncapturedManifest`
+ * plus the build's served/dropped sets).
+ * @typedef {Object} RouteClasses
+ * @property {string[]} served
+ * @property {string[]} dropped
+ * @property {Record<string,string>} redirects
+ * @property {string[]} dead
+ * @property {string[]} authGated
+ */
+
+/**
+ * The one-line route-class summary both the gate preflight and the standalone
+ * route check print (kept here so the two can never drift).
+ * @param {{served: number, redirects: number, dropped: number, dead: number, authGated: number}} counts
+ * @returns {string}
+ */
+export function formatRouteCounts(counts) {
+  return `${counts.served} served 200 · ${counts.redirects} stub 301 · ${counts.dropped} dropped/test 404 · ${counts.dead} dead 404 · ${counts.authGated} auth-gated 404`;
+}
+
+/**
  * Build the expected route classes. A path may appear in more than one class
  * only by a build mistake; the more specific expectation wins (a served page
  * over a redirect over a 404) and the conflict is reported.
  *
- * @param {{served: string[], dropped: string[], redirects: Record<string,string>, dead: string[], authGated: string[]}} routes
+ * @param {RouteClasses} routes
  * @returns {{expectations: RouteExpectation[], conflicts: string[]}}
  */
 export function routeExpectations({ served, dropped, redirects, dead, authGated }) {
@@ -183,11 +206,7 @@ export async function checkRoutes(base, { servedDir, runDir }) {
 // ---- CLI ----------------------------------------------------------------------
 
 async function main() {
-  const argv = process.argv.slice(2);
-  const arg = (name) => {
-    const i = argv.indexOf(name);
-    return i >= 0 ? argv[i + 1] : null;
-  };
+  const arg = makeArg(process.argv.slice(2));
   const servedDir = path.resolve(ROOT, arg('--served') ?? 'served');
   const { CAPTURE_RUN } = await import('../pipeline/config.mjs');
   const runDir = path.resolve(ROOT, arg('--run') ?? CAPTURE_RUN);
@@ -205,7 +224,7 @@ async function main() {
     server = external ? { base: external, stop: async () => {} } : await startServer();
     const r = await checkRoutes(server.base, { servedDir, runDir });
     console.log('Route check (ticket 07) — every route class over HTTP');
-    console.log(`  ${r.checked} route(s): ${r.counts.served} served 200 · ${r.counts.redirects} stub 301 · ${r.counts.dropped} dropped/test 404 · ${r.counts.dead} dead 404 · ${r.counts.authGated} auth-gated 404`);
+    console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
     console.log(`  count identity: served + dropped = ${r.counts.served} + ${r.counts.droppedRequested} = ${r.counts.served + r.counts.droppedRequested}, against ${r.counts.inventory} inventory page(s)`);
     if (r.failures.length > 0) {
       console.log(`\n✗ ${r.failures.length} failure(s):`);
@@ -219,8 +238,7 @@ async function main() {
   }
 }
 
-const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-if (invokedDirectly) {
+if (invokedDirectly(import.meta.url)) {
   main().catch((err) => {
     console.error(err);
     process.exitCode = 1;

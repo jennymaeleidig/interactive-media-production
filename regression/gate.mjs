@@ -34,12 +34,13 @@
 // SPDX-License-Identifier: CC0-1.0
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
 import { diffPixels, verdict } from './compare.mjs';
-import { checkRoutes } from './routes.mjs';
+import { checkRoutes, formatRouteCounts } from './routes.mjs';
 import { startServer } from './server.mjs';
 import { dockerAvailable, shoot } from './shoot.mjs';
+import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -84,10 +85,7 @@ function compareShots(shotsDir, fileA, fileB, entry, { overlayPath = null } = {}
 
 async function main() {
   const argv = process.argv.slice(2);
-  const arg = (name) => {
-    const i = argv.indexOf(name);
-    return i >= 0 ? argv[i + 1] : null;
-  };
+  const arg = makeArg(argv);
 
   const { CAPTURE_RUN } = await import('../pipeline/config.mjs');
   const runDir = path.resolve(ROOT, CAPTURE_RUN);
@@ -163,7 +161,7 @@ async function main() {
     // before the pixel matrix spends hours rendering (ticket 07) -------------
     console.log('ROUTES — every route class over HTTP (200 / 301 / 404)');
     const routes = await checkRoutes(server.base, { servedDir, runDir });
-    console.log(`  ${routes.failures.length === 0 ? '✓' : '✗'} ${routes.checked} route(s): ${routes.counts.served} served 200 · ${routes.counts.redirects} stub 301 · ${routes.counts.dropped} dropped/test 404 · ${routes.counts.dead} dead 404 · ${routes.counts.authGated} auth-gated 404`);
+    console.log(`  ${routes.failures.length === 0 ? '✓' : '✗'} ${routes.checked} route(s): ${formatRouteCounts(routes.counts)}`);
     for (const f of routes.failures) console.log(`    ✗ ${f}`);
     if (routes.failures.length > 0) throw new Error(`${routes.failures.length} route-class failure(s) — fix routing before the pixel matrix`);
 
@@ -279,8 +277,7 @@ function writeReport(outDir, report, pages, logFor) {
   fs.writeFileSync(path.join(outDir, 'report.md'), lines.join('\n'));
 }
 
-const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-if (invokedDirectly) {
+if (invokedDirectly(import.meta.url)) {
   main().catch((err) => {
     console.error(err);
     process.exitCode = 1;

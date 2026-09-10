@@ -41,12 +41,24 @@ degrade to the captured end-state with JavaScript disabled.
   suite must stay green on a fresh clone). The full-scale route check
   (`regression/routes.mjs`) is part of the gate's preflight and also runs
   standalone (`npm run routes`); its pure core is `test/routes.test.ts`.
-- **The pixel gate is expensive** (a headless render per shot). Every served
-  page is covered cheaply by `npm run routes` (HTTP status classes + strip
-  audit); the 0-px pixel proof runs over `regression/sample-pages.txt` (one
-  page per template family + the hard cases) with `--no-strip` on constrained
-  machines. The exhaustive 1,180-page raw-vs-served strip sweep is the
-  ticket-12 phase-gate run, not a per-ticket step.
+- **Known bottleneck — the pixel gate does not scale on a laptop.** The 0-px
+  gate renders every shot through headless chromium in Docker, and the work is
+  CPU-bound in the Docker/colima layer, so it barely parallelizes (4 shards buy
+  ~2x). Measured: **~1.1 s per shot, ~0.93 s/shot wall for a 37-page run, and a
+  full 1,180-page × 3-viewport sweep is roughly 2 hours** on a MacBook Air.
+  Do **not** run the full sweep as a per-change check. Use it as a *localized*
+  instrument:
+  - `npm run routes` is the cheap full-coverage check — all ~1,280 route
+    classes over HTTP plus the site-wide strip audit, ~8 s. Run it every time.
+  - The 0-px pixel proof runs over `regression/sample-pages.txt` (one page per
+    template family + the largest and hardest cases) with `--no-strip`, which
+    skips the informational strip render — the serving-gate comparison is
+    unchanged. That is ~6 min and is the per-ticket pixel check:
+    `npm run gate -- --list regression/sample-pages.txt --no-strip`.
+  - The exhaustive 1,180-page raw-vs-served strip sweep (and the full pixel
+    matrix) is the **ticket-12 phase-gate run** on adequate hardware — a
+    deliberate, occasional sign-off, not a routine step. `--no-strip` is the
+    only sanctioned cost reduction; never weaken the 0-px gate itself.
 - One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
   which capture run the build serves from. Moving to a fresh run is a
   one-value change plus a re-run of the passes. The same file's

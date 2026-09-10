@@ -3,7 +3,7 @@
 // and the served tree), so it is not a test-suite member — but its derivation
 // from the build's route classes is pure and locked here.
 import { describe, it, expect } from 'vitest';
-import { auditFailures, countFailures, routeExpectations } from '../regression/routes.mjs';
+import { auditFailures, countFailures, formatRouteCounts, routeExpectations } from '../regression/routes.mjs';
 
 describe('routeExpectations', () => {
   it('names a status for every route class', () => {
@@ -85,5 +85,13 @@ describe('auditFailures', () => {
       '/bad: tracker residue qualified=2',
       '/worse: 1 executable script(s) in served bytes',
     ]);
+  });
+});
+
+describe('formatRouteCounts', () => {
+  it('renders the one-line class summary the gate and route check share', () => {
+    expect(formatRouteCounts({ served: 1180, redirects: 56, dropped: 19, dead: 14, authGated: 10 })).toBe(
+      '1180 served 200 · 56 stub 301 · 19 dropped/test 404 · 14 dead 404 · 10 auth-gated 404',
+    );
   });
 });

@@ -63,8 +63,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
+import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -822,11 +823,7 @@ function summarize(log, summary) {
 // ---- CLI ----------------------------------------------------------------------
 
 async function main() {
-  const argv = process.argv.slice(2);
-  function arg(name) {
-    const i = argv.indexOf(name);
-    return i >= 0 ? argv[i + 1] : null;
-  }
+  const arg = makeArg(process.argv.slice(2));
 
   const { CAPTURE_RUN, DROPPED_PAGES } = await import('./config.mjs');
   const runDir = path.resolve(ROOT, arg('--run') ?? CAPTURE_RUN);
@@ -856,8 +853,7 @@ async function main() {
   summarize(log, summary);
 }
 
-const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-if (invokedDirectly) {
+if (invokedDirectly(import.meta.url)) {
   main().catch((err) => {
     console.error(err);
     process.exitCode = 1;

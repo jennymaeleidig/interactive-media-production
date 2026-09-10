@@ -48,6 +48,12 @@ export default defineConfig({
           include: ['test/routes.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'cli',
+          include: ['test/cli.test.ts'],
+        },
+      },
     ],
   },
 });

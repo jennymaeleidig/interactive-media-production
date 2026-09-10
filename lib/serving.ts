@@ -31,8 +31,12 @@ export async function redirectFor(pathname: string): Promise<string | null> {
   let table: Record<string, unknown>;
   try {
     table = JSON.parse(await readFile(path.join(servedDir(), 'redirects.json'), 'utf8'));
-  } catch {
-    return null; // no table → the run had no redirect stubs
+  } catch (err) {
+    // An absent table is legitimate (the run had no redirect stubs). A table
+    // that exists but does not parse is a corrupt build artifact — fail loudly
+    // (the route check catches it) instead of silently 404ing every stub.
+    if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') return null;
+    throw err;
   }
   const target = table[pathname];
   if (!isLocalTarget(target)) return null;
