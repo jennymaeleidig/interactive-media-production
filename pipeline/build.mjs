@@ -98,6 +98,9 @@ function servedFileFor(outDir, pagePath) {
   return path.join(outDir, relFileFor(pagePath));
 }
 
+/** The only script type allowed in served bytes — inert JSON-LD data. */
+const LD_JSON_TYPE = /\btype\s*=\s*("|')?application\/ld\+json/i;
+
 // ---- pass 1: strip -----------------------------------------------------------
 
 function stripPass(html, entry) {
@@ -159,13 +162,16 @@ function stripExecutableScripts(html, entry) {
     const openRe = /<script\b[^>]*>/gi;
     openRe.lastIndex = pos;
     const m = openRe.exec(html);
-    if (!m) break;
+    if (!m) {
+      if (guard === 999) entry.warnings.push('executable scripts: guard limit hit — rescan aborted, served bytes may still carry scripts');
+      break;
+    }
     const closeRe = /<\/script\s*>/gi;
     closeRe.lastIndex = m.index + m[0].length;
     const cm = closeRe.exec(html);
     // unclosed script tag: remove the tag alone (nothing executable can hide behind it)
     const end = cm ? cm.index + cm[0].length : m.index + m[0].length;
-    if (/\btype\s*=\s*("|')?application\/ld\+json/i.test(m[0])) {
+    if (LD_JSON_TYPE.test(m[0])) {
       pos = end; // inert data — keep whole, and don't scan inside it
     } else {
       html = html.slice(0, m.index) + html.slice(end);
@@ -179,17 +185,16 @@ function stripExecutableScripts(html, entry) {
 
 // ---- pass 2: rewrite links ---------------------------------------------------
 
-/** Rewrite internal hrefs (quoted + unquoted, absolute + protocol-relative) to root-relative Recreation routes. */
+/** Rewrite internal hrefs (quoted, single-quoted, unquoted; absolute + protocol-relative) to root-relative Recreation routes. */
 function rewritePass(html, entry) {
   let count = 0;
-  html = html.replace(/href="(https?:)?\/\/(www\.)?flocksafety\.com([^"]*)"/gi, (_, _p, _w, rest) => {
+  const rewrite = (rest) => {
     count += 1;
-    return `href="${rest.startsWith('/') ? rest : '/' + rest}"`;
-  });
-  html = html.replace(/href=(https?:)?\/\/(www\.)?flocksafety\.com([^\s">]+)/gi, (_, _p, _w, rest) => {
-    count += 1;
-    return `href=${rest.startsWith('/') ? rest : '/' + rest}`;
-  });
+    return rest.startsWith('/') ? rest : '/' + rest;
+  };
+  html = html.replace(/href="(https?:)?\/\/(www\.)?flocksafety\.com([^"]*)"/gi, (_, _p, _w, rest) => `href="${rewrite(rest)}"`);
+  html = html.replace(/href='(https?:)?\/\/(www\.)?flocksafety\.com([^']*)'/gi, (_, _p, _w, rest) => `href='${rewrite(rest)}'`);
+  html = html.replace(/href=(https?:)?\/\/(www\.)?flocksafety\.com([^\s">]+)/gi, (_, _p, _w, rest) => `href=${rewrite(rest)}`);
   if (count > 0) entry.linksRewritten = count;
   return html;
 }
@@ -205,7 +210,7 @@ function auditHtml(html) {
 /** Script census: only `type=application/ld+json` blocks are allowed to remain. */
 function scriptCensus(html) {
   const openTags = html.match(/<script\b[^>]*>/gi) ?? [];
-  const executable = openTags.filter((t) => !/\btype\s*=\s*("|')?application\/ld\+json/i.test(t)).length;
+  const executable = openTags.filter((t) => !LD_JSON_TYPE.test(t)).length;
   return { total: openTags.length, executable, ldJson: openTags.length - executable };
 }
 
@@ -252,10 +257,14 @@ export async function runPipeline(opts) {
 
     html = rewritePass(html, entry);
 
-    // Write pass: captures are truncated before </body></html> — restore them.
-    if (!/<\/body>/i.test(html)) {
-      html += '\n</body></html>';
-      entry.restored = ['</body></html> (capture was truncated)'];
+    // Write pass: captures are truncated before </body></html> (SingleFile CLI
+    // never emits them) — restore whichever closing tags the capture lacks.
+    const missing = [];
+    if (!/<\/body>/i.test(html)) missing.push('</body>');
+    if (!/<\/html>/i.test(html)) missing.push('</html>');
+    if (missing.length > 0) {
+      html += '\n' + missing.join('');
+      entry.restored = [`${missing.join('')} (capture was truncated)`];
     }
 
     const outFile = servedFileFor(outDir, page);
@@ -316,6 +325,10 @@ async function main() {
     if (fs.existsSync(listFile)) {
       pages = fs.readFileSync(listFile, 'utf8').split('\n').map((s) => s.trim()).filter((s) => s && !s.startsWith('#'));
     } else {
+      pages = [];
+    }
+    // empty/missing subset list = the full capture list (all captured pages)
+    if (pages.length === 0) {
       pages = fs.readFileSync(path.join(runDir, 'capture-list.txt'), 'utf8')
         .split('\n').map((s) => s.trim()).filter(Boolean)
         .map((url) => new URL(url).pathname);

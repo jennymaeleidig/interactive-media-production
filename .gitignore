@@ -9,6 +9,6 @@ served/
 .tmp/
 *.tsbuildinfo
 
-# Capture runs: heavy SingleFile HTML stays out of git (reproducible via ticket 09 runbook); CSVs/MD stay tracked
+# Capture runs: heavy SingleFile HTML stays out of git (reproducible via ticket 11 runbook); CSVs/MD stay tracked
 .scratch/flock-parody/research/flocksafety/**/*.html
 .scratch/flock-parody/research/flocksafety/**/walk.log

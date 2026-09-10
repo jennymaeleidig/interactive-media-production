@@ -70,9 +70,11 @@ describe('route classes', () => {
     expect((await fetch(base + '/nope/deeper/still')).status).toBe(404);
   });
 
-  it('does not serve files outside the served tree', async () => {
-    const res = await fetch(base + '/%2e%2e/package.json');
-    expect(res.status).toBe(404);
-    expect(await res.text()).not.toContain('"name"');
+  it('does not serve files outside the served tree, including compound and encoded segments', async () => {
+    for (const p of ['/%2e%2e/package.json', '/..%2F..%2Fpackage.json', '/a/../../package.json']) {
+      const res = await fetch(base + p);
+      expect(res.status, p).toBe(404);
+      expect(await res.text()).not.toContain('"name"');
+    }
   });
 });

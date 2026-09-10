@@ -85,6 +85,8 @@ describe('strip pass', () => {
     expect(html).not.toContain('onetrust-banner-sdk');
     expect(html).toContain('Gun Detection | Flock Safety');
     expect(html).toContain('Home');
+    // single-quoted attributes are covered by the link policy too
+    expect(html).toContain("href='/about'");
   });
 
   it('strips executable scripts outright — only application/ld+json data blocks survive', async () => {

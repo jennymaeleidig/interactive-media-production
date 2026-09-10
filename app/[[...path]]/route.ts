@@ -16,12 +16,6 @@ function servedDir(): string {
   return process.env.SERVED_DIR ?? path.join(process.cwd(), 'served');
 }
 
-function candidateFiles(segs: string[]): string[] {
-  if (segs.length === 0) return [path.join(servedDir(), 'index.html')];
-  const rel = segs.join('/');
-  return [path.join(servedDir(), `${rel}.html`), path.join(servedDir(), rel, 'index.html')];
-}
-
 function notFound(): Response {
   return new Response('Not found', {
     status: 404,
@@ -31,10 +25,22 @@ function notFound(): Response {
 
 export async function GET(_req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   const { path: segs = [] } = await params;
-  if (segs.some((s) => s === '.' || s === '..')) {
+  if (segs.length === 0) {
+    return serve([path.join(servedDir(), 'index.html')]);
+  }
+  // Construction-grade traversal guard: resolve the candidate and require it
+  // to stay inside the served tree (compound/encoded segments included).
+  const rel = segs.join('/');
+  const candidates = [path.join(servedDir(), `${rel}.html`), path.join(servedDir(), rel, 'index.html')]
+    .map((f) => path.resolve(f));
+  if (candidates.some((f) => !f.startsWith(path.resolve(servedDir()) + path.sep))) {
     return notFound();
   }
-  for (const file of candidateFiles(segs)) {
+  return serve(candidates);
+}
+
+async function serve(candidates: string[]): Promise<Response> {
+  for (const file of candidates) {
     try {
       const html = await readFile(file, 'utf8');
       return new Response(html, {
