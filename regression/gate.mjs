@@ -53,6 +53,14 @@ function fail(msg) {
   process.exit(1);
 }
 
+/** failure once the server child exists — throws so `finally` can reap it (no orphaned port squatter) */
+function bail(msg) {
+  throw new Error(msg);
+}
+
+/** one contiguous diff region, formatted identically for console + report */
+const fmtBand = (b) => `y ${b.y0}–${b.y1} × x ${b.x0}–${b.x1}: ${b.px.toLocaleString('en-US')} px`;
+
 function freePort() {
   return new Promise((resolve, reject) => {
     const srv = net.createServer();
@@ -86,13 +94,15 @@ async function startServer() {
   });
   const base = `http://127.0.0.1:${port}`;
   const deadline = Date.now() + 60_000;
+  // every failure past the spawn throws (bail, not fail/exit): the caller's
+  // finally stops the child, so no path can orphan it
   for (;;) {
-    if (child.exitCode !== null) fail(`next start exited early (${child.exitCode})`);
+    if (child.exitCode !== null) bail(`next start exited early (${child.exitCode})`);
     try {
       await fetch(base + '/');
       break; // any response means it is up — route status is the tests' business
-    } catch {
-      if (Date.now() > deadline) fail('next start did not become ready in 60s');
+    } catch (e) {
+      if (Date.now() > deadline) bail('next start did not become ready in 60s');
       await new Promise((r) => setTimeout(r, 300));
     }
   }
@@ -111,13 +121,20 @@ async function startServer() {
   };
 }
 
-/** diff two shot files; returns the entry for the report. */
-function compareShots(shotsDir, fileA, fileB, entry, { overlay = false, overlayPath = null } = {}) {
+/**
+ * diff two shot files; returns the entry for the report. With `overlayPath`,
+ * the red-marked diff image is written only when px > 0 (an identical pair
+ * needs no review image) and the entry records its path as `diff`.
+ */
+function compareShots(shotsDir, fileA, fileB, entry, { overlayPath = null } = {}) {
   const a = PNG.sync.read(fs.readFileSync(path.join(shotsDir, fileA)));
   const b = PNG.sync.read(fs.readFileSync(path.join(shotsDir, fileB)));
-  const r = diffPixels(a, b, { overlay });
+  const r = diffPixels(a, b, { overlay: overlayPath != null });
   if (r.error) return { ...entry, error: r.error };
-  if (overlay && r.overlay) fs.writeFileSync(path.join(shotsDir, overlayPath), r.overlay);
+  if (r.overlay && r.px > 0) {
+    fs.writeFileSync(path.join(shotsDir, overlayPath), r.overlay);
+    return { ...entry, px: r.px, pct: r.pct, bands: r.bands, diff: `shots/${overlayPath}` };
+  }
   const { px, pct, bands } = r;
   return { ...entry, px, pct, bands };
 }
@@ -148,10 +165,26 @@ async function main() {
     : JSON.parse(fs.readFileSync(buildLogPath, 'utf8')).filter((e) => !e.error).map((e) => e.page);
   if (pages.length === 0) fail('no pages to check — build log empty?');
 
-  // every page needs both trees on disk; a mismatch aborts before any shot
+  // captured per-page motion normalizations (logFor), surfaced beside each
+  // strip section in report.md so human review can attribute deltas (spec:
+  // normalizations are "logged per page and surfaced through the strip report")
+  const buildLog = JSON.parse(fs.readFileSync(buildLogPath, 'utf8'));
+  const logFor = (page) => buildLog.find((e) => e.page === page);
+
+  // every page needs both trees on disk AND content-consistent with the log —
+  // a stale served/ (or capture run) from an older pass would existence-check
+  // clean while strip quietly measured the wrong pairing. The log records
+  // string lengths (html.length), so compare the files decoded the same way.
   for (const page of pages) {
-    if (!fs.existsSync(path.join(servedDir, relFileFor(page)))) fail(`served file missing for ${page} — build log and served tree are out of sync; re-run \`npm run pipeline\``);
-    if (!fs.existsSync(path.join(runDir, relFileFor(page)))) fail(`capture file missing for ${page} — served tree and capture run are out of sync`);
+    const entry = logFor(page);
+    const servedFile = path.join(servedDir, relFileFor(page));
+    const captureFile = path.join(runDir, relFileFor(page));
+    if (!fs.existsSync(servedFile)) fail(`served file missing for ${page} — build log and served tree are out of sync; re-run \`npm run pipeline\``);
+    if (!fs.existsSync(captureFile)) fail(`capture file missing for ${page} — served tree and capture run are out of sync`);
+    const servedLen = fs.readFileSync(servedFile, 'utf8').length;
+    const captureLen = fs.readFileSync(captureFile, 'utf8').length;
+    if (entry?.bytesOut !== undefined && entry.bytesOut !== servedLen) fail(`served ${page} is ${servedLen} chars but the build log recorded ${entry.bytesOut} — stale served tree; re-run \`npm run pipeline\``);
+    if (entry?.bytesIn !== undefined && entry.bytesIn !== captureLen) fail(`captured ${page} is ${captureLen} chars but the build log recorded ${entry.bytesIn} — stale capture run; point pipeline/config.mjs at the run the served tree was built from`);
   }
   if (!fs.existsSync(path.join(servedDir, relFileFor(controlPage)))) fail(`control page ${controlPage} not served — pick a --control page from the served tree`);
 
@@ -167,8 +200,9 @@ async function main() {
   /** @type {import('./compare.mjs').GateReport} */
   const report = { control: [], gate: [], strip: [] };
 
-  const server = await startServer();
+  let server = null;
   try {
+    server = await startServer();
     const host = `host.docker.internal:${new URL(server.base).port}`;
 
     // ---- control: determinism proof, first ------------------------------------
@@ -201,6 +235,8 @@ async function main() {
     if (!controlFailed) for (const page of pages) {
       const slug = slugFor(page);
       const rel = relFileFor(page);
+      // shot stems: raw_ = the capture tree as captured; srvfile_ = the served
+      // tree read from disk; srvhttp_ = the served tree over HTTP
       console.log(`\n${page}`);
       for (const vp of VIEWPORTS) {
         const tag = VIEWPORT_TAG(vp);
@@ -209,26 +245,21 @@ async function main() {
         // the container reaches the host server via host.docker.internal
         shoot({ shotsDir, url: `http://${host}${page}`, viewport: vp, outPath: `srvhttp_${slug}_${tag}.png` });
 
-        const gate = compareShots(shotsDir, `srvhttp_${slug}_${tag}.png`, `srvfile_${slug}_${tag}.png`, { page, viewport: tag });
-        if (!gate.error && gate.px > 0) {
-          // diagnosis image: diffs marked red over the disk render
-          compareShots(shotsDir, `srvhttp_${slug}_${tag}.png`, `srvfile_${slug}_${tag}.png`, gate, { overlay: true, overlayPath: `diff_gate_${slug}_${tag}.png` });
-        }
+        const gate = compareShots(shotsDir, `srvhttp_${slug}_${tag}.png`, `srvfile_${slug}_${tag}.png`, { page, viewport: tag }, { overlayPath: `diff_gate_${slug}_${tag}.png` });
         report.gate.push(gate);
-        console.log(`  ${gate.error ? '✗' : gate.px === 0 ? '✓' : '✗'} GATE  @${tag}: ${gate.error ?? gate.px + ' px'}${gate.px > 0 ? ` → shots/diff_gate_${slug}_${tag}.png` : ''}`);
+        console.log(`  ${gate.error ? '✗' : gate.px === 0 ? '✓' : '✗'} GATE  @${tag}: ${gate.error ?? gate.px + ' px'}${gate.px > 0 ? ` → ${gate.diff}` : ''}`);
 
-        const strip = compareShots(shotsDir, `raw_${slug}_${tag}.png`, `srvhttp_${slug}_${tag}.png`, { page, viewport: tag }, { overlay: true, overlayPath: `diff_strip_${slug}_${tag}.png` });
-        if (!strip.error) strip.diff = `shots/diff_strip_${slug}_${tag}.png`;
+        const strip = compareShots(shotsDir, `raw_${slug}_${tag}.png`, `srvhttp_${slug}_${tag}.png`, { page, viewport: tag }, { overlayPath: `diff_strip_${slug}_${tag}.png` });
         report.strip.push(strip);
-        const bandStr = strip.bands?.map((b) => `[y ${b.y0}–${b.y1} × x ${b.x0}–${b.x1}] ${b.px.toLocaleString('en-US')} px`).join(' ') ?? strip.error;
+        const bandStr = strip.bands?.map((b) => `[${fmtBand(b)}]`).join(' ') ?? strip.error;
         console.log(`  • STRIP @${tag}: ${strip.error ?? `${strip.px.toLocaleString('en-US')} px (${strip.pct}%)`} — ${strip.bands?.length ?? '?'} band(s): ${bandStr}`);
       }
     }
   } finally {
-    await server.stop();
+    if (server) await server.stop();
   }
 
-  writeReport(outDir, report, pages);
+  writeReport(outDir, report, pages, logFor);
 
   const v = verdict(report);
   console.log('\n' + (v.ok ? '✓ Gate green — serving layer pixel-invisible, renderer deterministic.' : '✗ Gate FAILED:'));
@@ -238,7 +269,7 @@ async function main() {
 }
 
 /** report.json (machine) + report.md (the human-review artifact). */
-function writeReport(outDir, report, pages) {
+function writeReport(outDir, report, pages, logFor) {
   const clean = {
     pages,
     control: report.control.map(({ overlay, ...e }) => e),
@@ -265,9 +296,18 @@ function writeReport(outDir, report, pages) {
       lines.push(`error: ${s.error}`, '');
       continue;
     }
-    lines.push(`${s.px.toLocaleString('en-US')} px (${s.pct}%) · diff image: ${s.diff}`, '');
+    const motion = logFor(s.page)?.motion;
+    if (motion && Object.keys(motion).length > 0) {
+      lines.push(
+        'Motion pass normalizations logged for this page — each is an expected',
+        'delta source (captured from-state → served end-state):',
+        ...Object.entries(motion).map(([k, n]) => `- ${k}: ${n}`),
+        '',
+      );
+    }
+    lines.push(`${s.px.toLocaleString('en-US')} px (${s.pct}%)${s.diff ? ` · diff image: ${s.diff}` : ''}`, '');
     for (const b of s.bands ?? []) {
-      lines.push(`- band y ${b.y0}–${b.y1} × x ${b.x0}–${b.x1}: ${b.px.toLocaleString('en-US')} px`);
+      lines.push(`- band ${fmtBand(b)}`);
     }
     lines.push('');
   }

@@ -24,6 +24,8 @@
 // side-by-side's business at the phase gate.
 //
 // SPDX-License-Identifier: CC0-1.0
+// Top-level script, no exports — invoked by shoot.mjs as `node /cdp/cdp-shot.mjs
+// <url> <outPath> <w> <h>` inside the container; all logic is inline by design.
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 

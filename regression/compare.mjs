@@ -13,7 +13,7 @@ import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
 /** Matching threshold (0..1) — smaller is more sensitive. 0.1 is the prototype's proven value. */
-export const MATCH_THRESHOLD = 0.1;
+const MATCH_THRESHOLD = 0.1;
 
 /** One contiguous diff region: inclusive pixel bounds + diff-pixel count. */
 // Rows with ≥1 diff pixel cluster into bands separated by clean rows — coarse
@@ -112,6 +112,7 @@ function overlayBuffer(a, mask) {
  * @property {number} [pct]
  * @property {Band[]} [bands]  Strip entries only.
  * @property {Buffer} [overlay]  Strip entries only, when requested.
+ * @property {string} [diff]  Entries with a written overlay: diff image path relative to the report dir ("shots/…") — written only when px > 0.
  * @property {string} [error]
  */
 

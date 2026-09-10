@@ -28,11 +28,9 @@ npm run gate       # fidelity gate: control renders + serving gate (0 px,
    of git, reproducible via the refresh runbook). The build reads the run
    named by the capture pointer (`pipeline/config.mjs`).
 2. **Build** (`pipeline/build.mjs`) — per page: strip the third-party
-   machinery (Qualified offer host + chat launcher + styles, OneTrust consent
-   stack, any surviving executable script), rewrite internal links to
-   Recreation routes, route forms to local mock APIs, normalize captured
-   animation from-states to their end-states, inject the motion,
-   interactions, and story-hook layers inline, restore the closing tags
+   machinery, rewrite internal links to Recreation routes, route forms to
+   local mock APIs, normalize captured animation from-states, inject the
+   motion / interactions / story-hook layers inline, restore the closing tags
    SingleFile truncates, and log every mutation to `served/build-log.json`.
 3. **Serve** (`app/[[...path]]/route.ts`) — a catch-all route answers
    original site paths from `served/`; unknown paths 404, reproducing the
