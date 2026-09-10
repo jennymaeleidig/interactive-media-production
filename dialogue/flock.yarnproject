@@ -1,0 +1,8 @@
+{
+  "projectFileVersion": 4,
+  "projectName": "FlockChatMimic",
+  "sourceFiles": [
+    "*.yarn"
+  ],
+  "baseLanguage": "en"
+}

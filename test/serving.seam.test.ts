@@ -211,3 +211,53 @@ describe('path resolution', () => {
     }
   });
 });
+
+// The chat message API seam (spec, Testing Decisions seam #2) over real HTTP:
+// the same assertions as test/chat.seam.test.ts but through the built route,
+// proving the POST shell (JSON in, JSON out, 400 on malformed) as well as the
+// engine. Conversation shape and pinned copy are locked in the chat-seam
+// project; this block covers the transport.
+describe('chat message API over HTTP (ticket 08)', () => {
+  interface ChatBody {
+    sessionId: string;
+    turn: { lines: unknown[]; options: { index: number; text: string }[] | null; complete: boolean };
+    state: { vars: Record<string, unknown> };
+    replay?: unknown[];
+  }
+
+  async function post(body: unknown): Promise<{ status: number; json: ChatBody }> {
+    const res = await fetch(base + '/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return { status: res.status, json: (await res.json()) as ChatBody };
+  }
+
+  const optionTexts = (json: ChatBody) => json.turn.options?.map((o) => o.text);
+
+  it('answers start with a turn batch, the choice set, and the session variables', async () => {
+    const { status, json } = await post({ type: 'start' });
+    expect(status).toBe(200);
+    expect(json.turn.lines).toHaveLength(1);
+    expect(optionTexts(json)).toEqual(['What can you help me with?', 'Get a Demo', 'Support']);
+    expect(json.state.vars).toHaveProperty('demoRequested', false);
+  });
+
+  it('persists a live session across a resume and returns the email gate to the hub', async () => {
+    const started = await post({ type: 'start' });
+    const { sessionId } = started.json;
+    const demo = await post({ type: 'option', sessionId, optionIndex: 1 });
+    expect(optionTexts(demo.json)).toEqual(['Maybe later']);
+    const gate = await post({ type: 'option', sessionId, optionIndex: 0 });
+    expect(optionTexts(gate.json)).toEqual(['What can you help me with?', 'Get a Demo', 'Support']);
+    expect(gate.json.turn.complete).toBe(false);
+    const reloaded = await post({ type: 'resume', sessionId });
+    expect(reloaded.json.replay).toHaveLength(4);
+  });
+
+  it('rejects a malformed request with 400', async () => {
+    expect((await post({ type: 'nope' })).status).toBe(400);
+    expect((await post({ type: 'option', sessionId: 'x' })).status).toBe(400);
+  });
+});

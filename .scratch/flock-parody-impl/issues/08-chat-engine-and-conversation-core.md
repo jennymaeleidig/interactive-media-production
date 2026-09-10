@@ -4,14 +4,14 @@
 
 **Blocked by:** 01.
 
-**Status:** open
+**Status:** resolved
 Label: ready-for-agent
 
-- [ ] Starting a session yields the pinned greeting.
-- [ ] Selecting a choice advances the conversation and yields the next lines or choice set.
-- [ ] A live session resumes instead of resetting when started again.
-- [ ] Conversations persist across page reloads via server-side session state.
-- [ ] Variables are surfaced with every turn.
-- [ ] The demo branch asks for an email, then offers only "Maybe later", which returns to the hub option set.
-- [ ] No rendered UI marks the divergence, and no request leaves the machine.
-- [ ] The chat engine is testable behind its message API without a browser.
+- [x] Starting a session yields the pinned greeting.
+- [x] Selecting a choice advances the conversation and yields the next lines or choice set.
+- [x] A live session resumes instead of resetting when started again.
+- [x] Conversations persist across page reloads via server-side session state.
+- [x] Variables are surfaced with every turn.
+- [x] The demo branch asks for an email, then offers only "Maybe later", which returns to the hub option set.
+- [x] No rendered UI marks the divergence, and no request leaves the machine.
+- [x] The chat engine is testable behind its message API without a browser.

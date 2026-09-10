@@ -151,6 +151,13 @@ dev/build for everyone:
   depends on this; the serving check does not render, so it needs no Docker.
 - Servers started inside a sandboxed command must die with the command
   (self-alarm or child lifecycle) — no orphaned port squatters.
+- **The chat runtime depends on the sibling `yarnspinner-ts` checkout** —
+  `package.json` points `yarnspinner-typescript` at it by **absolute** `file:`
+  path (relative specifiers do not survive npm's workspace-root inference
+  here; the package is not on npm yet — spec, "Chat mimic"). A clone without
+  that sibling cannot `npm install`. Repoint the path (or move to the published
+  package) when it ships; until then this is the one documented exception to
+  "green on a fresh clone".
 
 ## Repo hygiene
 
