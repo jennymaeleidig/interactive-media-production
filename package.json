@@ -27,9 +27,11 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "jsdom": "^30.0.1",
     "single-file-cli": "^2.10.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

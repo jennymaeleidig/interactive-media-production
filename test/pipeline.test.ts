@@ -6,6 +6,7 @@
 // stack, truncated tail).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { rm, readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runPipeline, type LogEntry } from '../pipeline/build.mjs';
@@ -70,7 +71,8 @@ describe('strip pass', () => {
 
   it('leaves non-target content untouched: JSON-LD, data-URI assets, captured from-states, text mentions', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    expect((html.match(/<script\b/gi) ?? []).length).toBe(2);
+    // 2 captured ld+json data blocks + the one injected story-hook runtime
+    expect((html.match(/<script\b/gi) ?? []).length).toBe(3);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
     expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
     expect(html).toContain('<div class=word style="color:rgb(142,168,184);opacity:0.45">Safety</div>');
@@ -93,6 +95,7 @@ describe('strip pass', () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     expect(html).not.toContain('analytics.example.com');
     for (const tag of html.match(/<script\b[^>]*>/gi) ?? []) {
+      if (/data-flock-parody=/i.test(tag)) continue; // the injected story-hook runtime — own describe below
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
     }
   });
@@ -202,6 +205,51 @@ describe('forms pass (ticket 02)', () => {
   });
 });
 
+describe('story-hook pass (ticket 03)', () => {
+  // the exact source the build reads and inlines — the same bytes the
+  // story-hook DOM seam tests drive
+  const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
+
+  it('injects the runtime inline, verbatim and marked, on every served page', async () => {
+    for (const page of ['index', 'products/gun-detection', 'book-a-demo', 'thank-you', 'gsx', 'chilipiper-2']) {
+      const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
+      expect(html, page).toContain(`<script data-flock-parody="story-hook">\n${RUNTIME}\n</script>`);
+    }
+  });
+
+  it('places the runtime inside <body>, before the closing tags the write pass restores', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const tag = html.indexOf('<script data-flock-parody="story-hook">');
+    expect(tag).toBeGreaterThan(-1);
+    expect(tag).toBeLessThan(html.lastIndexOf('</body>'));
+  });
+
+  it('ships the runtime dormant — the injected source never calls apply itself', () => {
+    // dormancy in the Recreation is structural: the runtime only DEFINES
+    // window.flockParody; the Parody layer is the sole caller (and the
+    // serving-seam test checks no capture-derived byte mentions it).
+    // Comment lines carry the documented contract signature — strip them.
+    const code = RUNTIME.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+    expect(code).not.toMatch(/\bapply\s*\(/);
+  });
+
+  it('logs the injection per page', () => {
+    for (const e of result.log.filter((e) => !e.error)) {
+      expect(e.injected).toEqual(['story-hook seam (inline, dormant)']);
+    }
+  });
+
+  it('keeps the zero-outbound invariants with the runtime aboard — audit clean, no capture-derived executable', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const census = html.match(/<script\b[^>]*>/gi) ?? [];
+    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(1);
+    for (const tag of census) {
+      if (/data-flock-parody=/i.test(tag)) continue;
+      expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
+    }
+  });
+});
+
 describe('write pass & mutation log', () => {
   it('restores the closing tags SingleFile truncates away', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
@@ -212,7 +260,10 @@ describe('write pass & mutation log', () => {
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
     const stripped = home.stripped!;
-    expect(home.bytesIn!).toBeGreaterThan(home.bytesOut!);
+    // the miniature fixture loses less to stripping than the injected runtime
+    // adds; on the real corpus strip removes ~MB per page and pages shrink
+    // (spot-check served/build-log.json after a real run)
+    expect(home.bytesOut!).toBeGreaterThan(home.bytesIn!);
     // strip mutations: per-target removed-byte counts
     expect(stripped['qualified-offer-host']).toBeGreaterThan(0);
     expect(stripped['q-root (chat launcher)']).toBeGreaterThan(0);
@@ -223,7 +274,7 @@ describe('write pass & mutation log', () => {
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, 'known trackers': 0, externalFormActions: 0 });
-    expect(home.scripts).toEqual({ total: 2, executable: 0, ldJson: 2 });
+    expect(home.scripts).toEqual({ total: 3, executable: 0, ldJson: 2, injected: 1 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {

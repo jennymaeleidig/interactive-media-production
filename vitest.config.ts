@@ -18,6 +18,12 @@ export default defineConfig({
           hookTimeout: 120_000,
         },
       },
+      {
+        test: {
+          name: 'story-hook-seam',
+          include: ['test/story-hook.seam.test.ts'],
+        },
+      },
     ],
   },
 });

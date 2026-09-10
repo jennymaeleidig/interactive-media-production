@@ -34,8 +34,9 @@ describe('serving a captured page at its original path', () => {
     expect(homeBody).not.toMatch(/onetrust-(?:banner|pc|consent|style|accept|reject|close|privacy|policy|customize|filter)|ot-sdk|ot-sync/i);
   });
 
-  it('carries no executable scripts — only application/ld+json data blocks', () => {
+  it('carries no executable capture-derived scripts — only application/ld+json data blocks', () => {
     for (const tag of homeBody.match(/<script\b[^>]*>/gi) ?? []) {
+      if (/data-flock-parody=/i.test(tag)) continue; // the injected story-hook runtime — own describe below
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
     }
     expect(homeBody).not.toContain('analytics.example.com');
@@ -115,6 +116,39 @@ describe('forms & mock routes (ticket 02)', () => {
   it('never lets a submission leave the machine — no external action in any served form', () => {
     for (const tag of demoBody.match(/<form\b[^>]*>/gi) ?? []) {
       expect(tag).not.toMatch(/\baction\s*=\s*("|')?(?:https?:)?\/\//i);
+    }
+  });
+});
+
+describe('story-hook seam present & dormant on served pages (ticket 03)', () => {
+  // the same source the DOM seam tests drive — the build inlines it verbatim
+  const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
+
+  function assertSeamAboard(body: string, label: string) {
+    const open = '<script data-flock-parody="story-hook">';
+    const start = body.indexOf(open);
+    expect(start, label).toBeGreaterThan(-1);
+    const end = body.indexOf('</script>', start);
+    // verbatim: the served bytes carry the exact runtime file, marked
+    expect(body.slice(start, end), label).toContain(RUNTIME);
+    // dormant: outside the runtime's own definition, no byte in the page
+    // (i.e. nothing capture-derived) references the seam — nothing calls it
+    const outside = body.slice(0, start) + body.slice(end);
+    expect(outside, label).not.toContain('flockParody');
+    // DOM-only over the wire: the served runtime source references no
+    // network primitive (zero-outbound invariant)
+    expect(body.slice(start, end), label).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+  }
+
+  it('rides inline on the homepage', () => {
+    assertSeamAboard(homeBody, '/');
+  });
+
+  it('rides inline on every other served page too', async () => {
+    for (const route of ['/products/gun-detection', '/book-a-demo', '/thank-you']) {
+      const res = await fetch(base + route);
+      expect(res.status, route).toBe(200);
+      assertSeamAboard(await res.text(), route);
     }
   });
 });

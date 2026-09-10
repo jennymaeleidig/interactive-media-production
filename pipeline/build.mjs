@@ -17,13 +17,21 @@
 //                thank-you page (spec, Forms). Nothing ever leaves the
 //                machine: the only actions in served bytes are the injected
 //                local ones, and the audit counts any external form action.
+//   4. story-hook — the dormant DOM-patching seam, injected inline on every
+//                page (pipeline/story-hook.js, ticket 03). It only DEFINES
+//                window.flockParody — nothing in the Recreation calls it; the
+//                Parody layer will. DOM-only, zero network, and it degrades
+//                to the captured end-state with JavaScript disabled (it ships
+//                inert). The data-flock-parody attribute marks the script so
+//                the census can tell the Recreation's own runtime from
+//                capture residue (which must stay at zero executable).
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
 //                build-log.json, per page.
 //
-// Later passes land here per their tickets: story-hook seam (03), motion
-// layer (04); whole-site scale + redirect manifest (07).
+// Later passes land here per their tickets: motion layer (04); whole-site
+// scale + redirect manifest (07).
 //
 // Usage: node pipeline/build.mjs [--run <captureRunDir>] [--out <dir>]
 //                                [--pages /a,/b] [--list <file>]
@@ -217,11 +225,13 @@ function auditHtml(html) {
   }
   return audit;
 }
-/** Script census: only `type=application/ld+json` blocks are allowed to remain. */
+/** Script census of served bytes. `executable` counts capture-derived scripts — must stay 0 (the audit invariant). `ldJson` are inert data blocks; `injected` are the Recreation's own marked runtimes (data-flock-parody). */
 function scriptCensus(html) {
   const openTags = html.match(/<script\b[^>]*>/gi) ?? [];
-  const executable = openTags.filter((t) => !LD_JSON_TYPE.test(t)).length;
-  return { total: openTags.length, executable, ldJson: openTags.length - executable };
+  const injected = openTags.filter((t) => /data-flock-parody=/i.test(t)).length;
+  const ldJson = openTags.filter((t) => LD_JSON_TYPE.test(t)).length;
+  const executable = openTags.length - injected - ldJson;
+  return { total: openTags.length, executable, ldJson, injected };
 }
 
 // ---- form routing (ticket 02) ------------------------------------------------
@@ -288,6 +298,28 @@ function formsPass(html, entry, pagePath, manifest) {
   return html;
 }
 
+// ---- story-hook seam (ticket 03) ----------------------------------------------
+
+const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
+
+/**
+ * Inject the story-hook runtime inline, verbatim, before </body> (or at EOF
+ * when the capture is truncated — the write pass appends the closing tags
+ * after it). No captured byte carries `flockParody`, so the only occurrences
+ * in served bytes are the runtime's own definition.
+ */
+function storyHookPass(html, entry, source) {
+  const tag = `<script ${STORY_HOOK_MARKER}>\n${source}\n</script>`;
+  const closeBody = html.lastIndexOf('</body>');
+  if (closeBody >= 0) {
+    html = html.slice(0, closeBody) + tag + '\n' + html.slice(closeBody);
+  } else {
+    html = html + '\n' + tag;
+  }
+  entry.injected = ['story-hook seam (inline, dormant)'];
+  return html;
+}
+
 // ---- pipeline ----------------------------------------------------------------
 
 /**
@@ -300,6 +332,7 @@ function formsPass(html, entry, pagePath, manifest) {
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
+ * @property {string[]} [injected]  Recreation runtimes injected inline on this page (ticket 03: the story-hook seam).
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number}} [scripts]  Script census of served bytes.
@@ -318,6 +351,8 @@ export async function runPipeline(opts) {
   const { runDir, pages, outDir } = opts;
   const log = [];
   const formsManifest = {}; // form route key → { page, formId, redirectTo }
+  // read once — every page inlines the same runtime bytes verbatim
+  const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
 
   for (const page of pages) {
     const src = captureFileFor(runDir, page);
@@ -334,6 +369,8 @@ export async function runPipeline(opts) {
     html = rewritePass(html, entry);
 
     html = formsPass(html, entry, page, formsManifest);
+
+    html = storyHookPass(html, entry, storyHookSource);
 
     // Write pass: captures are truncated before </body></html> (SingleFile CLI
     // never emits them) — restore whichever closing tags the capture lacks.
