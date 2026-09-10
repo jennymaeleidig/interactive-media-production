@@ -22,8 +22,8 @@
 //                the pass restores the closing tags; every mutation lands in
 //                build-log.json, per page.
 //
-// Later passes land here per their tickets: forms (02), story-hook seam (03),
-// motion layer (04); whole-site scale + redirect manifest (07).
+// Later passes land here per their tickets: story-hook seam (03), motion
+// layer (04); whole-site scale + redirect manifest (07).
 //
 // Usage: node pipeline/build.mjs [--run <captureRunDir>] [--out <dir>]
 //                                [--pages /a,/b] [--list <file>]
@@ -263,15 +263,22 @@ function formsPass(html, entry, pagePath, manifest) {
     const formId = idMatch ? (idMatch[2] ?? idMatch[3] ?? idMatch[4] ?? '') : '';
     if (!ROUTED_FORM_ID.test(formId)) return tag;
     if (/\bfs-cmsfilter-element\b/i.test(attrs)) return tag; // filter furniture — inert
-    if (routed.some((r) => r.formId === formId)) return tag; // already routed (duplicate id)
+    if (routed.some((r) => r.formId === formId)) {
+      // duplicate id — route the first, log the anomaly (log discipline:
+      // warnings for anything left in place)
+      entry.warnings.push(`${formId}: duplicate form id — only the first is routed`);
+      return tag;
+    }
     const key = `${pageKeyFor(pagePath)}/${formId}`;
     const action = `/api/forms/${key}`;
     const redirectTo = thankyouFor(pagePath);
-    if (/\baction\s*=/i.test(attrs)) {
-      // no captured form in this corpus carries an action (census: 0); if a
-      // future capture ever does, it must not survive — replace, don't append
-      entry.warnings.push(`${formId}: captured action replaced with the local mock route`);
+    if (/\baction\s*=/i.test(attrs) || /\bmethod\s*=/i.test(attrs)) {
+      // no captured form in this corpus carries an action or method (census:
+      // 0/0); if a future capture ever does, neither may survive the
+      // injection — replace, don't append (no duplicate attributes)
+      entry.warnings.push(`${formId}: captured action/method replaced with the local mock route`);
       attrs = attrs.replace(/\s*action\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, '');
+      attrs = attrs.replace(/\s*method\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, '');
     }
     routed.push({ key, formId, action, redirectTo });
     manifest[key] = { page: pagePath, formId, redirectTo };

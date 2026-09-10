@@ -20,7 +20,7 @@ beforeAll(async () => {
   await rm(path.join(HERE, '.tmp/pipeline'), { recursive: true, force: true });
   result = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/missing'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/chilipiper-2', '/missing'],
     outDir: OUT,
   });
 });
@@ -143,6 +143,18 @@ describe('forms pass (ticket 02)', () => {
     expect(html).toContain('<form id=wf-form-0 name=wf-form-0 data-name=(0) fs-cmsfilter-element=filters class=filters-wrapper-general aria-label=(0)>');
   });
 
+  it('keeps the scheduler embed and the hidden clone inert (ticket checkbox) — byte-intact, no action anywhere', async () => {
+    const html = await readFile(path.join(OUT, 'chilipiper-2.html'), 'utf8');
+    // the frozen Chili Piper iframe survives exactly as captured — sandbox,
+    // srcdoc and all; the build never routes a non-form
+    expect(html).toContain('id=chiliCalFrame width=1200 height=900 style=border:none;max-width:100% sandbox="allow-popups allow-top-navigation-by-user-activation"');
+    expect(html).toContain('srcdoc="<!DOCTYPE html><html><head><title>Meet with Flock Safety</title></head><body>');
+    // the hidden Marketo clone on the scheduler page stays untouched too
+    expect(html).toContain('style=visibility:hidden;position:absolute;top:-500px;left:-1000px;width:1265px>');
+    // nothing on the page submits anywhere
+    expect(html).not.toMatch(/\baction\s*=/i);
+  });
+
   it('keeps the escaped chat pseudo-form out of the served bytes (stripped with the chat machinery)', async () => {
     const html = await readFile(path.join(OUT, 'book-a-demo.html'), 'utf8');
     expect(html).not.toContain('css-1d6gwie');
@@ -224,6 +236,6 @@ describe('write pass & mutation log', () => {
   it('logs a missing capture as a per-page error instead of throwing', () => {
     const missing = result.log.find((e) => e.page === '/missing');
     expect(missing).toEqual({ page: '/missing', error: 'capture file missing' });
-    expect(result.log.filter((e) => !e.error)).toHaveLength(5);
+    expect(result.log.filter((e) => !e.error)).toHaveLength(6);
   });
 });

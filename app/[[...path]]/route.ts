@@ -6,22 +6,12 @@
 // 07 adds the legacy-redirect manifest and whole-site scale).
 //
 // SERVED_DIR overrides the tree location (tests point it at a fixture build);
-// it defaults to <cwd>/served.
+// it defaults to <cwd>/served — see lib/serving.ts.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { notFound, servedDir } from '@/lib/serving';
 
 export const dynamic = 'force-dynamic';
-
-function servedDir(): string {
-  return process.env.SERVED_DIR ?? path.join(process.cwd(), 'served');
-}
-
-function notFound(): Response {
-  return new Response('Not found', {
-    status: 404,
-    headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
-  });
-}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   const { path: segs = [] } = await params;

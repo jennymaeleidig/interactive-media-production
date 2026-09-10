@@ -8,22 +8,12 @@
 // redirect to a build-authored, root-relative path.
 //
 // SERVED_DIR overrides the tree location (tests point it at a fixture build);
-// it defaults to <cwd>/served.
+// it defaults to <cwd>/served — see lib/serving.ts.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { notFound, servedDir } from '@/lib/serving';
 
 export const dynamic = 'force-dynamic';
-
-function servedDir(): string {
-  return process.env.SERVED_DIR ?? path.join(process.cwd(), 'served');
-}
-
-function notFound(): Response {
-  return new Response('Not found', {
-    status: 404,
-    headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
-  });
-}
 
 export async function POST(_req: Request, { params }: { params: Promise<{ key?: string[] }> }) {
   const { key: segs = [] } = await params;
@@ -35,9 +25,10 @@ export async function POST(_req: Request, { params }: { params: Promise<{ key?: 
   }
   const route = manifest[segs.join('/')];
   const redirectTo = typeof route?.redirectTo === 'string' ? route.redirectTo : null;
-  // the mock only ever points at a local path — a manifest entry without one
-  // is a build bug, not a redirect
-  if (!redirectTo || !redirectTo.startsWith('/')) return notFound();
+  // the mock only ever points at a root-relative local path — not
+  // protocol-relative (`//host` would leave the machine), not absolute. A
+  // manifest entry without one is a build bug, not a redirect.
+  if (!redirectTo || !redirectTo.startsWith('/') || redirectTo.startsWith('//')) return notFound();
   return new Response(null, {
     status: 303,
     headers: { location: redirectTo, 'cache-control': 'no-store' },
