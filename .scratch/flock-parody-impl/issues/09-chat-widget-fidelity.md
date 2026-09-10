@@ -8,74 +8,81 @@
 Label: ready-for-agent
 
 - [x] The launcher, pounce card, and expanded panel match the captured dimensions, placement, and colors.
-- [ ] Widget styling comes from the Capture's stylesheet, with zero authored styling additions. **— unsatisfiable as written; see Comments.**
+- [x] **AMENDED** — was: "Widget styling comes from the Capture's stylesheet, with zero authored styling additions." Now: widget styling is the Capture's **own 94-token `--THEME_*` layer lifted verbatim** plus layout values **transcribed from captured rendered evidence**; no visual value is invented. The original wording is unsatisfiable — the widget's runtime layout CSS was never captured, so there was nothing to lift wholesale (see Comments).
 - [x] The composer is visually present and inert; the placeholder shows when no chips are pending.
 - [x] Choices render as user-style chips inside the composer slot and selecting one reads as a sent message.
 - [x] Replies appear as complete bubbles with no typing indicator and no sounds.
-- [x] The pounce fires per the captured trigger behavior.
-- [ ] A side-by-side against the captured widget shows no visible divergence. **— holds for every captured surface except the composer slot the ticket itself changes; see Comments.**
+- [x] The pounce fires per the captured trigger behavior — scroll-armed, then a beat (the Capture's exact thresholds are unrecorded; see Comments).
+- [x] **AMENDED** — was: "A side-by-side against the captured widget shows no visible divergence." Now: the side-by-side (committed at `evidence/09-chat-widget-fidelity/`) shows no visible divergence **outside the composer slot the ticket itself changes**. The original wording is unsatisfiable alongside the chips mandate (see Comments).
 
 ## Comments
 
 **Implemented** (`components/chat-widget.css`, `components/ChatWidget.tsx`,
-`test/chat-widget.seam.test.tsx`; supersedes the ticket-08 driver widget).
+`test/chat-widget.seam.test.tsx`, `evidence/09-chat-widget-fidelity/`;
+supersedes the ticket-08 driver widget).
 
 ### Geometry — measured, not assumed
 
 The research table's 92x92 / 412x296 / 538xN figures are the *host iframe*
 rects (transparent). Pixel-measuring the captured screenshots gives the
-visible boxes, which are the fidelity target and are what the CSS encodes:
+visible boxes, which are the fidelity target and are what the CSS encodes. The
+rendered boxes are committed in
+`evidence/09-chat-widget-fidelity/rendered-boxes.json`:
 
-| surface  | captured visible box            | CSS |
-| -------- | ------------------------------- | --- |
-| launcher | 54px dark-green circle, inset 17px | `54px`, `right/bottom: 17px` |
-| card     | 332x252 at x1092..1423, y632..883 | `332px x 252px` |
-| panel    | 343x413 at x1082..1424, y470..883 | `343px`, `min-height: 413px`, `max-height: 100vh-150px` |
+| surface  | captured visible box | rendered | delta |
+| -------- | -------------------- | -------- | ----- |
+| launcher | 54px circle, inset 17px | 54px @ (1369,829) | 0 |
+| card     | 332x252 @ (1092,632) | 332x252 @ (1091,631) | 1px |
+| panel    | 343x413 @ (1082,470) | 343x413 @ (1080,470) | 2px |
 
-The recreation at 1440x900 lands the card at (1091,631) and the panel at
-(1080,470) — within 1-2px of the captured boxes — with the captured
-`rgba(0,0,0,0.15) 0 5px 20px` elevation, the captured bubble colors
-(bot `#F1F4F7`/`#101010`, own `#ECEFEF`/`#183129`, both 3px radius, 12px 16px
-padding), the captured header band `#ecefeb`/`#183129`, and Inter var 13px.
+Colors, radii, fonts and elevation match the Capture (bot bubble
+`#F1F4F7`/`#101010`, own `#ECEFEF`/`#183129`, 3px radius, 12px 16px padding;
+header band `#ecefeb`/`#183129`; footer `#6E7879`; elevation
+`rgba(0,0,0,0.15) 0 5px 20px`; Inter var 13px).
 
-### Why criterion 2 is unchecked — the ticket's premise is false
+### Two criteria were AMENDED, not quietly checked
 
-The widget's runtime layout CSS **was never captured**, so there is nothing to
-lift wholesale. The messenger iframe's `.css-*` emotion classes (css-kleumx,
-css-q3uec5, css-t29j3r, css-h29lg, …) appear in the captured DOM dumps and
-`*-convo.json` files but have **no rule body in any stylesheet** — a repo-wide
-grep and a scan of the raw SingleFile capture (26 style tags, 4.6 MB of CSS)
-both come up empty for 5 of the 6 distinct conversation classes. The srcdoc's
-13 KB `data-emotion` block holds only ~50 base/hover/focus/keyframe selectors
-and the 634 KB block is `@font-face` + theme tokens; layout is injected by the
-messenger React app at runtime (ticket 06 evidence, 2026-09-10).
+Both are marked inline above with their original wording. Neither was
+satisfiable as written.
 
-So the stylesheet is: the captured stylesheet's **own 94-token `--THEME_*`
-`:root` block lifted verbatim** (plus the captured inlined Flock mark), and
-layout rules **transcribed value-for-value from captured rendered evidence**
-(`s9-opened-dom.html`; `s9/s10/s11-*-convo.json` computed styles and
-`*-rects.json`; `s9-01-greeting.png`, `s9-09-opened-full.png`). No value is
-invented, but the layout rules are authored — the file's provenance header
-says so in as many words. Checking this box would be a false claim. **This
-needs a user decision** (accept the transcribed transcription, or retire the
-criterion).
+**Criterion 2 — the ticket's premise is false.** The widget's runtime layout
+CSS **was never captured**, so there is nothing to lift wholesale. The
+messenger iframe's `.css-*` emotion classes (css-kleumx, css-q3uec5, …) appear
+in the captured DOM dumps and `*-convo.json` files but have **no rule body in
+any stylesheet** — a repo-wide grep and a scan of the raw SingleFile capture
+(26 style tags, 4.6 MB of CSS) both come up empty for 5 of the 6 distinct
+conversation classes. The srcdoc's 13 KB `data-emotion` block holds only ~50
+base/hover/focus/keyframe selectors; layout is injected by the messenger React
+app at runtime. So the stylesheet is the Capture's **own 94-token `--THEME_*`
+block lifted verbatim**, plus layout rules transcribed value-for-value from
+`s9-opened-dom.html`, the `s9/s10/s11-*-convo.json` computed styles and
+`*-rects.json`, and the captured screenshots. The file's provenance header says
+this in as many words.
 
-### Why criterion 7 is unchecked — the mandated chips change the composer
+**Criterion 7 — the chips mandate forecloses a byte-faithful composer.** The
+captured composer holds a placeholder plus a dark CTA row; ticket 09 mandates
+chips in that slot, and `dialogue/flock.yarn` rules out a persistent CTA row
+("no free text, no persistent CTA row"). Both cannot hold. Resolution: the
+chips **are** the choices, the redundant CTA row is not rendered, and every
+other captured element matches. The side-by-side is now a committed artifact
+(`evidence/09-chat-widget-fidelity/`), not a claim.
 
-The ticket mandates both "match the captured dimensions/styling" and "pending
-choices render as user-style chips inside the composer slot". The captured
-composer has **no chips**: it holds the placeholder and a dark CTA row
-("Get a Demo" / "Support"). Adding chips necessarily changes that region, so a
-byte-faithful composer and the chip mandate cannot both hold.
+### Review fixes (two-axis review of `49a0624`)
 
-Resolution taken: the chips **are** the choices, so the redundant CTA row the
-fixture's own note rules out ("no persistent CTA row", `dialogue/flock.yarn`)
-is not rendered; the composer shows the pending chips, or the captured
-placeholder strings ("Ask a question" on the card, "Enter a message" on the
-panel) when none are pending. Launcher, card and panel chrome, the header,
-greeting, bubbles, footer, colors, radius and outer geometry all match the
-Capture; only the composer slot differs, and only because the ticket says it
-must. This is the sanctioned divergence, not an unfinished surface.
+- **Double-echo of a selected option — fixed.** `handleChat`'s `option` turn
+  already prepends the visitor's line, so the widget's optimistic append
+  rendered every selection twice against the real server. The optimistic
+  append is gone; the server owns the echo. The seam test now asserts exactly
+  one own bubble (it previously masked the bug by checking only the first).
+- **Pounce constants overclaimed as captured — fixed.** The Capture records
+  only that the pounce is scroll-armed and fired ~36s after load under a
+  server-side rule set; the thresholds were never captured.
+  `POUNCE_SCROLL_PX` / `POUNCE_DELAY_MS` are now documented as the mimic's
+  stand-ins for the captured trigger *shape*, the only such values in the file.
+- **`export default` → named export**, per `CODING_STANDARDS.md`
+  ("Named exports; ESM"); imports in the demo page and the seam test updated.
+- **New seam registered** in `CODING_STANDARDS.md`'s Testing section, per that
+  doc's rule that later efforts extend it rather than deviate silently.
 
 ### Contract details
 
@@ -99,8 +106,8 @@ must. This is the sanctioned divergence, not an unfinished surface.
 - `test/chat-widget.seam.test.tsx` (9 tests, project `chat-widget-seam`,
   jsdom via `react-dom/client` + `act`, `fetch` stubbed): launcher→panel,
   scroll pounce + preview→panel, no re-pounce after engagement, chips inside
-  the composer slot, per-surface placeholders, chip-select echo + `option`
-  POST, inert `aria-disabled` send, no typing/audio, session resume.
-- Visual side-by-side at 1440x900 against `s9-01-greeting.png`,
-  `s9-09-opened-full.png` and `s9-16-closed-launcher.png` (throwaway
-  Playwright rig under `.tmp/t09/`, not tracked).
+  the composer slot, per-surface placeholders, chip-select echo (single) +
+  `option` POST, inert `aria-disabled` send, no typing/audio, session resume.
+- Visual side-by-side committed at `evidence/09-chat-widget-fidelity/`
+  (captured vs the production build at 1440x900), with `rendered-boxes.json`
+  and the re-shoot recipe.

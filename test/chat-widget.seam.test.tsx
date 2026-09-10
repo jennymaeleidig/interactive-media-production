@@ -13,7 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import ChatWidget from '../components/ChatWidget';
+import { ChatWidget } from '../components/ChatWidget';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -201,6 +201,11 @@ describe('the inert composer and its chips', () => {
     });
     const own = container.querySelector('.fpc-bubble--me');
     expect(own!.textContent).toBe('What can you help me with?');
+    // exactly ONE echo: the engine prepends the visitor line, so the widget must
+    // not add its own copy (the double-echo this assertion guards against)
+    expect([...container.querySelectorAll('.fpc-bubble--me')].map((b) => b.textContent)).toEqual([
+      'What can you help me with?',
+    ]);
     expect(container.textContent).toContain(GENERAL); // the reply arrives as the next batch
     expect(calls.at(-1)).toMatchObject({ type: 'option', optionIndex: 0 });
   });

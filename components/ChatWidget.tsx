@@ -41,9 +41,15 @@ interface Option {
 type Mode = 'launcher' | 'card' | 'panel';
 
 const STORAGE_KEY = 'flock-chat-session';
-/** Captured trigger: the pounce follows a scroll past the fold. */
+/**
+ * The pounce is SCROLL-ARMED in the Capture, but the Capture never recorded its
+ * thresholds: the live widget's pounce is rule-gated server-side and fired
+ * ~36s after load in the observed sessions, with no client-visible constant.
+ * These two values are therefore the mimic's documented stand-ins for the
+ * captured trigger SHAPE (scroll past the fold, then a short beat), not values
+ * transcribed from evidence — the only such values in this file.
+ */
 const POUNCE_SCROLL_PX = 120;
-/** Captured pounce cadence: the greeting follows the scroll signal by a beat. */
 const POUNCE_DELAY_MS = 1500;
 
 // Captured icon paths: the widget's own raw SVGs (messenger DOM dumps).
@@ -57,7 +63,7 @@ function todayLabel(): string {
   return `Today, ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()}`;
 }
 
-export default function ChatWidget() {
+export function ChatWidget() {
   const [mode, setMode] = useState<Mode>('launcher');
   const [lines, setLines] = useState<Msg[]>([]);
   const [options, setOptions] = useState<Option[] | null>(null);
@@ -158,8 +164,9 @@ export default function ChatWidget() {
   const select = useCallback(
     (option: Option) => {
       if (!sessionId) return;
-      // The selection reads as the visitor's own sent message immediately.
-      setLines((prev) => [...prev, { from: 'me', text: option.text }]);
+      // The SERVER owns the echo: `handleChat`'s `option` turn already prepends
+      // the visitor's line ({ from: 'me' }), so appending one here as well would
+      // render the same message twice. The chips just close and await the turn.
       setOptions(null);
       void post({ type: 'option', sessionId, optionIndex: option.index });
     },

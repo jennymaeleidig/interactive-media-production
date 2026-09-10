@@ -1,0 +1,134 @@
+{
+ "launcher": {
+  "x": 1369,
+  "y": 829,
+  "w": 54,
+  "h": 54,
+  "bg": "rgb(236, 239, 235)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "50%",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13.3333px"
+ },
+ "card": {
+  "x": 1091,
+  "y": 631,
+  "w": 332,
+  "h": 252,
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "8px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "cardHeader": {
+  "x": 1091,
+  "y": 631,
+  "w": 332,
+  "h": 59,
+  "bg": "rgb(236, 239, 235)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "0px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "cardBubble": {
+  "x": 1107,
+  "y": 687,
+  "w": 300,
+  "h": 61,
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(16, 16, 16)",
+  "radius": "3px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "15px"
+ },
+ "cardComposer": {
+  "x": 1107,
+  "y": 752,
+  "w": 300,
+  "h": 86,
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "10px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "cardChip": {
+  "x": 1122,
+  "y": 759,
+  "w": 189,
+  "h": 33,
+  "bg": "rgb(236, 239, 235)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "3px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "panel": {
+  "x": 1080,
+  "y": 470,
+  "w": 343,
+  "h": 413,
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "8px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "panelHeader": {
+  "x": 1080,
+  "y": 470,
+  "w": 343,
+  "h": 53,
+  "bg": "rgb(236, 239, 235)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "0px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "panelDivider": {
+  "x": 1080,
+  "y": 523,
+  "w": 343,
+  "h": 27,
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(110, 120, 121)",
+  "radius": "0px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "panelBubble": {
+  "x": 1124,
+  "y": 566,
+  "w": 249,
+  "h": 86,
+  "bg": "rgb(241, 244, 247)",
+  "color": "rgb(16, 16, 16)",
+  "radius": "3px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "panelComposer": {
+  "x": 1096,
+  "y": 752,
+  "w": 311,
+  "h": 86,
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "10px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "panelClose": {
+  "x": 1391,
+  "y": 487,
+  "w": 20,
+  "h": 20,
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "0px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13.3333px"
+ }
+}

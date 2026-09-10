@@ -5,7 +5,7 @@
 // column that gives the page something to scroll.
 //
 // SPDX-License-Identifier: CC0-1.0
-import ChatWidget from '@/components/ChatWidget';
+import { ChatWidget } from '@/components/ChatWidget';
 
 export default function ChatDemoPage() {
   return (

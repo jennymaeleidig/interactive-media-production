@@ -114,6 +114,11 @@ degrade to the captured end-state with JavaScript disabled.
   DOM seam (ticket 05 — the delegated click runtime's captured-class/geometry
   contract for tabs, dropdowns, accordions, and sliders, same
   jsdom-against-injected-bytes method; reduced motion never blocks function).
+  **Extended by ticket 09**: the chat-widget DOM seam — the widget
+  component's three captured surfaces, its inert composer and chip slot,
+  rendered in jsdom with the message API stubbed at `fetch`. Ticket 09 added
+  this seam; per this header's rule, later efforts extend this list here rather
+  than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature
