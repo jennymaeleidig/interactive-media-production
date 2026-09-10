@@ -24,6 +24,12 @@ export default defineConfig({
           include: ['test/story-hook.seam.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'motion-seam',
+          include: ['test/motion.seam.test.ts'],
+        },
+      },
     ],
   },
 });

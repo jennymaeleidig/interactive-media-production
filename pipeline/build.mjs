@@ -17,7 +17,14 @@
 //                thank-you page (spec, Forms). Nothing ever leaves the
 //                machine: the only actions in served bytes are the injected
 //                local ones, and the audit counts any external form action.
-//   4. story-hook — the dormant DOM-patching seam, injected inline on every
+//   4. motion  — the motion reveal layer (ticket 04): normalize every captured
+//                animation FROM-state to its end-state in the static DOM
+//                (no-JS pages are the styled end-state by construction),
+//                annotate split words with per-word --fpm-i stagger indices,
+//                tag generic inline zero-opacity from-states for the observer,
+//                then inject motion.css + motion-runtime.js inline. Reveals
+//                fire one-shot only when JS runs and reduced motion allows.
+//   5. story-hook — the dormant DOM-patching seam, injected inline on every
 //                page (pipeline/story-hook.js, ticket 03). It only DEFINES
 //                window.flockParody — nothing in the Recreation calls it; the
 //                Parody layer will. DOM-only, zero network, and it degrades
@@ -30,8 +37,8 @@
 //                the pass restores the closing tags; every mutation lands in
 //                build-log.json, per page.
 //
-// Later passes land here per their tickets: motion layer (04); whole-site
-// scale + redirect manifest (07).
+// Later passes land here per their tickets: whole-site scale + redirect
+// manifest (07).
 //
 // Usage: node pipeline/build.mjs [--run <captureRunDir>] [--out <dir>]
 //                                [--pages /a,/b] [--list <file>]
@@ -298,6 +305,263 @@ function formsPass(html, entry, pagePath, manifest) {
   return html;
 }
 
+// ---- motion reveal layer (ticket 04) -------------------------------------------
+
+// Open-tag pattern that honors quoted attribute values (SingleFile emits
+// quoted and unquoted attrs side by side). Fresh regex per pass — these
+// functions combine exec loops and String.replace, which fight over lastIndex.
+function openTagRe() {
+  return /<([a-z][a-z0-9]*)((?:[^<>"]|"[^"]*"|'[^']*')*)>/gi;
+}
+
+// Zones whose contents are never page DOM: <style>/<script> bodies (the
+// inlined site CSS is full of `opacity:0` declarations — corpus scan: 15 on
+// one post), comments, and srcdoc-embedded documents (the frozen scheduler
+// iframe). Mutations apply to content segments only.
+const SKIP_ZONE = /(<style[^>]*>[\s\S]*?<\/style\s*>|<script\b[^>]*>[\s\S]*?<\/script\s*>|<!--[\s\S]*?-->|\bsrcdoc\s*=\s*"[^"]*")/gi;
+
+/** Apply `map` to the content segments of `html` (odd split indexes are skip zones). */
+function mapContentSegments(html, map) {
+  const parts = html.split(SKIP_ZONE);
+  for (let i = 0; i < parts.length; i += 2) parts[i] = map(parts[i]);
+  return parts.join('');
+}
+
+/** Raw attribute value in an open tag's attr string, honoring quoting; null when absent. */
+function attrValue(attrs, name) {
+  const m = new RegExp(`\\b${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(attrs);
+  return m ? (m[2] ?? m[3] ?? m[4] ?? '') : null;
+}
+
+/** Presence of an attribute, bare (`data-split-title`) or valued (`data-x=v`). */
+function hasAttr(attrs, name) {
+  return new RegExp(`\\b${name}(?=\\s*=|[\\s/>]|$)`, 'i').test(attrs);
+}
+
+/**
+ * Rewrite attribute `name` of an open `tag` through `edit(value) → value`.
+ * An empty result drops the attribute whole; an unchanged result returns the
+ * tag untouched; a missing attribute returns null.
+ */
+function editAttr(tag, name, edit) {
+  const m = new RegExp(`(\\b${name}\\s*=\\s*)("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(tag);
+  if (!m) return null;
+  const quote = m[2][0] === '"' || m[2][0] === "'" ? m[2][0] : '';
+  const raw = quote ? m[2].slice(1, -1) : m[2];
+  const next = edit(raw);
+  if (next === raw) return tag;
+  if (next === '') {
+    let start = m.index;
+    while (start > 0 && /\s/.test(tag[start - 1])) start -= 1;
+    return tag.slice(0, start) + tag.slice(m.index + m[0].length);
+  }
+  const value = quote ? quote + next + quote : next;
+  return tag.slice(0, m.index) + m[1] + value + tag.slice(m.index + m[0].length);
+}
+
+/** Append an attribute (full `name` or `name=value` text) before an open tag's closing `>` (slash-aware). */
+function withAddedAttr(tag, attr) {
+  const m = /\s*\/?>$/.exec(tag);
+  return tag.slice(0, m.index) + ` ${attr}` + m[0];
+}
+
+/** Remove a bare `opacity:0` declaration (never `opacity:0.45`); null when absent. */
+function stripBareOpacity(v) {
+  if (!/(?:^|;)opacity:0(?=$|;)/i.test(v)) return null;
+  return v.replace(/;?opacity:0(?=$|;)/gi, '').replace(/^;+/, '');
+}
+
+// The captured split-word from-inline (census patterns 2/3): slate color,
+// blur 15px or 20px variants, rise, 0.45 opacity. Layout props
+// (position/display/translate-none/will-change) stay — the page's CSS
+// contract needs them. The captured blur radius is PRESERVED per element as
+// a custom property (motion.css reads it with a 15px fallback); the other
+// from-props are dropped outright — motion.css re-supplies them.
+const WORD_FROM_TOKENS = [
+  { re: /;?color:rgb\(142,168,184\)/gi, sub: () => '' },
+  { re: /;?filter:blur\((\d+)px\)/gi, sub: (_m, px) => (px === '15' ? '' : `;--fpm-blur:${px}px`) },
+  { re: /;?transform:translate\(0px,0\.42em\)/gi, sub: () => '' },
+  { re: /;?opacity:0\.45/gi, sub: () => '' },
+];
+
+/**
+ * Split-word normalization + --fpm-i annotation. Within each split container
+ * (data-split-gsap=words, or the masked variant data-animation-gsap=words|lines),
+ * the captured from-props are stripped from every .word/.split-word div and a
+ * per-container DOM-order stagger index is prepended — the captured 58ms/word
+ * transition-delay is calc()'d from it in motion.css.
+ */
+function annotateSplitWords(seg, counts, warnings) {
+  let out = '';
+  let pos = 0;
+  const re = openTagRe();
+  let m;
+  while ((m = re.exec(seg))) {
+    if (m.index < pos) continue; // inside a container already processed
+    const marker = attrValue(m[2], 'data-split-gsap') ?? attrValue(m[2], 'data-animation-gsap');
+    if (marker !== 'words' && marker !== 'lines') continue;
+    const end = balanceEnd(seg, m.index, m[1]);
+    if (end < 0) {
+      warnings.push(`motion: split container (${m[1]}) unbalanced — left as captured`);
+      continue;
+    }
+    let block = seg.slice(m.index, end);
+    let i = 0;
+    block = block.replace(openTagRe(), (tag, _name, attrs) => {
+      const cls = attrValue(attrs, 'class');
+      if (!cls || !cls.split(/\s+/).some((c) => c === 'word' || c === 'split-word')) return tag;
+      const edited = editAttr(tag, 'style', (v) => {
+        let cleaned = v;
+        for (const token of WORD_FROM_TOKENS) cleaned = cleaned.replace(token.re, token.sub);
+        return `--fpm-i:${i++};` + cleaned;
+      });
+      return edited ?? withAddedAttr(tag, `style=--fpm-i:${i++}`);
+    });
+    if (i > 0) counts['split words normalized+annotated'] = (counts['split words normalized+annotated'] ?? 0) + i;
+    out += seg.slice(pos, m.index) + block;
+    pos = end;
+  }
+  return out + seg.slice(pos);
+}
+
+/**
+ * Explicit GSAP-pattern normalization (census patterns 4-7): captured
+ * from-states → the end-state the static DOM then carries. Only elements
+ * carrying the pattern attribute are touched.
+ */
+// Explicit GSAP pattern values the pass knows (words/lines are normalized by
+// the split-word annotator above); anything else is logged as unrecognized so
+// review sees census misses instead of silently frozen elements.
+const KNOWN_GSAP_MARKERS = new Set(['fade-in', 'fade-in-2', 'image-clip', 'clip-in', 'words', 'lines']);
+
+/**
+ * Explicit GSAP-pattern normalization (census patterns 4-7): captured
+ * from-states → the end-state the static DOM then carries. Only elements
+ * carrying the pattern attribute are touched.
+ */
+function normalizeExplicitReveals(seg, counts, warnings) {
+  const bump = (key) => (counts[key] = (counts[key] ?? 0) + 1);
+  return seg.replace(openTagRe(), (tag, _name, attrs) => {
+    const marker = attrValue(attrs, 'data-animation-gsap');
+    if (marker == null) return tag;
+    if (!KNOWN_GSAP_MARKERS.has(marker)) {
+      bump('unrecognized data-animation-gsap (left as captured)');
+      return tag;
+    }
+    if (marker === 'fade-in-2' || marker === 'fade-in') {
+      let next = tag;
+      let rose = false;
+      if (marker === 'fade-in') {
+        // rise-24 from-state (captured); GSAP's identity-axis markers stay
+        const afterRise = editAttr(next, 'style', (v) => v.replace(/transform:translate\(0px,24px\);opacity:0/gi, '')) ?? next;
+        rose = afterRise !== next;
+        next = afterRise;
+      }
+      const afterBare0 = editAttr(next, 'style', (v) => stripBareOpacity(v) ?? v) ?? next;
+      let afterBare = afterBare0;
+      if (marker === 'fade-in-2') {
+        if (afterBare !== next) bump('fade-in-2 from-states');
+      } else {
+        if (rose) bump('fade-in rise-24 from-states');
+        // a bare opacity:0 the rise token didn't consume = the bare fade
+        // variant (captured from-state had no transform) — annotate so
+        // motion.css replays it as a pure fade, without the rise
+        if (afterBare !== next && !rose) {
+          bump('fade-in bare opacity');
+          afterBare = withAddedAttr(afterBare, 'data-fpm-fade');
+        }
+      }
+      // a captured shape variant the tokens didn't fully consume would leave
+      // the element invisible or displaced in the static end-state — surface it
+      if (afterBare !== tag) {
+        const remaining = attrValue(afterBare, 'style') ?? '';
+        if (/(?:^|;)opacity:0(?=$|;)/i.test(remaining) || /transform:translate\(0px,24px\)/i.test(remaining)) {
+          warnings.push(`motion: fade-in from-state not fully consumed (marker=${marker}) — left as captured`);
+        }
+      }
+      return afterBare;
+    }
+    if (marker === 'image-clip') {
+      // captured from-clip → captured end-clip (flock-ecosystem ground truth)
+      const next = editAttr(tag, 'style', (v) => v.replace(/clip-path:inset\(6% 10% 0% 10%round var\(--clip-r\)\)/gi, 'clip-path:inset(0% 0% 0% 0%round var(--clip-r))'));
+      if (next != null && next !== tag) bump('image-clip from→end');
+      return next ?? tag;
+    }
+    if (marker === 'clip-in') {
+      // captured from-class opacity-0 → drop the class, keep the rest
+      const next = editAttr(tag, 'class', (v) => {
+        const kept = v.split(/\s+/).filter((c) => c && c !== 'opacity-0').join(' ');
+        return kept === v ? v : kept;
+      });
+      if (next != null && next !== tag) bump('clip-in from-class');
+      return next ?? tag;
+    }
+    return tag;
+  });
+}
+
+// Inline-style signatures of states that must stay frozen: self-animated
+// player chrome (Wistia controls), hover-tween from-states (Tier 1 hover
+// territory), positioned chrome, and interactively hidden panes. None of
+// these are scroll-reveal from-states in the captured corpus.
+const NOT_A_REVEAL = /pointer-events:none|transition:|position:fixed|position:absolute|display:none|transform:/i;
+
+/**
+ * The generic sweep (census pattern 9, IX2 scroll-reveals): inline zero-opacity
+ * from-states on elements NO explicit rule names are normalized to their
+ * end-state and tagged data-fpm-reveal for the observer. Every hit is logged
+ * per page for human review.
+ */
+function normalizeGenericZeroOpacity(seg, counts) {
+  return seg.replace(openTagRe(), (tag, _name, attrs) => {
+    if (attrValue(attrs, 'data-animation-gsap') != null) return tag;
+    if (attrValue(attrs, 'data-split-gsap') != null) return tag;
+    if (attrValue(attrs, 'data-split-title') != null) return tag;
+    const edited = editAttr(tag, 'style', (v) => {
+      if (/(?:^|;)opacity:0(?=$|;)/i.test(v) && !NOT_A_REVEAL.test(v)) return stripBareOpacity(v) ?? v;
+      return v;
+    });
+    if (edited == null || edited === tag) return tag;
+    counts['generic zero-opacity normalized+tagged'] = (counts['generic zero-opacity normalized+tagged'] ?? 0) + 1;
+    return withAddedAttr(edited, 'data-fpm-reveal');
+  });
+}
+
+const MOTION_INJECTED = 'motion layer (style+script, inline)';
+
+/** The motion pass: normalize → annotate → tag → inject the CSS+runtime pair. */
+function motionPass(html, entry, css, runtime) {
+  const counts = {};
+  let heroes = 0;
+  html = mapContentSegments(html, (seg) => {
+    seg = annotateSplitWords(seg, counts, entry.warnings);
+    seg = normalizeExplicitReveals(seg, counts, entry.warnings);
+    seg = normalizeGenericZeroOpacity(seg, counts);
+    // hero split-title detection rides the same content-only scan: captured
+    // ON (end-state); the runtime re-fires its visibility class — logged so
+    // review sees the page shape
+    seg.replace(openTagRe(), (tag, _name, attrs) => {
+      if (hasAttr(attrs, 'data-split-title')) heroes += 1;
+      return tag;
+    });
+    return seg;
+  });
+  if (heroes > 0) counts['hero split-title re-fire targets'] = heroes;
+  entry.motion = counts;
+
+  const motionTag = `<style data-flock-parody="motion">\n${css}\n</style>\n<script data-flock-parody="motion">\n${runtime}\n</script>`;
+  const closeBody = html.lastIndexOf('</body>');
+  if (closeBody >= 0) {
+    html = html.slice(0, closeBody) + motionTag + '\n' + html.slice(closeBody);
+  } else {
+    // capture truncated before </body> — inject at EOF; the write pass appends the closing tags after it
+    html = html + '\n' + motionTag;
+  }
+  entry.injected = entry.injected ?? [];
+  entry.injected.push(MOTION_INJECTED);
+  return html;
+}
+
 // ---- story-hook seam (ticket 03) ----------------------------------------------
 
 const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
@@ -333,7 +597,8 @@ function storyHookPass(html, entry, source) {
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
- * @property {string[]} [injected]  Recreation runtimes injected inline on this page (ticket 03: the story-hook seam).
+ * @property {Record<string, number>} [motion]  Motion-pass normalization/annotation counts + the hero detection, per page (ticket 04).
+ * @property {string[]} [injected]  Recreation runtimes injected inline on this page (tickets 04/05: motion layer, story-hook seam).
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number}} [scripts]  Script census of served bytes.
@@ -354,6 +619,8 @@ export async function runPipeline(opts) {
   const formsManifest = {}; // form route key → { page, formId, redirectTo }
   // read once — every page inlines the same runtime bytes verbatim
   const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
+  const motionCss = fs.readFileSync(path.join(HERE, 'motion.css'), 'utf8');
+  const motionRuntime = fs.readFileSync(path.join(HERE, 'motion-runtime.js'), 'utf8');
 
   for (const page of pages) {
     const src = captureFileFor(runDir, page);
@@ -370,6 +637,8 @@ export async function runPipeline(opts) {
     html = rewritePass(html, entry);
 
     html = formsPass(html, entry, page, formsManifest);
+
+    html = motionPass(html, entry, motionCss, motionRuntime);
 
     html = storyHookPass(html, entry, storyHookSource);
 

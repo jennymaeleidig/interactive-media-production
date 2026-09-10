@@ -14,9 +14,12 @@ import { runPipeline, type LogEntry } from '../pipeline/build.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, 'fixtures/capture-run');
 const OUT = path.join(HERE, '.tmp/pipeline/served');
-// the runtime the story-hook pass inlines — read here so tests can bound the
-// growth it causes and assert its verbatim presence
+// the runtimes the injection passes inline — read here so tests can bound the
+// growth they cause and assert their verbatim presence
 const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
+const MOTION_CSS = readFileSync(path.join(HERE, '../pipeline/motion.css'), 'utf8');
+const MOTION_RUNTIME = readFileSync(path.join(HERE, '../pipeline/motion-runtime.js'), 'utf8');
+const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length;
 
 let result: { log: LogEntry[] };
 
@@ -74,10 +77,11 @@ describe('strip pass', () => {
 
   it('leaves non-target content untouched: JSON-LD, data-URI assets, captured from-states, text mentions', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    // 2 captured ld+json data blocks + the one injected story-hook runtime
-    expect((html.match(/<script\b/gi) ?? []).length).toBe(3);
+    // 2 captured ld+json data blocks + the two injected runtimes (motion, story-hook)
+    expect((html.match(/<script\b/gi) ?? []).length).toBe(4);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
     expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+    // a .word div outside a split container is not an animation word — left as captured
     expect(html).toContain('<div class=word style="color:rgb(142,168,184);opacity:0.45">Safety</div>');
     expect(html).toContain('We are flocksafety.com, in text.');
     expect(html).toContain('Flock Safety | Safer Together');
@@ -223,20 +227,180 @@ describe('story-hook pass (ticket 03)', () => {
     expect(tag).toBeLessThan(html.lastIndexOf('</body>'));
   });
 
-  it('logs the injection per page', () => {
+  it('logs the injection per page (after the motion layer, which is injected first)', () => {
     for (const entry of result.log.filter((e) => !e.error)) {
-      expect(entry.injected).toEqual(['story-hook seam (inline, dormant)']);
+      expect(entry.injected).toEqual(['motion layer (style+script, inline)', 'story-hook seam (inline, dormant)']);
     }
   });
 
   it('keeps the zero-outbound invariants with the runtime aboard — audit clean, no capture-derived executable', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
-    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(1);
+    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(2); // motion + story-hook
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
     }
+  });
+});
+
+describe('motion pass (ticket 04)', () => {
+  it('normalizes captured split-word from-states to the static end-state and annotates per-word stagger indices', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    // the captured from-props (slate color, blur 15px/20px, rise, 0.45 opacity)
+    // are gone; layout props survive; --fpm-i counts words within the heading
+    expect(html).toContain(
+      '<div class=word aria-hidden=true style=--fpm-i:0;position:relative;display:inline-block;translate:none;rotate:none;scale:none;will-change:transform,filter,color,opacity>Public</div>'
+    );
+    expect(html).toContain(
+      'style=--fpm-i:1;position:relative;display:inline-block;translate:none;rotate:none;scale:none;will-change:transform,filter,color,opacity>safety</div>'
+    );
+    expect(html).toContain(
+      'style=--fpm-i:2;position:relative;display:inline-block;translate:none;rotate:none;scale:none;will-change:transform,filter,color,opacity;--fpm-blur:20px>works</div>'
+    );
+    // the captured blur radius rides along per element; 15px stays the CSS default
+    expect(html).not.toContain('filter:blur(15px);transform:translate(0px,0.42em)');
+    expect(html).not.toContain('filter:blur(20px);transform:translate(0px,0.42em)');
+    // the heading's captured end-state (opacity:1) stays
+    expect(html).toContain('aria-label="Public safety works better together" style=opacity:1>');
+  });
+
+  it('covers the masked split variant (split-word inside split-line-mask) with the same recipe', async () => {
+    const html = await readFile(path.join(OUT, 'products/gun-detection.html'), 'utf8');
+    expect(html).toContain(
+      '<div class=split-word aria-hidden=true style=--fpm-i:0;position:relative;display:inline-block;translate:none;rotate:none;scale:none;will-change:transform,filter,color,opacity;--fpm-blur:20px>How</div>'
+    );
+    // the mask wrapper itself is untouched — its overflow:clip IS the masked look
+    expect(html).toContain(
+      '<div class=split-line-mask aria-hidden=true style=position:relative;display:block;text-align:start;overflow:clip>'
+    );
+  });
+
+  it('leaves the hero split at its captured end-state — the runtime re-fires is-visible', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    expect(html).toContain(
+      '<h1 data-split-onload data-split-title class="heading-4xl is-split is-visible" style=--split-final-color:rgb(254,253,251)>'
+    );
+    expect(html).toContain('<span class=title-word style=--word-index:0>Safer</span>');
+    const home = result.log.find((e) => e.page === '/');
+    if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
+    expect(home.motion).toMatchObject({ 'hero split-title re-fire targets': 1, 'split words normalized+annotated': 3 });
+  });
+
+  it('normalizes fade-in-2 from-states and leaves captured end-states byte-identical', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    expect(html).toContain(
+      '<a data-animation-gsap=fade-in-2 href=/blog/customers-own-and-control-their-flock-data class="spotlight-card w-inline-block">Own your data</a>'
+    );
+    expect(html).toContain(
+      '<div data-animation-gsap=fade-in-2 class=hero-cards-container style=opacity:1;translate:none;rotate:none;scale:none;transform:translate3d(0px,0px,0px)></div>'
+    );
+  });
+
+  it('normalizes fade-in rise-24 from-states and the bare opacity variant', async () => {
+    const html = await readFile(path.join(OUT, 'products/gun-detection.html'), 'utf8');
+    // rise-24 stripped; GSAP's identity-axis markers stay (captured end-state shape)
+    expect(html).toContain(
+      '<h2 data-animation-gsap=fade-in class=lpr1_heading style=translate:none;rotate:none;scale:none;>Detection that scales</h2>'
+    );
+    // the bare variant (captured from-state had no transform) is annotated so
+    // motion.css replays it as a pure fade — no phantom rise
+    expect(html).toContain('<h2 data-animation-gsap=fade-in class=sec-head data-fpm-fade>Bare fade</h2>');
+  });
+
+  it('normalizes image-clip from-clip to the captured end-clip inside the quoted style', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    expect(html).toContain('style="clip-path:inset(0% 0% 0% 0%round var(--clip-r))"');
+    // no captured from-clip remains in any inline style (the injected CSS
+    // legitimately quotes the from-value inside its gated :not(.fpm-in) rule)
+    expect(html).not.toContain('style="clip-path:inset(6%');
+  });
+
+  it('normalizes clip-in by dropping the captured opacity-0 from-class', async () => {
+    const html = await readFile(path.join(OUT, 'products/gun-detection.html'), 'utf8');
+    // quoting is preserved — the build never re-serializes more than it mutates
+    expect(html).toContain('<div data-animation-gsap=clip-in class="sec-wrap">wrap</div>');
+  });
+
+  it('the generic sweep normalizes inline zero-opacity from-states on elements no explicit rule names, tagging them for the observer', async () => {
+    const html = await readFile(path.join(OUT, 'products/gun-detection.html'), 'utf8');
+    // IX2 reveal from-state (data-w-id, opacity:0;display:block): normalized + tagged
+    expect(html).toContain(
+      '<div data-w-id=0b2f0dee-4650-673b-b54a-913b956d66bb style=display:block class="filters-container w-form" data-fpm-reveal>filter</div>'
+    );
+    const gun = result.log.find((e) => e.page === '/products/gun-detection');
+    if (!gun || gun.error) throw new Error('unreachable: fixture gun-detection must log cleanly');
+    expect(gun.motion).toMatchObject({
+      'generic zero-opacity normalized+tagged': 1,
+      'fade-in rise-24 from-states': 1,
+      'fade-in bare opacity': 1,
+      'split words normalized+annotated': 1,
+      'clip-in from-class': 1,
+    });
+  });
+
+  it('the generic sweep leaves persistent-hidden states frozen — video chrome, hover CTAs, hidden panes, display:none', async () => {
+    const html = await readFile(path.join(OUT, 'products/gun-detection.html'), 'utf8');
+    // hover tween from-state (non-identity transform) — Tier 1 hover territory, not a reveal
+    expect(html).toContain(
+      'style="transform:translate3d(0px,-100%,0px) scale3d(1,1,1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg,0deg);transform-style:preserve-3d;opacity:0"'
+    );
+    // positioned chrome (Wistia-style dot)
+    expect(html).toContain('style=position:absolute;top:14.4668px;left:51.8407px;width:14.0664px;height:14.0664px;border-radius:50%;opacity:0');
+    // self-animated chrome (inline transition) and doubly-hidden chrome (display:none)
+    expect(html).toContain('style=background:rgb(31,58,47);display:none;opacity:0;transition:opacity 0.2s');
+    // hidden tab pane (pointer-events:none) — interaction state, not a reveal
+    expect(html).toContain('style=opacity:0;pointer-events:none;position:absolute;inset:0px');
+    // exactly one tagged element (the `>` keeps the injected CSS/JS selector text out of the count)
+    expect(html.match(/data-fpm-reveal>/g) ?? []).toHaveLength(1);
+  });
+
+  it('the generic sweep never reads CSS text or embedded documents — style blocks and srcdoc stay byte-identical', async () => {
+    const home = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    expect(home).toContain('<style>.motion-css-fake{opacity:0}</style>');
+    const sched = await readFile(path.join(OUT, 'chilipiper-2.html'), 'utf8');
+    // the frozen scheduler iframe's srcdoc content is not page DOM
+    expect(sched).toContain('<div style=opacity:0>hidden</div>');
+    expect(sched).not.toContain('data-fpm-reveal>'); // no tagged element anywhere on the page
+    expect(result.log.find((e) => e.page === '/chilipiper-2')?.motion).toEqual({});
+  });
+
+  it('injects the motion layer inline, verbatim and marked, on every served page — style before script, both before </body>', async () => {
+    const motionTag = `<style data-flock-parody="motion">\n${MOTION_CSS}\n</style>\n<script data-flock-parody="motion">\n${MOTION_RUNTIME}\n</script>`;
+    for (const page of ['index', 'products/gun-detection', 'book-a-demo', 'thank-you', 'gsx', 'chilipiper-2']) {
+      const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
+      expect(html, page).toContain(motionTag);
+      expect(html.indexOf('<style data-flock-parody="motion">'), page).toBeLessThan(html.indexOf('<script data-flock-parody="story-hook">'));
+      const closeBody = html.lastIndexOf('</body>');
+      expect(html.lastIndexOf('</script>', closeBody), page).toBeGreaterThan(-1);
+    }
+  });
+
+  it('logs motion normalizations per page; pages without animation shapes log an empty motion record', () => {
+    const home = result.log.find((e) => e.page === '/');
+    if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
+    expect(home.motion).toMatchObject({
+      'fade-in-2 from-states': 1,
+      'image-clip from→end': 1,
+      'fade-in rise-24 from-states': 1,
+    });
+    expect(result.log.find((e) => e.page === '/thank-you')?.motion).toEqual({});
+    for (const entry of result.log.filter((e) => !e.error)) expect(entry.motion).toBeDefined();
+  });
+
+  it('ships the static contract by construction — every injected from-state rule is gated on the JS-added html class', async () => {
+    // no-JS / reduced-motion pages never carry html.fpm-motion (the runtime is
+    // what adds it), so any rule NOT gated under it would break the static end-state.
+    // Asserted on the SERVED bytes: the style block the page actually carries.
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const block = /<style data-flock-parody="motion">\n([\s\S]*?)\n<\/style>/.exec(html)?.[1];
+    expect(block).toBeDefined();
+    const body = block!
+      .replace(/\/\*[\s\S]*?\*\//g, '') // comments
+      .replace(/@media[^{]+{[\s\S]*?}\s*}\s*/g, ''); // the media-gated smooth-scroll block
+    const rules = body.match(/[^{}]+\{[^{}]*\}/g) ?? [];
+    expect(rules.length).toBeGreaterThan(0);
+    for (const rule of rules) expect(rule.trim().split('{')[0].trim()).toMatch(/^html\.fpm-motion\b/);
   });
 });
 
@@ -250,23 +414,24 @@ describe('write pass & mutation log', () => {
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
     const stripped = home.stripped!;
-    // growth invariant: the injected runtime is the ONLY thing that can grow
-    // a page — stripping never adds bytes and the closing-tag restore is
-    // constant. (On the real corpus pages still shrink: strip removes ~MB.)
+    // growth invariant: the injected runtimes are the ONLY things that can
+    // grow a page — stripping never adds bytes, normalization removes them,
+    // annotations add a bounded per-element few bytes. (On the real corpus
+    // pages still shrink: strip removes ~MB.)
     const growth = home.bytesOut! - home.bytesIn!;
     expect(growth).toBeGreaterThan(0);
-    expect(growth).toBeLessThanOrEqual(RUNTIME.length + 100);
+    expect(growth).toBeLessThanOrEqual(INJECTED_BYTES + 300);
     // strip mutations: per-target removed-byte counts
     expect(stripped['qualified-offer-host']).toBeGreaterThan(0);
     expect(stripped['q-root (chat launcher)']).toBeGreaterThan(0);
     expect(stripped['onetrust-banner-sdk']).toBeGreaterThan(0);
     expect(stripped['qualified header-height var']).toBe(1);
     expect(stripped['qualified header-shift attrs']).toBe(1);
-    expect(home.linksRewritten).toBe(4); // 4 internal nav links; the offer-host link was stripped with its subtree
+    expect(home.linksRewritten).toBe(5); // 4 nav links + the spotlight-card (the offer-host link was stripped with its subtree)
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, 'known trackers': 0, externalFormActions: 0 });
-    expect(home.scripts).toEqual({ total: 3, executable: 0, ldJson: 2, injected: 1 });
+    expect(home.scripts).toEqual({ total: 4, executable: 0, ldJson: 2, injected: 2 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {

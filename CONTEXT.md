@@ -9,3 +9,5 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 - **Parody layer** — the reserved seam where the Recreation will later diverge into the art piece; deliberately unspecified until its own effort.
 - **Chat mimic** — the cloned chat assistant (the real site's is Qualified), powered by a yarnspinner-ts wrapper instead of a live backend. Yarn script content is a separate future effort written by the user.
 - **Link policy** — captured internal links repoint at Recreation routes; external links remain untouched.
+- **Motion layer** — the reveal mimic that restores the Captures' scroll- and load-driven motion: the build normalizes every captured animation from-state to its static end-state, then declarative annotations and one shared CSS/JS pair (injected, never the original runtime) play the reveals one-shot; reduced motion and no-JS both render the static end-state.
+- **From-state / end-state** — an element's captured pre-animation style (e.g. inline `opacity:0`, blurred split words) versus its final static look; the build normalizes former to latter, and the motion layer re-applies from-states only while animating.
