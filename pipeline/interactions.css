@@ -1,0 +1,24 @@
+/* SPDX-License-Identifier: CC0-1.0
+ *
+ * The delegated interaction layer, CSS half — injected inline into every
+ * served page by the build (pipeline/build.mjs pass 5, ticket 05). Pair with
+ * pipeline/interactions-runtime.js: that file toggles the classes and
+ * geometry these rules key on ("fpi" = flock-parody-interactions, the family
+ * the data-flock-parody="interactions" tags anchor).
+ *
+ * The layer's whole job is FUNCTION (ticket 05): every handler flips captured
+ * classes and geometry directly, so there are no from-states to arm and no
+ * animations to author. This stylesheet is deliberately tiny and
+ * SUPPRESS-ONLY — it may silence a captured animation, never introduce one:
+ * the reduced-motion checkbox holds at the CSS layer too. The one rule
+ * enacts the ticket's fidelity ruling on the custom accordion (accordion-css
+ * system, census pattern 12 — the license-plate-reader accordion): its
+ * captured embed CSS tweens grid-template-rows over 0.35s when a panel
+ * opens, and ticket 05 rules that accordion deliberately function-only —
+ * "without a height tween" — so the captured transition is suppressed for
+ * everyone, not only reduced-motion visitors. KEEP IN SYNC: the panel-open
+ * inline the runtime writes (grid-template-rows:1fr) must remain the only
+ * state this rule needs to apply instantly.
+ */
+
+.accordion-css__item-bottom { transition: none !important; }

@@ -4,12 +4,25 @@
 
 **Blocked by:** 01.
 
-**Status:** open
+**Status:** resolved
 Label: ready-for-agent
 
-- [ ] Tabs switch panes with the captured active/hidden classes and pairings.
-- [ ] Dropdowns and accordions open and close.
-- [ ] Sliders advance and retreat by captured slide geometry.
-- [ ] The license-plate-reader accordion toggles state and icon without a height animation.
-- [ ] Interactions are driven by delegation — no per-page bespoke logic.
-- [ ] Reduced-motion does not break interaction function.
+- [x] Tabs switch panes with the captured active/hidden classes and pairings.
+- [x] Dropdowns and accordions open and close.
+- [x] Sliders advance and retreat by captured slide geometry.
+- [x] The license-plate-reader accordion toggles state and icon without a height animation.
+- [x] Interactions are driven by delegation — no per-page bespoke logic.
+- [x] Reduced-motion does not break interaction function.
+
+## Comments
+
+**Implemented** (pass 5 in `pipeline/build.mjs`, `interactionsPass`): the build injects `pipeline/interactions.css` + `pipeline/interactions-runtime.js` inline, marked `data-flock-parody="interactions"`, ordered motion → interactions → story-hook. Pure injection — the layer reads whatever interaction furniture the capture carries, so unlike the motion pass there are no per-page mutations to log (only the `injected` marker, now a three-entry list).
+
+- **One delegated `document` click listener** resolves the family nearest-first via `closest()`, keyed on captured classes/attributes only (research/08 census patterns 11–15) — zero per-page bespoke logic: custom accordion (`[data-accordion-toggle]`), Webflow dropdown (`.w-dropdown-toggle`), the shared header's custom nav dropdown (`.nav__dd-trigger`), Webflow tabs (`.w-tab-link`), the flock-ecosystem custom tabs (`[data-tabs=<stem>-menu-item]` ↔ `-content-item`, paired by index under the `[data-tabs=<stem>]` root), and sliders (`[data-slider=back|next]`, `[data-swiper-prev|next]`, `.slider-bullet` pagination). Modified clicks (cmd/ctrl) pass through to the browser.
+- **Tabs** swap `w--current`/`w--tab-active`/`sf-hidden` by `data-w-tab` pairing inside the `.w-tabs` root and update `data-current`; the captured fade (per-root `data-duration-in/out/easing`, census 13) plays out-then-in when motion is allowed and is skipped under reduced motion; a click while a fade is mid-flight is ignored until it lands (≤ ~400ms — never double-armed).
+- **Dropdowns** flip `w--open` + `aria-expanded` and restore the captured closed geometry per shape: the animated-height FAQ lists (`height:0px` ↔ `auto`, video-cameras) or the `sf-hidden` display:none shape (press-center filters). Nav dropdowns toggle `sf-hidden` on `.nav__dd-content`.
+- **Sliders** translate the wrapper by captured slide geometry (inline `width` + `margin-right`, else laid-out width), clamped to the wrapper's scroll box as Swiper rests; `swiper-slide-active`/`-next`, bullet `is-active`/`aria-current`, and the captured disabled vocabulary (`swiper-button-disabled` for the quotes controls, the arrow's own `is-disabled` for the industries arrows, plus `aria-disabled`/`tabindex`) move with it. Slide `aria-label="i / N"` is positional and already correct in the Capture — untouched.
+- **The license-plate-reader accordion** (accordion-css system, census 12 — also on `/trust`, `/press-center`, `what-is-flock`, …): click flips `data-accordion-status` not-active↔active, `aria-expanded`, the panel's inline `grid-template-rows` (`1fr` open / dropped → the captured `0fr` rule closed), and the icon bar (`rect:last-child` gets `rotate(90deg)`; `transform-origin:center` and its 0.35s ease are captured CSS). Per the ticket ruling ("function-only, without a height tween"), the captured `grid-template-rows` 0.35s tween is suppressed by `interactions.css` (`transition:none!important`) — the layer's CSS half is deliberately SUPPRESS-ONLY (may silence a captured animation, never add one), asserted at the pipeline seam. The suppression applies to the whole shared accordion-css system — keying it per-page would be bespoke logic; the human side-by-side can revisit if the 0.35s row tween is wanted elsewhere.
+- **The interactions DOM seam** (added to the spec's Testing Decisions + CODING_STANDARDS.md, not a silent extension): `test/interactions.seam.test.ts` — 17 tests in jsdom against the exact injected bytes over fixtures mirroring the real captured shapes, covering every family's toggle contract, the tab fade timing, end-clamped slider geometry (layout stubbed, as jsdom has none), delegation from deep descendants, and reduced motion never blocking function.
+- **Real-subset verified** (8/8 pages): layer aboard everywhere in the right order; audits clean; 0 executable capture-derived scripts; the furniture the runtime keys on is present in the served bytes — LPR: 5 accordion items/toggles; video-cameras: 12 dropdown toggles + 2 tab links (two tab systems); press-center: 4 filter dropdown toggles.
+- **Out of scope, carried:** the nav dropdown's open-state arrow rotation (the open marker is never captured — all captures are closed; the side-by-side can rule); drag/swipe on sliders (census says click/drag — click is the ticket's bar); hover tweens (tier-1 IX2 `:hover` territory, still owned by no open ticket — carried from ticket 04's review).

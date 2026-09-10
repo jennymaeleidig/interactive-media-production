@@ -19,7 +19,9 @@ const OUT = path.join(HERE, '.tmp/pipeline/served');
 const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
 const MOTION_CSS = readFileSync(path.join(HERE, '../pipeline/motion.css'), 'utf8');
 const MOTION_RUNTIME = readFileSync(path.join(HERE, '../pipeline/motion-runtime.js'), 'utf8');
-const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length;
+const INTERACTIONS_CSS = readFileSync(path.join(HERE, '../pipeline/interactions.css'), 'utf8');
+const INTERACTIONS_RUNTIME = readFileSync(path.join(HERE, '../pipeline/interactions-runtime.js'), 'utf8');
+const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length;
 
 let result: { log: LogEntry[] };
 
@@ -77,8 +79,8 @@ describe('strip pass', () => {
 
   it('leaves non-target content untouched: JSON-LD, data-URI assets, captured from-states, text mentions', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    // 2 captured ld+json data blocks + the two injected runtimes (motion, story-hook)
-    expect((html.match(/<script\b/gi) ?? []).length).toBe(4);
+    // 2 captured ld+json data blocks + the three injected runtimes (motion, interactions, story-hook)
+    expect((html.match(/<script\b/gi) ?? []).length).toBe(5);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
     expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
     // a .word div outside a split container is not an animation word — left as captured
@@ -227,16 +229,20 @@ describe('story-hook pass (ticket 03)', () => {
     expect(tag).toBeLessThan(html.lastIndexOf('</body>'));
   });
 
-  it('logs the injection per page (after the motion layer, which is injected first)', () => {
+  it('logs the injection per page (motion layer, then interactions layer, then the story-hook seam)', () => {
     for (const entry of result.log.filter((e) => !e.error)) {
-      expect(entry.injected).toEqual(['motion layer (style+script, inline)', 'story-hook seam (inline, dormant)']);
+      expect(entry.injected).toEqual([
+        'motion layer (style+script, inline)',
+        'interactions layer (style+script, inline)',
+        'story-hook seam (inline, dormant)',
+      ]);
     }
   });
 
-  it('keeps the zero-outbound invariants with the runtime aboard — audit clean, no capture-derived executable', async () => {
+  it('keeps the zero-outbound invariants with the runtimes aboard — audit clean, no capture-derived executable', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
-    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(2); // motion + story-hook
+    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(3); // motion + interactions + story-hook
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
@@ -404,6 +410,45 @@ describe('motion pass (ticket 04)', () => {
   });
 });
 
+describe('interactions pass (ticket 05)', () => {
+  it('injects the layer inline, verbatim and marked, on every served page — after motion, before the story-hook seam', async () => {
+    const interactionsTag = `<style data-flock-parody="interactions">\n${INTERACTIONS_CSS}\n</style>\n<script data-flock-parody="interactions">\n${INTERACTIONS_RUNTIME}\n</script>`;
+    for (const page of ['index', 'products/gun-detection', 'book-a-demo', 'thank-you', 'gsx', 'chilipiper-2']) {
+      const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
+      expect(html, page).toContain(interactionsTag);
+      const motion = html.indexOf('<script data-flock-parody="motion">');
+      const interactions = html.indexOf('<script data-flock-parody="interactions">');
+      const storyHook = html.indexOf('<script data-flock-parody="story-hook">');
+      expect(motion, page).toBeGreaterThan(-1);
+      expect(interactions, page).toBeGreaterThan(motion);
+      expect(storyHook, page).toBeGreaterThan(interactions);
+    }
+  });
+
+  it('makes no per-page mutations of its own — pure injection, no motion-style count record', () => {
+    // the layer reads whatever interaction furniture the capture carries;
+    // unlike the motion pass there is nothing to normalize, so nothing to log
+    // beyond the injected marker
+    for (const entry of result.log.filter((e) => !e.error)) {
+      expect(entry.injected).toContain('interactions layer (style+script, inline)');
+    }
+  });
+
+  it('ships the suppress-only CSS contract: the layer may silence the captured accordion tween, never add animation', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const block = /<style data-flock-parody="interactions">\n([\s\S]*?)\n<\/style>/.exec(html)?.[1];
+    expect(block).toBeDefined();
+    const body = block!.replace(/\/\*[\s\S]*?\*\//g, ''); // comments
+    // the ticket's fidelity ruling, byte-present: the license-plate-reader
+    // accordion is function-only — the captured grid-rows tween is suppressed
+    expect(body).toContain('.accordion-css__item-bottom { transition: none !important; }');
+    // suppress-only: no rule may introduce a transition or animation of its own
+    const transitions = body.match(/transition\s*:[^;}]*/g) ?? [];
+    for (const t of transitions) expect(t.replace(/\s+/g, '')).toBe('transition:none!important');
+    expect(body).not.toMatch(/\banimation\s*(?:-name)?\s*:/);
+  });
+});
+
 describe('write pass & mutation log', () => {
   it('restores the closing tags SingleFile truncates away', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
@@ -431,7 +476,7 @@ describe('write pass & mutation log', () => {
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, 'known trackers': 0, externalFormActions: 0 });
-    expect(home.scripts).toEqual({ total: 4, executable: 0, ldJson: 2, injected: 2 });
+    expect(home.scripts).toEqual({ total: 5, executable: 0, ldJson: 2, injected: 3 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {

@@ -71,10 +71,13 @@ degrade to the captured end-state with JavaScript disabled.
 - Tests assert **external behavior only**, at the seams pre-agreed in the
   spec's Testing Decisions: the rendered-pixel seam (ticket 06), the HTTP
   serving seam, the chat message API seam (ticket 08), the story-hook DOM
-  seam (ticket 03), and the motion DOM seam (ticket 04 — the injected reveal
+  seam (ticket 03), the motion DOM seam (ticket 04 — the injected reveal
   runtime's reduced-motion/one-shot contract, evaluated in jsdom against the
-  exact injected bytes). No tests against pipeline internals or module
-  structure;
+  exact injected bytes), and the interactions DOM seam (ticket 05 — the
+  delegated click runtime's captured-class/geometry contract for tabs,
+  dropdowns, accordions, and sliders, same jsdom-against-injected-bytes
+  method; reduced motion never blocks function). No tests against pipeline
+  internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature
   capture runs mirroring the real corpus (unquoted attrs, machinery residue,

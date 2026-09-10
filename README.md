@@ -29,7 +29,7 @@ npm run typecheck  # tsc --noEmit
    stack, any surviving executable script), rewrite internal links to
    Recreation routes, restore the closing tags SingleFile truncates, and log
    every mutation to `served/build-log.json`. Later passes (forms, story-hook
-   seam, motion) land per their tickets.
+   seam, motion, delegated interactions) land per their tickets.
 3. **Serve** (`app/[[...path]]/route.ts`) — a catch-all route answers
    original site paths from `served/`; unknown paths 404, reproducing the
    live site's observed behavior.

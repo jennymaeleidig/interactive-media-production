@@ -30,6 +30,12 @@ export default defineConfig({
           include: ['test/motion.seam.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'interactions-seam',
+          include: ['test/interactions.seam.test.ts'],
+        },
+      },
     ],
   },
 });

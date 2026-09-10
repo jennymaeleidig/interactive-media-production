@@ -24,7 +24,15 @@
 //                tag generic inline zero-opacity from-states for the observer,
 //                then inject motion.css + motion-runtime.js inline. Reveals
 //                fire one-shot only when JS runs and reduced motion allows.
-//   5. story-hook — the dormant DOM-patching seam, injected inline on every
+//   5. interactions — the delegated interaction layer (ticket 05): inject
+//                interactions.css + interactions-runtime.js inline. One
+//                delegated click listener operates tabs, dropdowns,
+//                accordions, and sliders by captured classes and geometry —
+//                zero per-page bespoke logic, and reduced motion never blocks
+//                function. The CSS half is suppress-only: it silences the
+//                captured accordion height tween the ticket rules
+//                function-only, and never adds an animation.
+//   6. story-hook — the dormant DOM-patching seam, injected inline on every
 //                page (pipeline/story-hook.js, ticket 03). It only DEFINES
 //                window.flockParody — nothing in the Recreation calls it; the
 //                Parody layer will. DOM-only, zero network, and it degrades
@@ -562,6 +570,30 @@ function motionPass(html, entry, css, runtime) {
   return html;
 }
 
+// ---- interactions layer (ticket 05) ------------------------------------------
+
+const INTERACTIONS_INJECTED = 'interactions layer (style+script, inline)';
+
+/**
+ * Inject the delegated interaction runtime + its suppress-only CSS inline,
+ * verbatim, after the motion layer and before the story-hook seam (or at EOF
+ * when the capture is truncated — the write pass appends the closing tags
+ * after it). Pure injection: the layer reads the captured DOM it finds, so
+ * unlike the motion pass this one makes no per-page mutations to log.
+ */
+function interactionsPass(html, entry, css, runtime) {
+  const tag = `<style data-flock-parody="interactions">\n${css}\n</style>\n<script data-flock-parody="interactions">\n${runtime}\n</script>`;
+  const closeBody = html.lastIndexOf('</body>');
+  if (closeBody >= 0) {
+    html = html.slice(0, closeBody) + tag + '\n' + html.slice(closeBody);
+  } else {
+    html = html + '\n' + tag;
+  }
+  entry.injected = entry.injected ?? [];
+  entry.injected.push(INTERACTIONS_INJECTED);
+  return html;
+}
+
 // ---- story-hook seam (ticket 03) ----------------------------------------------
 
 const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
@@ -598,7 +630,7 @@ function storyHookPass(html, entry, source) {
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
  * @property {Record<string, number>} [motion]  Motion-pass normalization/annotation counts + the hero detection, per page (ticket 04).
- * @property {string[]} [injected]  Recreation runtimes injected inline on this page (tickets 04/05: motion layer, story-hook seam).
+ * @property {string[]} [injected]  Recreation runtimes injected inline on this page (motion layer, interactions layer, story-hook seam — tickets 04, 05, 03).
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number}} [scripts]  Script census of served bytes.
@@ -621,6 +653,8 @@ export async function runPipeline(opts) {
   const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
   const motionCss = fs.readFileSync(path.join(HERE, 'motion.css'), 'utf8');
   const motionRuntime = fs.readFileSync(path.join(HERE, 'motion-runtime.js'), 'utf8');
+  const interactionsCss = fs.readFileSync(path.join(HERE, 'interactions.css'), 'utf8');
+  const interactionsRuntime = fs.readFileSync(path.join(HERE, 'interactions-runtime.js'), 'utf8');
 
   for (const page of pages) {
     const src = captureFileFor(runDir, page);
@@ -639,6 +673,8 @@ export async function runPipeline(opts) {
     html = formsPass(html, entry, page, formsManifest);
 
     html = motionPass(html, entry, motionCss, motionRuntime);
+
+    html = interactionsPass(html, entry, interactionsCss, interactionsRuntime);
 
     html = storyHookPass(html, entry, storyHookSource);
 
