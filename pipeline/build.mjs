@@ -87,6 +87,13 @@ const STRIP_TARGETS = [
   { name: 'onetrust-banner-sdk', start: /<div[^>]*\sid=("|')?onetrust-banner-sdk\b/i, mode: 'balance', tag: 'div' },
   { name: 'onetrust-pc-sdk', start: /<div[^>]*\sid=("|')?onetrust-pc-sdk\b/i, mode: 'balance', tag: 'div' },
   { name: 'onetrust-style', start: /<style[^>]*\sid=("|')?onetrust-style\b/i, mode: 'to-close', close: /<\/style\s*>/i },
+  // Account surfaces are stripped, not mocked: the live site's Sign In chrome
+  // (header button, footer link) points at the account portal, and the one
+  // inline copy link points at the auth host. Chrome anchors go wholesale;
+  // copy links are unwrapped below so the words survive (word-for-word bar).
+  // Keyed on the host, never on the word "account" — the corpus uses that word
+  // in ordinary copy ("Account Executive", "account representative").
+  { name: 'account sign-in link', start: /<a\b[^>]*?\bhref\s*=\s*("|')?(?:https?:)?\/\/(?:users|login)\.flocksafety\.com[^>]*>/i, mode: 'balance', tag: 'a', all: true, contentRe: /\bclass\s*=\s*("|')?[^"'>]*\b(?:button|footer-5_link)\b/i },
 ];
 
 // Post-strip audit regexes — any hit suggests strip-list incompleteness.
@@ -99,6 +106,9 @@ const STRIP_TARGETS = [
 const AUDIT_RES = {
   qualified: /qualified-offer-|qualified\.com|_qualified-|q-root\b|q-focus-sentinel|q-launcher|q-messenger-frame/i,
   onetrust: /onetrust-(?:banner|pc|consent|style|accept|reject|close|privacy|policy|customize|filter)|ot-sdk|ot-sync/i,
+  // no account/auth affordance or route off the machine may survive the strip
+  // (the account portals and the Auth0 login host)
+  account: /(?:users|login)\.flocksafety\.com/i,
   'known trackers': /googletagmanager\.com|google-analytics\.com|hotjar\.com|hockeystack\.com|bing\.com\/bat|linkedin\.com\/px|connect\.facebook\.net|snap\.licdn\.com|6sense\.com|marketo\.com|munchkin\.marketo/i,
   // a form action that leaves the machine (ticket 02): absolute or
   // protocol-relative. Injected mock actions are root-relative /api/... and
@@ -175,6 +185,17 @@ function stripPass(html, entry) {
     }
     if (removed > 0) entry.stripped[t.name] = removed;
   }
+
+  // Inline account/auth links that are page copy (the FAQ's "Help Center"
+  // link) keep their words but lose the link — word-for-word copy stays
+  // intact, and no account affordance or route off the machine remains.
+  const accountCopyRe = /<a\b[^>]*?\bhref\s*=\s*("|')?(?:https?:)?\/\/(?:users|login)\.flocksafety\.com[^>]*>([\s\S]*?)<\/a>/gi;
+  let unwrapped = 0;
+  html = html.replace(accountCopyRe, (_m, _q, inner) => {
+    unwrapped += 1;
+    return inner;
+  });
+  if (unwrapped > 0) entry.stripped['account link unwrapped (copy kept)'] = unwrapped;
 
   // Attribute cleanup — Qualified smeared a header-shift flag onto real page
   // elements and left its layout-shift var inline on <html>/<body>.

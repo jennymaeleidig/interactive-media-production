@@ -2,7 +2,7 @@
 
 Label: ready-for-agent
 Effort: flock-parody-impl (implementation). Wayfinding journey retired: `.scratch/flock-parody/`.
-Tickets: `issues/01`–`12`.
+Tickets: `issues/01`–`13`.
 
 ## Problem Statement
 
@@ -53,7 +53,7 @@ Safety and forms:
 22. As a visitor, I want zero requests to leave my machine from any page, so that browsing the piece never feeds trackers or Flock's systems.
 23. As a visitor submitting any form, I want identical form markup that lands me on the captured thank-you page, so that the flow completes while nothing is actually submitted.
 24. As a visitor, I want Marketo forms rendered fully styled exactly as captured, so that even the forms look real.
-25. As a visitor, I want no cookie-consent banner, so that the page shows only what the strip decision kept.
+25. As a visitor, I want no cookie-consent banner and no account, login, or cart UI, so that the page shows only what the strip decision kept.
 
 The artist:
 
@@ -86,14 +86,14 @@ Build sessions:
 **Build method — serve the Captures**
 
 - The Recreation is a Next.js/React app (npm) that serves SingleFile Captures verbatim through a six-pass build: strip DOM → rewrite links → inject form actions → inject motion → inject the delegated interaction layer → inject the story-hook seam, then write with a per-page mutation log. Proven end-to-end by the snapshot-serving prototype.
-- Captures carry zero executable scripts, so "zero outbound requests from any served page" is true by construction; the strip audit confirms no tracker residue (Qualified = 0 everywhere; OneTrust's one survivor is the footer "Your Privacy Choices" link, which is site content and stays under the link policy).
-- The strip list is the converged audit set: the Qualified offer host, the chat launcher custom element with its inlined CSS, focus sentinels, all Qualified style blocks including orphaned layout CSS, Qualified-smeared attributes and the header-height var, and the OneTrust banner/consent stack entirely (nothing is left to consent to).
+- Captures carry zero executable scripts, so "zero outbound requests from any served page" is true by construction; the strip audit confirms no tracker residue (Qualified = 0 everywhere; OneTrust's one survivor is the footer "Your Privacy Choices" link, which is site content and stays under the link policy) and no account/auth host reference (`users.flocksafety.com`, `login.flocksafety.com` = 0 everywhere).
+- The strip list is the converged audit set: the Qualified offer host, the chat launcher custom element with its inlined CSS, focus sentinels, all Qualified style blocks including orphaned layout CSS, Qualified-smeared attributes and the header-height var, the OneTrust banner/consent stack entirely (nothing is left to consent to), and every account/auth affordance — the header and footer Sign In chrome pointing at `users.flocksafety.com`, removed wholesale, and inline auth-host links (`login.flocksafety.com`), unwrapped so their words survive. Account surfaces are stripped, never mocked: there is no account page, no mock login, no cart. The strip is keyed on the host, not the word "account" — the corpus says "Account Executive" and "account representative" in ordinary copy, which stays.
 - Static-frozen end-states are the ratified fidelity floor: served pages are fully static; the Recreation's runtime is the Chat mimic, the story-hook seam, the motion layer, and the delegated interaction layer — nothing else executes. The captured "Message from Flock Safety" title swaps were the pounce script's doing and are gone with the scripts; Captures carry static titles restored from inventory ground truth.
 - Captures are truncated before the closing body/html tags; the build pass appends them back.
 
 **Serving and links**
 
-- A single catch-all serving route resolves the served tree at original paths; a redirect manifest built from the capture run's uncaptured manifest serves the 56 redirect stubs as 301s to their (already local) targets. Dead collection roots 404 — reproducing observed behavior is the fidelity bar. Scaffold/test pages are dropped from serving entirely.
+- A single catch-all serving route resolves the served tree at original paths; a redirect manifest built from the capture run's uncaptured manifest serves the 56 redirect stubs as 301s to their (already local) targets. Dead collection roots 404 — reproducing observed behavior is the fidelity bar. Scaffold/test pages are dropped from serving entirely. The ten auth-gated `/events/test-*` stubs (444 on the live site) also 404: they are uncaptured test scaffolds, consistent with the scaffold-drop policy, and the Recreation has no password gate to reproduce.
 - Link policy: absolute internal hrefs rewrite to Recreation routes; external links stay live; asset/meta/JSON-LD URLs are untouched (assets are inlined data-URIs). One internal link's Qualified tracking parameter is kept verbatim — word-for-word bar, inert locally.
 - Assets are inlined into each snapshot; no separate asset hosting exists in this model (revisit parked for publication).
 
@@ -160,6 +160,7 @@ Build sessions:
 - Subdomain surfaces of flocksafety.com; the ten auth-gated event test pages (manifest entries only); any live backend traffic — Qualified's real API, CRMs, analytics, cookie consent, scheduling, video playback (posters and facades are the whole video story).
 - Free-text chat input, typing indicators, sounds, operator handoff, and any post-email-gate booker machinery.
 - Wheel-driven smooth scrolling beyond CSS anchor behavior — not CSS-reproducible; accepted.
+- **Account functionality** — login, signup, account, cart. The live site's account surfaces are stripped from every page (never mocked); no account page, route, or mock exists, and no reference to the account/auth hosts survives.
 
 ## Further Notes
 

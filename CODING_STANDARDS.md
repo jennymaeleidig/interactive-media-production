@@ -65,9 +65,10 @@ degrade to the captured end-state with JavaScript disabled.
   count, dead roots, auth-gated stubs). The routes check reads them, so the
   serving layer is measured against what the build actually produced.
 - **The strip audit is an invariant**: after the passes, tracker machinery
-  counts (Qualified, OneTrust stack, known tracker domains) must be zero on
-  every page. A failing audit means the strip list is incomplete — fix the
-  list, never weaken the audit.
+  counts (Qualified, OneTrust stack, known tracker domains) and account/auth
+  host references (`users.flocksafety.com`, `login.flocksafety.com`) must be
+  zero on every page. A failing audit means the strip list is incomplete —
+  fix the list, never weaken the audit.
 - Regex strip targets are **tag-scoped and content-keyed** where collapse
   risk exists; new passes follow the same shape (find → bounded scan → remove
   → count → log) and rescan after shifts.
@@ -90,6 +91,12 @@ degrade to the captured end-state with JavaScript disabled.
   unmodified (no per-request transformation), and `npm run routes` asserts
   byte-identity over HTTP for every page — same bytes ⇒ same pixels, so the
   visual result is fixed by the build, not the request.
+- **Account surfaces are stripped, never mocked.** The live site's Sign In
+  chrome (header button, footer link) points at `users.flocksafety.com` and
+  its auth host `login.flocksafety.com`; both go, wholesale (chrome) or
+  unwrapped (inline copy keeps its words). No account page, no mock login, no
+  cart. Keyed on the **host**, never the word "account" — the corpus uses that
+  word in ordinary copy ("Account Executive", "account representative").
 - Unknown paths 404. Reproducing observed live-site behavior is the fidelity
   bar — including its dead ends. The catch-all resolves 200 (served tree) →
   301 (redirect manifest) → 404 (dead roots, auth-gated stubs, dropped

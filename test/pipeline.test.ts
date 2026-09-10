@@ -29,7 +29,7 @@ beforeAll(async () => {
   await rm(path.join(HERE, '.tmp/pipeline'), { recursive: true, force: true });
   result = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/chilipiper-2', '/var-ref', '/missing'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/chilipiper-2', '/var-ref', '/account', '/missing'],
     outDir: OUT,
   });
 });
@@ -103,6 +103,25 @@ describe('strip pass', () => {
     if (!entry || entry.error) throw new Error('unreachable: fixture var-ref must log cleanly');
     expect(entry.stripped!['qualified header-height var references']).toBe(2); // outer + inner var()
     expect(entry.audit!.qualified).toBe(0);
+  });
+
+  it('strips the account Sign In chrome and unwraps inline account copy links without mocking anything', async () => {
+    const html = await readFile(path.join(OUT, 'account.html'), 'utf8');
+    // chrome anchors (header button + footer link) are removed wholesale
+    expect(html).not.toContain('users.flocksafety.com');
+    expect(html).not.toContain('>Sign In<');
+    // ...but their neighbours survive
+    expect(html).toContain('Get a Demo');
+    // the inline copy link loses the link and keeps the words
+    expect(html).not.toContain('login.flocksafety.com');
+    expect(html).toContain('First, visit our Help Center to troubleshoot.');
+    // the ordinary word "Account" in copy is content, not an affordance
+    expect(html).toContain('Book a meeting with your Flock Account Executive.');
+    const entry = result.log.find((e) => e.page === '/account');
+    if (!entry || entry.error) throw new Error('unreachable: fixture account must log cleanly');
+    expect(entry.stripped!['account sign-in link']).toBeGreaterThan(0); // header button + footer link, removed in bytes
+    expect(entry.stripped!['account link unwrapped (copy kept)']).toBe(1);
+    expect(entry.audit!.account).toBe(0);
   });
 
   it('strips the same machinery from deep pages', async () => {
@@ -491,7 +510,7 @@ describe('write pass & mutation log', () => {
     expect(home.linksRewritten).toBe(5); // 4 nav links + the spotlight-card (the offer-host link was stripped with its subtree)
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
-    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, 'known trackers': 0, externalFormActions: 0 });
+    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0 });
     expect(home.scripts).toEqual({ total: 5, executable: 0, ldJson: 2, injected: 3 });
   });
 
@@ -505,7 +524,7 @@ describe('write pass & mutation log', () => {
   it('logs a missing capture as a per-page error instead of throwing', () => {
     const missing = result.log.find((e) => e.page === '/missing');
     expect(missing).toEqual({ page: '/missing', error: 'capture file missing' });
-    expect(result.log.filter((e) => !e.error)).toHaveLength(7);
+    expect(result.log.filter((e) => !e.error)).toHaveLength(8);
   });
 });
 
