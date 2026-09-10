@@ -26,19 +26,16 @@
 // SPDX-License-Identifier: CC0-1.0
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ChatResponse } from '@/lib/chat-engine';
+import type { ChatLine, ChatResponse } from '@/lib/chat-engine';
 import './chat-widget.css';
 
-interface Msg {
-  from: 'bot' | 'me';
-  text: string;
-}
+type Mode = 'launcher' | 'card' | 'panel';
+
+/** A pending Yarn choice as the composer slot renders it. */
 interface Option {
   index: number;
   text: string;
 }
-
-type Mode = 'launcher' | 'card' | 'panel';
 
 const STORAGE_KEY = 'flock-chat-session';
 /**
@@ -65,9 +62,11 @@ function todayLabel(): string {
 
 export function ChatWidget() {
   const [mode, setMode] = useState<Mode>('launcher');
-  const [lines, setLines] = useState<Msg[]>([]);
+  const [lines, setLines] = useState<ChatLine[]>([]);
   const [options, setOptions] = useState<Option[] | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // Lazy init only: the divider is the captured "Today, h:mm am" stamp frozen at
+  // mount, so it never ticks over mid-conversation. There is deliberately no setter.
   const [divider] = useState(todayLabel);
   const started = useRef(false);
   const engaged = useRef(false);
@@ -82,9 +81,9 @@ export function ChatWidget() {
       // storage unavailable (private mode) — the session still lives server-side
     }
     if (res.replay) {
-      setLines(res.replay.map((l) => ({ from: l.from, text: l.text })));
+      setLines(res.replay);
     } else if (res.turn.lines.length > 0) {
-      setLines((prev) => [...prev, ...res.turn.lines.map((l) => ({ from: l.from, text: l.text }))]);
+      setLines((prev) => [...prev, ...res.turn.lines]);
     }
     setOptions(res.turn.options ? res.turn.options.map((o) => ({ index: o.index, text: o.text })) : null);
   }, []);
