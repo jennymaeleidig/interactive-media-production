@@ -17,19 +17,12 @@ npm run start      # serve the captured pages at their original paths
 npm run dev        # dev server (WATCHPACK_POLLING baked in — sandbox needs it)
 
 npm test           # full suite: pipeline + HTTP serving-seam + DOM-seam +
-                   #   route-check pure-core tests
+                   #   serving-check pure-core tests
 npm run typecheck  # tsc --noEmit
-npm run routes     # full-scale route check over HTTP: every live page 200,
-                   #   every legacy stub 301, every dead root / dropped
-                   #   scaffold-test page 404
-npm run gate       # fidelity gate: full-scale route check, then control
-                   #   renders + serving gate (0 px, 3 viewports, reduced
-                   #   motion) + strip report — needs Docker/colima, the
-                   #   capture run, and a fresh build. On a constrained
-                   #   machine, run the full-family pixel sample instead:
-                   #     npm run gate -- --list regression/sample-pages.txt --no-strip
-                   #   (the route check still covers all 1,180 pages; the
-                   #   exhaustive strip sweep is the ticket-12 phase gate)
+npm run routes     # full-scale serving check over HTTP (~10 s): every live
+                   #   page 200 with a byte-identical body, every legacy stub
+                   #   301, every dead root / dropped scaffold-test page 404,
+                   #   every page's strip audit clean
 ```
 
 ## How it works
@@ -51,12 +44,14 @@ npm run gate       # fidelity gate: full-scale route check, then control
    permanent redirect (legacy stubs); dead collection roots, auth-gated stubs,
    and dropped scaffold/test pages 404, reproducing the live site's observed
    behavior.
-4. **Verify** (`regression/`) — `npm run routes` asserts every route class
-   over HTTP at full scale; `npm run gate` adds the serving gate (the served
-   tree over HTTP vs from disk in the same headless chromium at 1440×900 /
-   768×1024 / 390×844, reduced motion forced, zero-tolerance pixels) after a
-   determinism proof, plus the strip report diffing each raw Capture against
-   its served page for human review.
+4. **Verify** (`regression/routes.mjs`) — `npm run routes` starts the
+   production server and asserts, over HTTP, every route class at full scale
+   plus **byte-identity**: every served page's body must equal the file the
+   build wrote (same bytes ⇒ same pixels, so this is the serving layer's
+   whole guarantee). Visual fidelity and strip deltas are the human
+   side-by-side at the phase gates (ticket 12); the per-page strip decision is
+   recorded in the build log. There is no pixel gate — see
+   [CODING_STANDARDS.md](CODING_STANDARDS.md) for why it was retired.
 
 Coding rules: [CODING_STANDARDS.md](CODING_STANDARDS.md). Domain vocabulary:
 [CONTEXT.md](CONTEXT.md).

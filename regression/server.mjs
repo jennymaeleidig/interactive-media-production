@@ -1,7 +1,6 @@
-// Start the production server the fidelity instruments measure, on a free
-// port, and reap it with the command. Shared by the gate (ticket 06) and the
-// full-scale route check (ticket 07) so both measure the same serving layer
-// visitors get.
+// Start the production server the serving check measures, on a free port, and
+// reap it with the command (regression/routes.mjs) so it measures the same
+// serving layer visitors get.
 //
 // A server started inside a sandboxed command must die with the command
 // (CODING_STANDARDS, Environment constraints) — no orphaned port squatters.

@@ -11,4 +11,4 @@ Label: ready-for-agent
 - [ ] The mimic is mounted on every page where the original had it.
 - [ ] The mimic is absent from pages where the original did not have it.
 - [ ] The launcher and its behavior are consistent across all mounted pages.
-- [ ] The serving gate remains green with the mimic mounted site-wide.
+- [ ] The serving check (`npm run routes`) remains green with the mimic mounted site-wide.

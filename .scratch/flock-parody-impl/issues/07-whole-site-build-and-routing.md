@@ -1,6 +1,6 @@
 # 07: Whole-site build & routing
 
-**What to build:** The entire Recreation exists. All build passes run across the full capture run, producing the served tree at original paths. The redirect manifest serves the legacy stubs as permanent redirects to their local targets; scaffold and test pages are dropped from serving; dead collection roots return 404. A single config value points the build at a capture run. The serving gate is green at full scale and the strip audit is clean site-wide.
+**What to build:** The entire Recreation exists. All build passes run across the full capture run, producing the served tree at original paths. The redirect manifest serves the legacy stubs as permanent redirects to their local targets; scaffold and test pages are dropped from serving; dead collection roots return 404. A single config value points the build at a capture run. The serving check is green at full scale and the strip audit is clean site-wide.
 
 **Blocked by:** 02, 03, 04, 05, 06.
 
@@ -14,7 +14,7 @@ Label: ready-for-agent
 - [x] The served page count matches the inventory's live-page count.
 - [x] The strip audit is clean across the whole site.
 - [x] Moving to a different capture run is a one-value change.
-- [x] The serving gate is green at full scale.
+- [x] The serving check is green at full scale.
 
 ## Comments
 
@@ -55,20 +55,17 @@ Label: ready-for-agent
   `countFailures`, unit-tested).
 - **Single config value**: `pipeline/config.mjs` `CAPTURE_RUN` still decides
   the run; `DROPPED_PAGES` lives beside it.
-- **Serving gate**: the gate now runs the full-scale route check first (fails
-  routing before any render), then control + the 0-px matrix. Because the
-  exhaustive 1,180-page sweep is ~2 h of headless rendering on this machine
-  (user direction: too expensive for the MacBook Air), the pixel proof runs
-  over the full-family sample `regression/sample-pages.txt` (37 pages, one per
-  template family + the largest and hardest — `/upcoming-events`,
-  `/chilipiper-2` srcdoc fonts, the tier-3 pages) with the new `--no-strip`
-  flag: **control 0 px + 111 gate comparisons 0 px at all three viewports,
-  ~6 min**. The exhaustive raw-vs-served strip sweep is the ticket-12
-  phase-gate run (human side-by-side), not a per-ticket step.
-- **Verification**: `npx tsc --noEmit` clean; `npm test` **127 green**;
-  `npm run build` succeeds; `npm run routes` green at full scale;
-  `npm run gate -- --list regression/sample-pages.txt --no-strip` green.
-  Two-axis code review (Standards / Spec) run in parallel sub-agents; its
-  findings drove the test-decoupling, the shared `isLocalTarget` predicate,
-  the duplicate-describe rename, the `lib/` build-freshness fix, and the two
+- **Serving check**: `npm run routes` asserts every route class over HTTP
+  **plus byte-identity** — every served page's body must equal the file the
+  build wrote. All **1,279 routes + 1,180 byte-identical bodies green in
+  ~10 s**. The pixel gate this ticket once carried was retired in the same
+  change: its only gating comparison rendered the served bytes against
+  themselves, and it cost ~2 h per sweep — byte-identity is strictly stronger
+  (same bytes ⇒ same pixels) and full-coverage. See ticket 06.
+- **Verification**: `npx tsc --noEmit` clean; `npm test` **132 green** across
+  8 projects; `npm run build` succeeds; `npm run routes` green at full scale
+  (route classes + byte-identity + strip audit). Two-axis code review
+  (Standards / Spec) run in parallel sub-agents; its findings drove the
+  test-decoupling, the shared `isLocalTarget` predicate, the duplicate-describe
+  rename, the `lib/` build-freshness fix, the shared CLI seam, and the two
   strip fixes above.

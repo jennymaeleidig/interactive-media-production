@@ -1,19 +1,25 @@
-// The full-scale route check (ticket 07): every route class the serving layer
-// answers, asserted over HTTP against the running production server.
+// The full-scale serving check (tickets 06–07): every route class the serving
+// layer answers, plus byte-identity of every served page, asserted over HTTP
+// against the running production server.
 //
-//   200  every live page from the build log serves its captured page
+//   200  every live page from the build log serves its captured page, and the
+//        response body is byte-identical to the file the build wrote — same
+//        bytes ⇒ same pixels, so this is the serving layer's whole guarantee
+//        (the retired pixel gate compared those same bytes twice)
 //   301  every legacy redirect stub answers its permanent redirect, to the
 //        local target the run manifest named
 //   404  every dead collection root, every auth-gated stub, and every dropped
 //        scaffold/test page
 //
-// Plus the whole-site count invariant: served + dropped + errors accounts for
-// every page the capture run listed (the inventory's live-page count).
+// Plus the whole-site invariants: served + dropped + errors accounts for every
+// page the capture run listed, and the site-wide strip audit (no tracker
+// residue, no capture-derived executable script) holds on every page.
 //
-// The expectation builder (`routeExpectations`) and the count check are pure —
-// unit-tested in `test/routes.test.ts`. The check itself is environmental (it
-// needs Docker? no — just the built app and the served tree), so it is not a
-// test-suite member: the suite must stay green on a fresh clone.
+// The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
+// `servedCandidates`, `byteMismatch` — are unit-tested in `test/routes.test.ts`.
+// The check itself is environmental (it needs the built app and the served
+// tree), so it is not a test-suite member: the suite must stay green on a
+// fresh clone.
 //
 // Usage: node regression/routes.mjs [--served served] [--run <captureRunDir>]
 //        [--base http://host:port]   (--base skips starting its own server)
@@ -118,6 +124,42 @@ export function auditFailures(buildLog) {
   return failures;
 }
 
+/**
+ * The served file candidates for a route path, in the route's own order:
+ * `<rel>.html` then `<rel>/index.html` (root → `index.html`). Mirrors
+ * `app/[[...path]]/route.ts` so the byte check measures the same resolution
+ * the request did.
+ * @param {string} servedDir
+ * @param {string} page  a route path, e.g. '/' or '/a/b'
+ * @returns {string[]}
+ */
+export function servedCandidates(servedDir, page) {
+  const rel = page.replace(/^\/+/, '');
+  if (rel === '') return [path.join(servedDir, 'index.html')];
+  return [path.join(servedDir, `${rel}.html`), path.join(servedDir, rel, 'index.html')];
+}
+
+/** First differing byte offset of two buffers, or min length when one is a prefix. */
+function firstDifference(a, b) {
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) if (a[i] !== b[i]) return i;
+  return n;
+}
+
+/**
+ * A served page's HTTP body must be exactly the file the build wrote — the
+ * serving layer's whole guarantee (same bytes ⇒ same pixels). Pure: buffers
+ * in → a failure message or null.
+ * @param {string} page
+ * @param {Buffer} body   the response body bytes
+ * @param {Buffer} file   the served file's bytes
+ * @returns {string | null}
+ */
+export function byteMismatch(page, body, file) {
+  if (body.equals(file)) return null;
+  return `${page}: HTTP body differs from the served file at byte ${firstDifference(body, file)} (body ${body.length} bytes, file ${file.length} bytes)`;
+}
+
 /** Run `fn` over `items` with bounded concurrency, preserving order. */
 async function mapLimit(items, limit, fn) {
   const out = new Array(items.length);
@@ -173,12 +215,21 @@ export async function checkRoutes(base, { servedDir, runDir }) {
   const results = await mapLimit(expectations, 16, async (e) => {
     try {
       const res = await fetch(base + e.path, { redirect: 'manual' });
-      res.body?.cancel().catch(() => {}); // status + headers only — never buffer a 3 MB page
-      return { e, status: res.status, location: res.headers.get('location') };
+      // status + headers for every class; the body only for served pages — the
+      // byte-identity check is the serving layer's guarantee, and buffering a
+      // 3 MB page for a 301/404 would be waste
+      let bytes = null;
+      if (e.status === 200) {
+        bytes = Buffer.from(await res.arrayBuffer());
+      } else {
+        res.body?.cancel().catch(() => {});
+      }
+      return { e, status: res.status, location: res.headers.get('location'), bytes };
     } catch (err) {
       return { e, error: err instanceof Error ? err.message : String(err) };
     }
   });
+  let byteChecked = 0;
   for (const r of results) {
     if (r.error) {
       failures.push(`${r.e.path}: request failed (${r.error})`);
@@ -186,11 +237,23 @@ export async function checkRoutes(base, { servedDir, runDir }) {
     }
     if (r.status !== r.e.status) failures.push(`${r.e.path}: expected ${r.e.status}, got ${r.status}`);
     else if (r.e.location && r.location !== r.e.location) failures.push(`${r.e.path}: expected redirect to ${r.e.location}, got ${r.location ?? '(none)'}`);
+    // byte-identity for the served page the build wrote
+    if (r.e.status === 200 && r.status === 200 && r.bytes) {
+      const file = servedCandidates(servedDir, r.e.path).find((f) => fs.existsSync(f));
+      if (!file) {
+        failures.push(`${r.e.path}: 200 but no served file at served/${r.e.path.replace(/^\/+/, '')}.html`);
+      } else {
+        byteChecked++;
+        const mismatch = byteMismatch(r.e.path, r.bytes, fs.readFileSync(file));
+        if (mismatch) failures.push(mismatch);
+      }
+    }
   }
 
   return {
     failures,
     checked: expectations.length,
+    byteChecked,
     counts: {
       served: served.length,
       redirects: Object.keys(redirects).length,
@@ -223,15 +286,16 @@ async function main() {
   try {
     server = external ? { base: external, stop: async () => {} } : await startServer();
     const r = await checkRoutes(server.base, { servedDir, runDir });
-    console.log('Route check (ticket 07) — every route class over HTTP');
+    console.log('Serving check (tickets 06–07) — every route class + byte-identity over HTTP');
     console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
+    console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the built file`);
     console.log(`  count identity: served + dropped = ${r.counts.served} + ${r.counts.droppedRequested} = ${r.counts.served + r.counts.droppedRequested}, against ${r.counts.inventory} inventory page(s)`);
     if (r.failures.length > 0) {
       console.log(`\n✗ ${r.failures.length} failure(s):`);
       for (const f of r.failures) console.log(`  ${f}`);
       process.exitCode = 1;
     } else {
-      console.log('\n✓ Route classes green.');
+      console.log('\n✓ Serving layer green.');
     }
   } finally {
     if (server) await server.stop();

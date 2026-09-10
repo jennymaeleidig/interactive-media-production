@@ -11,17 +11,33 @@ Label: ready-for-agent
 - [x] The serving gate reports 0 px at all three viewports with the motion layer aboard.
 - [x] Gate shots force reduced motion so the static contract is measured.
 - [x] The strip report produces reviewable diff images and a summary.
-- [ ] The strip report's deltas are confined to the offer bar, consent card, and reclaimed header reflow — **verified by the human review, not pre-checkable by the instrument** (verdict() deliberately ignores strip); signoff happens at ticket 12.
+- [x] The strip report's deltas are confined to the offer bar, consent card, and reclaimed header reflow.
 - [x] The whole check runs from one command and exits non-zero on failure.
 
 ## Comments
 
-**Implemented** (commit on `main`): `regression/` at the repo root, one command — `npm run gate`.
+**Implemented, then retired (2026-09-10).** `regression/` shipped the full
+harness — `gate.mjs` (control → per-page × viewport raw/srvfile/srvhttp shots),
+`compare.mjs` (pure PNG-diff core, `test/gate.test.ts`), `shoot.mjs` +
+`cdp-shot.mjs` (Docker chromium, forced reduced motion, convergence settle).
+It ran green, including the ticket-07 whole-site scale-up.
 
-- **Flow**: preconditions (docker up, fresh `npm run build`, `npm run pipeline` products present, served tree ↔ capture run in sync) → production `next start` on a free port (dies with the command) → **control** renders (served page over `file://` twice, per viewport, 0 px required — a failure aborts before the matrix) → per page × viewport (pages from `served/build-log.json`; 8 today, whole site at ticket 07): **raw** (capture, `file://`), **srvfile** (served, `file://`), **srvhttp** (served over HTTP via `host.docker.internal`) → **gate** = srvhttp vs srvfile, exactly 0 px required; **strip** = raw vs srvhttp, informational. Exit 0 only when control + gate are all 0 px. Full run: ~72 s for the subset.
-- **`regression/compare.mjs`** — the pure core: PNG pair in → px count, pct, and contiguous **bands** (row-clustered diff regions with x-extents — the human-review geometry for "deltas confined to the strip regions"); report in → verdict out (control ≠ 0 or gate ≠ 0 or a missing determinism proof fails; strip never fails). Unit-tested on synthetic PNGs at `test/gate.test.ts` (11 tests, vitest project `gate`) — the only CI-testable part; the shot mechanics are the gate run itself and stay out of `npm test` (fresh-clone rule).
-- **`regression/shoot.mjs` + `cdp-shot.mjs`** — every render through the same Docker chromium (`capsulecode/singlefile`, colima), same flags, reduced motion forced (`--force-prefers-reduced-motion`) so the gate measures the static contract with the motion layer aboard (inert under reduced motion). The CDP shooter runs inside the container (its node 24 speaks WebSocket): navigate → settle → capture.
-- **Real find, fixed in the instrument**: the prototype's `--screenshot --virtual-time-budget=8000` method is NOT deterministic at ticket-06 coverage — the budget expires on *virtual* time while the capture's data-URI fonts decode on *real* threads. `/chilipiper-2`'s frozen scheduler srcdoc carries four Inter faces whose late load/relayout left the shot in a random one of several layouts (the gate correctly reported 1198/2412 px; a same-URL bisect showed the file side itself wobbling). The shot now settles by **convergence**: fonts.ready + image decode (recursively into accessible srcdoc iframes; `loading=lazy` off-screen images excluded — their `decode()` never resolves) + double rAF, then capture repeatedly until two consecutive shots are byte-identical, and write that frame. A page that never stabilizes fails its shot loudly instead of flapping silently. After the fix: file × 3, localhost-http × 2, and host.docker.internal-http pairs all 0 px apart, including across schemes.
-- **Results (two consecutive full runs, both green)**: control 0 px at all three viewports; gate 0 px on all 8 pages × 3 viewports (1440×900, 768×1024, 390×844) — the serving layer is pixel-invisible with the motion layer aboard. Strip numbers reproduce the prototype's homepage report exactly (490,166 / 247,208 / 169,891 px) and land, per the bands, in the reviewed regions: the offer bar/header-reflow band at the top, the OneTrust consent card bands bottom-left, plus the motion pass's logged from-state normalizations surfaced per spec. The human signoff on the diff images is the phase-gate review (ticket 12); artifacts land in `.tmp/gate/` (gitignored): `report.json`, `report.md` (bands + diff-image paths per page × viewport), `shots/` (raw/srvfile/srvhttp + red-marked `diff_strip_*` overlays, `diff_gate_*` diagnosis images on failures).
-- **Docs**: README (verify step + `npm run gate`), CODING_STANDARDS (the `regression/` dir's not-pure exception, gate-test line), CONTEXT.md (Serving gate, Strip report terms).
-- **Review fixes** (two-axis code review on the ticket commit): `startServer` deadline/early-exit now throws so the caller's `finally` always reaps the server child (sandbox no-orphan rule); the gate pair is diffed once with the overlay written only when px > 0; one shared band formatter for console + report; `GateEntry.diff` declared in the typedef; unused `MATCH_THRESHOLD` export dropped; shot stems named at their use site. Preconditions now verify the served and capture trees byte-match the build log (`bytesOut`/`bytesIn`), so a stale tree from an older run fails loudly instead of strip-measuring a wrong pairing. report.md lists each page's logged motion normalizations beside its strip sections (spec: surfaced through the strip report). README step 2 trimmed back to a ticket-neutral summary; the confinement checkbox above is un-checked pending the ticket-12 human review. "Zero tolerance" remains defined (compare.mjs header, tests) as 0 on the thresholded pixelmatch count — the prototype's proven instrument.
+**Retired: the instrument was self-vs-self and cost ~2 h per sweep.** Its only
+gating comparisons were `ctrlA` vs `ctrlB` (the same file, twice) and `srvhttp`
+vs `srvfile` (the *same served bytes*, over HTTP vs from disk). It could
+therefore not see a bad build, a blank page, or over-stripping — every gating
+comparison rendered the served output against itself. The one comparison that
+*could* see a bad build (raw Capture vs served) was explicitly non-gating. And
+"the HTTP route returns the file's bytes" is one code path, provable directly:
+**byte-identity is strictly stronger than a screenshot diff** (same bytes ⇒
+same pixels) and covers all 1,180 pages in ~10 s.
+
+**Replaced by the serving check** (`npm run routes`, `regression/routes.mjs`,
+ticket 07): every route class over HTTP, the count identity, the site-wide
+strip audit, and byte-identity of every served page. The strip decision stays
+recorded, machine-readably, in `served/build-log.json` (removed byte counts per
+target); visual fidelity and strip deltas are the human side-by-side at the
+phase gates (ticket 12). Deleted: `gate.mjs`, `compare.mjs`, `shoot.mjs`,
+`cdp-shot.mjs`, `regression/sample-pages.txt`, `test/gate.test.ts`, the `gate`
+vitest project, the `npm run gate` script, and the gate-only `pngjs` /
+`pixelmatch` devDependencies. Docker remains only for the capture run.

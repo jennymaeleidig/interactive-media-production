@@ -31,34 +31,22 @@ degrade to the captured end-state with JavaScript disabled.
   browser runtimes it inlines (e.g. `pipeline/story-hook.js`, ticket 03) are
   the documented exception: plain browser JavaScript, kept ES5-safe, read as
   text and inlined verbatim — no `.mjs`/JSDoc requirement, no bundling.
-- The fidelity gate (`regression/`, one command `npm run gate`) is plain Node
-  ESM + JSDoc too, but **not a pure transformation**: it drives headless
-  chromium in Docker, starts the production server, and compares real pixels.
-  Its pure core (`regression/compare.mjs` — PNG pair in → diff stats out,
-  report in → verdict out) is unit-tested at `test/gate.test.ts`; the shot
-  mechanics (`regression/shoot.mjs` + `cdp-shot.mjs`) are the gate run
-  itself, verified against the real capture run, never in `npm test` (the
-  suite must stay green on a fresh clone). The full-scale route check
-  (`regression/routes.mjs`) is part of the gate's preflight and also runs
-  standalone (`npm run routes`); its pure core is `test/routes.test.ts`.
-- **Known bottleneck — the pixel gate does not scale on a laptop.** The 0-px
-  gate renders every shot through headless chromium in Docker, and the work is
-  CPU-bound in the Docker/colima layer, so it barely parallelizes (4 shards buy
-  ~2x). Measured: **~1.1 s per shot, ~0.93 s/shot wall for a 37-page run, and a
-  full 1,180-page × 3-viewport sweep is roughly 2 hours** on a MacBook Air.
-  Do **not** run the full sweep as a per-change check. Use it as a *localized*
-  instrument:
-  - `npm run routes` is the cheap full-coverage check — all ~1,280 route
-    classes over HTTP plus the site-wide strip audit, ~8 s. Run it every time.
-  - The 0-px pixel proof runs over `regression/sample-pages.txt` (one page per
-    template family + the largest and hardest cases) with `--no-strip`, which
-    skips the informational strip render — the serving-gate comparison is
-    unchanged. That is ~6 min and is the per-ticket pixel check:
-    `npm run gate -- --list regression/sample-pages.txt --no-strip`.
-  - The exhaustive 1,180-page raw-vs-served strip sweep (and the full pixel
-    matrix) is the **ticket-12 phase-gate run** on adequate hardware — a
-    deliberate, occasional sign-off, not a routine step. `--no-strip` is the
-    only sanctioned cost reduction; never weaken the 0-px gate itself.
+- The serving check (`regression/routes.mjs`, one command `npm run routes`) is
+  plain Node ESM + JSDoc and **environmental**: it starts the production
+  server and measures it over HTTP. Its pure cores — `routeExpectations`,
+  `countFailures`, `auditFailures`, `servedCandidates`, `byteMismatch` — are
+  unit-tested at `test/routes.test.ts`; the check itself runs against the real
+  build and capture run, never in `npm test` (the suite must stay green on a
+  fresh clone).
+- **The serving layer is verified in bytes, not pixels.** Every served page's
+  HTTP body must be byte-identical to the file the build wrote — same bytes ⇒
+  same pixels, so byte-identity is the strictly stronger guarantee, and it
+  covers all 1,180 pages in ~10 s. There is **no pixel gate**: the retired
+  ticket-06 harness compared served-over-HTTP against the *same* served bytes
+  on disk (self-vs-self — it could not see a bad build), and rendered ~1,180
+  pages × 3 viewports for ~2 h to re-prove one code path. Visual fidelity and
+  strip deltas are the human side-by-side at the phase gates (ticket 12); the
+  per-page strip decision is recorded machine-readably in the build log.
 - One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
   which capture run the build serves from. Moving to a fresh run is a
   one-value change plus a re-run of the passes. The same file's
@@ -98,6 +86,10 @@ degrade to the captured end-state with JavaScript disabled.
 - Served pages are **static end-states**. Motion and interaction return only
   through the injection passes (tickets 03/04/05), never by un-freezing the
   captured DOM.
+- The served tree is **frozen**: the serving route returns the build's bytes
+  unmodified (no per-request transformation), and `npm run routes` asserts
+  byte-identity over HTTP for every page — same bytes ⇒ same pixels, so the
+  visual result is fixed by the build, not the request.
 - Unknown paths 404. Reproducing observed live-site behavior is the fidelity
   bar — including its dead ends. The catch-all resolves 200 (served tree) →
   301 (redirect manifest) → 404 (dead roots, auth-gated stubs, dropped
@@ -107,15 +99,15 @@ degrade to the captured end-state with JavaScript disabled.
 ## Testing
 
 - Tests assert **external behavior only**, at the seams pre-agreed in the
-  spec's Testing Decisions: the rendered-pixel seam (ticket 06), the HTTP
-  serving seam, the chat message API seam (ticket 08), the story-hook DOM
-  seam (ticket 03), the motion DOM seam (ticket 04 — the injected reveal
-  runtime's reduced-motion/one-shot contract, evaluated in jsdom against the
-  exact injected bytes), and the interactions DOM seam (ticket 05 — the
-  delegated click runtime's captured-class/geometry contract for tabs,
-  dropdowns, accordions, and sliders, same jsdom-against-injected-bytes
-  method; reduced motion never blocks function). No tests against pipeline
-  internals or module structure;
+  spec's Testing Decisions: the HTTP serving seam (the top seam — every route
+  class plus byte-identity of every served page), the chat message API seam
+  (ticket 08), the story-hook DOM seam (ticket 03), the motion DOM seam
+  (ticket 04 — the injected reveal runtime's reduced-motion/one-shot contract,
+  evaluated in jsdom against the exact injected bytes), and the interactions
+  DOM seam (ticket 05 — the delegated click runtime's captured-class/geometry
+  contract for tabs, dropdowns, accordions, and sliders, same
+  jsdom-against-injected-bytes method; reduced motion never blocks function).
+  No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature
   capture runs mirroring the real corpus (unquoted attrs, machinery residue,
@@ -123,11 +115,10 @@ degrade to the captured end-state with JavaScript disabled.
   suite must be green on a fresh clone.
 - Red → green, one slice at a time. New behavior starts as a failing test at
   an agreed seam.
-- The gate's compare/verdict logic is tested on synthetic PNGs
-  (`test/gate.test.ts`); the route check's expectation builder and count
-  invariant are tested pure (`test/routes.test.ts`). The full gate run and the
-  full-scale route check are the rendered-pixel and HTTP seams exercised
-  against the real capture run — instruments, not test-suite members.
+- The serving check's pure cores — expectation builder, count and audit
+  invariants, file-candidate resolution, byte comparison — are tested pure
+  (`test/routes.test.ts`). The check itself is the top HTTP seam exercised
+  against the real capture run — an instrument, not a test-suite member.
 
 ## TypeScript & code style
 
@@ -149,8 +140,8 @@ dev/build for everyone:
 - **`browserslist`** in `package.json` is required by `next build` (caniuse
   data resolution). Don't delete the field.
 - **Headless Chromium runs via Docker** (`capsulecode/singlefile`, colima) —
-  it cannot launch under the main agent sandbox. Captures and the pixel gate
-  (ticket 06) depend on this.
+  it cannot launch under the main agent sandbox. The capture run (ticket 11)
+  depends on this; the serving check does not render, so it needs no Docker.
 - Servers started inside a sandboxed command must die with the command
   (self-alarm or child lifecycle) — no orphaned port squatters.
 
@@ -169,8 +160,8 @@ dev/build for everyone:
 1. `npx tsc --noEmit` — clean.
 2. `npm test` — full suite green (not just the files you touched).
 3. `npm run build` — production build succeeds.
-4. If the pipeline or served bytes changed: `npm run pipeline` + spot-check
-   the mutation log and strip audit; run `npm run routes` for the full-scale
-   route classes (build first).
+4. If the pipeline or served bytes changed: `npm run pipeline`, spot-check the
+   mutation log and strip audit, `npm run build`, then `npm run routes` for the
+   full-scale serving check (route classes + byte-identity).
 5. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to
    the current branch — staging only files the ticket touched.

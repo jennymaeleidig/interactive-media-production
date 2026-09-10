@@ -3,7 +3,7 @@
 // and the served tree), so it is not a test-suite member — but its derivation
 // from the build's route classes is pure and locked here.
 import { describe, it, expect } from 'vitest';
-import { auditFailures, countFailures, formatRouteCounts, routeExpectations } from '../regression/routes.mjs';
+import { auditFailures, byteMismatch, countFailures, formatRouteCounts, routeExpectations, servedCandidates } from '../regression/routes.mjs';
 
 describe('routeExpectations', () => {
   it('names a status for every route class', () => {
@@ -89,9 +89,36 @@ describe('auditFailures', () => {
 });
 
 describe('formatRouteCounts', () => {
-  it('renders the one-line class summary the gate and route check share', () => {
+  it('renders the one-line class summary the serving check prints', () => {
     expect(formatRouteCounts({ served: 1180, redirects: 56, dropped: 19, dead: 14, authGated: 10 })).toBe(
       '1180 served 200 · 56 stub 301 · 19 dropped/test 404 · 14 dead 404 · 10 auth-gated 404',
     );
+  });
+});
+
+describe('servedCandidates', () => {
+  it('mirrors the route resolution order: <rel>.html then <rel>/index.html', () => {
+    expect(servedCandidates('served', '/a/b')).toEqual(['served/a/b.html', 'served/a/b/index.html']);
+  });
+
+  it('resolves the root to index.html', () => {
+    expect(servedCandidates('served', '/')).toEqual(['served/index.html']);
+  });
+});
+
+describe('byteMismatch', () => {
+  it('accepts a body identical to the built file', () => {
+    expect(byteMismatch('/a', Buffer.from('hello'), Buffer.from('hello'))).toBeNull();
+  });
+
+  it('names the first differing byte', () => {
+    const msg = byteMismatch('/a', Buffer.from('hello'), Buffer.from('help!'));
+    expect(msg).toContain('/a: HTTP body differs from the served file at byte 3');
+  });
+
+  it('reports a length-only difference at the shorter length', () => {
+    const msg = byteMismatch('/a', Buffer.from('hello'), Buffer.from('hello world'));
+    expect(msg).toContain('at byte 5');
+    expect(msg).toContain('body 5 bytes, file 11 bytes');
   });
 });
