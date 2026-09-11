@@ -59,9 +59,9 @@
   "y": 759,
   "w": 189,
   "h": 33,
-  "bg": "rgb(236, 239, 235)",
-  "color": "rgb(24, 49, 41)",
-  "radius": "3px",
+  "bg": "rgb(24, 49, 41)",
+  "color": "rgb(255, 255, 255)",
+  "radius": "4px",
   "font": "\"Inter var\", sans-serif",
   "size": "13px"
  },
@@ -130,5 +130,17 @@
   "radius": "0px",
   "font": "\"Inter var\", sans-serif",
   "size": "13.3333px"
- }
+ },
+ "ownBubble": {
+  "x": 1210,
+  "y": 549,
+  "w": 197,
+  "h": 41,
+  "bg": "rgb(236, 239, 235)",
+  "color": "rgb(24, 49, 41)",
+  "radius": "3px",
+  "font": "\"Inter var\", sans-serif",
+  "size": "13px"
+ },
+ "ownBubbleText": "What can you help me with?"
 }

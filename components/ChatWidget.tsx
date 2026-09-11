@@ -16,8 +16,9 @@
 //    bubbles — no typing indicator, no sounds (deliberately unshipped, spec);
 //  - the composer box and send icon are visually present but INERT — no free
 //    text, the send button does nothing;
-//  - the pending Yarn choice set renders as user-style chips INSIDE the
-//    composer slot; selecting one reads as the visitor's own sent message;
+//  - the pending Yarn choice set renders as green CTA-style chips INSIDE the
+//    composer slot (user direction 2026-09-10); selecting one reads as the
+//    visitor's own sent message, echoed as a user-style bubble;
 //  - the placeholder ("Ask a question" on the card, "Enter a message" on the
 //    panel) shows whenever no chips are pending;
 //  - the pounce fires on the captured trigger: a scroll past the fold, after
@@ -116,7 +117,16 @@ export function ChatWidget() {
     } catch {
       saved = null;
     }
-    if (saved) void post({ type: 'resume', sessionId: saved });
+    if (saved) {
+      // Legibility aid: a live session silently suppresses the pounce (the
+      // captured contract — no re-pounce), which reads as "the scroll gate
+      // never fired" while testing. Say why, once.
+      console.info(
+        '[flock] live chat session restored — pounce suppressed. ' +
+          'Remove localStorage["flock-chat-session"] and reload to see the pounce.',
+      );
+      void post({ type: 'resume', sessionId: saved });
+    }
   }, [post]);
 
   // The captured pounce: the first scroll past the fold arms the greeting card.

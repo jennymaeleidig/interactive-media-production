@@ -15,6 +15,7 @@ the Recreation's production build**. Same page coordinates, same viewport
 | `compare-launcher.png` | `s9-16-closed-launcher.png` | launcher |
 | `compare-card.png` | `s9-01-greeting.png` | pounce card |
 | `compare-panel.png` | `s9-09-opened-full.png` | expanded panel |
+| `rendered-panel-echo.png` | — | panel after selecting a choice (echo + green chips) |
 
 Captured sources live at
 `.scratch/flock-parody/research/evidence/06-qualified-conversation-ux/`.
@@ -35,7 +36,11 @@ pixel measurements of the captured screenshots (not the research table's
 Colors, radii, fonts and elevation match: bot bubble `#F1F4F7`/`#101010`, own
 `#ECEFEF`/`#183129`, both 3px radius / 12px 16px padding; header band `#ecefeb`
 with `#183129`; footer `#6E7879`; elevation `rgba(0,0,0,0.15) 0 5px 20px`;
-Inter var 13px.
+Inter var 13px. Own bubbles are single-line where the original's are — the
+bubbles' captured `max-width: 80%` resolves against the log's width
+(full-width message rows), never against a bubble's own max-content, which
+would clamp every own bubble to 80% of itself and wrap two-word choices
+("Sup port").
 
 ## The one visible divergence — and why it is there
 
@@ -47,10 +52,14 @@ holds the pending Yarn choice **chips** instead.
 That is mandated: ticket 09 requires "pending choices render as user-style
 chips inside the composer slot" *and* the yarn fixture rules out a persistent
 CTA row (`dialogue/flock.yarn`: "no free text, no persistent CTA row"). The two
-cannot both hold with a byte-identical composer, so the chips win the slot and
-the CTA row is not rendered (the chips already carry those same choices). Every
-other captured element — launcher, card and panel chrome, header, greeting,
-bubbles, footer, geometry, color — matches. See the ticket's Comments.
+cannot both hold, so the chips win the slot and the CTA row is not rendered.
+Per user direction (2026-09-10) the chips themselves carry the captured CTA
+button values — dark Flock green #183129, white text, the 4px token radius,
+#070f0c hover — so the slot reads like the original's CTA row; the selected
+choice's echo in the log remains the light user-style bubble, exactly as the
+original rendered echoes. Every other captured element — launcher, card and
+panel chrome, header, greeting, bubbles, footer, geometry, color — matches.
+See the ticket's Comments.
 
 ## Reproducing
 

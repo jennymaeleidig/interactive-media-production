@@ -7,7 +7,7 @@
 **Status:** resolved
 Label: ready-for-agent
 
-- [x] The launcher, pounce card, and expanded panel match the captured dimensions, placement, and colors.
+- [x] The launcher, pounce card, and expanded panel match the captured dimensions, prlacement, and colors.
 - [x] **AMENDED** — was: "Widget styling comes from the Capture's stylesheet, with zero authored styling additions." Now: widget styling is the Capture's **own 94-token `--THEME_*` layer lifted verbatim** plus layout values **transcribed from captured rendered evidence**; no visual value is invented. The original wording is unsatisfiable — the widget's runtime layout CSS was never captured, so there was nothing to lift wholesale (see Comments).
 - [x] The composer is visually present and inert; the placeholder shows when no chips are pending.
 - [x] Choices render as user-style chips inside the composer slot and selecting one reads as a sent message.
@@ -83,6 +83,27 @@ other captured element matches. The side-by-side is now a committed artifact
   ("Named exports; ESM"); imports in the demo page and the seam test updated.
 - **New seam registered** in `CODING_STANDARDS.md`'s Testing section, per that
   doc's rule that later efforts extend it rather than deviate silently.
+
+### Post-review direction (user, 2026-09-10 evening)
+
+- **Chips are green.** The pending choice chips now carry the captured CTA
+  button values (#183129 / white, `--BUTTON_BORDER_RADIUS`, #070f0c hover) —
+  the slot reads like the original's CTA row. This supersedes the "user-style
+  chips" styling (criterion 4's *slot* requirement stands; the echo in the log
+  is still the user-style bubble, as the original renders echoes).
+- **Own-bubble wrapping fixed.** The captured `max-width: 80%` was resolving
+  against each row's shrink-wrapped width — clamping every own bubble to 80%
+  of itself ("Sup port"). Rows are now full-width, so 80% resolves against the
+  log, as it did in the original; own bubbles render single-line where the
+  original's do (`rendered-panel-echo.png`).
+- **Pounce legibility.** The scroll gate fires ONCE per session (the captured
+  contract — a live session resumes and never re-pounces), so on a return
+  visit scrolling does nothing *by design* and reads as "broken". The widget
+  now logs one console line when it restores a session and suppresses the
+  pounce; to see the pounce again, remove
+  `localStorage["flock-chat-session"]` and reload. Verified firing on a fresh
+  profile of the production build (`rendered-boxes.json`, card 332x252 after
+  scroll).
 
 ### Contract details
 

@@ -349,7 +349,12 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  max-width: 100%;
+  /* Full-width rows: the bubbles' 80% cap is the captured max-width and
+     resolves against the LOG's width (the original's message elements were
+     list-wide). A shrink-wrapped row makes 80% resolve against the bubble's
+     own max-content, clamping every own bubble to 80% of itself — wrapping
+     even two-word choices ("Sup port"). */
+  width: 100%;
 }
 .fpc-row--me {
   align-self: flex-end;
@@ -424,17 +429,23 @@
   gap: 6px;
   min-width: 0;
 }
-/* the chips read as the visitor's own sent messages: same captured values as
-   the own bubble. */
+/* the chips ARE the choices, so they carry the captured CTA button values —
+   dark Flock green, white text, the token radius, the captured #070f0c hover
+   (user direction 2026-09-10). The selected choice's ECHO in the log remains
+   the user-style bubble, exactly as the original rendered echoes. */
 .fpc-chip {
   padding: 8px 12px;
-  border: 1px solid var(--MESSAGE_BUBBLE_OWN_BORDER_COLOR);
-  border-radius: 3px;
-  background: var(--MESSAGE_BUBBLE_OWN_BACKGROUND_COLOR);
-  color: var(--MESSAGE_BUBBLE_OWN_TEXT_COLOR);
+  border: 1px solid var(--MESSENGER_PROMPT_CTA_BORDER_COLOR);
+  border-radius: var(--BUTTON_BORDER_RADIUS);
+  background: var(--MESSENGER_PROMPT_CTA_BACKGROUND_COLOR);
+  color: var(--MESSENGER_PROMPT_CTA_TEXT_COLOR);
   font-size: 13px;
   line-height: 1.15;
   cursor: pointer;
+}
+.fpc-chip:hover {
+  background: var(--MESSENGER_PROMPT_CTA_HOVER_BACKGROUND);
+  color: var(--MESSENGER_PROMPT_CTA_HOVER_TEXT_COLOR);
 }
 .fpc-placeholder {
   color: var(--MESSENGER_FOOTER_TEXT_COLOR);
