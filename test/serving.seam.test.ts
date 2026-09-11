@@ -153,6 +153,34 @@ describe('story-hook seam present & dormant on served pages (ticket 03)', () => 
   });
 });
 
+describe('chat mount over HTTP (ticket 10)', () => {
+  // the exact sources the build inlines on launcher pages
+  const RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
+  const CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
+  const TAG = `<style data-flock-parody="chat">\n${CSS}\n</style>\n<script data-flock-parody="chat">\n${RUNTIME}\n</script>`;
+
+  it('serves the mimic inline, verbatim, on a page whose Capture mounted the launcher', async () => {
+    // the fixture homepage mounted <q-root>
+    expect(homeBody).toContain(TAG);
+  });
+
+  it('grants the captured CSP exactly the one source the widget POST needs', async () => {
+    const meta = /<meta\b[^>]*http-equiv=\s*content-security-policy[^>]*>/i.exec(homeBody)?.[0];
+    expect(meta).toBeDefined();
+    expect(meta).toContain("connect-src 'self';");
+    // the rest of the captured policy is untouched — no third-party source opens up
+    expect(meta).toContain("default-src 'none';");
+    expect(meta).not.toMatch(/connect-src\s+https?:/);
+  });
+
+  it('leaves a page whose Capture did not mount the launcher without the mimic', async () => {
+    const res = await fetch(base + '/gsx'); // fixture gsx has no <q-root>
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).not.toContain('data-flock-parody="chat"');
+  });
+});
+
 describe('route classes (ticket 07: redirect manifest, dead roots, dropped pages)', () => {
   it('permanently redirects a legacy stub to its local target (301)', async () => {
     const res = await fetch(base + '/legal/privacy-notice', { redirect: 'manual' });

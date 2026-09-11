@@ -1,5 +1,7 @@
-// Throwaway visual-check rig for ticket 09: screenshots the widget surfaces
-// from the dev server and dumps their bounding boxes. Not production code.
+// Throwaway visual-check rig for ticket 09 (re-pointed at the site-wide mount
+// by ticket 10): screenshots the widget surfaces from a served page that
+// mounted the launcher — the homepage, whose Capture carried <q-root> — and
+// dumps their bounding boxes. Not production code.
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 
@@ -10,7 +12,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 const page = await ctx.newPage();
-await page.goto(BASE + '/chat-demo', { waitUntil: 'domcontentloaded' });
+await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
 await page.evaluate(() => localStorage.clear());
 await page.reload({ waitUntil: 'networkidle' });
 await page.waitForTimeout(800);

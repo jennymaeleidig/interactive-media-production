@@ -43,16 +43,12 @@ export default defineConfig({
         },
       },
       {
-        // tsconfig keeps `jsx: preserve` for Next; vitest's esbuild needs the
-        // automatic runtime to transform the React component under test. The
-        // option must sit on the project entry — a top-level one does not
-        // reach the projects.
-        esbuild: { jsx: 'automatic', jsxImportSource: 'react' },
+        // the runtime is evaluated into a fresh JSDOM window per test (as the
+        // motion/interactions seams do), so the project needs no jsdom
+        // environment of its own and no JSX transform
         test: {
           name: 'chat-widget-seam',
-          include: ['test/chat-widget.seam.test.tsx'],
-          environment: 'jsdom',
-          environmentOptions: { jsdom: { url: 'http://localhost/' } },
+          include: ['test/chat-widget.seam.test.ts'],
         },
       },
       {

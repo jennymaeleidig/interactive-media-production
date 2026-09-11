@@ -61,7 +61,7 @@ export async function setup() {
   const { runPipeline } = await import('../pipeline/build.mjs');
   const { log } = await runPipeline({
     runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/form-test'],
+    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/form-test'],
     // the scaffold/test fixture page is dropped from serving, exactly as the
     // real build drops pipeline/config.mjs DROPPED_PAGES
     dropPages: ['/form-test'],

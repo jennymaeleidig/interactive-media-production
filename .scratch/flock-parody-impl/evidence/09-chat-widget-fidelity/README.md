@@ -81,8 +81,10 @@ See the ticket's Comments.
 ## Reproducing
 
 The rig (`rig-shot.mjs`) drives the app through the Playwright Docker image and
-is *not* wired into `npm test` (it needs Docker, which the sandbox gates). To
-re-shoot after a UI change:
+is *not* wired into `npm test` (it needs Docker, which the sandbox gates). It
+loads `/` — the homepage, one of the pages whose Capture mounted the launcher
+(ticket 10 mounts the injected widget site-wide) — in a clean profile so the
+pounce fires. To re-shoot after a UI change:
 
 ```bash
 # 1. production build

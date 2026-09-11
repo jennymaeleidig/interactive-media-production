@@ -32,7 +32,14 @@
 //                function. The CSS half is suppress-only: it silences the
 //                captured accordion height tween the ticket rules
 //                function-only, and never adds an animation.
-//   6. story-hook — the dormant DOM-patching seam, injected inline on every
+//   6. chat     — mount the Chat mimic (ticket 10) on exactly the pages whose
+//                Capture mounted the Qualified launcher (the per-page census
+//                this pass records). chat-widget.css + chat-widget.js are
+//                injected inline, verbatim; the runtime creates the whole
+//                widget DOM (no-JS pages stay at the captured end-state), so
+//                the launcher behaves identically on every mounted page. One
+//                outbound request: the same-origin POST to /api/chat.
+//   7. story-hook — the dormant DOM-patching seam, injected inline on every
 //                page (pipeline/story-hook.js, ticket 03). It only DEFINES
 //                window.flockParody — nothing in the Recreation calls it; the
 //                Parody layer will. DOM-only, zero network, and it degrades
@@ -71,6 +78,13 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 
 // ---- strip targets ----------------------------------------------------------
+// The captured launcher census marker: Qualified mounted its chat launcher as
+// the <q-root> custom element on exactly the pages that had chat (corpus:
+// 1,189 of 1,199 captures). The same marker is the strip target below, so the
+// ticket-10 census (which pages get the mimic mounted) and the strip can never
+// drift apart.
+const LAUNCHER_RE = /<q-root\b/i;
+
 // DOM subtrees removed whole. `mode: 'balance'` scans to the balanced close of
 // `tag`; `mode: 'to-close'` scans to `close`. `all: true` repeats until the
 // pattern is gone (Qualified injects several orphaned style blocks with the
@@ -78,7 +92,7 @@ const ROOT = path.resolve(HERE, '..');
 // ordinary block that happens to match `start` is kept.
 const STRIP_TARGETS = [
   { name: 'qualified-offer-host', start: /<div[^>]*\sid=("|')?_qualified-offer-host-/i, mode: 'balance', tag: 'div' },
-  { name: 'q-root (chat launcher)', start: /<q-root\b/i, mode: 'balance', tag: 'q-root' },
+  { name: 'q-root (chat launcher)', start: LAUNCHER_RE, mode: 'balance', tag: 'q-root' },
   { name: 'q-focus-sentinel', start: /<q-focus-sentinel\b/i, mode: 'balance', tag: 'q-focus-sentinel' },
   { name: 'qualified-offer-style-element', start: /<style[^>]*\sid=("|')?qualified-offer-/i, mode: 'to-close', close: /<\/style\s*>/i, all: true },
   { name: 'qualified-offer CSS (bare style)', start: /<style[^>]*>/i, mode: 'to-close', close: /<\/style\s*>/i, contentRe: /qualified-offer-/, all: true },
@@ -599,6 +613,16 @@ function injectBeforeClose(html, entry, label, tag) {
   return html;
 }
 
+/**
+ * The inline `<style>` + `<script>` pair every injected runtime layer ships.
+ * Both halves carry the layer's `data-flock-parody` marker, so the script
+ * census can tell a Recreation runtime from capture residue (which must stay
+ * zero executable) — shared so a new layer cannot drift from the marker shape.
+ */
+function layerTag(name, css, runtime) {
+  return `<style data-flock-parody="${name}">\n${css}\n</style>\n<script data-flock-parody="${name}">\n${runtime}\n</script>`;
+}
+
 /** The motion pass: normalize → annotate → tag → inject the CSS+runtime pair. */
 function motionPass(html, entry, css, runtime) {
   const counts = {};
@@ -619,7 +643,7 @@ function motionPass(html, entry, css, runtime) {
   if (heroes > 0) counts['hero split-title re-fire targets'] = heroes;
   entry.motion = counts;
 
-  const motionTag = `<style data-flock-parody="motion">\n${css}\n</style>\n<script data-flock-parody="motion">\n${runtime}\n</script>`;
+  const motionTag = layerTag('motion', css, runtime);
   return injectBeforeClose(html, entry, MOTION_INJECTED, motionTag);
 }
 
@@ -634,8 +658,58 @@ const INTERACTIONS_INJECTED = 'interactions layer (style+script, inline)';
  * pass this one makes no per-page mutations to log.
  */
 function interactionsPass(html, entry, css, runtime) {
-  const tag = `<style data-flock-parody="interactions">\n${css}\n</style>\n<script data-flock-parody="interactions">\n${runtime}\n</script>`;
-  return injectBeforeClose(html, entry, INTERACTIONS_INJECTED, tag);
+  return injectBeforeClose(html, entry, INTERACTIONS_INJECTED, layerTag('interactions', css, runtime));
+}
+
+// ---- chat mount (ticket 10) --------------------------------------------------
+
+const CHAT_INJECTED = 'chat widget (style+script, inline)';
+
+/** The captured CSP meta every served page carries (identical across the corpus). */
+const CSP_META_RE = /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?content-security-policy["']?[^>]*>/i;
+
+/**
+ * The captured CSP is `default-src 'none'` with no `connect-src`, so it
+ * refuses every fetch/XHR — the chat runtime's same-origin POST to /api/chat
+ * is blocked on every real served page. (Found in the ticket-10 browser
+ * smoke; jsdom does not enforce CSP, so the DOM seam cannot see it.) The chat
+ * mount grants exactly the one source the mimic needs — `connect-src 'self'`
+ * — and nothing else: `'self'` is the Recreation origin, so the grant cannot
+ * reach a third party, and it is applied only on the launcher pages, the only
+ * pages that carry the mimic.
+ */
+function grantConnectSelf(html, entry) {
+  const meta = CSP_META_RE.exec(html);
+  if (!meta) {
+    entry.warnings.push('chat: no CSP meta found — the widget POST may be blocked');
+    return html;
+  }
+  const edited = editAttr(meta[0], 'content', (value) => {
+    if (/(?:^|;)\s*connect-src\b/i.test(value)) return value; // already granted
+    return value.replace(/[;\s]+$/, '') + "; connect-src 'self';";
+  });
+  if (edited === null) {
+    entry.warnings.push('chat: CSP meta has no content attribute — the widget POST may be blocked');
+    return html;
+  }
+  if (edited === meta[0]) return html;
+  entry.csp = "connect-src 'self' (chat mount)";
+  return html.slice(0, meta.index) + edited + html.slice(meta.index + meta[0].length);
+}
+
+/**
+ * Mount the Chat mimic on exactly the pages whose Capture mounted the
+ * launcher, and nowhere else: the caller passes the census the strip pass
+ * took from the same `<q-root>` marker it removed, so the mounted set and the
+ * stripped set cannot drift (ticket 10). The runtime creates the whole widget
+ * DOM — no-JS pages boot to the captured end-state (no launcher), exactly as
+ * the original's script-injected launcher did. One request leaves the page:
+ * the same-origin POST to /api/chat.
+ */
+function chatPass(html, entry, css, runtime) {
+  if (!entry.chatLauncher) return html;
+  html = grantConnectSelf(html, entry);
+  return injectBeforeClose(html, entry, CHAT_INJECTED, layerTag('chat', css, runtime));
 }
 
 // ---- story-hook seam (ticket 03) ----------------------------------------------
@@ -662,6 +736,8 @@ function storyHookPass(html, entry, source) {
  * @property {number} [bytesIn]  Capture size before the passes.
  * @property {number} [bytesOut]  Served size after the passes.
  * @property {Record<string, number>} [stripped]  Strip target → bytes (or element count) removed.
+ * @property {boolean} [chatLauncher]  Whether the Capture mounted the Qualified chat launcher (`<q-root>`) — the chat-mount census (ticket 10).
+ * @property {string} [csp]  The CSP grant the chat mount added to the captured policy, if any — only ever `connect-src 'self'`.
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
@@ -685,6 +761,7 @@ function storyHookPass(html, entry, source) {
  * @property {{count: number, invalid: string[], dangling: string[]}} redirects  Legacy stubs → local targets, plus warnings.
  * @property {string[]} deadRoots  Dead collection roots (404, as the live site).
  * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
+ * @property {{mounted: number, absent: number}} chat  The chat-mount census over served pages (ticket 10): how many Captures mounted the launcher, how many did not.
  */
 
 /**
@@ -714,6 +791,8 @@ export async function runPipeline(opts) {
   const motionRuntime = fs.readFileSync(path.join(HERE, 'motion-runtime.js'), 'utf8');
   const interactionsCss = fs.readFileSync(path.join(HERE, 'interactions.css'), 'utf8');
   const interactionsRuntime = fs.readFileSync(path.join(HERE, 'interactions-runtime.js'), 'utf8');
+  const chatCss = fs.readFileSync(path.join(HERE, 'chat-widget.css'), 'utf8');
+  const chatRuntime = fs.readFileSync(path.join(HERE, 'chat-widget.js'), 'utf8');
 
   for (const page of buildPages) {
     const src = captureFileFor(runDir, page);
@@ -723,7 +802,9 @@ export async function runPipeline(opts) {
     }
     const before = fs.readFileSync(src, 'utf8');
     let html = before;
-    const entry = { page, bytesIn: before.length, stripped: {}, warnings: [] };
+    // The chat-mount census (ticket 10): taken from the Capture before the
+    // strip removes the launcher, recorded per page in the mutation log.
+    const entry = { page, bytesIn: before.length, stripped: {}, chatLauncher: LAUNCHER_RE.test(before), warnings: [] };
 
     html = stripPass(html, entry);
 
@@ -734,6 +815,8 @@ export async function runPipeline(opts) {
     html = motionPass(html, entry, motionCss, motionRuntime);
 
     html = interactionsPass(html, entry, interactionsCss, interactionsRuntime);
+
+    html = chatPass(html, entry, chatCss, chatRuntime);
 
     html = storyHookPass(html, entry, storyHookSource);
 
@@ -769,6 +852,8 @@ export async function runPipeline(opts) {
     .filter(([, target]) => !servedSet.has(target) && !(target in redirects))
     .map(([p, target]) => `${p} → ${target}`);
   const errors = log.filter((e) => e.error).map((e) => e.page);
+  const servedEntries = log.filter((e) => !e.error);
+  const chatMounted = servedEntries.filter((e) => e.chatLauncher).length;
 
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'build-log.json'), JSON.stringify(log, null, 2));
@@ -793,6 +878,7 @@ export async function runPipeline(opts) {
     redirects: { count: Object.keys(redirects).length, invalid: uncaptured.invalidRedirects, dangling },
     deadRoots: uncaptured.dead,
     authGated: uncaptured.authGated,
+    chat: { mounted: chatMounted, absent: servedEntries.length - chatMounted },
   };
   fs.writeFileSync(path.join(outDir, 'build-summary.json'), JSON.stringify(summary, null, 2));
   return { log, summary };
@@ -838,6 +924,7 @@ function summarize(log, summary) {
     `route classes: ${summary.redirects.count} redirect(s) → 301, ${summary.deadRoots.length} dead root(s) 404, `
     + `${summary.authGated.length} auth-gated 404`
   );
+  console.log(`chat census: ${summary.chat.mounted} page(s) mounted the launcher, ${summary.chat.absent} did not`);
   for (const w of [...summary.redirects.invalid, ...summary.redirects.dangling]) console.log(`⚠ redirect: ${w}`);
 }
 

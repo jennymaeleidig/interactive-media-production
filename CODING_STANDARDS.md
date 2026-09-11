@@ -17,7 +17,12 @@ executable `<script>` that survives; served bytes keep only
 `application/ld+json` data blocks. Any code that adds network behavior to a
 served page (fetch, XHR, WebSocket, remote `src`, beacon) violates the piece.
 Injected runtimes (motion, story-hook, chat) are inline, DOM-only, and must
-degrade to the captured end-state with JavaScript disabled.
+degrade to the captured end-state with JavaScript disabled. The Captures'
+own CSP (`default-src 'none'`, no `connect-src`) refuses even the chat's
+same-origin POST, so the chat mount is the **one** pass that touches the
+policy: it appends exactly `connect-src 'self'` on launcher pages (logged per
+page), and no pass may widen it beyond that — `'self'` is the Recreation
+origin, so the grant cannot leave the machine.
 
 ## Stack & layout
 
@@ -58,7 +63,11 @@ degrade to the captured end-state with JavaScript disabled.
 - **Every mutation is logged, per page** (`served/build-log.json`): strip
   targets with removed byte counts, links rewritten, closing tags restored,
   warnings for anything left in place, the post-strip audit, and the script
-  census. If the build changed served bytes, the log says so.
+  census. If the build changed served bytes, the log says so. The log also
+  carries the per-page **chat-mount census** (ticket 10): whether the Capture
+  mounted the Qualified launcher, taken from the same `<q-root>` marker the
+  strip removes, so the pages that get the mimic and the pages that lost the
+  launcher can never drift apart (`build-summary.json` carries the counts).
 - **Build-level route artifacts** sit beside the log: `redirects.json` (the
   run manifest's legacy stubs → local targets, written even when empty) and
   `build-summary.json` (requested / served / dropped / errors, the redirect
@@ -114,11 +123,14 @@ degrade to the captured end-state with JavaScript disabled.
   DOM seam (ticket 05 — the delegated click runtime's captured-class/geometry
   contract for tabs, dropdowns, accordions, and sliders, same
   jsdom-against-injected-bytes method; reduced motion never blocks function).
-  **Extended by ticket 09**: the chat-widget DOM seam — the widget
-  component's three captured surfaces, its inert composer and chip slot,
-  rendered in jsdom with the message API stubbed at `fetch`. Ticket 09 added
-  this seam; per this header's rule, later efforts extend this list here rather
-  than adding a seam silently.
+  **Extended by ticket 09, re-pointed by ticket 10**: the chat-widget DOM seam
+  — the widget's three captured surfaces, its inert composer and chip slot,
+  evaluated in jsdom against the exact injected runtime bytes
+  (`pipeline/chat-widget.js`) with the message API stubbed at `fetch`. Ticket
+  09 added this seam; ticket 10 mounts that same runtime site-wide, so the seam
+  now reads the build's injected bytes (the motion/interactions-seam method)
+  rather than a React component. Per this header's rule, later efforts extend
+  this list here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature

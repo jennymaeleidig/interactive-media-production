@@ -21,7 +21,9 @@ const MOTION_CSS = readFileSync(path.join(HERE, '../pipeline/motion.css'), 'utf8
 const MOTION_RUNTIME = readFileSync(path.join(HERE, '../pipeline/motion-runtime.js'), 'utf8');
 const INTERACTIONS_CSS = readFileSync(path.join(HERE, '../pipeline/interactions.css'), 'utf8');
 const INTERACTIONS_RUNTIME = readFileSync(path.join(HERE, '../pipeline/interactions-runtime.js'), 'utf8');
-const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length;
+const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
+const CHAT_RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
+const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length;
 
 let result: { log: LogEntry[] };
 
@@ -79,8 +81,8 @@ describe('strip pass', () => {
 
   it('leaves non-target content untouched: JSON-LD, data-URI assets, captured from-states, text mentions', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    // 2 captured ld+json data blocks + the three injected runtimes (motion, interactions, story-hook)
-    expect((html.match(/<script\b/gi) ?? []).length).toBe(5);
+    // 2 captured ld+json data blocks + the four injected runtimes (motion, interactions, chat, story-hook)
+    expect((html.match(/<script\b/gi) ?? []).length).toBe(6);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
     expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
     // a .word div outside a split container is not an animation word — left as captured
@@ -264,20 +266,22 @@ describe('story-hook pass (ticket 03)', () => {
     expect(tag).toBeLessThan(html.lastIndexOf('</body>'));
   });
 
-  it('logs the injection per page (motion layer, then interactions layer, then the story-hook seam)', () => {
+  it('logs the injection per page (motion, interactions, chat on launcher pages, then the story-hook seam)', () => {
     for (const entry of result.log.filter((e) => !e.error)) {
-      expect(entry.injected).toEqual([
+      const expected = [
         'motion layer (style+script, inline)',
         'interactions layer (style+script, inline)',
-        'story-hook seam (inline, dormant)',
-      ]);
+      ];
+      if (entry.chatLauncher) expected.push('chat widget (style+script, inline)');
+      expected.push('story-hook seam (inline, dormant)');
+      expect(entry.injected, entry.page).toEqual(expected);
     }
   });
 
   it('keeps the zero-outbound invariants with the runtimes aboard — audit clean, no capture-derived executable', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
-    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(3); // motion + interactions + story-hook
+    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(4); // motion + interactions + chat + story-hook
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
@@ -484,6 +488,83 @@ describe('interactions pass (ticket 05)', () => {
   });
 });
 
+describe('chat mount (ticket 10)', () => {
+  const CHAT_TAG = `<style data-flock-parody="chat">\n${CHAT_CSS}\n</style>\n<script data-flock-parody="chat">\n${CHAT_RUNTIME}\n</script>`;
+  // the fixture captures that mounted <q-root>, and those that did not
+  const MOUNTED = ['/', '/products/gun-detection', '/book-a-demo', '/thank-you'];
+  const ABSENT = ['/gsx', '/chilipiper-2', '/var-ref', '/account'];
+  const fileFor = (page: string) => (page === '/' ? 'index' : page.replace(/^\//, ''));
+
+  it('records the launcher census per page, taken from the same marker the strip removes', () => {
+    for (const entry of result.log.filter((e) => !e.error)) {
+      expect(entry.chatLauncher, entry.page).toBe(MOUNTED.includes(entry.page));
+    }
+    // a failed page logs only its error — no census to misread
+    expect(result.log.find((e) => e.page === '/missing')?.chatLauncher).toBeUndefined();
+  });
+
+  it('mounts the mimic on every page the original had it, and nowhere else', async () => {
+    for (const page of MOUNTED) {
+      const html = await readFile(path.join(OUT, `${fileFor(page)}.html`), 'utf8');
+      expect(html, page).toContain(CHAT_TAG);
+    }
+    for (const page of ABSENT) {
+      const html = await readFile(path.join(OUT, `${fileFor(page)}.html`), 'utf8');
+      expect(html, page).not.toContain('data-flock-parody="chat"');
+    }
+  });
+
+  it('mounts the same runtime bytes on every mounted page — one behavior site-wide', async () => {
+    for (const page of MOUNTED) {
+      const html = await readFile(path.join(OUT, `${fileFor(page)}.html`), 'utf8');
+      expect(html, page).toContain(`<script data-flock-parody="chat">\n${CHAT_RUNTIME}\n</script>`);
+    }
+  });
+
+  it('injects chat before the story-hook seam, so the seam stays the final runtime', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const chat = html.indexOf('<script data-flock-parody="chat">');
+    expect(chat).toBeGreaterThan(html.indexOf('<script data-flock-parody="interactions">'));
+    expect(chat).toBeLessThan(html.indexOf('<script data-flock-parody="story-hook">'));
+  });
+
+  it('keeps the zero-outbound invariants: chat is a marked injected runtime, and reintroduces no machinery marker', async () => {
+    const home = result.log.find((e) => e.page === '/');
+    if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
+    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0 });
+    expect(home.scripts).toEqual({ total: 6, executable: 0, ldJson: 2, injected: 4 });
+    // the widget CSS/runtime must not reintroduce the markers the strip audit keys on
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    for (const marker of ['qualified-offer-', 'qualified.com', '_qualified-', 'q-root', 'q-focus-sentinel', 'q-launcher', 'q-messenger-frame']) {
+      expect(html.includes(marker), marker).toBe(false);
+    }
+  });
+
+  it('counts the census into the build summary', async () => {
+    const summary = JSON.parse(await readFile(path.join(OUT, 'build-summary.json'), 'utf8'));
+    expect(summary.chat).toEqual({ mounted: MOUNTED.length, absent: ABSENT.length });
+  });
+
+  it("grants the chat runtime exactly `connect-src 'self'` in the captured CSP — and only on mounted pages", async () => {
+    // the captured CSP is `default-src 'none'` with no connect-src: on a real
+    // browser it refuses the widget's /api/chat POST. The mount appends the
+    // single source the mimic needs and leaves the rest of the policy alone
+    // (jsdom does not enforce CSP, so this is the pipeline's own guard).
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const meta = /<meta\b[^>]*http-equiv=\s*content-security-policy[^>]*>/i.exec(html)?.[0];
+    expect(meta).toBeDefined();
+    expect(meta).toContain("connect-src 'self';");
+    expect(meta).toContain("default-src 'none';");
+    expect(meta).not.toMatch(/connect-src\s+https?:/);
+    const home = result.log.find((e) => e.page === '/');
+    if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
+    expect(home.csp).toBe("connect-src 'self' (chat mount)");
+    for (const page of ABSENT) {
+      expect(result.log.find((e) => e.page === page)?.csp, page).toBeUndefined();
+    }
+  });
+});
+
 describe('write pass & mutation log', () => {
   it('restores the closing tags SingleFile truncates away', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
@@ -511,7 +592,7 @@ describe('write pass & mutation log', () => {
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0 });
-    expect(home.scripts).toEqual({ total: 5, executable: 0, ldJson: 2, injected: 3 });
+    expect(home.scripts).toEqual({ total: 6, executable: 0, ldJson: 2, injected: 4 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {
