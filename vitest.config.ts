@@ -38,6 +38,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'nav-seam',
+          include: ['test/nav.seam.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'chat-seam',
           include: ['test/chat.seam.test.ts'],
         },

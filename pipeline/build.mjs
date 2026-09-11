@@ -8,23 +8,32 @@
 //                (SingleFile stripped them at capture time), so once the
 //                strip DOM is gone, "zero outbound requests" is true by
 //                construction — the audit pass asserts it per page.
-//   2. rewrite — internal hrefs https://(www.)flocksafety.com/X → /X
+//   2. (retired) header-restore — ticket 14 grafted the shared header's lost
+//                bytes (mega-menu panels, nav state CSS, sticky offset) from a
+//                vendored corrected-flags homepage artifact. Ticket 15 moved
+//                the whole build to a corrected-flags capture run, whose
+//                stylesheet keeps every nav rule and whose DOM keeps every
+//                hidden subtree (images ride along as SingleFile's --sf-img
+//                background vars, and the mobile take-over CTA carries its
+//                live demo href), so the graft is retired. The nav behavior
+//                layer stays (pass 7) because the captures carry no scripts.
+//   3. rewrite — internal hrefs https://(www.)flocksafety.com/X → /X
 //                (Recreation routes); external links stay live.
-//   3. forms   — captured lead forms carry no action (their live submission
+//   4. forms   — captured lead forms carry no action (their live submission
 //                went through the stripped JS), so the pass injects a POST to
 //                a local mock API route keyed per form; the mock route
 //                swallows the submission and 303-redirects to the captured
 //                thank-you page (spec, Forms). Nothing ever leaves the
 //                machine: the only actions in served bytes are the injected
 //                local ones, and the audit counts any external form action.
-//   4. motion  — the motion reveal layer (ticket 04): normalize every captured
+//   5. motion  — the motion reveal layer (ticket 04): normalize every captured
 //                animation FROM-state to its end-state in the static DOM
 //                (no-JS pages are the styled end-state by construction),
 //                annotate split words with per-word --fpm-i stagger indices,
 //                tag generic inline zero-opacity from-states for the observer,
 //                then inject motion.css + motion-runtime.js inline. Reveals
 //                fire one-shot only when JS runs and reduced motion allows.
-//   5. interactions — the delegated interaction layer (ticket 05): inject
+//   6. interactions — the delegated interaction layer (ticket 05): inject
 //                interactions.css + interactions-runtime.js inline. One
 //                delegated click listener operates tabs, dropdowns,
 //                accordions, and sliders by captured classes and geometry —
@@ -32,14 +41,21 @@
 //                function. The CSS half is suppress-only: it silences the
 //                captured accordion height tween the ticket rules
 //                function-only, and never adds an animation.
-//   6. chat     — mount the Chat mimic (ticket 10) on exactly the pages whose
+//   7. nav     — the shared header's behavior layer (ticket 14): inject
+//                nav.css + nav-runtime.js inline. It moves the class
+//                vocabulary the restored live CSS renders — .header-z.scroll
+//                on scroll, .nav__dd.show on desktop hover and mobile tap,
+//                .header__bg.is-open plus the mobile take-over on the
+//                hamburger. Ticket 05's sf-hidden nav placeholder is gone, and
+//                the trigger click still navigates on desktop.
+//   8. chat    — mount the Chat mimic (ticket 10) on exactly the pages whose
 //                Capture mounted the Qualified launcher (the per-page census
 //                this pass records). chat-widget.css + chat-widget.js are
 //                injected inline, verbatim; the runtime creates the whole
 //                widget DOM (no-JS pages stay at the captured end-state), so
 //                the launcher behaves identically on every mounted page. One
 //                outbound request: the same-origin POST to /api/chat.
-//   7. story-hook — the dormant DOM-patching seam, injected inline on every
+//   9. story-hook — the dormant DOM-patching seam, injected inline on every
 //                page (pipeline/story-hook.js, ticket 03). It only DEFINES
 //                window.flockParody — nothing in the Recreation calls it; the
 //                Parody layer will. DOM-only, zero network, and it degrades
@@ -107,7 +123,7 @@ const STRIP_TARGETS = [
   // copy links are unwrapped below so the words survive (word-for-word bar).
   // Keyed on the host, never on the word "account" — the corpus uses that word
   // in ordinary copy ("Account Executive", "account representative").
-  { name: 'account sign-in link', start: /<a\b[^>]*?\bhref\s*=\s*("|')?(?:https?:)?\/\/(?:users|login)\.flocksafety\.com[^>]*>/i, mode: 'balance', tag: 'a', all: true, contentRe: /\bclass\s*=\s*("|')?[^"'>]*\b(?:button|footer-5_link)\b/i },
+  { name: 'account sign-in link', start: /<a\b[^>]*?\bhref\s*=\s*("|')?(?:https?:)?\/\/(?:users|login)\.flocksafety\.com[^>]*>/i, mode: 'balance', tag: 'a', all: true, contentRe: /\bclass\s*=\s*("|')?[^"'>]*\b(?:button|footer-5_link|sign-in)\b/i },
 ];
 
 // Post-strip audit regexes — any hit suggests strip-list incompleteness.
@@ -276,7 +292,7 @@ function stripExecutableScripts(html, entry) {
   return html;
 }
 
-// ---- pass 2: rewrite links ---------------------------------------------------
+// ---- pass 3: rewrite links ---------------------------------------------------
 
 /** Rewrite internal hrefs (quoted, single-quoted, unquoted; absolute + protocol-relative) to root-relative Recreation routes. */
 function rewritePass(html, entry) {
@@ -308,7 +324,7 @@ function scriptCensus(html) {
   return { total: openTags.length, executable, ldJson, injected };
 }
 
-// ---- form routing (ticket 02) ------------------------------------------------
+// ---- pass 4: form routing (ticket 02) ----------------------------------------
 
 // The captured demo flow's thank-you page — the one redirect target the live
 // site's main flow observably lands on. Per-page overrides go in the table
@@ -372,7 +388,7 @@ function formsPass(html, entry, pagePath, manifest) {
   return html;
 }
 
-// ---- motion reveal layer (ticket 04) -------------------------------------------
+// ---- pass 5: motion reveal layer (ticket 04) ----------------------------------
 
 // Open-tag pattern that honors quoted attribute values (SingleFile emits
 // quoted and unquoted attrs side by side). Fresh regex per pass — these
@@ -647,7 +663,7 @@ function motionPass(html, entry, css, runtime) {
   return injectBeforeClose(html, entry, MOTION_INJECTED, motionTag);
 }
 
-// ---- interactions layer (ticket 05) ------------------------------------------
+// ---- pass 6: interactions layer (ticket 05) ----------------------------------
 
 const INTERACTIONS_INJECTED = 'interactions layer (style+script, inline)';
 
@@ -661,7 +677,21 @@ function interactionsPass(html, entry, css, runtime) {
   return injectBeforeClose(html, entry, INTERACTIONS_INJECTED, layerTag('interactions', css, runtime));
 }
 
-// ---- chat mount (ticket 10) --------------------------------------------------
+// ---- pass 7: nav layer (ticket 14) --------------------------------------------
+
+const NAV_INJECTED = 'nav layer (style+script, inline)';
+
+/**
+ * Inject the shared header's behavior runtime + its CSS half inline, verbatim
+ * (ticket 14). Pure injection: the restored live CSS keys every state on the
+ * classes the runtime moves, so unlike the motion pass this one makes no
+ * per-page DOM mutation to log.
+ */
+function navPass(html, entry, css, runtime) {
+  return injectBeforeClose(html, entry, NAV_INJECTED, layerTag('nav', css, runtime));
+}
+
+// ---- pass 8: chat mount (ticket 10) ----------------------------------------
 
 const CHAT_INJECTED = 'chat widget (style+script, inline)';
 
@@ -712,7 +742,7 @@ function chatPass(html, entry, css, runtime) {
   return injectBeforeClose(html, entry, CHAT_INJECTED, layerTag('chat', css, runtime));
 }
 
-// ---- story-hook seam (ticket 03) ----------------------------------------------
+// ---- pass 9: story-hook seam (ticket 03) -----------------------------------
 
 const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
 
@@ -793,6 +823,8 @@ export async function runPipeline(opts) {
   const interactionsRuntime = fs.readFileSync(path.join(HERE, 'interactions-runtime.js'), 'utf8');
   const chatCss = fs.readFileSync(path.join(HERE, 'chat-widget.css'), 'utf8');
   const chatRuntime = fs.readFileSync(path.join(HERE, 'chat-widget.js'), 'utf8');
+  const navCss = fs.readFileSync(path.join(HERE, 'nav.css'), 'utf8');
+  const navRuntime = fs.readFileSync(path.join(HERE, 'nav-runtime.js'), 'utf8');
 
   for (const page of buildPages) {
     const src = captureFileFor(runDir, page);
@@ -815,6 +847,8 @@ export async function runPipeline(opts) {
     html = motionPass(html, entry, motionCss, motionRuntime);
 
     html = interactionsPass(html, entry, interactionsCss, interactionsRuntime);
+
+    html = navPass(html, entry, navCss, navRuntime);
 
     html = chatPass(html, entry, chatCss, chatRuntime);
 

@@ -1,0 +1,81 @@
+path,url,type,status,redirect_target,capture
+/events/test-event,https://www.flocksafety.com/events/test-event,auth-gated,401,,auth-gated
+/events/test-small-event,https://www.flocksafety.com/events/test-small-event,auth-gated,401,,auth-gated
+/events/test-third-party-events,https://www.flocksafety.com/events/test-third-party-events,auth-gated,401,,auth-gated
+/events/test-third-party-events-copy,https://www.flocksafety.com/events/test-third-party-events-copy,auth-gated,401,,auth-gated
+/events/test-third-party-events-copy-2,https://www.flocksafety.com/events/test-third-party-events-copy-2,auth-gated,401,,auth-gated
+/events/test-third-party-events-copy-3,https://www.flocksafety.com/events/test-third-party-events-copy-3,auth-gated,401,,auth-gated
+/events/test-third-party-events-copy-4,https://www.flocksafety.com/events/test-third-party-events-copy-4,auth-gated,401,,auth-gated
+/events/test-third-party-events-copy-5,https://www.flocksafety.com/events/test-third-party-events-copy-5,auth-gated,401,,auth-gated
+/events/test-third-party-events-copy-6,https://www.flocksafety.com/events/test-third-party-events-copy-6,auth-gated,401,,auth-gated
+/events/test-third-party-events-past,https://www.flocksafety.com/events/test-third-party-events-past,auth-gated,401,,auth-gated
+/abm,https://www.flocksafety.com/abm,dead,404,,dead-not-captured
+/ebooks,https://www.flocksafety.com/ebooks,dead,404,,dead-not-captured
+/events,https://www.flocksafety.com/events,dead,404,,dead-not-captured
+/industries,https://www.flocksafety.com/industries,dead,404,,dead-not-captured
+/lp,https://www.flocksafety.com/lp,dead,404,,dead-not-captured
+/use-case,https://www.flocksafety.com/use-case,dead,404,,dead-not-captured
+/use-case-filters/corporate-entities,https://www.flocksafety.com/use-case-filters/corporate-entities,dead,404,,dead-not-captured
+/use-case-filters/large-cities,https://www.flocksafety.com/use-case-filters/large-cities,dead,404,,dead-not-captured
+/use-case-filters/small-towns,https://www.flocksafety.com/use-case-filters/small-towns,dead,404,,dead-not-captured
+/video,https://www.flocksafety.com/video,dead,404,,dead-not-captured
+/vs,https://www.flocksafety.com/vs,dead,404,,dead-not-captured
+/webinar,https://www.flocksafety.com/webinar,dead,404,,dead-not-captured
+/webinars,https://www.flocksafety.com/webinars,dead,404,,dead-not-captured
+/whitepaper,https://www.flocksafety.com/whitepaper,dead,404,,dead-not-captured
+/blog/academy-reduces-orc-with-flock-safety,https://www.flocksafety.com/blog/academy-reduces-orc-with-flock-safety,redirect,200 (redirect),/customers/academy-sports-tackles-organized-retail-crime-with-flock-safety,redirect-stub
+/customers/4-ways-retailers-can-level-up-their-security-coverage-during-the-holiday-season,https://www.flocksafety.com/customers/4-ways-retailers-can-level-up-their-security-coverage-during-the-holiday-season,redirect,200 (redirect),/industries/retail,redirect-stub
+/customers/whitehall-pd-solves-gun-related-crime-with-flock-safety-raven,https://www.flocksafety.com/customers/whitehall-pd-solves-gun-related-crime-with-flock-safety-raven,redirect,200 (redirect),/customers,redirect-stub
+/legal/privacy-notice,https://www.flocksafety.com/legal/privacy-notice,redirect,200 (redirect),/legal/privacy-policy,redirect-stub
+/legal/terms-of-service,https://www.flocksafety.com/legal/terms-of-service,redirect,200 (redirect),/legal/terms-and-conditions,redirect-stub
+/privacy-ethics,https://www.flocksafety.com/privacy-ethics,redirect,200 (redirect),/trust,redirect-stub
+/products/freeform-search,https://www.flocksafety.com/products/freeform-search,redirect,200 (redirect),/products/flock-freeform,redirect-stub
+/products/investigations-manager,https://www.flocksafety.com/products/investigations-manager,redirect,200 (redirect),/products/license-plate-readers,redirect-stub
+/products/lpr-cameras,https://www.flocksafety.com/products/lpr-cameras,redirect,200 (redirect),/products/license-plate-readers,redirect-stub
+/products/national-lpr-network,https://www.flocksafety.com/products/national-lpr-network,redirect,200 (redirect),/products/license-plate-readers,redirect-stub
+/webinar/uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level,https://www.flocksafety.com/webinar/uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level,redirect,200 (redirect),/webinar/uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level-on-demand,redirect-stub
+/webinar/you-asked-we-listened-q3-public-safety-product-updates,https://www.flocksafety.com/webinar/you-asked-we-listened-q3-public-safety-product-updates,redirect,200 (redirect),/resources,redirect-stub
+/webinars/building-safer-communities-how-to-secure-your-neighborhoods,https://www.flocksafety.com/webinars/building-safer-communities-how-to-secure-your-neighborhoods,redirect,200 (redirect),/webinar/building-safer-communities-how-to-secure-your-neighborhoods,redirect-stub
+/webinars/crisis-proof-your-public-safety-tech,https://www.flocksafety.com/webinars/crisis-proof-your-public-safety-tech,redirect,200 (redirect),/webinar/crisis-proof-your-public-safety-tech,redirect-stub
+/webinars/de-risk-your-response-with-ai-powered-audio-detection,https://www.flocksafety.com/webinars/de-risk-your-response-with-ai-powered-audio-detection,redirect,200 (redirect),/webinar/de-risk-your-response-with-ai-powered-audio-detection,redirect-stub
+/webinars/deconstructing-the-intelligence-silo,https://www.flocksafety.com/webinars/deconstructing-the-intelligence-silo,redirect,200 (redirect),/resources,redirect-stub
+/webinars/elevate-your-response-with-flockos-r-911,https://www.flocksafety.com/webinars/elevate-your-response-with-flockos-r-911,redirect,200 (redirect),/webinar/elevate-your-response-with-flockos-r-911,redirect-stub
+/webinars/elevate-your-rtcc-operations,https://www.flocksafety.com/webinars/elevate-your-rtcc-operations,redirect,200 (redirect),/webinar/elevate-your-rtcc-operations,redirect-stub
+/webinars/empowering-communities-and-law-enforcement-with-flock-safety-video,https://www.flocksafety.com/webinars/empowering-communities-and-law-enforcement-with-flock-safety-video,redirect,200 (redirect),/webinar/empowering-communities-and-law-enforcement-with-flock-safety-video,redirect-stub
+/webinars/expanding-your-healthcare-security-perimeter-beyond-four-walls,https://www.flocksafety.com/webinars/expanding-your-healthcare-security-perimeter-beyond-four-walls,redirect,200 (redirect),/webinar/expanding-your-healthcare-security-perimeter-beyond-four-walls,redirect-stub
+/webinars/extending-threat-awareness-beyond-store-entry,https://www.flocksafety.com/webinars/extending-threat-awareness-beyond-store-entry,redirect,200 (redirect),/webinar/extending-threat-awareness-beyond-store-entry,redirect-stub
+/webinars/extending-threat-awareness-beyond-store-entry-lpm,https://www.flocksafety.com/webinars/extending-threat-awareness-beyond-store-entry-lpm,redirect,200 (redirect),/webinar/extending-threat-awareness-beyond-store-entry-lpm,redirect-stub
+/webinars/extending-threat-awareness-beyond-store-entry-talk-lp,https://www.flocksafety.com/webinars/extending-threat-awareness-beyond-store-entry-talk-lp,redirect,200 (redirect),/webinar/extending-threat-awareness-beyond-store-entry,redirect-stub
+/webinars/fbinaa-flockos,https://www.flocksafety.com/webinars/fbinaa-flockos,redirect,200 (redirect),/resources,redirect-stub
+/webinars/getting-community-buy-in-for-policing-technology,https://www.flocksafety.com/webinars/getting-community-buy-in-for-policing-technology,redirect,200 (redirect),/resources,redirect-stub
+/webinars/holiday-security-strategies-retail-security-solutions-for-the-busy-season,https://www.flocksafety.com/webinars/holiday-security-strategies-retail-security-solutions-for-the-busy-season,redirect,200 (redirect),/industries/retail,redirect-stub
+/webinars/how-campus-safety-can-boost-student-enrollment-trust,https://www.flocksafety.com/webinars/how-campus-safety-can-boost-student-enrollment-trust,redirect,200 (redirect),/webinar/how-campus-safety-can-boost-student-enrollment-trust,redirect-stub
+/webinars/how-law-enforcement-can-afford-modern-tech-with-limited-budget-and-staff,https://www.flocksafety.com/webinars/how-law-enforcement-can-afford-modern-tech-with-limited-budget-and-staff,redirect,200 (redirect),/webinar/how-law-enforcement-can-afford-modern-tech-with-limited-budget-and-staff,redirect-stub
+/webinars/introducing-condor-live-and-recorded-video,https://www.flocksafety.com/webinars/introducing-condor-live-and-recorded-video,redirect,200 (redirect),/resources,redirect-stub
+/webinars/introducing-flock-os,https://www.flocksafety.com/webinars/introducing-flock-os,redirect,200 (redirect),/webinar/introducing-flock-os,redirect-stub
+/webinars/introducing-raven,https://www.flocksafety.com/webinars/introducing-raven,redirect,200 (redirect),/resources,redirect-stub
+/webinars/keeping-healthcare-workers-safe-reducing-the-risk-of-workplace-violence,https://www.flocksafety.com/webinars/keeping-healthcare-workers-safe-reducing-the-risk-of-workplace-violence,redirect,200 (redirect),/webinar/keeping-healthcare-workers-safe-reducing-the-risk-of-workplace-violence,redirect-stub
+/webinars/lp-product-launch-may-2024-on-demand,https://www.flocksafety.com/webinars/lp-product-launch-may-2024-on-demand,redirect,200 (redirect),/webinar/lp-product-launch-may-2024-on-demand,redirect-stub
+/webinars/lpr-for-every-roadway,https://www.flocksafety.com/webinars/lpr-for-every-roadway,redirect,200 (redirect),/resources,redirect-stub
+/webinars/multiply-your-force-solutions-for-small-scale-agencies,https://www.flocksafety.com/webinars/multiply-your-force-solutions-for-small-scale-agencies,redirect,200 (redirect),/resources,redirect-stub
+/webinars/preventing-crime-at-your-properties,https://www.flocksafety.com/webinars/preventing-crime-at-your-properties,redirect,200 (redirect),/webinar/preventing-crime-at-your-properties,redirect-stub
+/webinars/preventing-school-violence,https://www.flocksafety.com/webinars/preventing-school-violence,redirect,200 (redirect),/webinar/preventing-school-violence,redirect-stub
+/webinars/product-launch,https://www.flocksafety.com/webinars/product-launch,redirect,200 (redirect),/webinar/product-launch,redirect-stub
+/webinars/product-launch-no-cost-apis-ai-for-faster-investigations,https://www.flocksafety.com/webinars/product-launch-no-cost-apis-ai-for-faster-investigations,redirect,200 (redirect),/webinar/product-launch-no-cost-apis-ai-for-faster-investigations,redirect-stub
+/webinars/product-launch-webinar,https://www.flocksafety.com/webinars/product-launch-webinar,redirect,200 (redirect),/webinar/product-launch-webinar,redirect-stub
+/webinars/q1-2024-flock-safety-quarterly-product-update,https://www.flocksafety.com/webinars/q1-2024-flock-safety-quarterly-product-update,redirect,200 (redirect),/webinar/q1-2024-flock-safety-quarterly-product-update,redirect-stub
+/webinars/reduce-crime-and-increase-safety-why-communities-choose-flock-safety,https://www.flocksafety.com/webinars/reduce-crime-and-increase-safety-why-communities-choose-flock-safety,redirect,200 (redirect),/webinar/reduce-crime-and-increase-safety-why-communities-choose-flock-safety,redirect-stub
+/webinars/reducing-retail-crime-webinar,https://www.flocksafety.com/webinars/reducing-retail-crime-webinar,redirect,200 (redirect),/webinar/reducing-retail-crime-webinar,redirect-stub
+/webinars/safer-together-video,https://www.flocksafety.com/webinars/safer-together-video,redirect,200 (redirect),/webinar/safer-together-video,redirect-stub
+/webinars/school-safety-virtual-gate,https://www.flocksafety.com/webinars/school-safety-virtual-gate,redirect,200 (redirect),/resources,redirect-stub
+/webinars/the-case-for-lpr-gunshot-detection,https://www.flocksafety.com/webinars/the-case-for-lpr-gunshot-detection,redirect,200 (redirect),/webinar/the-case-for-lpr-gunshot-detection,redirect-stub
+/webinars/the-future-of-policing-is-real-time,https://www.flocksafety.com/webinars/the-future-of-policing-is-real-time,redirect,200 (redirect),/webinar/the-future-of-policing-is-real-time,redirect-stub
+/webinars/the-next-frontier-in-policing-introducing-flock-safetys-drones-for-rapid-response,https://www.flocksafety.com/webinars/the-next-frontier-in-policing-introducing-flock-safetys-drones-for-rapid-response,redirect,200 (redirect),/webinar/the-next-frontier-in-policing-introducing-flock-safetys-drones-for-rapid-response,redirect-stub
+/webinars/the-safety-blueprint-security-strategies-to-elevate-residential-communities,https://www.flocksafety.com/webinars/the-safety-blueprint-security-strategies-to-elevate-residential-communities,redirect,200 (redirect),/webinar/the-safety-blueprint-security-strategies-to-elevate-residential-communities,redirect-stub
+/webinars/the-shift-to-proactive-security-new-tools-to-deter-crime-and-hold-offenders-accountable,https://www.flocksafety.com/webinars/the-shift-to-proactive-security-new-tools-to-deter-crime-and-hold-offenders-accountable,redirect,200 (redirect),/webinar/the-shift-to-proactive-security-new-tools-to-deter-crime-and-hold-offenders-accountable,redirect-stub
+/webinars/video-without-limitations,https://www.flocksafety.com/webinars/video-without-limitations,redirect,200 (redirect),/webinar/video-without-limitations,redirect-stub
+/webinars/webinar-combating-orc-and-theft,https://www.flocksafety.com/webinars/webinar-combating-orc-and-theft,redirect,200 (redirect),/webinar/webinar-combating-orc-and-theft,redirect-stub
+/webinars/you-asked-we-listened-from-call-to-clearance,https://www.flocksafety.com/webinars/you-asked-we-listened-from-call-to-clearance,redirect,200 (redirect),/resources,redirect-stub
+/webinars/you-asked-we-listened-q3-public-safety-product-updates,https://www.flocksafety.com/webinars/you-asked-we-listened-q3-public-safety-product-updates,redirect,200 (redirect),/resources,redirect-stub
+/webinars/you-asked-we-listened-q4-public-safety-product-updates,https://www.flocksafety.com/webinars/you-asked-we-listened-q4-public-safety-product-updates,redirect,200 (redirect),/webinar/you-asked-we-listened-q4-public-safety-product-updates,redirect-stub
+/whitepaper/the-evolving-landscape-of-retail-consumer-attitudes-crime-trends-and-the-technology-leading-the-fight,https://www.flocksafety.com/whitepaper/the-evolving-landscape-of-retail-consumer-attitudes-crime-trends-and-the-technology-leading-the-fight,redirect,200 (redirect),/ebooks/the-evolving-landscape-of-retail-consumer-attitudes-crime-trends-and-the-technology-leading-the-fight,redirect-stub

@@ -17,9 +17,11 @@ const SOURCE = readFileSync(path.join(HERE, '../pipeline/interactions-runtime.js
 
 // Captured shapes, miniature: w-tabs (video-cameras/podcast), the custom
 // home4 tabs (flock-ecosystem), the two w-dropdown shapes (animated-height
-// FAQ + sf-hidden filter), the nav dropdown, the accordion-css item (LPR),
+// FAQ + base-rule filter), the accordion-css item (LPR),
 // and both slider control vocabularies (data-slider quotes, swiper arrows).
-const PAGE = `<!DOCTYPE html><html><head><style>.sf-hidden{display:none!important}</style></head><body>
+// The hiding rules are the captured Webflow base rules (ticket 15): the
+// 2026-09-09 capture's SingleFile artifact class (sf-hidden) is gone.
+const PAGE = `<!DOCTYPE html><html><head><style>.w-tab-pane{display:none;position:relative}.w--tab-active{display:block}.w-dropdown-list{display:none}.w-dropdown-list.w--open{display:block}</style></head><body>
 
 <div data-current=PTZ data-easing=ease data-duration-in=300 data-duration-out=100 class="product_tab-wr is-small w-tabs">
   <div class="tabs-menu w-tab-menu" role=tablist>
@@ -28,7 +30,7 @@ const PAGE = `<!DOCTYPE html><html><head><style>.sf-hidden{display:none!importan
   </div>
   <div class=w-tab-content>
     <div data-w-tab=PTZ class="w-tab-pane w--tab-active" id=w-tabs-1-data-w-pane-0 role=tabpanel aria-labelledby=w-tabs-1-data-w-tab-0><div class=product_tab-content>PTZ pane</div></div>
-    <div data-w-tab=Fixed class="w-tab-pane sf-hidden" id=w-tabs-1-data-w-pane-1 role=tabpanel aria-labelledby=w-tabs-1-data-w-tab-1><div class=product_tab-content>Fixed pane</div></div>
+    <div data-w-tab=Fixed class="w-tab-pane" id=w-tabs-1-data-w-pane-1 role=tabpanel aria-labelledby=w-tabs-1-data-w-tab-1><div class=product_tab-content>Fixed pane</div></div>
   </div>
 </div>
 
@@ -52,12 +54,7 @@ const PAGE = `<!DOCTYPE html><html><head><style>.sf-hidden{display:none!importan
 
 <div data-delay=0 data-hover=false class="filter_dropdown w-dropdown">
   <div class="filter_dropdown-toggle w-dropdown-toggle" id=w-dropdown-toggle-1 aria-controls=w-dropdown-list-1 aria-haspopup=menu aria-expanded=false role=button tabindex=0><div>Type</div></div>
-  <nav class="filter-dropdown-list w-dropdown-list sf-hidden" id=w-dropdown-list-1 aria-labelledby=w-dropdown-toggle-1></nav>
-</div>
-
-<div class=nav__dd>
-  <div class=nav__dd-trigger><span>Products</span></div>
-  <div class="nav__dd-content sf-hidden"><a href="/products/gun-detection">Gun Detection</a></div>
+  <nav class="filter-dropdown-list w-dropdown-list" id=w-dropdown-list-1 aria-labelledby=w-dropdown-toggle-1></nav>
 </div>
 
 <div data-animate=slide-up data-accordion-status=not-active class="accordion-css__item" id=acc-1>
@@ -200,36 +197,23 @@ describe('Webflow dropdowns open and close by their captured hiding shape', () =
     expect(list.style.height).toBe('0px'); // the captured closed geometry, restored
   });
 
-  it('display:none filter shape: sf-hidden toggles off and back on', () => {
+  it('display:none filter shape: w--open toggles on the list, base rule does the hiding', () => {
     const dom = domOf(PAGE);
     const doc = (dom.window as Win).document;
     const toggle = doc.getElementById('w-dropdown-toggle-1')!;
     const list = doc.getElementById('w-dropdown-list-1')!;
-    expect(list.classList.contains('sf-hidden')).toBe(true);
+    expect(list.classList.contains('w--open')).toBe(false);
     clickIn(dom.window, toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(list.classList.contains('sf-hidden')).toBe(false);
     expect(list.classList.contains('w--open')).toBe(true);
     clickIn(dom.window, toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(list.classList.contains('sf-hidden')).toBe(true);
-  });
-
-  it('the nav dropdown toggles its content panel', () => {
-    const dom = domOf(PAGE);
-    const doc = (dom.window as Win).document;
-    const trigger = doc.querySelector('.nav__dd-trigger')!;
-    const content = doc.querySelector('.nav__dd-content')!;
-    expect(content.classList.contains('sf-hidden')).toBe(true);
-    clickIn(dom.window, trigger);
-    expect(content.classList.contains('sf-hidden')).toBe(false);
-    clickIn(dom.window, trigger);
-    expect(content.classList.contains('sf-hidden')).toBe(true);
+    expect(list.classList.contains('w--open')).toBe(false);
   });
 });
 
 describe('Webflow tabs switch panes with the captured classes and pairings', () => {
-  it('with reduced motion: the swap is instant — w--current/w--tab-active/sf-hidden and data-current all move', () => {
+  it('with reduced motion: the swap is instant — w--current/w--tab-active and data-current all move', () => {
     const dom = domOf(PAGE, { reduced: true });
     const doc = (dom.window as Win).document;
     const root = doc.querySelector('.w-tabs')!;
@@ -246,9 +230,7 @@ describe('Webflow tabs switch panes with the captured classes and pairings', () 
     expect(ptzLink.getAttribute('aria-selected')).toBe('false');
     expect(ptzLink.getAttribute('tabindex')).toBe('-1');
     expect(root.getAttribute('data-current')).toBe('Fixed');
-    expect(fixedPane.classList.contains('sf-hidden')).toBe(false);
     expect(fixedPane.classList.contains('w--tab-active')).toBe(true);
-    expect(ptzPane.classList.contains('sf-hidden')).toBe(true);
     expect(ptzPane.classList.contains('w--tab-active')).toBe(false);
     // no fade plumbing left behind
     expect(fixedPane.style.transition).toBe('');
@@ -266,14 +248,12 @@ describe('Webflow tabs switch panes with the captured classes and pairings', () 
     // out-phase armed synchronously; the pane is still visible while fading
     expect(ptzPane.style.opacity).toBe('0');
     expect(ptzPane.style.transition).toBe('opacity 100ms ease');
-    expect(ptzPane.classList.contains('sf-hidden')).toBe(false);
-    expect(fixedPane.classList.contains('sf-hidden')).toBe(true);
+    expect(ptzPane.classList.contains('w--tab-active')).toBe(true);
+    expect(fixedPane.classList.contains('w--tab-active')).toBe(false);
 
     await sleep(200); // > duration-out
-    expect(ptzPane.classList.contains('sf-hidden')).toBe(true);
     expect(ptzPane.classList.contains('w--tab-active')).toBe(false);
     expect(ptzPane.style.opacity).toBe('');
-    expect(fixedPane.classList.contains('sf-hidden')).toBe(false);
     expect(fixedPane.classList.contains('w--tab-active')).toBe(true);
     // in-phase armed from the 0 from-state, releasing to 1
     expect(fixedPane.style.opacity).toBe('1');
@@ -291,7 +271,6 @@ describe('Webflow tabs switch panes with the captured classes and pairings', () 
     const ptzPane = doc.getElementById('w-tabs-1-data-w-pane-0')!;
     clickIn(dom.window, ptzLink);
     expect(ptzPane.classList.contains('w--tab-active')).toBe(true);
-    expect(ptzPane.classList.contains('sf-hidden')).toBe(false);
   });
 
   it('a link whose pane is missing mutates nothing — pairing validated before any state changes', () => {
@@ -322,7 +301,7 @@ describe('Webflow tabs switch panes with the captured classes and pairings', () 
     const fixedPane = doc.getElementById('w-tabs-1-data-w-pane-1')!;
     expect(doc.querySelector('.w-tabs')!.getAttribute('data-current')).toBe('Fixed');
     expect(fixedPane.classList.contains('w--tab-active')).toBe(true);
-    expect(ptzPane.classList.contains('sf-hidden')).toBe(true);
+    expect(ptzPane.classList.contains('w--tab-active')).toBe(false);
     // the ignored click left no half-faded state behind
     expect(ptzPane.style.opacity).toBe('');
     expect(fixedPane.style.opacity).toBe('');
@@ -433,8 +412,6 @@ describe('the layer is delegation-driven and keeps the zero-outbound invariants'
     expect(doc.getElementById('acc-1')!.getAttribute('data-accordion-status')).toBe('active');
     clickIn(dom.window, doc.querySelector('[data-w-tab=Fixed] div')!);
     expect(doc.querySelector('.w-tabs')!.getAttribute('data-current')).toBe('Fixed');
-    clickIn(dom.window, doc.querySelector('.nav__dd-trigger span')!);
-    expect(doc.querySelector('.nav__dd-content')!.classList.contains('sf-hidden')).toBe(false);
   });
 
   it('a click on the pagination container itself (not a bullet) is inert', () => {

@@ -18,14 +18,12 @@
 //     suppressed by the layer's CSS half (pipeline/interactions.css).
 //   • Webflow dropdown   .w-dropdown-toggle — w--open + aria-expanded; the
 //     captured closed geometry is restored per shape: an inline height
-//     (0px<->auto, the animated FAQ shape) or the sf-hidden class (the
-//     display:none filter shape).
-//   • nav dropdown       .nav__dd-trigger — sf-hidden toggle on the sibling
-//     .nav__dd-content (the shared header's custom dropdown; its open-state
-//     arrow marker is never captured — all captures are closed — so the
-//     arrow is left alone).
-//   • Webflow tabs       .w-tab-link — w--current/w--tab-active/sf-hidden
-//     swap by data-w-tab pairing inside the .w-tabs root; the captured fade
+//     (0px<->auto, the animated FAQ shape) or the captured Webflow base rule
+//     (.w-dropdown-list{display:none} ↔ .w-dropdown-list.w--open{display:block}).
+//   • Webflow tabs       .w-tab-link — w--current/w--tab-active swap by
+//     data-w-tab pairing inside the .w-tabs root (the captured base rules
+//     .w-tab-pane{display:none} ↔ .w--tab-active{display:block} do the hiding);
+//     the captured fade
 //     (data-duration-in/out/easing on the root, census 13) plays when motion
 //     is allowed and is skipped for reduced motion. A click while a fade is
 //     mid-flight is ignored until it completes (max ~400ms) — never
@@ -46,6 +44,9 @@
 // Reduced motion never blocks function: only the tab fade branches on
 // prefers-reduced-motion (read fresh at each click), everything else is
 // instant by construction.
+// The shared header's nav is NOT here: it has its own layer (ticket 14,
+// pipeline/nav-runtime.js + pipeline/nav.css), which drives the live class
+// vocabulary (.nav__dd.show) the corrected capture now carries.
 // This file is read as text and inlined verbatim into served bytes; keep it
 // free of any closing-script markup and free of page copy — code-owned
 // strings only.
@@ -71,7 +72,6 @@
     var el;
     if ((el = t.closest('[data-accordion-toggle]'))) { accordion(el); e.preventDefault(); return; }
     if ((el = t.closest('.w-dropdown-toggle'))) { wDropdown(el); e.preventDefault(); return; }
-    if ((el = t.closest('.nav__dd-trigger'))) { navDropdown(el); e.preventDefault(); return; }
     if ((el = t.closest('.w-tab-link'))) { wTabs(el); e.preventDefault(); return; }
     if ((el = t.closest('[data-tabs]')) && endsWith(el.getAttribute('data-tabs'), MENU_ITEM_SUFFIX)) { customTabs(el); e.preventDefault(); return; }
     var pg = t.closest('[data-slider=pagination]');
@@ -126,22 +126,14 @@
     toggle.classList[open ? 'add' : 'remove']('w--open');
     list.classList[open ? 'add' : 'remove']('w--open');
     if (open) {
-      list.classList.remove('sf-hidden');
       if (list.style.height) list.style.height = 'auto'; // the captured animated-height shape
     } else if (list.style.height) {
       list.style.height = '0px'; // restore the captured closed geometry
-    } else {
-      list.classList.add('sf-hidden'); // the captured display:none shape
     }
-  }
-
-  // ---- the shared header's nav dropdown ----
-
-  function navDropdown(trigger) {
-    var root = trigger.closest('.nav__dd');
-    if (!root) return;
-    var content = root.querySelector('.nav__dd-content');
-    if (content) content.classList.toggle('sf-hidden');
+    // the display:none filter shape needs no marker: the captured
+    // .w-dropdown-list base rule hides it and .w-dropdown-list.w--open shows it
+    // (ticket 15 — the 2026-09-09 capture had lost that rule, so ticket 05
+    // toggled SingleFile's hidden-element artifact class instead).
   }
 
   // ---- Webflow tabs (census 13) ----
@@ -201,17 +193,18 @@
     else link.setAttribute('tabindex', '-1');
   }
 
+  // The captured base rules do the hiding: .w-tab-pane{display:none} for an
+  // inactive pane, .w--tab-active{display:block} for the active one. Moving
+  // w--tab-active is the whole swap — no artifact class (ticket 15).
   function hideTabPane(pane) {
     if (!pane) return;
     pane.classList.remove('w--tab-active');
-    pane.classList.add('sf-hidden');
     pane.style.transition = '';
     pane.style.opacity = '';
   }
 
   function showTabPane(pane) {
     if (!pane) return;
-    pane.classList.remove('sf-hidden');
     pane.classList.add('w--tab-active');
   }
 

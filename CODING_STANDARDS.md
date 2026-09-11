@@ -129,8 +129,17 @@ origin, so the grant cannot leave the machine.
   (`pipeline/chat-widget.js`) with the message API stubbed at `fetch`. Ticket
   09 added this seam; ticket 10 mounts that same runtime site-wide, so the seam
   now reads the build's injected bytes (the motion/interactions-seam method)
-  rather than a React component. Per this header's rule, later efforts extend
-  this list here rather than adding a seam silently.
+  rather than a React component. **Extended by ticket 14**: the nav DOM seam
+  (`test/nav.seam.test.ts` — the shared header's behavior runtime:
+  `.scroll`/`.scroll-up`, desktop hover `.show`, mobile tap-toggle and
+  take-over, outside-click and resize, reduced motion — in jsdom against the
+  exact injected bytes `pipeline/nav-runtime.js`). **Retired by ticket 15**:
+  the header-restore seam (the build's graft from the vendored corrected-flags
+  header artifact). Ticket 15 moved the whole build onto a corrected-flags
+  capture run whose stylesheet keeps every nav rule and whose DOM keeps every
+  hidden subtree, so the graft and its artifact were retired; the header's
+  remaining behavior is covered by the nav seam. Per this header's rule, later
+  efforts extend this list here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature

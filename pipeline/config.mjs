@@ -1,7 +1,14 @@
 // The capture pointer: which capture run the build serves from.
 // One value — moving the Recreation to a fresh capture run is this one switch.
 // Relative to the repo root; overrides: `npm run pipeline -- --run <dir>`.
-export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-09';
+//
+// `2026-09-11` is the corrected-flags run (ticket 15): it was captured with
+// `--remove-hidden-elements=false --remove-unused-styles=false`, so it keeps
+// the hidden subtrees (closed menus, take-overs, modal panels) and the state
+// CSS (open/active rules that matched no element at capture time) that the
+// 2026-09-09 defaults dropped. The refresh runbook (ticket 11) records the
+// corrected flags as the default for every future run.
+export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-11';
 
 // Scaffold/test pages: captured 200 pages that are internal Webflow test
 // scaffolding, not site content, and are dropped from serving entirely

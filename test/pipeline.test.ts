@@ -23,7 +23,9 @@ const INTERACTIONS_CSS = readFileSync(path.join(HERE, '../pipeline/interactions.
 const INTERACTIONS_RUNTIME = readFileSync(path.join(HERE, '../pipeline/interactions-runtime.js'), 'utf8');
 const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
 const CHAT_RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
-const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length;
+const NAV_CSS = readFileSync(path.join(HERE, '../pipeline/nav.css'), 'utf8');
+const NAV_RUNTIME = readFileSync(path.join(HERE, '../pipeline/nav-runtime.js'), 'utf8');
+const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + NAV_CSS.length + NAV_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length;
 
 let result: { log: LogEntry[] };
 
@@ -81,8 +83,8 @@ describe('strip pass', () => {
 
   it('leaves non-target content untouched: JSON-LD, data-URI assets, captured from-states, text mentions', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    // 2 captured ld+json data blocks + the four injected runtimes (motion, interactions, chat, story-hook)
-    expect((html.match(/<script\b/gi) ?? []).length).toBe(6);
+    // 2 captured ld+json data blocks + the five injected runtimes (motion, interactions, nav, chat, story-hook)
+    expect((html.match(/<script\b/gi) ?? []).length).toBe(7);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
     expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
     // a .word div outside a split container is not an animation word — left as captured
@@ -271,6 +273,7 @@ describe('story-hook pass (ticket 03)', () => {
       const expected = [
         'motion layer (style+script, inline)',
         'interactions layer (style+script, inline)',
+        'nav layer (style+script, inline)',
       ];
       if (entry.chatLauncher) expected.push('chat widget (style+script, inline)');
       expected.push('story-hook seam (inline, dormant)');
@@ -281,7 +284,7 @@ describe('story-hook pass (ticket 03)', () => {
   it('keeps the zero-outbound invariants with the runtimes aboard — audit clean, no capture-derived executable', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
-    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(4); // motion + interactions + chat + story-hook
+    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(5); // motion + interactions + nav + chat + story-hook
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
@@ -532,7 +535,7 @@ describe('chat mount (ticket 10)', () => {
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0 });
-    expect(home.scripts).toEqual({ total: 6, executable: 0, ldJson: 2, injected: 4 });
+    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5 });
     // the widget CSS/runtime must not reintroduce the markers the strip audit keys on
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     for (const marker of ['qualified-offer-', 'qualified.com', '_qualified-', 'q-root', 'q-focus-sentinel', 'q-launcher', 'q-messenger-frame']) {
@@ -592,7 +595,7 @@ describe('write pass & mutation log', () => {
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0 });
-    expect(home.scripts).toEqual({ total: 6, executable: 0, ldJson: 2, injected: 4 });
+    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {

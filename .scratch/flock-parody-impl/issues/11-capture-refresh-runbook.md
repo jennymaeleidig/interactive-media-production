@@ -13,3 +13,7 @@ Label: ready-for-agent
 - [ ] Removed pages yield route or redirect actions.
 - [ ] Heavy capture HTML stays gitignored; inventories and reports stay tracked.
 - [ ] The runbook records the policy: re-inventory at spec freeze and each phase gate, scoped re-capture immediately, one full re-capture before final signoff, never mid-phase.
+
+## Comments
+
+**Corrected flags are the capture default (ticket 15, 2026-09-11).** Every run — full or scoped — must pass `--remove-hidden-elements=false --remove-unused-styles=false` to SingleFile. The 2026-09-09 run used the defaults, which dropped every subtree not rendered at capture time (closed menus, take-overs, modal panels) and every CSS rule matching no element (all open/active state rules), so the Recreation lost its interaction ground truth site-wide; ticket 14 hit it on the shared header, ticket 15 confirmed it in every component family. The canonical procedure now lives in [the wayfinding runbook answer](../../flock-parody/issues/09-capture-refresh-runbook.md), step 3, which records the flags and the reason; the corrected run `2026-09-11` is the build's capture pointer (`pipeline/config.mjs`).
