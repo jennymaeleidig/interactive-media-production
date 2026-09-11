@@ -7,7 +7,7 @@
 **Status:** resolved
 Label: ready-for-agent
 
-- [x] The launcher, pounce card, and expanded panel match the captured dimensions, prlacement, and colors.
+- [x] The launcher, pounce card, and expanded panel match the captured dimensions, pr™`2lacement, and colors.
 - [x] **AMENDED** — was: "Widget styling comes from the Capture's stylesheet, with zero authored styling additions." Now: widget styling is the Capture's **own 94-token `--THEME_*` layer lifted verbatim** plus layout values **transcribed from captured rendered evidence**; no visual value is invented. The original wording is unsatisfiable — the widget's runtime layout CSS was never captured, so there was nothing to lift wholesale (see Comments).
 - [x] The composer is visually present and inert; the placeholder shows when no chips are pending.
 - [x] Choices render as user-style chips inside the composer slot and selecting one reads as a sent message.
@@ -86,6 +86,19 @@ other captured element matches. The side-by-side is now a committed artifact
 
 ### Post-review direction (user, 2026-09-10 evening)
 
+- **The pounce card is the same UI as the panel.** Same header with the
+  in-header close (the captured corner ✕ is dropped — it also clipped badly
+  against the surface), same divider, same avatar bubble, same composer and
+  footer; only the box differs (332px wide, floored at the captured 252px,
+  capped at `100vh - 150px`, content-driven height). Clicking the greeting
+  still opens the panel.
+- **Typeface + type scale matched to the live widget.** The Capture's own
+  `Inter var` regular face is lifted verbatim into the stylesheet as an inline
+  `@font-face` (~303KB base64; the italic face stays out — no italics are
+  rendered). The scale follows the live widget's rendered screenshots: 15px
+  body, 16px name, 14px role/chips/footer, 6px bubble radii, ~1.4 line-height.
+  This supersedes the 13px/3px `*-convo.json` computed-style transcription,
+  which disagrees with every rendered capture of the real widget.
 - **Chips are green.** The pending choice chips now carry the captured CTA
   button values (#183129 / white, `--BUTTON_BORDER_RADIUS`, #070f0c hover) —
   the slot reads like the original's CTA row. This supersedes the "user-style

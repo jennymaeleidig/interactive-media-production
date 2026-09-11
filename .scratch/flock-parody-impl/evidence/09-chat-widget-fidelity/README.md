@@ -27,20 +27,37 @@ surface as the production build actually rendered it. The captured figures are
 pixel measurements of the captured screenshots (not the research table's
 92x92/412x296/538xN, which are the *transparent host iframe* rects).
 
-| surface | captured visible box | rendered box | delta |
+| surface  | captured visible box | rendered box | delta |
 | --- | --- | --- | --- |
 | launcher | 54x54, inset 17 | 54x54 @ (1369,829) | 0 |
-| card | 332x252 @ (1092,632) | 332x252 @ (1091,631) | 1px |
+| card | 332x252 @ (1092,632) | 332 wide, content-driven (≥252) | see note |
 | panel | 343x413 @ (1082,470) | 343x413 @ (1080,470) | 2px |
 
-Colors, radii, fonts and elevation match: bot bubble `#F1F4F7`/`#101010`, own
-`#ECEFEF`/`#183129`, both 3px radius / 12px 16px padding; header band `#ecefeb`
-with `#183129`; footer `#6E7879`; elevation `rgba(0,0,0,0.15) 0 5px 20px`;
-Inter var 13px. Own bubbles are single-line where the original's are — the
-bubbles' captured `max-width: 80%` resolves against the log's width
-(full-width message rows), never against a bubble's own max-content, which
-would clamp every own bubble to 80% of itself and wrap two-word choices
-("Sup port").
+Card note (user direction, 2026-09-10 late): the card was re-skinned as the
+**same UI as the panel** — same header with the in-header close, same divider,
+same avatar bubble, same composer and footer — in a 332px box floored at the
+captured 252px and capped at `100vh - 150px`. The captured card's distinct
+preview look (corner ✕, larger card type, avatar-less greeting) is consciously
+dropped; the card's height is content-driven and grows past 252 whenever
+choice chips or a longer greeting need the room.
+
+Colors and elevation match: bot bubble `#F1F4F7`/`#101010`, own
+`#ECEFEF`/`#183129`, 12px 16px padding; header band `#ecefeb` with `#183129`;
+footer `#6E7879`; elevation `rgba(0,0,0,0.15) 0 5px 20px`.
+
+**Typeface and type scale (user direction, 2026-09-10 late).** The Capture's
+own `Inter var` regular face (variable, 100-900) is lifted verbatim into the
+stylesheet as an inline `@font-face` — without it the widget silently fell
+back to the host page's sans and never matched. (The srcdoc's italic face is
+deliberately not lifted: the widget renders no italics and it is another
+~327KB of base64.) The type scale follows the live widget's RENDERED
+screenshots — 15px body, 16px name, 14px role/chips/footer, 6px bubble radii,
+~1.4 line-height — superseding the 13px/3px computed-style transcription in
+the `*-convo.json` evidence, which disagrees with every rendered capture.
+Own bubbles are single-line where the original's are — the bubbles' captured
+`max-width: 80%` resolves against the log's width (full-width message rows),
+never against a bubble's own max-content, which would clamp every own bubble
+to 80% of itself and wrap two-word choices ("Sup port").
 
 ## The one visible divergence — and why it is there
 

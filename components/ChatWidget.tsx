@@ -22,7 +22,11 @@
 //  - the placeholder ("Ask a question" on the card, "Enter a message" on the
 //    panel) shows whenever no chips are pending;
 //  - the pounce fires on the captured trigger: a scroll past the fold, after
-//    the captured short beat; the launcher is the collapsed surface.
+//    the captured short beat; the launcher is the collapsed surface;
+//  - the pounce card is the SAME UI as the expanded panel — same header with
+//    the in-header close, same bubbles, same composer, same footer (user
+//    direction 2026-09-10). Only the box differs (332px wide, floored at the
+//    captured 252px height); clicking the greeting still opens the panel.
 //
 // SPDX-License-Identifier: CC0-1.0
 
@@ -185,26 +189,19 @@ export function ChatWidget() {
   const surface = mode === 'launcher' ? null : (
     <section className={`fpc-surface fpc-surface--${mode}`} aria-label="Flock">
       <header className="fpc-header">
-        {mode === 'card' ? (
-          <button className="fpc-close fpc-close--corner" aria-label="Close" onClick={close}>
-            ✕
-          </button>
-        ) : null}
         <span className="fpc-avatar" aria-hidden />
         <div className="fpc-heading">
           <strong className="fpc-name">Flock</strong>
           <small className="fpc-role">AI Sales Assistant</small>
         </div>
-        {mode === 'panel' ? (
-          <button className="fpc-close" aria-label="Close messenger" onClick={close}>
-            <svg className="fpc-close__icon" viewBox="0 0 24 24" height="12" width="12" fill="currentColor" aria-hidden>
-              <path d={TIMES_ICON} />
-            </svg>
-          </button>
-        ) : null}
+        <button className="fpc-close" aria-label="Close messenger" onClick={close}>
+          <svg className="fpc-close__icon" viewBox="0 0 24 24" height="12" width="12" fill="currentColor" aria-hidden>
+            <path d={TIMES_ICON} />
+          </svg>
+        </button>
       </header>
 
-      {mode === 'panel' ? <div className="fpc-divider">{divider}</div> : null}
+      <div className="fpc-divider">{divider}</div>
 
       <div className="fpc-log" ref={logRef}>
         <div className="fpc-messages">
