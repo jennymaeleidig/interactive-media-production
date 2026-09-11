@@ -196,10 +196,14 @@
   bottom: 17px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   background: #fff;
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.15) 0 5px 20px 0;
+  /* No overflow:hidden here: the captured pounce card's circular close button
+     sits HALF OUTSIDE the card's top-left corner, and clipping the surface
+     sheared it to a sliver that read as a broken duplicate of the logo. The
+     header and footer round their own outer corners instead. */
+  overflow: visible;
 }
 /* pounce card: exactly the captured 332x252. The captured greeting card is
    252 tall and carries no choice chips — its composer holds the placeholder —
@@ -261,6 +265,7 @@
   flex: none;
   padding: 10px 12px;
   background: var(--HEADER_BACKGROUND_COLOR);
+  border-radius: 8px 8px 0 0;
 }
 .fpc-avatar {
   flex: none;
@@ -468,6 +473,7 @@
   flex: none;
   padding: 10px 0;
   background: #f4f5f3;
+  border-radius: 0 0 8px 8px;
   text-align: center;
   font-size: 13px;
   color: var(--MESSENGER_FOOTER_TEXT_COLOR);
