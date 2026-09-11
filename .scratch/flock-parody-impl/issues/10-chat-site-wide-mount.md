@@ -4,6 +4,15 @@
 
 **Blocked by:** 07, 09.
 
+## Comments
+
+- From ticket 09 (2026-09-10): the widget stylesheet now carries the
+  Capture's own `Inter var` regular face inline (~303KB of base64 in
+  `components/chat-widget.css`). Mounting the widget site-wide puts that CSS
+  into every served page. The original capture inlined the same fonts, so
+  this is faithful and keeps the zero-outbound-requests invariant — but it is
+  a site-weight line item to weigh (or subset) when this ticket lands.
+
 **Status:** open
 Label: ready-for-agent
 
