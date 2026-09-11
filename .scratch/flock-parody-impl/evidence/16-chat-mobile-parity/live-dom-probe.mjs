@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: CC0-1.0
 // Throwaway probe v5: in-frame element clicks so state transitions are exact.
-// Usage: node live-chat-probe5.mjs <url> <width> <height> <label> <state>
+// Usage: node live-dom-probe.mjs <url> <width> <height> <label> <state>
 //   state = launcher | card | panel
 import puppeteer from 'puppeteer-core';
 
@@ -19,10 +20,10 @@ await page.setUserAgent(
 );
 await page.setViewport({ width: W, height: H, isMobile: W < 700, hasTouch: W < 700, deviceScaleFactor: 1 });
 
-const mframe = () => page.frames().find((f) => /qualified\.com/.test(f.url()));
+const messengerFrame = () => page.frames().find((f) => /qualified\.com/.test(f.url()));
 
 async function dump(tag) {
-  const frame = mframe();
+  const frame = messengerFrame();
   if (!frame) return { tag, error: 'no frame' };
   return frame.evaluate((t) => {
     const cs = (el) => getComputedStyle(el);
@@ -78,7 +79,7 @@ if (state === 'card') {
   console.log(JSON.stringify(await dump('card'), null, 1));
 } else {
   // expand to the panel via the in-frame greeting preview
-  await mframe().evaluate(() => {
+  await messengerFrame().evaluate(() => {
     const b = document.querySelector('[aria-label*="preview" i]') || document.querySelector('.message');
     if (b) b.click();
   });
@@ -87,7 +88,7 @@ if (state === 'card') {
     console.log(JSON.stringify(await dump('panel'), null, 1));
   } else {
     // close to the launcher via the in-frame close control
-    const closed = await mframe().evaluate(() => {
+    const closed = await messengerFrame().evaluate(() => {
       const b = document.querySelector('button[aria-label="Close messenger"]') ||
         document.querySelector('.close-button button') || document.querySelector('.close-button');
       if (b) { b.click(); return true; }

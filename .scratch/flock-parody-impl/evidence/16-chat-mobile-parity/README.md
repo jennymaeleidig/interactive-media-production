@@ -27,7 +27,9 @@ mobile variant on the breakpoint the widget's own runtime CSS uses —
 `(max-width: 767px)`, read out of the live messenger bundle
 (`js.qualified.com/packs/js/multimodal_v2-*.js`) — which agrees with the mobile
 variant at the ticket's 390px target. The mimic declares that block in
-`pipeline/chat-widget.css`.
+`pipeline/chat-widget.css`. The three runs are committed as
+`live-variant-output.json`, and the extracted breakpoint as
+`live-messenger-breakpoints.json`.
 
 ## Measured geometry (`rendered-boxes.json`)
 
@@ -56,7 +58,9 @@ hamburger take-over **open**: the dark-green launcher is visible above the
 take-over's grey sheet. Measured in the same run (`ours-mobile-boxes.json`):
 the widget root (`pipeline/chat-widget.css` `.fpc-root`) is
 `z-index: 2147483000`; the captured header is `.header-z { z-index: 2000 }`, and
-nothing on a served page sits between them. Interactivity with the take-over
+nothing on a served page sits between them. Both values are recorded in
+`ours-mobile-boxes.json` (`headerZ: "2000"`, `widgetZ: "2147483000"`); the 2000
+is `.header-z`'s own value in the served bytes, not the background layer's −1. Interactivity with the take-over
 open, asserted in `mimic-shots.mjs`:
 
 - clicking the launcher while the take-over is open opens the panel
@@ -80,8 +84,15 @@ the launcher and surface, so it never steals the nav's own clicks.
   `test/chat-widget.seam.test.ts` now guards: no `transition`/`animation`/
   `@keyframes` may be added to `pipeline/chat-widget.css` without a
   `prefers-reduced-motion` path.
-- The inert composer and chip behavior are viewport-independent; the desktop
-  seam tests (`test/chat-widget.seam.test.ts`) cover them and pass unchanged.
+- The inert composer and chips are viewport-independent, and now carry mobile
+evidence too: `mimic-invariants.mjs` (output in `mimic-invariants-output.json`)
+opens the panel at 390 and walks the focus order — the panel holds **zero**
+text inputs, the send button is `aria-disabled`, typing into the composer and
+clicking send fire **no** extra turn (`postsOnOpen` = `postsAfterTypingAndSend`
+= 1), and Tab walks close → chip → chip → chip → send → privacy link and then
+leaves the widget (`focusLeftWidget: true`) — no focus trap. The desktop seam
+tests (`test/chat-widget.seam.test.ts`) cover the same contract and pass
+unchanged.
 
 ## Accepted residuals (all pre-existing ticket-09 decisions, not mobile-specific)
 
@@ -107,9 +118,18 @@ side-by-side, so they are named here rather than hidden:
 4. **Footer band.** The mimic uses the captured `#f4f5f3` / 36px footer; the live
    band is `#fcfcfc` / 30px (ticket 09's captured-screenshot value).
 
-None of these are introduced or changed by this ticket; the mobile block only
+4. **Footer band.** The mimic uses the captured `#f4f5f3` / 36px footer; the live
+   band is `#fcfcfc` / 30px (ticket 09's captured-screenshot value).
+5. **UA vs width.** Live picks its variant by device detection; the mimic can only
+   key on width (a served page has no UA). At ≥768px with a mobile UA — a phone
+   in landscape, or a tablet — live shows the fullscreen variant while the mimic
+   shows the sidebar. `live-variant-output.json` is the demonstration. This is
+   the one residual this ticket introduces; it is structural (a static page
+   cannot read the UA in CSS) and only bites outside the ticket's 390px target.
+
+None of 1–4 are introduced or changed by this ticket; the mobile block only
 touches geometry (launcher dock, card bottom inset, fullscreen panel + its
-square bands).
+square bands). Item 5 is the deliberate consequence of having no UA signal.
 
 ## Reproduce
 
@@ -139,9 +159,13 @@ python3 rig-compare.py live-mobile-launcher.png ours-mobile-launcher.png compare
 ```
 
 `mimic-probe.mjs` is the box-measuring probe (it stubs `/api/chat` so the card
-and panel render without the real API); `live-rig.mjs` / `live-dom-probe.mjs`
-are the live counterparts. `live-mobile-rig-output.json` is the raw frame-rect
-output from `live-rig.mjs`.
+and panel render without the real API; run it at `1440 900` to reproduce
+ticket 09's desktop boxes, committed as `ours-desktop-boxes.json`);
+`live-rig.mjs` / `live-dom-probe.mjs` are the live counterparts, and
+`mimic-invariants.mjs` writes the no-JS / reduced-motion / keyboard output.
+`live-mobile-rig-output.json` is the raw frame-rect output from `live-rig.mjs`;
+`live-variant-output.json` and `live-messenger-breakpoints.json` back the
+UA-vs-width finding.
 
 ## What the seam tests cover instead of pixels
 

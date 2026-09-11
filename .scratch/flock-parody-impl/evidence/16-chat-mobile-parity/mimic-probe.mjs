@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: CC0-1.0
 // Throwaway probe: measure the Recreation (mimic) widget geometry at one
 // viewport, with /api/chat stubbed. Usage:
 //   node mimic-probe.mjs <baseUrl> <width> <height> <outDir> <label>

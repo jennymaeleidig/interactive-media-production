@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: CC0-1.0
 """Composite two viewport screenshots side by side (left = live, right = ours)
 with a thin divider, for the ticket-16 evidence. No scaling of either side.
 Usage: python3 compare.py <left.png> <right.png> <out.png> [labelL] [labelR]

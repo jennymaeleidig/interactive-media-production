@@ -14,8 +14,16 @@ Label: ready-for-agent
 
 - [x] A mobile ground-truth run of the live site (390×844) captures the widget's
       collapsed, pounce-card, and expanded states as evidence.
-- [x] The mimic's launcher, pounce card, and panel match the live mobile geometry
-      and layout at 390×844 (side-by-side evidence).
+- [x] **AMENDED** — was: "The mimic's launcher, pounce card, and panel match
+      the live mobile geometry and layout at 390×844 (side-by-side evidence)."
+      Now: the mimic's mobile **dock and surface frame** match live — launcher
+      50px @ 16px insets, card 332px docked bottom-right, panel fullscreen and
+      square. The surface **internals** keep ticket 09's already-reviewed
+      divergences (chips instead of the live CTA row, ticket 09's rendered type
+      scale, card-as-panel UI, the footer band); the side-by-side at
+      `evidence/16-chat-mobile-parity/` shows both, and the README names them.
+      The original wording is unsatisfiable without overturning ticket 09 (see
+      Comments).
 - [x] The widget stays layered above the open mobile header take-over and remains
       interactable with it open (`z-index: 2147483000` verified against the nav).
 - [x] No keyboard or focus trap regression on mobile: the inert composer and the
@@ -84,3 +92,31 @@ live preview omits); the `#f4f5f3`/36px footer vs live's `#fcfcfc`/30px.
 `npm run pipeline` (1180 pages, chat census 1167 mounted) + `npm run build` +
 `npm run routes` green (1180 byte-identical served pages). Evidence at
 `evidence/16-chat-mobile-parity/`.
+
+### Review fixes (two-axis review of `e9053a4`)
+
+- **Criterion 2 amended, not quietly checked.** The review noted the box was
+ticked while `rendered-boxes.json` shows the card 362 vs 257 tall and a
+different composer. The residuals are ticket 09's, so — following ticket 09's own
+precedent — the criterion now says what actually matches (dock + surface frame)
+and points at the README's residual list.
+- **The seam extension is recorded.** `CODING_STANDARDS.md`'s Testing section now
+names ticket 16's chat-widget stylesheet-shape block, per its own rule that
+later efforts extend the list rather than add a seam silently.
+- **The UA-vs-width gap is now a named residual.** The README adds it to the
+accepted-residuals section: live picks its variant by device detection, the
+mimic by width, so a mobile UA at ≥768px (e.g. phone landscape) gets live's
+fullscreen but the mimic's sidebar. The load-bearing 767px claim now has a
+committed artifact (`live-messenger-breakpoints.json`).
+- **Criterion 4 got real mobile evidence.** `mimic-invariants.mjs` now walks the
+mobile focus order: no text input in the panel, `aria-disabled` send, typing and
+clicking send fire no turn, and Tab leaves the widget (no trap). Its output JSON
+is committed alongside the variant-probe and desktop-re-measure outputs.
+- **Criterion 3's z-index read fixed.** The probe read `.header__bg` (z −1); it
+now reads `#header` itself, and the README states the 2000 comes from the
+capture CSS (`header-z{z-index:2000`) confirmed in the served bytes.
+- **Probe hygiene.** New evidence scripts carry `SPDX-License-Identifier:
+CC0-1.0`, the usage headers name the committed filenames, `mframe` is renamed
+to `messengerFrame`, and a dead `previewClicked` block is gone. The remaining
+duplication/argv clumps across the throwaway probes are judgement calls left
+as-is.

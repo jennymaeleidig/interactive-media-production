@@ -138,7 +138,14 @@ origin, so the grant cannot leave the machine.
   header artifact). Ticket 15 moved the whole build onto a corrected-flags
   capture run whose stylesheet keeps every nav rule and whose DOM keeps every
   hidden subtree, so the graft and its artifact were retired; the header's
-  remaining behavior is covered by the nav seam. Per this header's rule, later
+  remaining behavior is covered by the nav seam. **Extended by ticket 16**: the
+  chat-widget seam also asserts the mimic's mobile-parity **stylesheet shape**
+  (`pipeline/chat-widget.css`'s `(max-width: 767px)` block — a fullscreen panel
+  with square bands, the 50px/16px launcher dock, no motion, and `.fpc-root`
+  clearing the nav's `z-index: 2000`), because jsdom cannot evaluate media
+  queries — the nav seam's reduced-motion check is the same method. The rendered
+  mobile result is the human side-by-side at
+  `evidence/16-chat-mobile-parity/`. Per this header's rule, later
   efforts extend this list here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.

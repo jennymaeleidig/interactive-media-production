@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: CC0-1.0
 // Ticket 16 evidence rig (throwaway): screenshot the Recreation's mobile
 // widget states at 390x844 and verify the nav-take-over layering.
 // Usage: node mimic-shots.mjs <baseUrl> <outDir>
@@ -103,11 +104,12 @@ await sleep(900);
 await page.screenshot({ path: `${outDir}/ours-mobile-nav-open.png` });
 boxes.navOpen = await page.evaluate(() => {
   const hb = document.querySelector('.header__bg');
+  const header = document.querySelector('#header') || document.querySelector('.header-z');
   const w = document.querySelector('.fpc-root');
   return {
     headerBgOpen: !!(hb && hb.classList.contains('is-open')),
-    headerZ: hb ? getComputedStyle(hb).zIndex : null,
-    headerZParent: hb && hb.parentElement ? getComputedStyle(hb.parentElement).zIndex : null,
+    headerZ: header ? getComputedStyle(header).zIndex : null,
+    headerBgZ: hb ? getComputedStyle(hb).zIndex : null,
     widgetZ: w ? getComputedStyle(w).zIndex : null,
   };
 });

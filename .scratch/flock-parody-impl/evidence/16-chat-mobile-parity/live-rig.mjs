@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: CC0-1.0
 // Throwaway probe v2: live chat widget mobile states.
-// Usage: node live-chat-probe2.mjs <url> <width> <height> <outDir> <label>
+// Usage: node live-rig.mjs <url> <width> <height> <outDir> <label>
 // Waits for the pounce card, screenshots it, expands to the panel, then closes
 // back to the launcher. Records the iframe rect at each state.
 import puppeteer from 'puppeteer-core';
@@ -65,13 +66,8 @@ await sleep(3000);
 await shot('card');
 out.card = card;
 
-// expand: click the greeting text if it is a preview button, else the launcher
-const previewClicked = await page.evaluate(() => {
-  const cands = [...document.querySelectorAll('#q-messenger-frame')];
-  return cands.length;
-});
-void previewClicked;
-// click roughly where the greeting text sits (left side of the card, above the CTAs)
+// expand: click roughly where the greeting text sits (left side of the card,
+// above the CTAs)
 await page.mouse.click(Math.round(card.x + card.w * 0.45), Math.round(card.y + card.h * 0.42));
 const panel = await waitFrame((r) => r.w !== card.w || r.h !== card.h, 8000);
 await sleep(3000);

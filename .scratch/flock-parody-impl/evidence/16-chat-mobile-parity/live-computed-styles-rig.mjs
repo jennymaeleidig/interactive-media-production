@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: CC0-1.0
 // Throwaway probe v9: computed styles of the live mobile widget's key elements.
-// Usage: node live-styles.mjs <url> <state: card|panel>
+// Usage: node live-computed-styles-rig.mjs <url> <state: card|panel>
 import puppeteer from 'puppeteer-core';
 
 const [url, state = 'panel'] = process.argv.slice(2);
@@ -15,7 +16,7 @@ await page.setUserAgent(
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
 );
 await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
-const mframe = () => page.frames().find((f) => /qualified\.com/.test(f.url()));
+const messengerFrame = () => page.frames().find((f) => /qualified\.com/.test(f.url()));
 
 await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 }).catch((e) => console.log('goto: ' + e.message));
 await sleep(3000);
@@ -35,14 +36,14 @@ while (Date.now() < end) {
 }
 await sleep(2000);
 if (state === 'panel') {
-  await mframe().evaluate(() => {
+  await messengerFrame().evaluate(() => {
     const b = document.querySelector('[aria-label*="preview" i]') || document.querySelector('.message');
     if (b) b.click();
   });
   await sleep(3000);
 }
 
-const styles = await mframe().evaluate((st) => {
+const styles = await messengerFrame().evaluate((st) => {
   const cs = (el, props) => {
     if (!el) return null;
     const c = getComputedStyle(el);

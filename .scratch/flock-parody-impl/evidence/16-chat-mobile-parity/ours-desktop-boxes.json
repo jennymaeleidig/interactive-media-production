@@ -1,0 +1,123 @@
+{
+ "viewport": "1440x900",
+ "launcher": {
+  "x": 1369,
+  "y": 829,
+  "w": 54,
+  "h": 54,
+  "right": 17,
+  "bottom": 17,
+  "radius": "50%",
+  "bg": "rgb(236, 239, 235)",
+  "position": "absolute",
+  "z": "auto"
+ },
+ "card": {
+  "x": 1091,
+  "y": 521,
+  "w": 332,
+  "h": 362,
+  "right": 17,
+  "bottom": 17,
+  "radius": "8px",
+  "bg": "rgb(255, 255, 255)",
+  "position": "absolute",
+  "z": "auto"
+ },
+ "cardHeader": {
+  "x": 1091,
+  "y": 521,
+  "w": 332,
+  "h": 54,
+  "right": 17,
+  "bottom": 325,
+  "radius": "8px 8px 0px 0px",
+  "bg": "rgb(236, 239, 235)",
+  "position": "static",
+  "z": "auto"
+ },
+ "cardComposer": {
+  "x": 1107,
+  "y": 765,
+  "w": 300,
+  "h": 72,
+  "right": 33,
+  "bottom": 63,
+  "radius": "10px",
+  "bg": "rgb(255, 255, 255)",
+  "position": "static",
+  "z": "auto"
+ },
+ "cardChip": {
+  "x": 1122,
+  "y": 772,
+  "w": 212,
+  "h": 26,
+  "right": 106,
+  "bottom": 102,
+  "radius": "4px",
+  "bg": "rgb(24, 49, 41)",
+  "position": "static",
+  "z": "auto"
+ },
+ "panel": {
+  "x": 1080,
+  "y": 470,
+  "w": 343,
+  "h": 413,
+  "right": 17,
+  "bottom": 17,
+  "radius": "8px",
+  "bg": "rgb(255, 255, 255)",
+  "position": "absolute",
+  "z": "auto"
+ },
+ "panelHeader": {
+  "x": 1080,
+  "y": 470,
+  "w": 343,
+  "h": 54,
+  "right": 17,
+  "bottom": 376,
+  "radius": "8px 8px 0px 0px",
+  "bg": "rgb(236, 239, 235)",
+  "position": "static",
+  "z": "auto"
+ },
+ "panelComposer": {
+  "x": 1096,
+  "y": 765,
+  "w": 311,
+  "h": 72,
+  "right": 33,
+  "bottom": 63,
+  "radius": "10px",
+  "bg": "rgb(255, 255, 255)",
+  "position": "static",
+  "z": "auto"
+ },
+ "panelChip": {
+  "x": 1111,
+  "y": 772,
+  "w": 212,
+  "h": 26,
+  "right": 117,
+  "bottom": 102,
+  "radius": "4px",
+  "bg": "rgb(24, 49, 41)",
+  "position": "static",
+  "z": "auto"
+ },
+ "panelFooter": {
+  "x": 1080,
+  "y": 847,
+  "w": 343,
+  "h": 36,
+  "right": 17,
+  "bottom": 17,
+  "radius": "0px 0px 8px 8px",
+  "bg": "rgb(244, 245, 243)",
+  "position": "static",
+  "z": "auto"
+ }
+}

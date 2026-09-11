@@ -86,8 +86,8 @@
  },
  "navOpen": {
   "headerBgOpen": true,
-  "headerZ": "-1",
-  "headerZParent": "auto",
+  "headerZ": "2000",
+  "headerBgZ": "-1",
   "widgetZ": "2147483000"
  },
  "launcherWhileNavOpen": {

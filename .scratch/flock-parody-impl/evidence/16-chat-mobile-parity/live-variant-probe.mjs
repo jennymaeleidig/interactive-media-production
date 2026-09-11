@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: CC0-1.0
 // Throwaway probe: open the live widget panel and report its iframe rect, for
 // a given viewport width and UA mode. Usage:
-//   node mode-probe.mjs <url> <width> <height> <mobile|desktop>
+//   node live-variant-probe.mjs <url> <width> <height> <mobile|desktop>
 import puppeteer from 'puppeteer-core';
 
 const [url, width, height, uamode = 'mobile'] = process.argv.slice(2);
@@ -24,7 +25,7 @@ if (uamode === 'mobile') {
   );
 }
 await page.setViewport({ width: W, height: H, isMobile: uamode === 'mobile', hasTouch: uamode === 'mobile', deviceScaleFactor: 1 });
-const mframe = () => page.frames().find((f) => /qualified\.com/.test(f.url()));
+const messengerFrame = () => page.frames().find((f) => /qualified\.com/.test(f.url()));
 
 await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 }).catch((e) => console.log('goto: ' + e.message));
 await sleep(3000);
@@ -53,14 +54,14 @@ if (!cardR) {
 }
 await sleep(2000);
 // expand by clicking the greeting preview inside the frame
-await mframe().evaluate(() => {
+await messengerFrame().evaluate(() => {
   const b = document.querySelector('[aria-label*="preview" i]') || document.querySelector('.message');
   if (b) b.click();
 });
 await sleep(3000);
 const el = await page.$('#q-messenger-frame');
 const panelR = el ? await el.boundingBox() : null;
-const inFrame = await mframe()?.evaluate(() => {
+const inFrame = await messengerFrame()?.evaluate(() => {
   const rects = [...document.querySelectorAll('div')].map((d) => d.getBoundingClientRect());
   const best = rects.sort((a, b) => b.width * b.height - a.width * a.height)[0];
   return best ? { x: Math.round(best.x), y: Math.round(best.y), w: Math.round(best.width), h: Math.round(best.height) } : null;
