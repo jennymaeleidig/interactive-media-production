@@ -65,6 +65,23 @@ function clickIn(win: Win, el: Element) {
   return ev;
 }
 
+/** The selector set of nav.css's reduced-motion block, order-independent. */
+function reducedMotionCssSelectors(css: string): string[] {
+  const at = css.indexOf('@media (prefers-reduced-motion: reduce)');
+  if (at < 0) return [];
+  const open = css.indexOf('{', at);
+  let depth = 0;
+  let end = open;
+  for (let i = open; i < css.length; i += 1) {
+    if (css[i] === '{') depth += 1;
+    else if (css[i] === '}') {
+      depth -= 1;
+      if (depth === 0) { end = i; break; }
+    }
+  }
+  return css.slice(open + 1, end).split('{')[0].split(',').map((s) => s.trim()).filter(Boolean);
+}
+
 describe('nav layer (ticket 14)', () => {
   it('morphs the header on scroll: .scroll past the top, off again at 0', () => {
     const win = domOf().window as Win;
@@ -162,6 +179,23 @@ describe('nav layer (ticket 14)', () => {
     expect(doc.querySelector('.nav__dd')!.classList.contains('show')).toBe(false);
   });
 
+  it('resize into the desktop layout closes the mobile take-over', () => {
+    const win = domOf().window as Win;
+    setWidth(win, 390);
+    const doc = win.document;
+    const button = doc.querySelector('.nav__menu-button')!;
+    const bg = doc.querySelector('.header__bg')!;
+    const list = doc.querySelector('.nav__menu-list') as HTMLElement;
+    clickIn(win, button);
+    expect(bg.classList.contains('is-open')).toBe(true);
+    expect(list.style.display).toBe('block');
+    setWidth(win, 1440);
+    win.dispatchEvent(new win.Event('resize'));
+    expect(bg.classList.contains('is-open')).toBe(false);
+    expect(button.classList.contains('is-open')).toBe(false);
+    expect(list.style.display).toBe('');
+  });
+
   it('reduced motion: the take-over is instant and no transition class is added', () => {
     const win = domOf(true).window as Win;
     setWidth(win, 390);
@@ -177,11 +211,11 @@ describe('nav layer (ticket 14)', () => {
     // The corrected Capture's stylesheet is injected verbatim (ticket 15) and
     // keeps the live header transitions; the authored half has to cancel the
     // header's own ones, or the morph still animates for a reduced-motion
-    // reader. The selector list is locked here; the corrected-run evidence
-    // re-checks it against the real capture (the capture is never a test
-    // dependency — standards, Testing).
-    const block = NAV_CSS.slice(NAV_CSS.indexOf('@media (prefers-reduced-motion: reduce)'));
-    expect(block).toContain('transition: none !important');
+    // reader. jsdom does not evaluate media queries, so this checks the
+    // stylesheet's shape, not a computed style: the selector SET, independent
+    // of order, so a pure reordering of the block is not a test failure.
+    expect(NAV_CSS).toContain('transition: none !important');
+    const selectors = reducedMotionCssSelectors(NAV_CSS);
     for (const sel of [
       '.header-z',
       '.header__bg',
@@ -191,7 +225,7 @@ describe('nav layer (ticket 14)', () => {
       '.nav__dd-product-all',
       '.nav__menu-button .nav-line',
     ]) {
-      expect(block).toContain(sel);
+      expect(selectors).toContain(sel);
     }
   });
 

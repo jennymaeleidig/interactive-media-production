@@ -5,6 +5,14 @@ scrolled / menu open) and 390×844 (rest / scrolled / take-over open / sub-menu
 open). `compare-*.png` are the stitched pairs (live left, recreation right);
 `live-*.png` / `ours-*.png` are the raw viewport shots.
 
+> **Superseded in part by ticket 15 (2026-09-11).** The corrected-flags capture
+> now carries the header natively, so the `headerRestorePass` graft this ticket
+> built — and the `Graft coverage` section below with it — was retired
+> (`pipeline/header-restore/` deleted). The measured states, scope check and
+> screenshots stay valid; only the graft-coverage counts describe a pass that no
+> longer exists. The header's remaining behavior is covered by
+> `test/nav.seam.test.ts`.
+
 ## Measured state (Docker chromium 152, same rig for both sides)
 
 | state | measurement | live | recreation |
@@ -29,7 +37,7 @@ had emptied it (`<li … sf-hidden></li>`) and the take-over shipped with no Boo
 A Demo button while live has one. The artifact now carries the row and the pass
 grafts it (1179/1179 pages).
 
-## Graft coverage across the built tree (`audit-served-graft.mjs`)
+## Graft coverage across the built tree (`audit-served-graft.mjs`) — historical
 
 Reads `served/build-log.json` after a full `npm run pipeline`:
 

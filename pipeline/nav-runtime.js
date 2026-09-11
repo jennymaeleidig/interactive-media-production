@@ -134,6 +134,19 @@
 
     function onResize() {
       for (var i = 0; i < dropdowns.length; i++) dropdowns[i].classList.remove('show');
+      // Resizing into the desktop layout must drop the mobile take-over with it —
+      // the inline reveal it set would otherwise outlive its breakpoint.
+      if (open && isDesktop()) {
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+        open = false;
+        if (headerBg) headerBg.classList.remove('is-open');
+        if (menuButton) menuButton.classList.remove('is-open');
+        if (menuList) {
+          menuList.style.display = '';
+          menuList.style.opacity = '';
+          menuList.style.transform = '';
+        }
+      }
     }
 
     var i;

@@ -19,6 +19,15 @@
     }
   },
   {
+    "name": "mobile-takeover-resize-closes",
+    "page": "/",
+    "measured": {
+      "openBefore": true,
+      "bgOpen": false,
+      "listDisplay": "block"
+    }
+  },
+  {
     "name": "faq-dropdown",
     "page": "/products/flock-os",
     "measured": {

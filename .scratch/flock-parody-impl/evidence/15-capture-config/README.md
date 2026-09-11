@@ -96,6 +96,7 @@ it.
 | --- | --- | --- |
 | shared header menu | `/` | hover → `.nav__dd.show` 1, `.header__bg` opacity 1, panel `display:block` |
 | mobile take-over | `/` | tap hamburger → `.header__bg.is-open` true, CTA row `display:block` "Book a demo" |
+| mobile take-over resize | `/` | open at 390×844 → resize to 1440×900 → `.header__bg.is-open` false (inline overlay cleared, list falls back to the desktop bar) |
 | FAQ dropdown (animated height) | `/products/flock-os` | list height `0px` → `146.8px`, `aria-expanded=true`, `w--open` |
 | filter dropdown (`display:none`) | `/press-center` | list `display:none` → `block`, `w--open` |
 | accordion (LPR) | `/trust` | status `not-active`→`active`, panel rows `0px`→`92.0px` |
@@ -105,7 +106,9 @@ it.
 | condition-hidden | `/resources` | `.w-condition-invisible` present, `display:none` |
 
 Every case is exactly the behavior the `sf-hidden`-keyed runtime used to fake, now
-produced by the capture's own state CSS.
+produced by the capture's own state CSS. The resize case is a regression fix found
+in review: ticket 14's AC requires resize to close the mobile take-over, but the
+runtime's `onResize` only cleared `.nav__dd.show`.
 
 ## 7. Serving gate and size
 

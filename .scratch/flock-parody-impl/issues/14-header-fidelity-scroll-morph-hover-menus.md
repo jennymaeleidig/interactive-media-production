@@ -178,3 +178,16 @@ A two-axis review of this ticket found real defects; each is fixed and covered:
 - The systemic root cause (SingleFile dropping hidden elements and unused styles)
   is site-wide and is tracked by the companion ticket
   `15-capture-config-hidden-content-and-unused-styles`.
+
+## Comments
+
+**The header-restore graft was retired by ticket 15 (2026-09-11).** Ticket 15
+moved the build onto a corrected-flags capture run whose stylesheet keeps every
+nav rule and whose DOM keeps every hidden subtree, so the pass/artifact this
+ticket built has no work left to do: `pipeline/header-restore/`, its seam test
+and its fixtures were deleted and the pass removed from `pipeline/build.mjs`.
+The remaining header behavior (scroll morph, hover/tap menus, mobile take-over,
+hamburger) is covered by `test/nav.seam.test.ts` over `pipeline/nav.css` +
+`pipeline/nav-runtime.js`. This ticket's evidence measures the retired graft in
+its `Graft coverage` section — kept as the historical record and annotated as
+such.

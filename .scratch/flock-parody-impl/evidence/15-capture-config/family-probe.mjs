@@ -80,6 +80,29 @@ const CASES = [
     },
   },
   {
+    name: 'mobile-takeover-resize-closes',
+    page: '/', width: 390, height: 844,
+    run: async (page) => {
+      await page.click('.nav__menu-button').catch(() => {});
+      await sleep(600);
+      const openBefore = await page.evaluate(() => {
+        const bg = document.querySelector('.header__bg');
+        return bg ? bg.classList.contains('is-open') : null;
+      });
+      await page.setViewport({ width: 1440, height: 900 });
+      await sleep(500);
+      const after = await page.evaluate(() => {
+        const bg = document.querySelector('.header__bg');
+        const list = document.querySelector('.nav__menu-list');
+        return {
+          bgOpen: bg ? bg.classList.contains('is-open') : null,
+          listDisplay: list ? getComputedStyle(list).display : null,
+        };
+      });
+      return { openBefore, ...after };
+    },
+  },
+  {
     name: 'faq-dropdown',
     page: '/products/flock-os',
     run: async (page) => {
