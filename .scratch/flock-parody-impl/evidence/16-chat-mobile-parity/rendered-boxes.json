@@ -1,0 +1,20 @@
+{
+  "viewport": "390x844",
+  "method": "Live: puppeteer inside the cross-origin messenger frame (live-dom-probe.mjs) for exact element rects, cross-checked with the frame rects (live-rig.mjs). Recreation: same-origin getBoundingClientRect (mimic-shots.mjs). Both from the Docker chromium rig (capsulecode/singlefile).",
+  "live": {
+    "launcher": { "x": 324, "y": 778, "w": 50, "h": 50, "right": 16, "bottom": 16, "radius": "100%", "bg": "rgb(236, 239, 235)", "frame": "86x86 @ (304,758), 0px margin" },
+    "card": { "x": 41, "y": 572, "w": 332, "h": 257, "right": 17, "bottom": 15, "radius": "8px", "bg": "rgb(255, 255, 255)", "frame": "370x331 @ (20,514)" },
+    "panel": { "x": 0, "y": 0, "w": 390, "h": 844, "right": 0, "bottom": 0, "radius": "0px", "bg": "rgb(255, 255, 255)" },
+    "panelHeader": { "x": 0, "y": 0, "w": 390, "h": 49, "bg": "rgb(236, 239, 235)", "radius": "0px" },
+    "panelComposer": { "x": 16, "y": 748, "w": 358, "h": 47, "radius": "8px" },
+    "panelFooter": { "x": 0, "y": 807, "w": 390, "h": 30, "bg": "rgb(252, 252, 252)", "radius": "0px" }
+  },
+  "ours": {
+    "launcher": { "x": 324, "y": 778, "w": 50, "h": 50, "right": 16, "bottom": 16, "radius": "50%", "bg": "rgb(236, 239, 235)" },
+    "card": { "x": 41, "y": 467, "w": 332, "h": 362, "right": 17, "bottom": 15, "radius": "8px", "bg": "rgb(255, 255, 255)" },
+    "panel": { "x": 0, "y": 0, "w": 390, "h": 844, "right": 0, "bottom": 0, "radius": "0px", "bg": "rgb(255, 255, 255)" },
+    "panelHeader": { "x": 0, "y": 0, "w": 390, "h": 54, "bg": "rgb(236, 239, 235)", "radius": "0px" },
+    "panelComposer": { "x": 16, "y": 726, "w": 358, "h": 72, "radius": "10px" },
+    "panelFooter": { "x": 0, "y": 808, "w": 390, "h": 36, "bg": "rgb(244, 245, 243)", "radius": "0px" }
+  }
+}

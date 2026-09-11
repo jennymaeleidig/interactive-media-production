@@ -1,0 +1,22 @@
+{
+ "label": "live-mobile",
+ "url": "https://www.flocksafety.com",
+ "card": {
+  "x": 20,
+  "y": 514,
+  "w": 370,
+  "h": 331
+ },
+ "panel": {
+  "x": 0,
+  "y": 0,
+  "w": 390,
+  "h": 844
+ },
+ "launcher": {
+  "x": 304,
+  "y": 758,
+  "w": 86,
+  "h": 86
+ }
+}

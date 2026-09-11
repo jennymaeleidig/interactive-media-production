@@ -21,6 +21,7 @@ import { JSDOM, type DOMWindow } from 'jsdom';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SOURCE = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
+const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
 
 const GREETING = 'Hey there! I\u2019m Flock, your friendly AI Sales Assistant. What questions do you have about Flock\u2019s offerings today?';
 const GENERAL = 'I can help with our products and services. How can I help you today?';
@@ -274,6 +275,88 @@ describe('session persistence', () => {
     await flush();
     expect($('.fpc-surface--card')).toBeNull();
     expect(calls.filter((c) => c.type === 'start')).toHaveLength(0);
+  });
+});
+
+/**
+ * One `@media <condition>` block's declarations, keyed by selector.
+ * jsdom does not evaluate media queries, so the mobile layout is checked as
+ * the stylesheet's shape (the nav seam does the same for its reduced-motion
+ * block); the rendered result is the human side-by-side evidence.
+ */
+function mediaRules(css: string, condition: string): Map<string, string> {
+  const at = css.indexOf(`@media ${condition}`);
+  if (at < 0) return new Map();
+  const open = css.indexOf('{', at);
+  let depth = 0;
+  let end = open;
+  for (let i = open; i < css.length; i += 1) {
+    if (css[i] === '{') depth += 1;
+    else if (css[i] === '}') {
+      depth -= 1;
+      if (depth === 0) { end = i; break; }
+    }
+  }
+  const rules = new Map<string, string>();
+  const body = css.slice(open + 1, end).replace(/\/\*[\s\S]*?\*\//g, ' ');
+  for (const chunk of body.split('}')) {
+    const brace = chunk.indexOf('{');
+    if (brace < 0) continue;
+    rules.set(
+      chunk.slice(0, brace).trim().replace(/\s+/g, ' '),
+      chunk.slice(brace + 1).trim().replace(/\s+/g, ' '),
+    );
+  }
+  return rules;
+}
+
+describe('mobile layout parity (ticket 16)', () => {
+  const mobile = mediaRules(CHAT_CSS, '(max-width: 767px)');
+
+  it('keys the mobile variant on the live widget\u2019s own 767px breakpoint', () => {
+    // the live host picks its mobile variant by device detection (mobile UA);
+    // a static page has no UA signal, so the mimic uses the breakpoint the
+    // widget's own runtime CSS keys on (`(max-width: 767px)`) instead.
+    expect(mobile.size).toBeGreaterThan(0);
+  });
+
+  it('makes the expanded panel a fullscreen, square-cornered surface', () => {
+    const panel = mobile.get('.fpc-surface--panel') ?? '';
+    expect(panel).toMatch(/inset:\s*0/);
+    expect(panel).toMatch(/width:\s*auto/);
+    expect(panel).toMatch(/height:\s*auto/);
+    expect(panel).toMatch(/max-height:\s*none/);
+    expect(panel).toMatch(/min-height:\s*0/);
+    expect(panel).toMatch(/border-radius:\s*0/);
+    // the header and footer bands must go square with the surface, or their
+    // 8px radii re-round the fullscreen corners
+    expect(mobile.get('.fpc-surface--panel .fpc-header')).toMatch(/border-radius:\s*0/);
+    expect(mobile.get('.fpc-surface--panel .fpc-footer')).toMatch(/border-radius:\s*0/);
+  });
+
+  it('docks the launcher at the captured 50px / 16px mobile geometry', () => {
+    const launcher = mobile.get('.fpc-launcher') ?? '';
+    expect(launcher).toMatch(/width:\s*50px/);
+    expect(launcher).toMatch(/height:\s*50px/);
+    expect(launcher).toMatch(/right:\s*16px/);
+    expect(launcher).toMatch(/bottom:\s*16px/);
+  });
+
+  it('leaves the widget a static end-state \u2014 nothing for reduced motion to suppress', () => {
+    // the widget never animates (unlike the nav layer, which cancels the
+    // capture's transitions); this guards a future mobile transition from
+    // shipping without a prefers-reduced-motion path.
+    expect(CHAT_CSS).not.toMatch(/transition|animation|@keyframes/i);
+  });
+
+  it('keeps the widget root above the served page furniture (the nav tops out at 2000)', () => {
+    // the mobile take-over is the tallest thing on a served page (.header-z is
+    // z-index 2000 in the corrected capture); the widget must clear it, and do
+    // so without colliding with the 2147483647 Webflow badge.
+    const root = /\.fpc-root\s*\{[^}]*z-index:\s*(\d+)/.exec(CHAT_CSS);
+    expect(root, 'the .fpc-root z-index').not.toBeNull();
+    expect(Number(root![1])).toBeGreaterThan(2000);
+    expect(Number(root![1])).toBeLessThan(2147483647);
   });
 });
 

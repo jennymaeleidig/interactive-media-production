@@ -457,3 +457,53 @@
   color: var(--MESSENGER_FOOTER_TEXT_COLOR);
   text-decoration: underline;
 }
+
+/* =====================================================================
+ * MOBILE VARIANT (ticket 16) — 390x844 ground truth in
+ * .scratch/flock-parody-impl/evidence/16-chat-mobile-parity/
+ * ---------------------------------------------------------------------
+ * The live widget ships TWO variants and picks one by DEVICE DETECTION, not
+ * by CSS width: a mobile UA gets a bottom-sheet card and a FULLSCREEN
+ * conversation (390x844: frame 370x331 card, then 390x844), while a desktop
+ * UA gets the 412x296 card and the 538px sidebar. A served page is static and
+ * has no UA signal, so the mimic keys the mobile variant on the breakpoint
+ * the widget's OWN runtime CSS uses — `(max-width: 767px)`, read out of the
+ * live messenger bundle — which agrees with the mobile variant at the
+ * ticket's 390px target. Only geometry changes here; the type scale and the
+ * chips-in-composer decision stay ticket 09's (see the ticket-16 evidence
+ * README for the accepted residuals).
+ *
+ * The live mobile measurements: launcher 50x50, 16px from the bottom-right;
+ * card 332px wide, right 17px / bottom 15px; panel fullscreen, square.
+ * ===================================================================== */
+@media (max-width: 767px) {
+  .fpc-launcher {
+    right: 16px;
+    bottom: 16px;
+    width: 50px;
+    height: 50px;
+  }
+  /* The card keeps its bottom-right dock; the live mobile card sits 2px
+     closer to the bottom edge than the desktop capture's 17px. */
+  .fpc-surface--card {
+    right: 17px;
+    bottom: 15px;
+  }
+  /* The expanded conversation takes the whole viewport, square-cornered. */
+  .fpc-surface--panel {
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    border-radius: 0;
+  }
+  /* The surface no longer clips to an 8px radius, so the bands' own radii
+     would re-round the fullscreen corners; square them with the surface. */
+  .fpc-surface--panel .fpc-header {
+    border-radius: 0;
+  }
+  .fpc-surface--panel .fpc-footer {
+    border-radius: 0;
+  }
+}
