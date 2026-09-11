@@ -1,0 +1,2338 @@
+{
+  "videos": [
+    {
+      "key": "wistia:074k44itcx",
+      "host": "wistia",
+      "kind": "media",
+      "id": "074k44itcx",
+      "url": "https://fast.wistia.com/embed/medias/074k44itcx.json",
+      "title": "Flock911_video-on scene",
+      "duration": "PT4S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/38a9644920e6f67ca13c95caaa506715e71c6a4e.m3u8",
+      "pages": [
+        "served/blog/flock-911-flock-aerodome-integration.html"
+      ]
+    },
+    {
+      "key": "wistia:08j88jk9lr",
+      "host": "wistia",
+      "kind": "media",
+      "id": "08j88jk9lr",
+      "url": "https://fast.wistia.com/embed/medias/08j88jk9lr.json",
+      "title": "Flock2568_Engineer_Career Page_FINAL_captions",
+      "duration": "PT2M57S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/6121343df40df84440d51f36f29e67e4bd4f7fb3.m3u8",
+      "pages": [
+        "served/careers/engineering.html"
+      ]
+    },
+    {
+      "key": "wistia:0ejcqievm7",
+      "host": "wistia",
+      "kind": "media",
+      "id": "0ejcqievm7",
+      "url": "https://fast.wistia.com/embed/medias/0ejcqievm7.json",
+      "title": "Dunwoody IACP 2024",
+      "duration": "PT3M13S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/a6cbf729dd4d1c3222737b1be39a102842b77bc7.m3u8",
+      "pages": [
+        "served/blog/dunwoody-detective-utilizes-flock-data-to-prevent-potentially-dangerous-heist.html"
+      ]
+    },
+    {
+      "key": "wistia:0f8twzg7ma",
+      "host": "wistia",
+      "kind": "media",
+      "id": "0f8twzg7ma",
+      "url": "https://fast.wistia.com/embed/medias/0f8twzg7ma.json",
+      "title": "Hope Rebuilt: Flock Safety Aids in Bombing at Healthcare Clinic",
+      "duration": "PT3M49S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/1c44a8f8dfa6c40278ce606e7378d8f6f371dc85.m3u8",
+      "pages": [
+        "served/blog/hope-rebuilt-flock-safety-aids-in-bombing-at-healthcare-clinic.html"
+      ]
+    },
+    {
+      "key": "wistia:0j9c8cqrpg",
+      "host": "wistia",
+      "kind": "media",
+      "id": "0j9c8cqrpg",
+      "url": "https://fast.wistia.com/embed/medias/0j9c8cqrpg.json",
+      "title": "Warehouse Ribbon Cutting 4.2.25-VEED",
+      "duration": "PT13M27S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/df4eb0f47f2c5ae52746ff8367eae9c6d8f11e4d.m3u8",
+      "pages": [
+        "served/blog/flock-expands-georgia-footprint-with-new-manufacturing-facility.html"
+      ]
+    },
+    {
+      "key": "wistia:1mkkyl5rhl",
+      "host": "wistia",
+      "kind": "media",
+      "id": "1mkkyl5rhl",
+      "url": "https://fast.wistia.com/embed/medias/1mkkyl5rhl.json",
+      "title": "DFR_speed-zoom",
+      "duration": "PT14S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/9ede59154d017ebc5b8e09111391f612e8c77579.m3u8",
+      "pages": [
+        "served/blog/dfr-need-for-speed.html"
+      ]
+    },
+    {
+      "key": "wistia:1rfpgzsbbd",
+      "host": "wistia",
+      "kind": "media",
+      "id": "1rfpgzsbbd",
+      "url": "https://fast.wistia.com/embed/medias/1rfpgzsbbd.json",
+      "title": "FLOCK2668_MST-PerimterProBooth-2-v6-260604",
+      "duration": "PT54S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/9d9f8d811e788b26a075da15734cc5b7ea3e2071.m3u8",
+      "pages": [
+        "served/lp/perimeter-pro-demo.html"
+      ]
+    },
+    {
+      "key": "wistia:25nnkrsazy",
+      "host": "wistia",
+      "kind": "media",
+      "id": "25nnkrsazy",
+      "url": "https://fast.wistia.com/embed/medias/25nnkrsazy.json",
+      "title": "Castle Rock PD Dual Lens PTZ Testimonial",
+      "duration": "PT1M9S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/91db70c9d24bad53b5f65b33137908e4883b7ef7.m3u8",
+      "pages": [
+        "served/video/how-castle-rock-police-department-extended-visibility-with-flock-dual-lens-ptz.html"
+      ]
+    },
+    {
+      "key": "wistia:47dbv620tq",
+      "host": "wistia",
+      "kind": "media",
+      "id": "47dbv620tq",
+      "url": "https://fast.wistia.com/embed/medias/47dbv620tq.json",
+      "title": "2025 #Solved Awards: Inter-Agency Collaboration",
+      "duration": "PT2M18S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/66d84549b017c7252ebfd8a68acbff895708ba1f.m3u8",
+      "pages": [
+        "served/solved-stories-awards.html"
+      ]
+    },
+    {
+      "key": "wistia:4o3kds5q3w",
+      "host": "wistia",
+      "kind": "media",
+      "id": "4o3kds5q3w",
+      "url": "https://fast.wistia.com/embed/medias/4o3kds5q3w.json",
+      "title": "Real-Time Policing in Action with Flock Safety",
+      "duration": "PT2M25S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/80d06c13ce57c044fdcc32958c10ef7a59576c95.m3u8",
+      "pages": [
+        "served/video/real-time-policing-in-action.html"
+      ]
+    },
+    {
+      "key": "wistia:556uxkdb45",
+      "host": "wistia",
+      "kind": "media",
+      "id": "556uxkdb45",
+      "url": "https://fast.wistia.com/embed/medias/556uxkdb45.json",
+      "title": "original",
+      "duration": "PT1M5S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/dbde2293ae9c17911f8d5662481325a89ec19235.m3u8",
+      "pages": [
+        "served/video/providence-police-chief-credits-flock-with-helping-solve-mit-brown-murders.html"
+      ]
+    },
+    {
+      "key": "wistia:5bp1hv7kcf",
+      "host": "wistia",
+      "kind": "media",
+      "id": "5bp1hv7kcf",
+      "url": "https://fast.wistia.com/embed/medias/5bp1hv7kcf.json",
+      "title": "How to Prevent Crime, Not Just Respond to It",
+      "duration": "PT33M57S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/09f6334ef211c7a044a7e71ea26c067f00968edb.m3u8",
+      "pages": [
+        "served/webinar/ask-the-experts-how-to-prevent-crime-not-just-respond-to-it.html"
+      ]
+    },
+    {
+      "key": "wistia:5mqb11sy5r",
+      "host": "wistia",
+      "kind": "media",
+      "id": "5mqb11sy5r",
+      "url": "https://fast.wistia.com/embed/medias/5mqb11sy5r.json",
+      "title": "2025 #Solved Awards: Best Use of LPR",
+      "duration": "PT2M10S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/56c70b3290b778b3235d4e57aa9b7217ae703b83.m3u8",
+      "pages": [
+        "served/solved-stories-awards.html"
+      ]
+    },
+    {
+      "key": "wistia:5odzh9o0oh",
+      "host": "wistia",
+      "kind": "media",
+      "id": "5odzh9o0oh",
+      "url": "https://fast.wistia.com/embed/medias/5odzh9o0oh.json",
+      "title": "Keeping Healthcare Workers Safe: Reducing the Risk of Workplace Violence",
+      "duration": "PT1H2M10S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/fc00dcca5f52b1fb28927dd89a634235c74fc024.m3u8",
+      "pages": [
+        "served/webinar/keeping-healthcare-workers-safe-reducing-the-risk-of-workplace-violence.html"
+      ]
+    },
+    {
+      "key": "wistia:5rro4pbkmo",
+      "host": "wistia",
+      "kind": "media",
+      "id": "5rro4pbkmo",
+      "url": "https://fast.wistia.com/embed/medias/5rro4pbkmo.json",
+      "title": "Dierbergs 5",
+      "duration": "PT22S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/32ef3e4484c21e1ff1ab82329378865d72da9f3f.m3u8",
+      "pages": [
+        "served/customers/flock-safety-helps-dierbergs-market-solve-orc-case-of-20k-in-stolen-merchandise.html"
+      ]
+    },
+    {
+      "key": "wistia:65k2jzcox9",
+      "host": "wistia",
+      "kind": "media",
+      "id": "65k2jzcox9",
+      "url": "https://fast.wistia.com/embed/medias/65k2jzcox9.json",
+      "title": "CT Product Webinar",
+      "duration": "PT39M46S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/94ebf5e74c48d66b444f5d0c22d2ddc32e817e04.m3u8",
+      "pages": [
+        "served/webinar/the-shift-to-proactive-security-new-tools-to-deter-crime-and-hold-offenders-accountable.html"
+      ]
+    },
+    {
+      "key": "wistia:67fu6zztnh",
+      "host": "wistia",
+      "kind": "media",
+      "id": "67fu6zztnh",
+      "url": "https://fast.wistia.com/embed/medias/67fu6zztnh.json",
+      "title": "Enhanced LPR Overview",
+      "duration": "PT41S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3c12508b0ca585bf35a0f47ad13cb6f7a66ef29a.m3u8",
+      "pages": [
+        "served/blog/reduce-case-backlogs-and-overtime-with-tech.html",
+        "served/enhanced-lpr-stop-crime-patterns-that-standard-lprs-cant-see.html"
+      ]
+    },
+    {
+      "key": "wistia:72xd85l9iz",
+      "host": "wistia",
+      "kind": "media",
+      "id": "72xd85l9iz",
+      "url": "https://fast.wistia.com/embed/medias/72xd85l9iz.json",
+      "title": "Case Study Fidelis Video 3",
+      "duration": "PT17S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/33123c18ab1fcafcea76672297de7c023989290e.m3u8",
+      "pages": [
+        "served/customers/flock-safety-cameras-aid-police-in-arrest-just-30-minutes-after-going-live.html"
+      ]
+    },
+    {
+      "key": "wistia:77o31nkq0o",
+      "host": "wistia",
+      "kind": "media",
+      "id": "77o31nkq0o",
+      "url": "https://fast.wistia.com/embed/medias/77o31nkq0o.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/webinar/introducing-flock-os.html"
+      ]
+    },
+    {
+      "key": "wistia:7byqzva4ly",
+      "host": "wistia",
+      "kind": "media",
+      "id": "7byqzva4ly",
+      "url": "https://fast.wistia.com/embed/medias/7byqzva4ly.json",
+      "title": "Who Has Access to Your Data? (Flock Explained)",
+      "duration": "PT45S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/108bf70423f0befa26ea414714f17e208b126466.m3u8",
+      "pages": [
+        "served/blog/who-really-has-access-to-your-flock-data.html"
+      ]
+    },
+    {
+      "key": "wistia:7flksigewi",
+      "host": "wistia",
+      "kind": "media",
+      "id": "7flksigewi",
+      "url": "https://fast.wistia.com/embed/medias/7flksigewi.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/webinar/webinar-combating-orc-and-theft.html"
+      ]
+    },
+    {
+      "key": "wistia:7u8vcwx42f",
+      "host": "wistia",
+      "kind": "media",
+      "id": "7u8vcwx42f",
+      "url": "https://fast.wistia.com/embed/medias/7u8vcwx42f.json",
+      "title": "Flock LPR Sizzle Reel",
+      "duration": "PT51S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/1ab2756961dfe1e19b56c4cff5ab15aa2973532a.m3u8",
+      "pages": [
+        "served/lp/proven-where-it-matters.html"
+      ]
+    },
+    {
+      "key": "wistia:7uqu140ckd",
+      "host": "wistia",
+      "kind": "media",
+      "id": "7uqu140ckd",
+      "url": "https://fast.wistia.com/embed/medias/7uqu140ckd.json",
+      "title": "200-400ft-updated",
+      "duration": "PT8S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/804aaf8ccbe81031a1920883907edacfdd44ee42.m3u8",
+      "pages": [
+        "served/blog/200-vs-400-feet-dfr.html"
+      ]
+    },
+    {
+      "key": "wistia:8dpr03r5lu",
+      "host": "wistia",
+      "kind": "media",
+      "id": "8dpr03r5lu",
+      "url": "https://fast.wistia.com/embed/medias/8dpr03r5lu.json",
+      "title": "FLOCK2660_Brookhaven + HOA Solved Story - Edited Video_v2",
+      "duration": "PT1M56S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/6b7c56d6f8891ba7b17fb676b071f494203f8507.m3u8",
+      "pages": [
+        "served/blog/how-an-hoa-lpr-camera-helped-identify-a-suspect-in-a-deadly-shooting-spree.html"
+      ]
+    },
+    {
+      "key": "wistia:8zvj24mck4",
+      "host": "wistia",
+      "kind": "media",
+      "id": "8zvj24mck4",
+      "url": "https://fast.wistia.com/embed/medias/8zvj24mck4.json",
+      "title": "Case Study Fidelis Video 2",
+      "duration": "PT8S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/0730c6aa6279b5845fabdd5c9ea5248a317800c9.m3u8",
+      "pages": [
+        "served/customers/flock-safety-cameras-aid-police-in-arrest-just-30-minutes-after-going-live.html"
+      ]
+    },
+    {
+      "key": "wistia:98pdpxf39p",
+      "host": "wistia",
+      "kind": "media",
+      "id": "98pdpxf39p",
+      "url": "https://fast.wistia.com/embed/medias/98pdpxf39p.json",
+      "title": "Dierbergs 4",
+      "duration": "PT19S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/4e9c8ebcb94a61658ed257570f4f5d4d5dd9b3f5.m3u8",
+      "pages": [
+        "served/customers/flock-safety-helps-dierbergs-market-solve-orc-case-of-20k-in-stolen-merchandise.html"
+      ]
+    },
+    {
+      "key": "wistia:98x4ka5m49",
+      "host": "wistia",
+      "kind": "media",
+      "id": "98x4ka5m49",
+      "url": "https://fast.wistia.com/embed/medias/98x4ka5m49.json",
+      "title": "Preventing School Violence - Technology, Collaboration, and Community",
+      "duration": "PT28M27S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/4a63f76c47910c7bf517e124b4bad96c2bd25cbf.m3u8",
+      "pages": [
+        "served/webinar/preventing-school-violence.html"
+      ]
+    },
+    {
+      "key": "wistia:98y3qiepux",
+      "host": "wistia",
+      "kind": "media",
+      "id": "98y3qiepux",
+      "url": "https://fast.wistia.com/embed/medias/98y3qiepux.json",
+      "title": "Flock Safety + South Downtown Atlanta",
+      "duration": "PT3M59S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/19b5027c77fa2782c501ea25a519e39d91d59852.m3u8",
+      "pages": [
+        "served/blog/community-and-technology-unite-to-shape-a-safer-south-downtown-atlanta.html"
+      ]
+    },
+    {
+      "key": "wistia:993y4e6suq",
+      "host": "wistia",
+      "kind": "media",
+      "id": "993y4e6suq",
+      "url": "https://fast.wistia.com/embed/medias/993y4e6suq.json",
+      "title": "Dierbergs 3",
+      "duration": "PT24S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/b84fb398404c7ff089cf3024262fcee22a344c67.m3u8",
+      "pages": [
+        "served/customers/flock-safety-helps-dierbergs-market-solve-orc-case-of-20k-in-stolen-merchandise.html"
+      ]
+    },
+    {
+      "key": "wistia:9enemob9fo",
+      "host": "wistia",
+      "kind": "media",
+      "id": "9enemob9fo",
+      "url": "https://fast.wistia.com/embed/medias/9enemob9fo.json",
+      "title": "Flock Gun Violence Reduction",
+      "duration": "PT54S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/b089ce0aeeec5441a2f49ec738369eff3725d54e.m3u8",
+      "pages": [
+        "served/blog/flock-safetys-gun-violence-reduction-plan-a-multi-faceted-approach-to-a-complex-issue.html"
+      ]
+    },
+    {
+      "key": "wistia:a3jqo66osk",
+      "host": "wistia",
+      "kind": "media",
+      "id": "a3jqo66osk",
+      "url": "https://fast.wistia.com/embed/medias/a3jqo66osk.json",
+      "title": "Extending Threat Awareness Beyond Store Entry",
+      "duration": "PT1H1M24S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/0a61c910ff4aada14d9b0dcfa695c5a0a7b8f616.m3u8",
+      "pages": [
+        "served/webinar/extending-threat-awareness-beyond-store-entry.html"
+      ]
+    },
+    {
+      "key": "wistia:a8fprewcz6",
+      "host": "wistia",
+      "kind": "media",
+      "id": "a8fprewcz6",
+      "url": "https://fast.wistia.com/embed/medias/a8fprewcz6.json",
+      "title": "More Products.  More Possibilities - May 2023 Product Launch",
+      "duration": "PT23M51S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/dd2a78e81d1bca5eb635e4769eee9b766440b574.m3u8",
+      "pages": [
+        "served/webinar/product-launch.html"
+      ]
+    },
+    {
+      "key": "wistia:agsapptd13",
+      "host": "wistia",
+      "kind": "media",
+      "id": "agsapptd13",
+      "url": "https://fast.wistia.com/embed/medias/agsapptd13.json",
+      "title": "FLOCK2681_PTZLoop_16x9_01",
+      "duration": "PT26S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/9a3c31dd22d01bf1ae851876eb83cdae26952c82.m3u8",
+      "pages": [
+        "served/dual-lens-ptz-video.html"
+      ]
+    },
+    {
+      "key": "wistia:b1smein42a",
+      "host": "wistia",
+      "kind": "media",
+      "id": "b1smein42a",
+      "url": "https://fast.wistia.com/embed/medias/b1smein42a.json",
+      "title": "Brandon Simins Joins Flock Safety",
+      "duration": "PT4M33S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/290e108ad3077392d2d83868f82de268901d71c5.m3u8",
+      "pages": [
+        "served/blog/brandon-simins-joins-flock-safety-as-chief-financial-officer.html"
+      ]
+    },
+    {
+      "key": "wistia:b8euq9htl4",
+      "host": "wistia",
+      "kind": "media",
+      "id": "b8euq9htl4",
+      "url": "https://fast.wistia.com/embed/medias/b8euq9htl4.json",
+      "title": "Flock Drone as Automated Security (DAS)",
+      "duration": "PT1M48S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3ebc9ca5cceee8c6f2227a6a7705cdc3152d94ad.m3u8",
+      "pages": [
+        "served/video/drone-as-automated-security-eyes-on-threats-in-seconds.html"
+      ]
+    },
+    {
+      "key": "wistia:cdf9a7fbp6",
+      "host": "wistia",
+      "kind": "media",
+      "id": "cdf9a7fbp6",
+      "url": "https://fast.wistia.com/embed/medias/cdf9a7fbp6.json",
+      "title": "Dierbergs 1",
+      "duration": "PT22S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d4fa9d36bf092e3b12119741764948b3495e9982.m3u8",
+      "pages": [
+        "served/customers/flock-safety-helps-dierbergs-market-solve-orc-case-of-20k-in-stolen-merchandise.html"
+      ]
+    },
+    {
+      "key": "wistia:ckurdgha9i",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ckurdgha9i",
+      "url": "https://fast.wistia.com/embed/medias/ckurdgha9i.json",
+      "title": " Expanding Your Healthcare Security Perimeter Beyond Four Walls",
+      "duration": "PT33M31S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3e38ced7ebd75df4170c50e9c658669e5cad0040.m3u8",
+      "pages": [
+        "served/webinar/expanding-your-healthcare-security-perimeter-beyond-four-walls.html"
+      ]
+    },
+    {
+      "key": "wistia:cmh2598l85",
+      "host": "wistia",
+      "kind": "media",
+      "id": "cmh2598l85",
+      "url": "https://fast.wistia.com/embed/medias/cmh2598l85.json",
+      "title": "How Campus Safety Can Boost Student Enrollment &amp; Trust",
+      "duration": "PT54M45S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d812fab6cb685b2d9330a63459743e03ec9b6bff.m3u8",
+      "pages": [
+        "served/webinar/how-campus-safety-can-boost-student-enrollment-trust.html"
+      ]
+    },
+    {
+      "key": "wistia:cvkcua786f",
+      "host": "wistia",
+      "kind": "media",
+      "id": "cvkcua786f",
+      "url": "https://fast.wistia.com/embed/medias/cvkcua786f.json",
+      "title": "2025 February Product Launch: No Cost API + AI for Faster Investigations",
+      "duration": "PT45M51S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/10f5832baaa3aad5f160a1b1ac227b417da2a234.m3u8",
+      "pages": [
+        "served/webinar/product-launch-no-cost-apis-ai-for-faster-investigations.html"
+      ]
+    },
+    {
+      "key": "wistia:cwz2iva1w2",
+      "host": "wistia",
+      "kind": "media",
+      "id": "cwz2iva1w2",
+      "url": "https://fast.wistia.com/embed/medias/cwz2iva1w2.json",
+      "title": "Academy3",
+      "duration": "PT10M21S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3ded172207d6cf72a2bafec830e1c286cb786afe.m3u8",
+      "pages": [
+        "served/customers/academy-sports-tackles-organized-retail-crime-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:d3dyubah2j",
+      "host": "wistia",
+      "kind": "media",
+      "id": "d3dyubah2j",
+      "url": "https://fast.wistia.com/embed/medias/d3dyubah2j.json",
+      "title": "Reducing Retail Crime: How Retailers Can Partner with Law Enforcement to Solve and Prevent Crime",
+      "duration": "PT45M25S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/caeb399325f77f5bfbdf2b4177c7b95683fb6f79.m3u8",
+      "pages": [
+        "served/webinar/reducing-retail-crime-webinar.html"
+      ]
+    },
+    {
+      "key": "wistia:dcb7zrthk7",
+      "host": "wistia",
+      "kind": "media",
+      "id": "dcb7zrthk7",
+      "url": "https://fast.wistia.com/embed/medias/dcb7zrthk7.json",
+      "title": "Councilmember Ed Flynn on Flock Boston",
+      "duration": "PT1M43S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/60909dae8b822f61abf108579c942cd197a18b62.m3u8",
+      "pages": [
+        "served/blog/flock-safety-opens-new-boston-office-plans-to-bring-150-jobs-to-the-city.html"
+      ]
+    },
+    {
+      "key": "wistia:ddvmdqh6lv",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ddvmdqh6lv",
+      "url": "https://fast.wistia.com/embed/medias/ddvmdqh6lv.json",
+      "title": "What’s New in Flock Aerodome _ Smarter Pursuits, Mobile DFR, Aerial Alerts &amp; Multi-Drone Control",
+      "duration": "PT4M",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/92c833bf4caac5f8a3b89cad5edb64bdef2dfc54.m3u8",
+      "pages": [
+        "served/blog/flock-aerodome-software-updates-fall--2025.html"
+      ]
+    },
+    {
+      "key": "wistia:ebxwqck1jv",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ebxwqck1jv",
+      "url": "https://fast.wistia.com/embed/medias/ebxwqck1jv.json",
+      "title": "Community Safety Explainer Video",
+      "duration": "PT3M9S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/4dea4fa5483d6c666996c5db0b54342ba3a01f26.m3u8",
+      "pages": [
+        "served/webinar/safer-together-video.html"
+      ]
+    },
+    {
+      "key": "wistia:edc4qfmf6s",
+      "host": "wistia",
+      "kind": "media",
+      "id": "edc4qfmf6s",
+      "url": "https://fast.wistia.com/embed/medias/edc4qfmf6s.json",
+      "title": "Academy Sports",
+      "duration": "PT33M10S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/088995eda6bc15669ffa2313d5b40f294738a518.m3u8",
+      "pages": [
+        "served/blog/flock-lpr-cameras-drive-major-security-improvements-at-academy-sports.html"
+      ]
+    },
+    {
+      "key": "wistia:ewilvnac76",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ewilvnac76",
+      "url": "https://fast.wistia.com/embed/medias/ewilvnac76.json",
+      "title": "Drone speed 1",
+      "duration": "PT3S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/4a4aa8e794a55524b6e763ab4ae983a221b9ae1f.m3u8",
+      "pages": [
+        "served/blog/dfr-need-for-speed.html"
+      ]
+    },
+    {
+      "key": "wistia:f46opcy1x0",
+      "host": "wistia",
+      "kind": "media",
+      "id": "f46opcy1x0",
+      "url": "https://fast.wistia.com/embed/medias/f46opcy1x0.json",
+      "title": "Flock2569_Q3-PrvSecWebinar_DFR cutdown B_v2",
+      "duration": "PT1M17S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/536cf8d5c564f3f9ccd3ea6cbb64bbcbde426ac4.m3u8",
+      "pages": [
+        "served/webinar/drone-as-automated-security-faa-compliance-whats-required.html"
+      ]
+    },
+    {
+      "key": "wistia:f7beadn72a",
+      "host": "wistia",
+      "kind": "media",
+      "id": "f7beadn72a",
+      "url": "https://fast.wistia.com/embed/medias/f7beadn72a.json",
+      "title": "2025 #Solved Awards: Community Engagement",
+      "duration": "PT2M13S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/fd736ef02e774b6ef58e9d8de87040e2d70e121b.m3u8",
+      "pages": [
+        "served/solved-stories-awards.html"
+      ]
+    },
+    {
+      "key": "wistia:f8qso7n6hy",
+      "host": "wistia",
+      "kind": "media",
+      "id": "f8qso7n6hy",
+      "url": "https://fast.wistia.com/embed/medias/f8qso7n6hy.json",
+      "title": "Case Study Fidelis - Video 1",
+      "duration": "PT36S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/6ca7fce81129e95f8a6067902f4e15f9c93ba5f2.m3u8",
+      "pages": [
+        "served/customers/flock-safety-cameras-aid-police-in-arrest-just-30-minutes-after-going-live.html"
+      ]
+    },
+    {
+      "key": "wistia:g03xz0o8ut",
+      "host": "wistia",
+      "kind": "media",
+      "id": "g03xz0o8ut",
+      "url": "https://fast.wistia.com/embed/medias/g03xz0o8ut.json",
+      "title": "License-Plate-Video",
+      "duration": "PT11S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/ef6e336dc15db7b9358f75f7ed6a084695c33212.m3u8",
+      "pages": [
+        "served/blog/open-vs-closed-dfr-ecosystem.html"
+      ]
+    },
+    {
+      "key": "wistia:gayegdwaii",
+      "host": "wistia",
+      "kind": "media",
+      "id": "gayegdwaii",
+      "url": "https://fast.wistia.com/embed/medias/gayegdwaii.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/webinar/elevate-your-response-with-flockos-r-911.html"
+      ]
+    },
+    {
+      "key": "wistia:i1m9i0pndw",
+      "host": "wistia",
+      "kind": "media",
+      "id": "i1m9i0pndw",
+      "url": "https://fast.wistia.com/embed/medias/i1m9i0pndw.json",
+      "title": "Drone launch 2",
+      "duration": "PT7S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/001dd7127e5b4642d53b6fa9c117ad199798bcb5.m3u8",
+      "pages": [
+        "served/blog/dfr-need-for-speed.html"
+      ]
+    },
+    {
+      "key": "wistia:ia79iilapx",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ia79iilapx",
+      "url": "https://fast.wistia.com/embed/medias/ia79iilapx.json",
+      "title": "Drone pre-launch 1",
+      "duration": "PT11S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/64cf28041d79808ed0411b9302d2725379010ea1.m3u8",
+      "pages": [
+        "served/blog/dfr-need-for-speed.html"
+      ]
+    },
+    {
+      "key": "wistia:ijqk0d4hs8",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ijqk0d4hs8",
+      "url": "https://fast.wistia.com/embed/medias/ijqk0d4hs8.json",
+      "title": "LPR Sizzle | Q1 2026",
+      "duration": "PT1M14S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/13bfe4f35ba6f3f86af88771615166d81e396304.m3u8",
+      "pages": [
+        "served/video/not-all-lprs-are-created-equal.html"
+      ]
+    },
+    {
+      "key": "wistia:il7k0o1qmn",
+      "host": "wistia",
+      "kind": "media",
+      "id": "il7k0o1qmn",
+      "url": "https://fast.wistia.com/embed/medias/il7k0o1qmn.json",
+      "title": "FLOCK2622_Bundles_EvidenceEngine_1x1_H264 (1) (1)",
+      "duration": "PT20S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/c1ce8d8807c7844d638a84caac718eb08c6cbef8.m3u8",
+      "pages": [
+        "served/choose-your-bundle.html"
+      ]
+    },
+    {
+      "key": "wistia:imr6vzeawt",
+      "host": "wistia",
+      "kind": "media",
+      "id": "imr6vzeawt",
+      "url": "https://fast.wistia.com/embed/medias/imr6vzeawt.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/webinar/video-without-limitations.html"
+      ]
+    },
+    {
+      "key": "wistia:ivy8uqea7m",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ivy8uqea7m",
+      "url": "https://fast.wistia.com/embed/medias/ivy8uqea7m.json",
+      "title": "Dual Lens PTZ Sizzle (Private Sector)",
+      "duration": "PT48S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/9ca6bb8dca248f4b0ca1b8e67e3880f7d67034cd.m3u8",
+      "pages": [
+        "served/blog/stop-choosing-between-coverage-and-clarity-dual-lens-ptz-delivers-both.html"
+      ]
+    },
+    {
+      "key": "wistia:jl66npux0n",
+      "host": "wistia",
+      "kind": "media",
+      "id": "jl66npux0n",
+      "url": "https://fast.wistia.com/embed/medias/jl66npux0n.json",
+      "title": "FLOCK2679_LPRPro_Sizzle_1x1_Final",
+      "duration": "PT57S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d601e9b084e7df736512fe43624c77f80d09ba60.m3u8",
+      "pages": [
+        "served/lp/lpr-pro-early-access.html",
+        "served/lp/lpr-pro-waitlist.html"
+      ]
+    },
+    {
+      "key": "wistia:k7indt6r5s",
+      "host": "wistia",
+      "kind": "media",
+      "id": "k7indt6r5s",
+      "url": "https://fast.wistia.com/embed/medias/k7indt6r5s.json",
+      "title": "FLOCK2622_Bundles_RapidResponse_1x1_h264 (2) (1)",
+      "duration": "PT24S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/b6429fcd99cf445bc38cc47960510f9a3e17861b.m3u8",
+      "pages": [
+        "served/choose-your-bundle.html",
+        "served/lp/rapid-response-shield.html"
+      ]
+    },
+    {
+      "key": "wistia:kc9sl7m8hp",
+      "host": "wistia",
+      "kind": "media",
+      "id": "kc9sl7m8hp",
+      "url": "https://fast.wistia.com/embed/medias/kc9sl7m8hp.json",
+      "title": "Marietta PD | Det. Nudi",
+      "duration": "PT2M59S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/0fa2c7cb9fb8baf4711c552fd86be5ab92c4d559.m3u8",
+      "pages": [
+        "served/blog/solved-marietta-pd-leverages-flock-technology-to-swiftly-solve-homicide-case.html"
+      ]
+    },
+    {
+      "key": "wistia:kvzs6zwogl",
+      "host": "wistia",
+      "kind": "media",
+      "id": "kvzs6zwogl",
+      "url": "https://fast.wistia.com/embed/medias/kvzs6zwogl.json",
+      "title": "The Safety Blueprint_Security Strategies to Elevate Residential Communities",
+      "duration": "PT41M17S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/a696c0782259333cd95965067f5285f9c53d0fe2.m3u8",
+      "pages": [
+        "served/webinar/the-safety-blueprint-security-strategies-to-elevate-residential-communities.html"
+      ]
+    },
+    {
+      "key": "wistia:kyfinlrsth",
+      "host": "wistia",
+      "kind": "media",
+      "id": "kyfinlrsth",
+      "url": "https://fast.wistia.com/embed/medias/kyfinlrsth.json",
+      "title": "Crisis-Proof Your Public Safety Tech",
+      "duration": "PT30M17S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/4b39ecd0a76b0143343fe4adf804403cce7fbcdf.m3u8",
+      "pages": [
+        "served/webinar/crisis-proof-your-public-safety-tech.html"
+      ]
+    },
+    {
+      "key": "wistia:l8t6qy9d4y",
+      "host": "wistia",
+      "kind": "media",
+      "id": "l8t6qy9d4y",
+      "url": "https://fast.wistia.com/embed/medias/l8t6qy9d4y.json",
+      "title": "White Settlement Police Department | Chief Cook ",
+      "duration": "PT3M13S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/39284803f4bb0a2c1eeffb70839f9425565bc4fe.m3u8",
+      "pages": [
+        "served/blog/explore-how-white-settlement-pd-uses-flock-technology-to-protect-officers-boost-collaboration-and-solve-more-crimes.html"
+      ]
+    },
+    {
+      "key": "wistia:lemqdqhqaj",
+      "host": "wistia",
+      "kind": "media",
+      "id": "lemqdqhqaj",
+      "url": "https://fast.wistia.com/embed/medias/lemqdqhqaj.json",
+      "title": "Q1 2024 Flock Safety Quarterly Product Update",
+      "duration": "PT21M42S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/e3f5e4ae6403a28e8df4620fdb1dd3a1481d9a20.m3u8",
+      "pages": [
+        "served/webinar/q1-2024-flock-safety-quarterly-product-update.html"
+      ]
+    },
+    {
+      "key": "wistia:lermkbsp3d",
+      "host": "wistia",
+      "kind": "media",
+      "id": "lermkbsp3d",
+      "url": "https://fast.wistia.com/embed/medias/lermkbsp3d.json",
+      "title": "Albany PD",
+      "duration": "PT3M3S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/68244bc0d7704ccf1383e9a7b90b1de31b9cb4b9.m3u8",
+      "pages": [
+        "served/blog/leveraging-technology-to-strengthen-inter-agency-collaboration-and-address-crime-in-albany.html"
+      ]
+    },
+    {
+      "key": "wistia:lrup3tme40",
+      "host": "wistia",
+      "kind": "media",
+      "id": "lrup3tme40",
+      "url": "https://fast.wistia.com/embed/medias/lrup3tme40.json",
+      "title": "Webinar NLC - Edited (1)",
+      "duration": "PT46M48S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/49b2a854d979ff5f1333bec9089ce590a0f933ea.m3u8",
+      "pages": [
+        "served/webinar/reducing-traffic-deaths-and-building-a-safer-city.html"
+      ]
+    },
+    {
+      "key": "wistia:luk79kipca",
+      "host": "wistia",
+      "kind": "media",
+      "id": "luk79kipca",
+      "url": "https://fast.wistia.com/embed/medias/luk79kipca.json",
+      "title": "Mobile Ops",
+      "duration": "PT15S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3131d3d819c4ffa50705840f26a4438ac9dc8e83.m3u8",
+      "pages": [
+        "served/blog/flock-aerodome-software-updates-fall--2025.html"
+      ]
+    },
+    {
+      "key": "wistia:m4eifizhkn",
+      "host": "wistia",
+      "kind": "media",
+      "id": "m4eifizhkn",
+      "url": "https://fast.wistia.com/embed/medias/m4eifizhkn.json",
+      "title": "FLOCK2638_TrustHub-WeBelieve-v2-260327",
+      "duration": "PT34S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/6602e76527aa7e0fe578ddd0bf421eb4b67823f7.m3u8",
+      "pages": [
+        "served/trust.html"
+      ]
+    },
+    {
+      "key": "wistia:mbmyrlg0mw",
+      "host": "wistia",
+      "kind": "media",
+      "id": "mbmyrlg0mw",
+      "url": "https://fast.wistia.com/embed/medias/mbmyrlg0mw.json",
+      "title": "FLOCK2429_GuardianMode-Blur-v1-240802 (1)",
+      "duration": "PT1M8S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/b3aff532bbf4af28d3323d4d331ae05097e9a705.m3u8",
+      "pages": [
+        "served/blog/new-ai-video-analytics-features-24-7-security-coverage-no-extra-staff-needed.html"
+      ]
+    },
+    {
+      "key": "wistia:n0jq7dueq3",
+      "host": "wistia",
+      "kind": "media",
+      "id": "n0jq7dueq3",
+      "url": "https://fast.wistia.com/embed/medias/n0jq7dueq3.json",
+      "title": "Building Safer Communities: How to Secure Your Neighborhoods",
+      "duration": "PT34M26S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/84a5f113d6fdc5b649475b6574c83ad19a725a61.m3u8",
+      "pages": [
+        "served/webinar/building-safer-communities-how-to-secure-your-neighborhoods.html"
+      ]
+    },
+    {
+      "key": "wistia:n9h2ez84fk",
+      "host": "wistia",
+      "kind": "media",
+      "id": "n9h2ez84fk",
+      "url": "https://fast.wistia.com/embed/medias/n9h2ez84fk.json",
+      "title": "Academy2",
+      "duration": "PT10M21S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/60466f420fac7cd3e90f69d5fded5070cc089bdb.m3u8",
+      "pages": [
+        "served/customers/academy-sports-tackles-organized-retail-crime-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:nc9mfoyz01",
+      "host": "wistia",
+      "kind": "media",
+      "id": "nc9mfoyz01",
+      "url": "https://fast.wistia.com/embed/medias/nc9mfoyz01.json",
+      "title": "March 13 Announcement",
+      "duration": "PT3M11S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/029175dcae99bcfbe0e5e036224c0a2a176a47ea.m3u8",
+      "pages": [
+        "served/blog/flock-safety-secures-major-funding.html"
+      ]
+    },
+    {
+      "key": "wistia:nndaf07d8g",
+      "host": "wistia",
+      "kind": "media",
+      "id": "nndaf07d8g",
+      "url": "https://fast.wistia.com/embed/medias/nndaf07d8g.json",
+      "title": "Multi-drone",
+      "duration": "PT8S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/18b5e97338726be7de990013161234c861503a15.m3u8",
+      "pages": [
+        "served/blog/flock-aerodome-software-updates-fall--2025.html"
+      ]
+    },
+    {
+      "key": "wistia:nr6rgoq8yh",
+      "host": "wistia",
+      "kind": "media",
+      "id": "nr6rgoq8yh",
+      "url": "https://fast.wistia.com/embed/medias/nr6rgoq8yh.json",
+      "title": "Dierbergs 2",
+      "duration": "PT11S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/56bd4c7f8968464a76573c6a6aea1efc985f579b.m3u8",
+      "pages": [
+        "served/customers/flock-safety-helps-dierbergs-market-solve-orc-case-of-20k-in-stolen-merchandise.html"
+      ]
+    },
+    {
+      "key": "wistia:nu1qdnooac",
+      "host": "wistia",
+      "kind": "media",
+      "id": "nu1qdnooac",
+      "url": "https://fast.wistia.com/embed/medias/nu1qdnooac.json",
+      "title": "WSPD IACP 2024",
+      "duration": "PT2M16S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/71d14404899d5e6aef5fe9ecc10b8ea8b1d01858.m3u8",
+      "pages": [
+        "served/blog/white-settlements-detective-ramirez-enhances-officer-safety-through-technology.html"
+      ]
+    },
+    {
+      "key": "wistia:oalx9dwsxp",
+      "host": "wistia",
+      "kind": "media",
+      "id": "oalx9dwsxp",
+      "url": "https://fast.wistia.com/embed/medias/oalx9dwsxp.json",
+      "title": "How Flock Safety Cameras Empower Communities and Law Enforcement",
+      "duration": "PT8M",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/79961d2336624e76c2db14706e89670b1430d8a9.m3u8",
+      "pages": [
+        "served/webinar/empowering-communities-and-law-enforcement-with-flock-safety-video.html"
+      ]
+    },
+    {
+      "key": "wistia:olodpim8hj",
+      "host": "wistia",
+      "kind": "media",
+      "id": "olodpim8hj",
+      "url": "https://fast.wistia.com/embed/medias/olodpim8hj.json",
+      "title": "Flock911_video2-AR",
+      "duration": "PT4S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/f50d92135535fdfb0a284039475e7632b8344c59.m3u8",
+      "pages": [
+        "served/blog/flock-911-flock-aerodome-integration.html"
+      ]
+    },
+    {
+      "key": "wistia:op8w33r30e",
+      "host": "wistia",
+      "kind": "media",
+      "id": "op8w33r30e",
+      "url": "https://fast.wistia.com/embed/medias/op8w33r30e.json",
+      "title": "Flock911-Mo-Crop-updated",
+      "duration": "PT11S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3db11abba711755ea68f32c470510bbdc6ec6bce.m3u8",
+      "pages": [
+        "served/blog/open-vs-closed-dfr-ecosystem.html"
+      ]
+    },
+    {
+      "key": "wistia:opmi8vs4v9",
+      "host": "wistia",
+      "kind": "media",
+      "id": "opmi8vs4v9",
+      "url": "https://fast.wistia.com/embed/medias/opmi8vs4v9.json",
+      "title": "Flock2569_Q3-PrvSecWebinar_DFR cutdown A_v2",
+      "duration": "PT54S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/f4f6d367ab4972f4188f1097207b47126a17573a.m3u8",
+      "pages": [
+        "served/webinar/faster-after-hours-response-with-drone-as-automated-security.html"
+      ]
+    },
+    {
+      "key": "wistia:pb1omgi4z2",
+      "host": "wistia",
+      "kind": "media",
+      "id": "pb1omgi4z2",
+      "url": "https://fast.wistia.com/embed/medias/pb1omgi4z2.json",
+      "title": "Flock_Data Security 1_GL",
+      "duration": "PT30S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d4b5fa58b6ebc9fdad456040c45694d6228ae2e8.m3u8",
+      "pages": [
+        "served/blog/keeping-our-customers-in-control.html"
+      ]
+    },
+    {
+      "key": "wistia:pdhleg0j5v",
+      "host": "wistia",
+      "kind": "media",
+      "id": "pdhleg0j5v",
+      "url": "https://fast.wistia.com/embed/medias/pdhleg0j5v.json",
+      "title": "000548_FS_LaunchFilm_60s_16-9",
+      "duration": "PT1M19S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/7b5dad91c8c0c9960cf9140a70743e8288e05f77.m3u8",
+      "pages": [
+        "served/video/flock-alpha.html"
+      ]
+    },
+    {
+      "key": "wistia:poqx8u42dw",
+      "host": "wistia",
+      "kind": "media",
+      "id": "poqx8u42dw",
+      "url": "https://fast.wistia.com/embed/medias/poqx8u42dw.json",
+      "title": "Schattemans IACP 2024",
+      "duration": "PT3M42S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/7357f26b34ae8a56f82d81dcdf46b05f1cd5c369.m3u8",
+      "pages": [
+        "served/blog/swift-police-response-brings-relief-after-harrowing-ofallon-home-invasion.html"
+      ]
+    },
+    {
+      "key": "wistia:pu7suf4330",
+      "host": "wistia",
+      "kind": "media",
+      "id": "pu7suf4330",
+      "url": "https://fast.wistia.com/embed/medias/pu7suf4330.json",
+      "title": "Tulsa Case Study Clip 1",
+      "duration": "PT37S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/07387658ac56404d435fb70aa1df54305e359fe1.m3u8",
+      "pages": [
+        "served/customers/tulsa-oklahoma-shopping-center-sees-nearly-70-drop-in-retail-theft-incidents-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:qgfm1yqbwy",
+      "host": "wistia",
+      "kind": "media",
+      "id": "qgfm1yqbwy",
+      "url": "https://fast.wistia.com/embed/medias/qgfm1yqbwy.json",
+      "title": "DeKalb Co _ Safe City",
+      "duration": "PT1M54S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/f9bbdf233cf6b3844e9238861e980c9af5694c24.m3u8",
+      "pages": [
+        "served/video/dekalb-county-safe-city.html"
+      ]
+    },
+    {
+      "key": "wistia:qpf4ohjejq",
+      "host": "wistia",
+      "kind": "media",
+      "id": "qpf4ohjejq",
+      "url": "https://fast.wistia.com/embed/medias/qpf4ohjejq.json",
+      "title": "Tulsa Case Study Clip 3",
+      "duration": "PT47S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/fa625c82d260b714d76491c0d836be27861e1d88.m3u8",
+      "pages": [
+        "served/customers/tulsa-oklahoma-shopping-center-sees-nearly-70-drop-in-retail-theft-incidents-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:r7msnpoy6p",
+      "host": "wistia",
+      "kind": "media",
+      "id": "r7msnpoy6p",
+      "url": "https://fast.wistia.com/embed/medias/r7msnpoy6p.json",
+      "title": "Q2-2024-Webinar-NewEdit-v2",
+      "duration": "PT28M23S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/7ae1fed87457d0cb2d5855413e08a79d05006ec6.m3u8",
+      "pages": [
+        "served/webinar/lp-product-launch-may-2024-on-demand.html",
+        "served/webinar/product-launch-may-2024.html"
+      ]
+    },
+    {
+      "key": "wistia:rm3r6el4pc",
+      "host": "wistia",
+      "kind": "media",
+      "id": "rm3r6el4pc",
+      "url": "https://fast.wistia.com/embed/medias/rm3r6el4pc.json",
+      "title": "Catch Threats Early, Resolve Them Quickly: Stronger Protection for Businesses and Communities",
+      "duration": "PT51M51S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/a9ca8abc36d0e7e6d1e1cecfbd741f847de4040d.m3u8",
+      "pages": [
+        "served/webinar/catch-threats-early-resolve-them-quickly-stronger-protection-for-businesses-and-communities-video.html"
+      ]
+    },
+    {
+      "key": "wistia:rocaznqkki",
+      "host": "wistia",
+      "kind": "media",
+      "id": "rocaznqkki",
+      "url": "https://fast.wistia.com/embed/medias/rocaznqkki.json",
+      "title": "2025 #Solved Awards: Missing Persons",
+      "duration": "PT2M12S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/eeee93db2eabfaa2c5d597c0c468569712245fa9.m3u8",
+      "pages": [
+        "served/solved-stories-awards.html"
+      ]
+    },
+    {
+      "key": "wistia:rquhwbuype",
+      "host": "wistia",
+      "kind": "media",
+      "id": "rquhwbuype",
+      "url": "https://fast.wistia.com/embed/medias/rquhwbuype.json",
+      "title": "How Flock Ensures Transparency and Accountability in Public Safety Technology",
+      "duration": "PT1M9S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d54e5f12f75c2a54a4fe1fc517ffe50fcfd54ed2.m3u8",
+      "pages": [
+        "served/blog/how-flock-builds-transparency-into-public-safety-technology.html"
+      ]
+    },
+    {
+      "key": "wistia:sb92vk6ggt",
+      "host": "wistia",
+      "kind": "media",
+      "id": "sb92vk6ggt",
+      "url": "https://fast.wistia.com/embed/medias/sb92vk6ggt.json",
+      "title": "Ross - NOLA RTCC-VEED",
+      "duration": "PT40M1S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/b7397b1240a784f22e4bb5a978dacdccdfd94129.m3u8",
+      "pages": [
+        "served/blog/inside-new-orleans-real-time-crime-center-a-model-of-resilience-innovation-and-public-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:t8grfx8yxq",
+      "host": "wistia",
+      "kind": "media",
+      "id": "t8grfx8yxq",
+      "url": "https://fast.wistia.com/embed/medias/t8grfx8yxq.json",
+      "title": "What Flock Cameras Capture (And What They Don’t)",
+      "duration": "PT57S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/f5f01a0ddc32b7719d37b815f4b80ec5dcb14a12.m3u8",
+      "pages": [
+        "served/blog/what-do-flock-cameras-actually-capture.html"
+      ]
+    },
+    {
+      "key": "wistia:tb5nky2dah",
+      "host": "wistia",
+      "kind": "media",
+      "id": "tb5nky2dah",
+      "url": "https://fast.wistia.com/embed/medias/tb5nky2dah.json",
+      "title": "FLOCK2668_MST-PerimterProBooth-1-v8-260604",
+      "duration": "PT1M5S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/90a3e3dcb096611157293691dda2813bbe7a74ab.m3u8",
+      "pages": [
+        "served/lp/perimeter-pro-demo.html"
+      ]
+    },
+    {
+      "key": "wistia:tjz4gvo4x3",
+      "host": "wistia",
+      "kind": "media",
+      "id": "tjz4gvo4x3",
+      "url": "https://fast.wistia.com/embed/medias/tjz4gvo4x3.json",
+      "title": "Flock2569_Q3-PrvSecWebinar_DFR cutdown D_v2",
+      "duration": "PT1M26S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/90ffde70865411e3371886c1afb8e2f9be7dc255.m3u8",
+      "pages": [
+        "served/webinar/how-does-drone-as-automated-security-work.html"
+      ]
+    },
+    {
+      "key": "wistia:tw4j36mg03",
+      "host": "wistia",
+      "kind": "media",
+      "id": "tw4j36mg03",
+      "url": "https://fast.wistia.com/embed/medias/tw4j36mg03.json",
+      "title": "Flock911_video1-launch",
+      "duration": "PT9S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/13c53c53d179499760fb0c682d514f2875b93e48.m3u8",
+      "pages": [
+        "served/blog/flock-911-flock-aerodome-integration.html"
+      ]
+    },
+    {
+      "key": "wistia:tysont3il8",
+      "host": "wistia",
+      "kind": "media",
+      "id": "tysont3il8",
+      "url": "https://fast.wistia.com/embed/medias/tysont3il8.json",
+      "title": "Fort Worth RTCC 2024",
+      "duration": "PT3M2S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/c8c116bea1eb10da202a13e41571ca06c09f4a37.m3u8",
+      "pages": [
+        "served/blog/how-the-fort-worth-police-department-is-continually-innovating-real-time-policing.html"
+      ]
+    },
+    {
+      "key": "wistia:uapvoontsk",
+      "host": "wistia",
+      "kind": "media",
+      "id": "uapvoontsk",
+      "url": "https://fast.wistia.com/embed/medias/uapvoontsk.json",
+      "title": "Dunwoody PD",
+      "duration": "PT3M22S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/57687776532fdd327b8d80c98079266e1c3f81d4.m3u8",
+      "pages": [
+        "served/blog/how-community-and-technology-are-shaping-a-safer-future-in-dunwoody-georgia.html"
+      ]
+    },
+    {
+      "key": "wistia:ueo7k59ryn",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ueo7k59ryn",
+      "url": "https://fast.wistia.com/embed/medias/ueo7k59ryn.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/webinar/the-future-of-policing-is-real-time.html"
+      ]
+    },
+    {
+      "key": "wistia:uguxebmwsq",
+      "host": "wistia",
+      "kind": "media",
+      "id": "uguxebmwsq",
+      "url": "https://fast.wistia.com/embed/medias/uguxebmwsq.json",
+      "title": "Vehicle follow",
+      "duration": "PT14S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/103dab78f598e7d94552edc8c22eec98c9701d6e.m3u8",
+      "pages": [
+        "served/blog/flock-aerodome-software-updates-fall--2025.html"
+      ]
+    },
+    {
+      "key": "wistia:ulhq92auq8",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ulhq92auq8",
+      "url": "https://fast.wistia.com/embed/medias/ulhq92auq8.json",
+      "title": "Tulsa Case Study Clip 2",
+      "duration": "PT28S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d818f1458c4ce4273a2875918231ac956e9e23fe.m3u8",
+      "pages": [
+        "served/customers/tulsa-oklahoma-shopping-center-sees-nearly-70-drop-in-retail-theft-incidents-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:uro2727k65",
+      "host": "wistia",
+      "kind": "media",
+      "id": "uro2727k65",
+      "url": "https://fast.wistia.com/embed/medias/uro2727k65.json",
+      "title": "Academy1",
+      "duration": "PT10M21S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/dab96402b45dcb569e8e29fb63b3f54c6b91d78c.m3u8",
+      "pages": [
+        "served/customers/academy-sports-tackles-organized-retail-crime-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:uwz8dywzub",
+      "host": "wistia",
+      "kind": "media",
+      "id": "uwz8dywzub",
+      "url": "https://fast.wistia.com/embed/medias/uwz8dywzub.json",
+      "title": "Flock911_video1-launch-adjust",
+      "duration": "PT9S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/44b590330bfc05988b5b3f07d60ad93f2113e78d.m3u8",
+      "pages": [
+        "served/blog/dfr-need-for-speed.html"
+      ]
+    },
+    {
+      "key": "wistia:uzae3nq3o6",
+      "host": "wistia",
+      "kind": "media",
+      "id": "uzae3nq3o6",
+      "url": "https://fast.wistia.com/embed/medias/uzae3nq3o6.json",
+      "title": "People Detection Alert",
+      "duration": "PT32S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/c06bbd18d68ffe98ec5c6587ddaa0bcd23fa8af8.m3u8",
+      "pages": [
+        "served/blog/new-ai-video-analytics-features-24-7-security-coverage-no-extra-staff-needed.html"
+      ]
+    },
+    {
+      "key": "wistia:v7rmlyuxqx",
+      "host": "wistia",
+      "kind": "media",
+      "id": "v7rmlyuxqx",
+      "url": "https://fast.wistia.com/embed/medias/v7rmlyuxqx.json",
+      "title": "FLOCK2679_LPRPro_Sizzle_16x9_Final",
+      "duration": "PT56S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/06282c7f1f36fdb9bf4f354d1cdf40c280050d49.m3u8",
+      "pages": [
+        "served/lp/lpr-pro-early-access.html",
+        "served/lp/lpr-pro-waitlist.html",
+        "served/products/license-plate-readers.html"
+      ]
+    },
+    {
+      "key": "wistia:v8tr4jgcpu",
+      "host": "wistia",
+      "kind": "media",
+      "id": "v8tr4jgcpu",
+      "url": "https://fast.wistia.com/embed/medias/v8tr4jgcpu.json",
+      "title": "FLOCK2622_Bundles_CommandSuite_1x1_H264 (1)",
+      "duration": "PT24S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/5c2e130baad978f04b6978be29d1c668573264f0.m3u8",
+      "pages": [
+        "served/choose-your-bundle.html"
+      ]
+    },
+    {
+      "key": "wistia:vsbjzd69dq",
+      "host": "wistia",
+      "kind": "media",
+      "id": "vsbjzd69dq",
+      "url": "https://fast.wistia.com/embed/medias/vsbjzd69dq.json",
+      "title": "MST-zoomWebinar",
+      "duration": "PT19M13S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/5d049bc9b4296dd7a16d1ff19b74196bf4a21129.m3u8",
+      "pages": [
+        "served/webinar/q-a-get-to-know-the-mobile-security-trailer.html"
+      ]
+    },
+    {
+      "key": "wistia:vt9nqarq00",
+      "host": "wistia",
+      "kind": "media",
+      "id": "vt9nqarq00",
+      "url": "https://fast.wistia.com/embed/medias/vt9nqarq00.json",
+      "title": "De-Risk Your Response with AI-Powered Audio Detection",
+      "duration": "PT1H2M14S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/c40772b2d3ca7be58fc24b5d4976ca1a79015d7b.m3u8",
+      "pages": [
+        "served/webinar/de-risk-your-response-with-ai-powered-audio-detection.html"
+      ]
+    },
+    {
+      "key": "wistia:w6edq59d8k",
+      "host": "wistia",
+      "kind": "media",
+      "id": "w6edq59d8k",
+      "url": "https://fast.wistia.com/embed/medias/w6edq59d8k.json",
+      "title": "Cobb IACP 2024",
+      "duration": "PT2M17S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/3576eb7a7ac6804db4723a3d7d807a606990cce7.m3u8",
+      "pages": [
+        "served/blog/solved-cobb-county-officers-leverage-the-flock-system-to-detain-dangerous-suspect.html"
+      ]
+    },
+    {
+      "key": "wistia:w8w9w36dy1",
+      "host": "wistia",
+      "kind": "media",
+      "id": "w8w9w36dy1",
+      "url": "https://fast.wistia.com/embed/medias/w8w9w36dy1.json",
+      "title": "FLOCK2636_RevCareerPage-FINAL-260511",
+      "duration": "PT1M58S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/deab185a2d4a2abbb215a6f45afbe283dc537717.m3u8",
+      "pages": [
+        "served/blog/turning-deals-into-real-world-impact-sales-at-flock.html"
+      ]
+    },
+    {
+      "key": "wistia:wdabwdrenl",
+      "host": "wistia",
+      "kind": "media",
+      "id": "wdabwdrenl",
+      "url": "https://fast.wistia.com/embed/medias/wdabwdrenl.json",
+      "title": "You Asked, We Listened: Q4 Public Safety Product Updates",
+      "duration": "PT44M41S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/7f9ac6004064ceebf4688f2e4fa6ca5c540bcaf2.m3u8",
+      "pages": [
+        "served/webinar/you-asked-we-listened-q4-public-safety-product-updates.html"
+      ]
+    },
+    {
+      "key": "wistia:x2b7de9qid",
+      "host": "wistia",
+      "kind": "media",
+      "id": "x2b7de9qid",
+      "url": "https://fast.wistia.com/embed/medias/x2b7de9qid.json",
+      "title": "Albany Solved Award 2024",
+      "duration": "PT2M43S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/d408ab8572365e10c248742969c9af6d37cd5e0c.m3u8",
+      "pages": [
+        "served/blog/flock-cameras-enhance-crime-fighting-efforts-in-albany.html"
+      ]
+    },
+    {
+      "key": "wistia:x8szxhcq1w",
+      "host": "wistia",
+      "kind": "media",
+      "id": "x8szxhcq1w",
+      "url": "https://fast.wistia.com/embed/medias/x8szxhcq1w.json",
+      "title": "2025 #Solved Awards: Best Example of Real-Time Policing",
+      "duration": "PT2M5S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/adde9293834708622c1a1d566b619dd6fb8d403d.m3u8",
+      "pages": [
+        "served/solved-stories-awards.html"
+      ]
+    },
+    {
+      "key": "wistia:xa0qd1v26f",
+      "host": "wistia",
+      "kind": "media",
+      "id": "xa0qd1v26f",
+      "url": "https://fast.wistia.com/embed/medias/xa0qd1v26f.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/webinar/elevate-your-rtcc-operations.html",
+        "served/webinar/the-case-for-lpr-gunshot-detection.html"
+      ]
+    },
+    {
+      "key": "wistia:xev2ybxij7",
+      "host": "wistia",
+      "kind": "media",
+      "id": "xev2ybxij7",
+      "url": "https://fast.wistia.com/embed/medias/xev2ybxij7.json",
+      "title": "2025 #Solved Awards: Full City Coverage",
+      "duration": "PT2M27S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/fe39d3bbb11f1908e402cd8f9282c46ec0b1e0b5.m3u8",
+      "pages": [
+        "served/solved-stories-awards.html"
+      ]
+    },
+    {
+      "key": "wistia:xjqv8kedr9",
+      "host": "wistia",
+      "kind": "media",
+      "id": "xjqv8kedr9",
+      "url": "https://fast.wistia.com/embed/medias/xjqv8kedr9.json",
+      "title": "Flock Video [H] (1)",
+      "duration": "PT1M7S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/21379e82bf395566c304b0fda22019eb51875b7d.m3u8",
+      "pages": [
+        "served/what-is-flock.html"
+      ]
+    },
+    {
+      "key": "wistia:xy5ubl70o7",
+      "host": "wistia",
+      "kind": "media",
+      "id": "xy5ubl70o7",
+      "url": "https://fast.wistia.com/embed/medias/xy5ubl70o7.json",
+      "title": "ALPR-AR-alt",
+      "duration": "PT11S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/02a9cc6b59702f68c1cff1549773cefea8f35eef.m3u8",
+      "pages": [
+        "served/blog/open-vs-closed-dfr-ecosystem.html"
+      ]
+    },
+    {
+      "key": "wistia:yi9ibud4b9",
+      "host": "wistia",
+      "kind": "media",
+      "id": "yi9ibud4b9",
+      "url": "https://fast.wistia.com/embed/medias/yi9ibud4b9.json",
+      "title": "Tulsa Case Study Clip 4",
+      "duration": "PT27S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/22e06ec2edafed397204f88655f0462eaaaeaa7a.m3u8",
+      "pages": [
+        "served/customers/tulsa-oklahoma-shopping-center-sees-nearly-70-drop-in-retail-theft-incidents-with-flock-safety.html"
+      ]
+    },
+    {
+      "key": "wistia:yle4ol7x0v",
+      "host": "wistia",
+      "kind": "media",
+      "id": "yle4ol7x0v",
+      "url": "https://fast.wistia.com/embed/medias/yle4ol7x0v.json",
+      "title": "Mobile Security Trailer Sizzle - Dec 2025",
+      "duration": "PT43S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/1accfb31cf0f41c728e893cca1e4fe5cd75ab167.m3u8",
+      "pages": [
+        "served/mobile-security-trailers-are-the-ultimate-seasonal-sidekick.html",
+        "served/mobile-security-trailers-turn-deterrence-into-actionable-evidence.html"
+      ]
+    },
+    {
+      "key": "wistia:ysl0a5ob9c",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ysl0a5ob9c",
+      "url": "https://fast.wistia.com/embed/medias/ysl0a5ob9c.json",
+      "title": "Flock Together 2026",
+      "duration": "PT1M36S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/5564adab98124c214229de9eff6cdd454fcef401.m3u8",
+      "pages": [
+        "served/blog/flock-together-the-2026-recap.html",
+        "served/blog/rko-2026-recap.html",
+        "served/careers/experience.html"
+      ]
+    },
+    {
+      "key": "wistia:ywkkw3bz9s",
+      "host": "wistia",
+      "kind": "media",
+      "id": "ywkkw3bz9s",
+      "url": "https://fast.wistia.com/embed/medias/ywkkw3bz9s.json",
+      "title": "Uncover and Connect: Taking Human Trafficking Investigations to the Next Level",
+      "duration": "PT1H2M21S",
+      "contentUrl": "https://embed-ssl.wistia.com/deliveries/779c9c319b2a04c4b7b26c91beed7bc6cdba8473.m3u8",
+      "pages": [
+        "served/webinar/thank-you-uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level-on-demand.html"
+      ]
+    },
+    {
+      "key": "youtube:_Vo7VcFKDk8",
+      "host": "youtube",
+      "kind": "video",
+      "id": "_Vo7VcFKDk8",
+      "url": "https://www.youtube.com/watch?v=_Vo7VcFKDk8",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/from-detection-to-coordination-a-new-model-for-law-enforcement-response.html"
+      ]
+    },
+    {
+      "key": "youtube:-YxQLZBqlLI",
+      "host": "youtube",
+      "kind": "video",
+      "id": "-YxQLZBqlLI",
+      "url": "https://www.youtube.com/watch?v=-YxQLZBqlLI",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/building-a-safer-stronger-allentown-a-conversation-with-mayor-matt-tuerk.html",
+        "served/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life.html"
+      ]
+    },
+    {
+      "key": "youtube:2D6WC4q-fV0",
+      "host": "youtube",
+      "kind": "video",
+      "id": "2D6WC4q-fV0",
+      "url": "https://www.youtube.com/watch?v=2D6WC4q-fV0",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-solved-stories-recap-edition-020.html"
+      ]
+    },
+    {
+      "key": "youtube:2kbxeLyRJpU",
+      "host": "youtube",
+      "kind": "video",
+      "id": "2kbxeLyRJpU",
+      "url": "https://www.youtube.com/watch?v=2kbxeLyRJpU",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/not-all-license-plate-readers-are-equal-when-plate-data-fails-how-do-investigations-continue.html"
+      ]
+    },
+    {
+      "key": "youtube:3LT0nCt4WNo",
+      "host": "youtube",
+      "kind": "video",
+      "id": "3LT0nCt4WNo",
+      "url": "https://www.youtube.com/watch?v=3LT0nCt4WNo",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/the-5-as-of-dfr-the-dna-of-a-drone-as-first-responder-program.html"
+      ]
+    },
+    {
+      "key": "youtube:3n2jbLmDRtM",
+      "host": "youtube",
+      "kind": "video",
+      "id": "3n2jbLmDRtM",
+      "url": "https://www.youtube.com/watch?v=3n2jbLmDRtM",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-forward-2025-tackled-the-toughest-problems-in-public-safety--heres-what-we-learned.html"
+      ]
+    },
+    {
+      "key": "youtube:4csZroJUSQo",
+      "host": "youtube",
+      "kind": "video",
+      "id": "4csZroJUSQo",
+      "url": "https://www.youtube.com/watch?v=4csZroJUSQo",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safety-is-a-fundamental-right.html"
+      ]
+    },
+    {
+      "key": "youtube:9h-CCep8M-0",
+      "host": "youtube",
+      "kind": "video",
+      "id": "9h-CCep8M-0",
+      "url": "https://www.youtube.com/watch?v=9h-CCep8M-0",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/ebooks/license-plate-reader-cameras-overview.html"
+      ]
+    },
+    {
+      "key": "youtube:AXQgSAQLV6U",
+      "host": "youtube",
+      "kind": "video",
+      "id": "AXQgSAQLV6U",
+      "url": "https://www.youtube.com/watch?v=AXQgSAQLV6U",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life.html"
+      ]
+    },
+    {
+      "key": "youtube:C6rgKKelPzY",
+      "host": "youtube",
+      "kind": "video",
+      "id": "C6rgKKelPzY",
+      "url": "https://www.youtube.com/watch?v=C6rgKKelPzY",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/5-keys-to-hiring-for-drive-and-building-in-the-gray-how-two-rtic-leaders-are-shaping-real-time-policing.html"
+      ]
+    },
+    {
+      "key": "youtube:cNAT9vCUPQQ",
+      "host": "youtube",
+      "kind": "video",
+      "id": "cNAT9vCUPQQ",
+      "url": "https://www.youtube.com/watch?v=cNAT9vCUPQQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/capture-evidence-that-matters-for-solving-crime.html"
+      ]
+    },
+    {
+      "key": "youtube:czWZT0qQ5HU",
+      "host": "youtube",
+      "kind": "video",
+      "id": "czWZT0qQ5HU",
+      "url": "https://www.youtube.com/watch?v=czWZT0qQ5HU",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust.html"
+      ]
+    },
+    {
+      "key": "youtube:dpI-OwG7-ic",
+      "host": "youtube",
+      "kind": "video",
+      "id": "dpI-OwG7-ic",
+      "url": "https://www.youtube.com/watch?v=dpI-OwG7-ic",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/the-power-of-connected-intelligence.html",
+        "served/privacy-ethics-copy.html"
+      ]
+    },
+    {
+      "key": "youtube:ducu5ITaabg",
+      "host": "youtube",
+      "kind": "video",
+      "id": "ducu5ITaabg",
+      "url": "https://www.youtube.com/watch?v=ducu5ITaabg",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/fireside-chat-josh-thomas-chief-communications-officer.html",
+        "served/blog/from-congestion-to-connection-rethinking-traffic-and-parking-to-improve-daily-life.html"
+      ]
+    },
+    {
+      "key": "youtube:EEyQCDlkdJQ",
+      "host": "youtube",
+      "kind": "video",
+      "id": "EEyQCDlkdJQ",
+      "url": "https://www.youtube.com/watch?v=EEyQCDlkdJQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/community-and-technology-unite-to-shape-a-safer-south-downtown-atlanta.html"
+      ]
+    },
+    {
+      "key": "youtube:eLOS20I6TPM",
+      "host": "youtube",
+      "kind": "video",
+      "id": "eLOS20I6TPM",
+      "url": "https://www.youtube.com/watch?v=eLOS20I6TPM",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/ebooks/license-plate-reader-cameras-overview.html"
+      ]
+    },
+    {
+      "key": "youtube:EP5egqReAGs",
+      "host": "youtube",
+      "kind": "video",
+      "id": "EP5egqReAGs",
+      "url": "https://www.youtube.com/watch?v=EP5egqReAGs",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/trespassing-and-unauthorized-access-flock-safetys-solutions-for-businesses.html"
+      ]
+    },
+    {
+      "key": "youtube:FKUJ2Qu9bCQ",
+      "host": "youtube",
+      "kind": "video",
+      "id": "FKUJ2Qu9bCQ",
+      "url": "https://www.youtube.com/watch?v=FKUJ2Qu9bCQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/10-safety-tips-for-the-holiday-season.html"
+      ]
+    },
+    {
+      "key": "youtube:Fo-4WMJSkv4",
+      "host": "youtube",
+      "kind": "video",
+      "id": "Fo-4WMJSkv4",
+      "url": "https://www.youtube.com/watch?v=Fo-4WMJSkv4",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/oakland-naacp-endorses-flock-safety-technology.html"
+      ]
+    },
+    {
+      "key": "youtube:fSIrMwM1qFA",
+      "host": "youtube",
+      "kind": "video",
+      "id": "fSIrMwM1qFA",
+      "url": "https://www.youtube.com/watch?v=fSIrMwM1qFA",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-solved-stories-recap-edition-030.html"
+      ]
+    },
+    {
+      "key": "youtube:hJaKW7ap9SQ",
+      "host": "youtube",
+      "kind": "video",
+      "id": "hJaKW7ap9SQ",
+      "url": "https://www.youtube.com/watch?v=hJaKW7ap9SQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/why-are-some-flock-cameras-being-removed-by-cities.html"
+      ]
+    },
+    {
+      "key": "youtube:HPNck8eVxCo",
+      "host": "youtube",
+      "kind": "video",
+      "id": "HPNck8eVxCo",
+      "url": "https://www.youtube.com/watch?v=HPNck8eVxCo",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-solved-stories-recap-edition-022.html"
+      ]
+    },
+    {
+      "key": "youtube:If_KeNn_R5k",
+      "host": "youtube",
+      "kind": "video",
+      "id": "If_KeNn_R5k",
+      "url": "https://www.youtube.com/watch?v=If_KeNn_R5k",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/privacy-ethics-copy.html"
+      ]
+    },
+    {
+      "key": "youtube:iPdSThUjj28",
+      "host": "youtube",
+      "kind": "video",
+      "id": "iPdSThUjj28",
+      "url": "https://www.youtube.com/watch?v=iPdSThUjj28",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/the-power-of-connected-intelligence.html",
+        "served/blog/why-vendor-competition-matters-for-your-agencys-future.html"
+      ]
+    },
+    {
+      "key": "youtube:JsefjbPNMyU",
+      "host": "youtube",
+      "kind": "video",
+      "id": "JsefjbPNMyU",
+      "url": "https://www.youtube.com/watch?v=JsefjbPNMyU",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life.html"
+      ]
+    },
+    {
+      "key": "youtube:jTE_JgRCLzM",
+      "host": "youtube",
+      "kind": "video",
+      "id": "jTE_JgRCLzM",
+      "url": "https://www.youtube.com/watch?v=jTE_JgRCLzM",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-solved-stories-recap-edition-018.html"
+      ]
+    },
+    {
+      "key": "youtube:K3PfpWgPd8c",
+      "host": "youtube",
+      "kind": "video",
+      "id": "K3PfpWgPd8c",
+      "url": "https://www.youtube.com/watch?v=K3PfpWgPd8c",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-aerodome-software-updates-fall--2025.html",
+        "served/blog/flock-alpha-in-action-saving-lives-across-crime-response-fire-emergencies-and-search-rescue.html"
+      ]
+    },
+    {
+      "key": "youtube:k76qtMoPDBU",
+      "host": "youtube",
+      "kind": "video",
+      "id": "k76qtMoPDBU",
+      "url": "https://www.youtube.com/watch?v=k76qtMoPDBU",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/hoa-board-member-neighborhood-safety.html"
+      ]
+    },
+    {
+      "key": "youtube:kyuJCcMWFwc",
+      "host": "youtube",
+      "kind": "video",
+      "id": "kyuJCcMWFwc",
+      "url": "https://www.youtube.com/watch?v=kyuJCcMWFwc",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/solved-stories-recap-edition-023.html"
+      ]
+    },
+    {
+      "key": "youtube:L8jtr_XMO0E",
+      "host": "youtube",
+      "kind": "video",
+      "id": "L8jtr_XMO0E",
+      "url": "https://www.youtube.com/watch?v=L8jtr_XMO0E",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/neighborhood-security-flock-safety-success.html"
+      ]
+    },
+    {
+      "key": "youtube:lyfzV3c3k4A",
+      "host": "youtube",
+      "kind": "video",
+      "id": "lyfzV3c3k4A",
+      "url": "https://www.youtube.com/watch?v=lyfzV3c3k4A",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-shares-vision-for-a-safer-future-at-national-anti-human-trafficking-event.html"
+      ]
+    },
+    {
+      "key": "youtube:m2dJHKcJAV4",
+      "host": "youtube",
+      "kind": "video",
+      "id": "m2dJHKcJAV4",
+      "url": "https://www.youtube.com/watch?v=m2dJHKcJAV4",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/what-happens-if-a-flock-camera-is-damaged.html"
+      ]
+    },
+    {
+      "key": "youtube:m55HD9ZF0xE",
+      "host": "youtube",
+      "kind": "video",
+      "id": "m55HD9ZF0xE",
+      "url": "https://www.youtube.com/watch?v=m55HD9ZF0xE",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/the-power-of-connected-intelligence.html"
+      ]
+    },
+    {
+      "key": "youtube:MSElcwBMm-k",
+      "host": "youtube",
+      "kind": "video",
+      "id": "MSElcwBMm-k",
+      "url": "https://www.youtube.com/watch?v=MSElcwBMm-k",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust.html"
+      ]
+    },
+    {
+      "key": "youtube:n20WEU4AJ4k",
+      "host": "youtube",
+      "kind": "video",
+      "id": "n20WEU4AJ4k",
+      "url": "https://www.youtube.com/watch?v=n20WEU4AJ4k",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/transparency-portal.html"
+      ]
+    },
+    {
+      "key": "youtube:NehP1kZ-FZQ",
+      "host": "youtube",
+      "kind": "video",
+      "id": "NehP1kZ-FZQ",
+      "url": "https://www.youtube.com/watch?v=NehP1kZ-FZQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/neighborhood-security-flock-safety-success.html"
+      ]
+    },
+    {
+      "key": "youtube:NzbfxcCZW9A",
+      "host": "youtube",
+      "kind": "video",
+      "id": "NzbfxcCZW9A",
+      "url": "https://www.youtube.com/watch?v=NzbfxcCZW9A",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/collierville-memphis-neighborhood-crime-streak.html"
+      ]
+    },
+    {
+      "key": "youtube:O0lw9LvoHWM",
+      "host": "youtube",
+      "kind": "video",
+      "id": "O0lw9LvoHWM",
+      "url": "https://www.youtube.com/watch?v=O0lw9LvoHWM",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life.html"
+      ]
+    },
+    {
+      "key": "youtube:o4Xw8ydy3po",
+      "host": "youtube",
+      "kind": "video",
+      "id": "o4Xw8ydy3po",
+      "url": "https://www.youtube.com/watch?v=o4Xw8ydy3po",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-ceo-garrett-langley-ted2026.html"
+      ]
+    },
+    {
+      "key": "youtube:OE88D2xU0GE",
+      "host": "youtube",
+      "kind": "video",
+      "id": "OE88D2xU0GE",
+      "url": "https://www.youtube.com/watch?v=OE88D2xU0GE",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-solved-stories-recap-edition-030.html",
+        "served/blog/how-to-implement-a-3-step-approach-to-safer-neighborhoods.html"
+      ]
+    },
+    {
+      "key": "youtube:Oqxk4G5TjIQ",
+      "host": "youtube",
+      "kind": "video",
+      "id": "Oqxk4G5TjIQ",
+      "url": "https://www.youtube.com/watch?v=Oqxk4G5TjIQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/neighborhood-security-flock-safety-success.html"
+      ]
+    },
+    {
+      "key": "youtube:orK72Vq0PwA",
+      "host": "youtube",
+      "kind": "video",
+      "id": "orK72Vq0PwA",
+      "url": "https://www.youtube.com/watch?v=orK72Vq0PwA",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life.html"
+      ]
+    },
+    {
+      "key": "youtube:QRsPSgrynNk",
+      "host": "youtube",
+      "kind": "video",
+      "id": "QRsPSgrynNk",
+      "url": "https://www.youtube.com/watch?v=QRsPSgrynNk",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/close-the-campus-police-response-gap-with-drone-as-first-responder.html",
+        "served/privacy-ethics-copy.html"
+      ]
+    },
+    {
+      "key": "youtube:RJPyZ_cES2c",
+      "host": "youtube",
+      "kind": "video",
+      "id": "RJPyZ_cES2c",
+      "url": "https://www.youtube.com/watch?v=RJPyZ_cES2c",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-2022-atl-startup-awards.html"
+      ]
+    },
+    {
+      "key": "youtube:t2niT469ryk",
+      "host": "youtube",
+      "kind": "video",
+      "id": "t2niT469ryk",
+      "url": "https://www.youtube.com/watch?v=t2niT469ryk",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/building-smarter-not-just-bigger-how-flock-safety-thinks-about-product-integrations-and-the-future-of-ai.html"
+      ]
+    },
+    {
+      "key": "youtube:TfeT83cffWA",
+      "host": "youtube",
+      "kind": "video",
+      "id": "TfeT83cffWA",
+      "url": "https://www.youtube.com/watch?v=TfeT83cffWA",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-forward-2025-tackled-the-toughest-problems-in-public-safety--heres-what-we-learned.html",
+        "served/blog/the-power-of-connected-intelligence.html"
+      ]
+    },
+    {
+      "key": "youtube:TQBYOx4oT2Q",
+      "host": "youtube",
+      "kind": "video",
+      "id": "TQBYOx4oT2Q",
+      "url": "https://www.youtube.com/watch?v=TQBYOx4oT2Q",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safety-is-a-fundamental-right.html"
+      ]
+    },
+    {
+      "key": "youtube:tyAW6Fum5Zg",
+      "host": "youtube",
+      "kind": "video",
+      "id": "tyAW6Fum5Zg",
+      "url": "https://www.youtube.com/watch?v=tyAW6Fum5Zg",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-solved-stories-recap-edition-015.html"
+      ]
+    },
+    {
+      "key": "youtube:U8swmrbofBE",
+      "host": "youtube",
+      "kind": "video",
+      "id": "U8swmrbofBE",
+      "url": "https://www.youtube.com/watch?v=U8swmrbofBE",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/coordinated-located-safer-flock-safety-helps-law-enforcement-close-cases-nationwide.html"
+      ]
+    },
+    {
+      "key": "youtube:UULTnAcqQzw",
+      "host": "youtube",
+      "kind": "video",
+      "id": "UULTnAcqQzw",
+      "url": "https://www.youtube.com/watch?v=UULTnAcqQzw",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-solves-homicide-investigation.html"
+      ]
+    },
+    {
+      "key": "youtube:v0BiDmPloBs",
+      "host": "youtube",
+      "kind": "video",
+      "id": "v0BiDmPloBs",
+      "url": "https://www.youtube.com/watch?v=v0BiDmPloBs",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/flock-safety-ceo-garrett-langley-ted2026.html",
+        "served/ebooks/license-plate-reader-cameras-overview.html"
+      ]
+    },
+    {
+      "key": "youtube:vCMYwQFdRGA",
+      "host": "youtube",
+      "kind": "video",
+      "id": "vCMYwQFdRGA",
+      "url": "https://www.youtube.com/watch?v=vCMYwQFdRGA",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/how-integrated-policing-platforms-crack-unsolvable-cases.html"
+      ]
+    },
+    {
+      "key": "youtube:Wk8RW5Jmj_U",
+      "host": "youtube",
+      "kind": "video",
+      "id": "Wk8RW5Jmj_U",
+      "url": "https://www.youtube.com/watch?v=Wk8RW5Jmj_U",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life.html"
+      ]
+    },
+    {
+      "key": "youtube:WkJmt9zjVZc",
+      "host": "youtube",
+      "kind": "video",
+      "id": "WkJmt9zjVZc",
+      "url": "https://www.youtube.com/watch?v=WkJmt9zjVZc",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/close-the-campus-police-response-gap-with-drone-as-first-responder.html"
+      ]
+    },
+    {
+      "key": "youtube:x7EGGpHD9zM",
+      "host": "youtube",
+      "kind": "video",
+      "id": "x7EGGpHD9zM",
+      "url": "https://www.youtube.com/watch?v=x7EGGpHD9zM",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/policy-pulse-for-real-communities-public-safety-is-not-hypothetical.html"
+      ]
+    },
+    {
+      "key": "youtube:yAm1pTBRT-8",
+      "host": "youtube",
+      "kind": "video",
+      "id": "yAm1pTBRT-8",
+      "url": "https://www.youtube.com/watch?v=yAm1pTBRT-8",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/10-safety-tips-for-the-holiday-season.html"
+      ]
+    },
+    {
+      "key": "youtube:yBQN9orr_Ho",
+      "host": "youtube",
+      "kind": "video",
+      "id": "yBQN9orr_Ho",
+      "url": "https://www.youtube.com/watch?v=yBQN9orr_Ho",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust.html"
+      ]
+    },
+    {
+      "key": "youtube:ZgDJRs_MDy8",
+      "host": "youtube",
+      "kind": "video",
+      "id": "ZgDJRs_MDy8",
+      "url": "https://www.youtube.com/watch?v=ZgDJRs_MDy8",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/5-lessons-on-transitioning-from-law-enforcement-to-the-private-sector.html"
+      ]
+    },
+    {
+      "key": "youtube:ZN9lxPmUzUo",
+      "host": "youtube",
+      "kind": "video",
+      "id": "ZN9lxPmUzUo",
+      "url": "https://www.youtube.com/watch?v=ZN9lxPmUzUo",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/solvedstories-public-sector.html"
+      ]
+    }
+  ],
+  "orphanDeliveries": []
+}
