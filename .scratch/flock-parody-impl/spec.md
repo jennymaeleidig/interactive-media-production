@@ -167,6 +167,7 @@ Build sessions:
 
 ## Further Notes
 
+- **Video liveness is an ops tool, not a gate.** `pipeline/video-probe.mjs` re-probes the dated video inventory against the providers (Wistia media JSON, YouTube oembed, a HEAD per delivery stream; `--tier deep` adds `yt-dlp --simulate`), and `pipeline/config.mjs`'s `DEAD_VIDEO_IDS` — the medias the embed pass deliberately leaves as captured — is generated from its `playability.csv`. It needs the network, so like `npm run routes` it is run by hand and never by `npm test`; the spec has no gate for it because a third-party outage must not fail our suite. It earned its keep on 2026-09-11 by finding a fifth dead Wistia media whose slot the inventory could not see (ticket 17).
 - The behavioral census's scrub worry resolved in the motion ticket's live check: the homepage-adjacent "scroll" system is click-tabs, and the only real scrub timelines are the two tier-3 pages — the mimic's one-shot model is exact for everything else.
 - The capture refresh policy is adopted from the runbook ticket's proposal, which was queued for ratification at spec: it stands unless vetoed here.
 - Two sandbox/toolchain facts bind every build and capture session: dev servers need watchpack polling enabled and the package needs a browserslist field (both proven in the prototypes); headless-Chromium work runs via Docker (the capture run — the serving check does not render).
