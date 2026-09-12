@@ -41,6 +41,12 @@
 //     captured disabled vocabulary (swiper-button-disabled or the arrow's
 //     is-disabled, aria-disabled, tabindex) move with it. Slide aria-labels
 //     are positional (i / N) and already correct in the Capture — untouched.
+//   • YouTube reveal     [data-youtube-poster] — the /trust pages' video cards
+//     (census 16, ticket 17): the captured panel sits `inert` with inline
+//     `opacity:0;visibility:hidden` and a src-less frame, and a click on the
+//     poster points the frame at the player and crossfades the panel in. The
+//     frame's `src` is set here, on the click, and never at serve time: until
+//     then the panel is invisible and the request would be wasted.
 // Reduced motion never blocks function: only the tab fade branches on
 // prefers-reduced-motion (read fresh at each click), everything else is
 // instant by construction.
@@ -70,6 +76,7 @@
     var t = e.target;
     if (!t || !t.closest) return;
     var el;
+    if ((el = t.closest('[data-youtube-poster]'))) { youtubeReveal(el); e.preventDefault(); return; }
     if ((el = t.closest('[data-accordion-toggle]'))) { accordion(el); e.preventDefault(); return; }
     if ((el = t.closest('.w-dropdown-toggle'))) { wDropdown(el); e.preventDefault(); return; }
     if ((el = t.closest('.w-tab-link'))) { wTabs(el); e.preventDefault(); return; }
@@ -81,6 +88,41 @@
 
   function endsWith(v, suffix) {
     return typeof v === 'string' && v.length > suffix.length && v.slice(-suffix.length) === suffix;
+  }
+
+  // ---- YouTube reveal (census 16: the /trust pages' video cards) ----
+
+  // The captured card puts the poster button and the player panel in the same
+  // absolutely positioned box; the panel is the closed half (inert, aria-hidden,
+  // inline opacity:0/visibility:hidden) and the frame carries no src. A click is
+  // the only reveal the original ever ran, so the frame is pointed at the player
+  // at that moment — autoplay is named in the frame's captured `allow` list, and
+  // the click is the user gesture it needs.
+  function youtubeReveal(button) {
+    var panelId = button.getAttribute('aria-controls');
+    var panel = panelId ? document.getElementById(panelId) : null;
+    if (!panel) return;
+    var frame = panel.querySelector('iframe[data-video-id]');
+    // The panel's own frame owns the id: on /trust/compliance-tools every
+    // trigger carries the template's default data-video-trigger while the four
+    // frames name four different videos, so disarming on the trigger would
+    // play the same video four times. Fall back to the trigger only when the
+    // frame has no id of its own.
+    var id = (frame && frame.getAttribute('data-video-id')) || button.getAttribute('data-video-trigger');
+    if (frame && id && !frame.getAttribute('src')) {
+      frame.setAttribute('src', 'https://www.youtube.com/embed/' + id + '?autoplay=1');
+    }
+    panel.removeAttribute('inert');
+    panel.setAttribute('aria-hidden', 'false');
+    panel.style.pointerEvents = '';
+    panel.style.opacity = '1';
+    panel.style.visibility = 'inherit';
+    button.setAttribute('aria-expanded', 'true');
+    // the poster's captured open-state inverse: hidden, so the panel beneath it
+    // takes the pointer. The Capture carries no close affordance for the card.
+    button.style.opacity = '0';
+    button.style.visibility = 'hidden';
+    button.style.pointerEvents = 'none';
   }
 
   // ---- custom accordion (census 12: the accordion-css system) ----

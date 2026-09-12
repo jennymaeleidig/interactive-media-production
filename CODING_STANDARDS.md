@@ -36,12 +36,18 @@ verbatim and one of them carries `data:` URIs of its own.
 so it keeps an inert snapshot of the player — an inlined `srcdoc` player
 document, the JS-built player chrome, or a `<wistia-player>` web component — and
 the embed pass swaps that snapshot for the live player, named by the page's own
-`w-json-ld` `embedUrl`. Only those frames may reach out: the pass widens the
+`w-json-ld` `embedUrl`. Popover slots are inlined the same way (their box is
+already the captured 16:9 padding box), and YouTube's `data-video-id` panels are
+armed by the interactions runtime on the poster click, so the frame is only
+pointed at the player then. Only those frames may reach out: the pass widens the
 captured `frame-src` by exactly the hosts it used, and the audit fails the build
 on any frame whose host is not on `pipeline/embeds.mjs`'s allow-list. Remote
 *image* references (`poster=`, a Lottie `data-src`, a Wistia swatch in CSS) still
 appear in captured bytes; the captured `img-src 'self' data:` refuses them, which
-is why the image half needs no grant and no audit key.
+is why the image half needs no grant. The audit now also reads inside `srcdoc`
+payloads (`srcdoc scripts`) and refuses any remote reference outside the classes
+ADR 0002 accepts as inert (`unclassified remote refs`); the hidden Vidzflow
+video.js documents are stripped, not played (ticket 19).
 
 ## Stack & layout
 
@@ -165,15 +171,20 @@ is why the image half needs no grant and no audit key.
   queries — the nav seam's reduced-motion check is the same method. The rendered
   mobile result is the human side-by-side at
   `evidence/16-chat-mobile-parity/`. **Extended by the media work (ADR 0002)**:
-  two pure-module seams, each its own vitest project — the data-URI extraction
+  pure-module seams, each its own vitest project — the data-URI extraction
   core (`test/assets.test.ts` — `pipeline/assets.mjs`: the attribute and `url()`
   value classes, CSS unescaping, the MIME tables, and the payload shapes the
   corpus actually contains) and the live-embed pass
-  (`test/embeds.test.ts` — `pipeline/embeds.mjs`: the three captured slot
-  shapes, the skip rules, idempotence, and the frame allow-list audit). Both are
+  (`test/embeds.test.ts` — `pipeline/embeds.mjs`: the four slot shapes including
+  popover inlining, the YouTube `data-video-id` detection, the Vidzflow strip,
+  the skip rules, idempotence, and the frame/srcdoc/remote-reference audits). Both are
   pure HTML-in/HTML-out cores the build calls; neither reaches over HTTP, and
   the built result of both is covered end-to-end by the serving seam and its
-  asset-identity check. Per this header's rule, later
+  asset-identity check. **Extended by ticket 17**: the video-inventory detection
+  seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s
+  attribute-form sweeps and their boundary rules, because an id the inventory
+  cannot see is an id the dead-media list never learns about). Per this header's
+  rule, later
   efforts extend this list here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.

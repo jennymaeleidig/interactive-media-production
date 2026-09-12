@@ -104,6 +104,16 @@ const PAGE = `<!DOCTYPE html><html><head><style>.w-tab-pane{display:none;positio
 <a data-swiper-prev href=# class="swiper-arrow w-inline-block is-disabled" tabindex=-1 role=button aria-label="Previous slide" aria-controls=swiper-wrapper-ind aria-disabled=true>back</a>
 <a data-swiper-next href=# class="swiper-arrow w-inline-block" tabindex=0 role=button aria-label="Next slide" aria-controls=swiper-wrapper-ind aria-disabled=false>next</a>
 
+<div data-youtube-card class=th_video-card-component>
+  <button data-youtube-poster aria-label="Play video: Are You Being Tracked?" aria-controls=youtube-video-panel-1 aria-expanded=false data-video-trigger=lV1WCvNGnmM role=button class=th_video-card type=button style=opacity:1;visibility:inherit>poster</button>
+  <div id=youtube-video-panel-1 data-youtube-video aria-hidden=true class=th_video-wrapper inert style=pointer-events:none;opacity:0;visibility:hidden><iframe data-video-id=lV1WCvNGnmM class=th_video id=youtube-player-1 allow="accelerometer; autoplay; fullscreen"></iframe></div>
+</div>
+
+<div data-youtube-card class=th_video-card-component>
+  <button data-youtube-poster aria-label="Play video: Are License Plates Private?" aria-controls=youtube-video-panel-2 aria-expanded=false data-video-trigger=lV1WCvNGnmM role=button class=th_video-card type=button style=opacity:1;visibility:inherit>poster two</button>
+  <div id=youtube-video-panel-2 data-youtube-video aria-hidden=true class=th_video-wrapper inert style=pointer-events:none;opacity:0;visibility:hidden><iframe data-video-id=Qq1eaw86JWw class=th_video id=youtube-player-2 allow=autoplay></iframe></div>
+</div>
+
 </body></html>`;
 
 /** Eval the injected source into a jsdom window (post-parse, as an inline body script observes it). */
@@ -443,5 +453,57 @@ describe('reduced motion never blocks interaction function', () => {
     expect(doc.getElementById('swiper-wrapper-quote')!.style.transform).toBe('translate3d(-948px, 0px, 0px)');
     clickIn(dom.window, doc.querySelector('[data-swiper-next]')!);
     expect(doc.getElementById('swiper-wrapper-ind')!.style.transform).toBe('translate3d(-340px, 0px, 0px)');
+    // the YouTube reveal has no motion branch: the frame is armed on the click
+    const poster = doc.querySelector('[data-youtube-poster]')!;
+    clickIn(dom.window, poster);
+    expect(doc.getElementById('youtube-player-1')!.getAttribute('src')).toContain('youtube.com/embed/lV1WCvNGnmM');
+  });
+});
+
+describe('the YouTube reveal (ticket 17: the /trust video cards)', () => {
+  it('arms the captured frame and crossfades the panel in on the poster click', () => {
+    const dom = domOf(PAGE, { reduced: true });
+    const doc = (dom.window as Win).document;
+    const poster = doc.querySelector('[data-youtube-poster]')!;
+    const panel = doc.getElementById('youtube-video-panel-1')!;
+    const frame = doc.getElementById('youtube-player-1')!;
+
+    expect(frame.hasAttribute('src')).toBe(false); // at rest, no third-party request
+    clickIn(dom.window, poster);
+
+    // the frame is pointed at the player only now — autoplay rides the click
+    expect(frame.getAttribute('src')).toBe('https://www.youtube.com/embed/lV1WCvNGnmM?autoplay=1');
+    // the captured open-state inverse: panel gone from inert/aria-hidden/closed styles
+    expect(panel.hasAttribute('inert')).toBe(false);
+    expect(panel.getAttribute('aria-hidden')).toBe('false');
+    expect(panel.style.opacity).toBe('1');
+    expect(panel.style.visibility).toBe('inherit');
+    expect(panel.style.pointerEvents).toBe('');
+    // the poster yields the box
+    expect(poster.getAttribute('aria-expanded')).toBe('true');
+    expect((poster as HTMLElement).style.opacity).toBe('0');
+    expect((poster as HTMLElement).style.visibility).toBe('hidden');
+    expect((poster as HTMLElement).style.pointerEvents).toBe('none');
+  });
+
+  it('cards are independent, and the panel frame owns the id (the trigger is only a fallback)', () => {
+    const dom = domOf(PAGE, { reduced: true });
+    const doc = (dom.window as Win).document;
+    const posters = [...doc.querySelectorAll<HTMLElement>('[data-youtube-poster]')];
+    // card two's trigger is the template default while its frame names another
+    // video — /trust/compliance-tools is exactly this shape, and reading the
+    // trigger would play the same video on all four cards
+    clickIn(dom.window, posters[1]);
+    expect(doc.getElementById('youtube-player-2')!.getAttribute('src')).toContain('youtube.com/embed/Qq1eaw86JWw');
+    expect(doc.getElementById('youtube-player-2')!.getAttribute('src')).not.toContain('lV1WCvNGnmM');
+    expect(doc.getElementById('youtube-player-1')!.hasAttribute('src')).toBe(false);
+
+    const orphan = doc.createElement('button');
+    orphan.setAttribute('data-youtube-poster', '');
+    orphan.setAttribute('aria-controls', 'missing-panel');
+    orphan.setAttribute('data-video-trigger', 'lV1WCvNGnmM');
+    doc.body.appendChild(orphan);
+    expect(() => clickIn(dom.window, orphan)).not.toThrow();
+    expect(doc.getElementById('youtube-player-1')!.hasAttribute('src')).toBe(false);
   });
 });

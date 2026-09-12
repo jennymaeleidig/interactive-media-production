@@ -26,15 +26,23 @@
 // element keeps its tag, classes, and inline styles, so the box does not move;
 // only its contents become live.
 //
-// What this pass deliberately does NOT touch, and why:
-//   popover slots (`popover=true`) — the captured end-state is a click-to-play
-//     thumbnail whose whole point is a modal that the Recreation has no runtime
-//     for; going inline would change the layout, not just the behavior.
+// Popover slots (`popover=true`) are inlined like every other shape: measured,
+// their box is already the 16:9 `wistia_responsive_padding` box, so replacing
+// the captured click-to-play thumbnail with the live player moves nothing and
+// removes a control that invited a click it could not answer.
+//
+// Two classes stay as captured, deliberately:
 //   dead medias (config.DEAD_VIDEO_IDS) — deleted upstream, so there is nothing
 //     to play; the captured poster is the honest end-state.
-//   YouTube's `data-video-id` panels — they sit `inert`/`opacity:0` until a
-//     site script reveals them, and that reveal is not reproduced, so a live src
-//     would load a third-party frame nobody can see.
+//   YouTube's `data-video-id` panels — the pass leaves the frame `src`-less and
+//     only records the host, because a build-time `src` would fetch a frame
+//     nobody can see (the panel is hidden at rest). The interactions runtime
+//     points the frame at the player on the poster click (ticket 17).
+//
+// The hidden Vidzflow player documents (`.video-desktop`/`.video-tablet`, both
+// `is-hidden`) are stripped, not embedded: their visible content is a sibling
+// still image, and Wistia's pass has no counterpart for the provider (ticket
+// 19). `stripHiddenVidzflow` removes the `srcdoc` payload that holds them.
 //
 // Pure: HTML in, HTML out. The caller applies it and audits the result.
 //
@@ -81,6 +89,192 @@ export function wistiaIframe(id, title) {
   return `<iframe src="${wistiaEmbedUrl(id)}"${label} allow="autoplay; fullscreen" allowfullscreen frameborder=0 scrolling=no style="width:100%;height:100%"></iframe>`;
 }
 
+const OPEN_TAG = /<([a-z][a-z0-9-]*)((?:[^<>"']|"[^"]*"|'[^']*')*)>/gi;
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * Read an attribute's value out of an open tag's attribute string, honoring
+ * quoting. The `(?<![\w-])` guard keeps `data-src` from reading as `src`.
+ * @param {string} attrs
+ * @param {string} name
+ * @returns {string|null} the value, or null when absent
+ */
+function attrOf(attrs, name) {
+  const m = new RegExp(`(?<![\\w-])${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(attrs);
+  return m ? (m[2] ?? m[3] ?? m[4] ?? '') : null;
+}
+
+/**
+ * Every YouTube slot on the page: a `src`-less frame whose `data-video-id` is
+ * an 11-character YouTube id. The bound matters — the podcast pages carry
+ * 24-character episode-button ids in the same attribute, and Vidzflow's
+ * `data-video-id` is numeric; neither is a YouTube video (ticket 17).
+ * @param {string} html
+ * @returns {string[]}
+ */
+export function youtubeSlots(html) {
+  const ids = [];
+  for (const m of html.matchAll(OPEN_TAG)) {
+    if (m[1].toLowerCase() !== 'iframe') continue;
+    if (/\ssrc\s*=/i.test(m[2])) continue; // already live — not a slot the runtime arms
+    const id = attrOf(m[2], 'data-video-id');
+    if (id !== null && YOUTUBE_ID.test(id)) ids.push(id);
+  }
+  return ids;
+}
+
+const VIDZFLOW_DOC = /vidzflow/i;
+
+/**
+ * Remove the hidden Vidzflow player documents. Each slot is an `srcdoc` frame
+ * in a `.video-desktop`/`.video-tablet.is-hidden` wrapper (the visible content
+ * is a sibling still image); the whole inlined video.js document is dead bytes
+ * — no runtime, and a sandbox without `allow-scripts`. Removing just the frame
+ * keeps the wrapper's (display:none) box and the sibling artwork untouched.
+ * @param {string} html
+ * @returns {{html: string, removed: number}}
+ */
+export function stripHiddenVidzflow(html) {
+  let removed = 0;
+  for (const span of srcdocSpans(html).reverse()) {
+    if (!/^<iframe\b/i.test(span.tag)) continue;
+    if (!VIDZFLOW_DOC.test(span.value)) continue;
+    const close = html.indexOf('</iframe>', span.tagEnd);
+    if (close === -1) continue; // truncated capture — leave it
+    html = html.slice(0, span.tagStart) + html.slice(close + '</iframe>'.length);
+    removed += 1;
+  }
+  return { html, removed };
+}
+
+const SCRIPT_TAG = /<script\b[^>]*>/gi;
+const LD_JSON_SCRIPT = /\btype\s*=\s*("|')?application\/ld\+json/i;
+
+/**
+ * Resolve the character references a `srcdoc` attribute value may carry. The
+ * HTML parser decodes entities in an attribute value before the frame document
+ * is instantiated, so `&lt;script&gt;` is a real script; scanning the raw value
+ * would miss it — the same self-validating-checker failure this audit exists to
+ * close.
+ * @param {string} value
+ * @returns {string}
+ */
+function decodeEntities(value) {
+  return value
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/gi, '&');
+}
+
+/**
+ * Scripts living inside `srcdoc` payloads. The build's script census counts
+ * them only by accident (SingleFile leaves `<` raw inside the attribute
+ * value), so this makes the check explicit: `executable` must be zero on every
+ * served page. `allowScripts`/`allowScriptsExecutable` name the one captured
+ * `allow-scripts` widget document that carries only ld+json, so the build can
+ * report it rather than leaving it silent.
+ * @param {string} html
+ * @returns {{total: number, executable: number, allowScripts: number, allowScriptsExecutable: number}}
+ */
+export function srcdocScripts(html) {
+  let total = 0;
+  let executable = 0;
+  let allowScripts = 0;
+  let allowScriptsExecutable = 0;
+  for (const span of srcdocSpans(html)) {
+    const tags = decodeEntities(span.value).match(SCRIPT_TAG) ?? [];
+    if (tags.length === 0) continue;
+    const exec = tags.filter((t) => !LD_JSON_SCRIPT.test(t)).length;
+    total += tags.length;
+    executable += exec;
+    const sandbox = attrOf(span.tag, 'sandbox') ?? '';
+    if (/\ballow-scripts\b/.test(sandbox)) {
+      allowScripts += 1;
+      allowScriptsExecutable += exec;
+    }
+  }
+  return { total, executable, allowScripts, allowScriptsExecutable };
+}
+
+// The attributes a browser fetches on load, by element (ticket 20). Everything
+// here is a *fetch*; an `<a href>` or a `<link rel=canonical>` is navigation or
+// metadata and is not on the list.
+const FETCHERS = {
+  iframe: ['src'],
+  frame: ['src'],
+  script: ['src'],
+  embed: ['src'],
+  img: ['src', 'srcset'],
+  source: ['src', 'srcset'],
+  video: ['src', 'poster'],
+  audio: ['src'],
+  track: ['src'],
+  object: ['data'],
+  input: ['src'],
+  link: ['href'],
+};
+
+// A <link> whose rel only advertises the URL — a browser never fetches it.
+const NON_FETCHING_REL = /^(?:canonical|alternate|author|help|license|next|prev|search|dns-prefetch|preconnect|amphtml)$/i;
+const ABSOLUTE_URL = /^(?:https?:)?\/\//i;
+
+/**
+ * Remote references in a class the audit does not know to be inert: a fetcher
+ * attribute on an element that would actually ask the network for it (ticket
+ * 20). The known classes are accepted in writing (ADR 0002) — an allow-listed
+ * `<iframe src>`, a `poster` (`img-src` refuses it, or the element never asks),
+ * a Lottie `data-src` (`connect-src 'self'`), a CSS `url()` (`img-src`), and a
+ * `srcdoc` payload (sandboxed; see `srcdocScripts`). This must be empty on
+ * every served page: a future Capture must not be able to introduce a fetched
+ * reference in an unexpected class unnoticed.
+ * @param {string} html
+ * @returns {string[]}
+ */
+export function unclassifiedRemoteRefs(html) {
+  // Script and style bodies are code, not markup; drop them so a string that
+  // looks like a tag inside a runtime is not read as one.
+  const markup = html
+    .replace(/(<script\b[^>]*>)[\s\S]*?(<\/script\s*>)/gi, '$1$2')
+    .replace(/(<style\b[^>]*>)[\s\S]*?(<\/style\s*>)/gi, '$1$2');
+  const refs = [];
+  for (const m of markup.matchAll(OPEN_TAG)) {
+    const name = m[1].toLowerCase();
+    const attrs = m[2];
+    if (name === 'meta') continue; // metadata — a crawler may read it, a browser never fetches it
+    const rel = attrOf(attrs, 'rel') ?? '';
+    for (const attr of FETCHERS[name] ?? []) {
+      const value = attrOf(attrs, attr);
+      if (value === null) continue;
+      const candidates = attr.endsWith('srcset')
+        ? value.split(',').map((part) => part.trim().split(/\s+/)[0])
+        : [value];
+      for (const url of candidates) {
+        if (!ABSOLUTE_URL.test(url)) continue;
+        if (attr === 'poster') continue; // inert class — img-src refuses it / the element never asks
+        if ((name === 'iframe' || name === 'frame') && MEDIA_HOSTS.includes(hostOf(url))) continue; // the ADR's exception
+        if (name === 'link' && NON_FETCHING_REL.test(rel)) continue; // advertises, never fetches
+        refs.push(url);
+      }
+    }
+  }
+  // A CSS `url()` is img-src-governed and so accepted above; `@import` is not.
+  for (const style of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style\s*>/gi)) {
+    for (const imp of style[1].matchAll(/@import\s+(?:url\(\s*)?["']?([^"')\s;]+)/gi)) {
+      if (ABSOLUTE_URL.test(imp[1])) refs.push(imp[1]);
+    }
+  }
+  // A meta refresh navigates away rather than fetching on load, but it still
+  // names a remote host and the audit must see it.
+  for (const meta of html.matchAll(/<meta\b[^>]*>/gi)) {
+    if (!/\bhttp-equiv\s*=\s*("|')?refresh/i.test(meta[0])) continue;
+    const url = /url\s*=\s*([^;]+)/i.exec(attrOf(meta[0], 'content') ?? '')?.[1]?.trim() ?? '';
+    if (ABSOLUTE_URL.test(url)) refs.push(url);
+  }
+  return refs;
+}
+
 /**
  * Every `srcdoc` attribute span in the page: the tag that carries it, the
  * attribute value, and where the tag ends. `srcdoc` values are HTML-escaped, so
@@ -108,11 +302,11 @@ export function srcdocSpans(html) {
  * Rewrite every playable slot to its live player document.
  * @param {string} html
  * @param {{dead?: string[]}} [options]  `dead` = hashed ids with nothing upstream to play
- * @returns {{html: string, reshaped: {srcdoc: number, element: number, component: number, popover: number, dead: number}, rewritten: string[], unreachable: string[], hosts: string[]}}
+ * @returns {{html: string, reshaped: {srcdoc: number, element: number, component: number, popover: number, dead: number, youtube: number}, rewritten: string[], unreachable: string[], hosts: string[]}}
  */
 export function embedPass(html, options = {}) {
   const dead = new Set(options.dead ?? []);
-  const reshaped = { srcdoc: 0, element: 0, component: 0, popover: 0, dead: 0 };
+  const reshaped = { srcdoc: 0, element: 0, component: 0, popover: 0, dead: 0, youtube: 0 };
   const rewritten = [];
   /** @type {Set<string>} */
   const deadSeen = new Set();
@@ -153,10 +347,7 @@ export function embedPass(html, options = {}) {
   // Rewrite back-to-front so the earlier offsets stay valid.
   for (const slot of slots.sort((a, b) => b.tagStart - a.tagStart)) {
     if (dead.has(slot.id)) { deadSeen.add(slot.id); continue; } // stays as captured — counted once, below
-    if (POPOVER_ATTR.test(slot.tag)) {
-      reshaped.popover++;
-      continue;
-    }
+    if (POPOVER_ATTR.test(slot.tag)) reshaped.popover++; // reported, then inlined like any other chrome slot
     const end = balanceEnd(html, slot.tagStart, slot.name);
     if (end === -1) continue; // unbalanced — leave the subtree as captured
     const inner = html.slice(slot.tagEnd, end - (slot.name.length + 3));
@@ -183,6 +374,17 @@ export function embedPass(html, options = {}) {
     reshaped.component++;
     rewritten.push(id);
     hosts.add('fast.wistia.net');
+  }
+
+  // ---- shape 4: YouTube slots (the runtime arms them on click) -------------
+  // No rewrite: the panel is hidden at rest, so a build-time `src` would fetch a
+  // frame nobody can see. The pass records the host so the page's `frame-src`
+  // grant names `www.youtube.com` for the frame the interactions runtime will
+  // point at the player (ticket 17).
+  const youtube = youtubeSlots(html);
+  if (youtube.length > 0) {
+    hosts.add('www.youtube.com');
+    reshaped.youtube = youtube.length;
   }
 
   // ---- what the markup never pointed at ------------------------------------

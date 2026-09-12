@@ -81,6 +81,12 @@ export default defineConfig({
           include: ['test/embeds.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'video-inventory',
+          include: ['test/video-inventory.test.ts'],
+        },
+      },
     ],
   },
 });

@@ -539,8 +539,8 @@ describe('chat mount (ticket 10)', () => {
   it('keeps the zero-outbound invariants: chat is a marked injected runtime, and reintroduces no machinery marker', async () => {
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
-    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0, 'off-allowlist frames': 0 });
-    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5 });
+    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0, 'off-allowlist frames': 0, 'srcdoc scripts': 0, 'unclassified remote refs': 0 });
+    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5, srcdocAllowScripts: 0 });
     // the widget CSS/runtime must not reintroduce the markers the strip audit keys on
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     for (const marker of ['qualified-offer-', 'qualified.com', '_qualified-', 'q-root', 'q-focus-sentinel', 'q-launcher', 'q-messenger-frame']) {
@@ -599,8 +599,8 @@ describe('write pass & mutation log', () => {
     expect(home.linksRewritten).toBe(5); // 4 nav links + the spotlight-card (the offer-host link was stripped with its subtree)
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
-    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0, 'off-allowlist frames': 0 });
-    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5 });
+    expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0, 'off-allowlist frames': 0, 'srcdoc scripts': 0, 'unclassified remote refs': 0 });
+    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5, srcdocAllowScripts: 0 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {

@@ -5,7 +5,19 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { embedPass, iframeSources, offAllowlistFrames, srcdocSpans, wistiaEmbedUrl, wistiaIframe, MEDIA_HOSTS } from '../pipeline/embeds.mjs';
+import {
+  embedPass,
+  iframeSources,
+  offAllowlistFrames,
+  srcdocScripts,
+  srcdocSpans,
+  stripHiddenVidzflow,
+  unclassifiedRemoteRefs,
+  wistiaEmbedUrl,
+  wistiaIframe,
+  youtubeSlots,
+  MEDIA_HOSTS,
+} from '../pipeline/embeds.mjs';
 
 // A real `srcdoc` value is HTML-escaped — the player document's own quotes are
 // `&quot;` — which is why the span cannot contain a raw quote and why the first
@@ -72,13 +84,18 @@ describe('embedPass', () => {
     expect(r.html).toContain('title="Flock911 video"');
   });
 
-  it('leaves a popover slot in its captured end-state', () => {
-    const html = `<div class="wistia_embed wistia_async_eeeeeeeeee popover=true videoFoam=true" style=display:inline-block><div class=wistia_click_to_play><img src=/assets/p.jpg></div></div>`;
+  it('inlines a popover slot like any other chrome slot — its box is already the aspect box', () => {
+    // ADR 0002 left popovers as captured on the belief that going inline was a
+    // layout change. Measured: the slot sits in the captured 16:9 padding trick,
+    // so the live player lands in the same box and the dead play button goes.
+    const html = `<div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative"><div class="wistia_embed wistia_async_eeeeeeeeee popover=true videoFoam=true" style=display:inline-block;height:100%;width:100%><div class=wistia_click_to_play><img src=/assets/p.jpg></div></div></div>`;
     const r = embedPass(html);
     expect(r.reshaped.popover).toBe(1);
-    expect(r.html).toBe(html);
-    // reported, not silent: the page references a video this pass did not make live
-    expect(r.unreachable).toEqual(['eeeeeeeeee']);
+    expect(r.reshaped.element).toBe(1);
+    expect(r.html).toContain(wistiaIframe('eeeeeeeeee', null));
+    expect(r.html).not.toContain('wistia_click_to_play');
+    expect(r.html).toContain('padding:56.25%');
+    expect(r.unreachable).toEqual([]);
   });
 
   it('leaves a dead-upstream media in its captured end-state', () => {
@@ -127,6 +144,100 @@ describe('embedPass', () => {
     const r = embedPass(html);
     expect(r.rewritten).toEqual(['iiiiiiiiii', 'jjjjjjjjjj', 'kkkkkkkkkk']);
     expect(r.html.match(/https:\/\/fast\.wistia\.net\/embed\/iframe\//g)).toHaveLength(3);
+  });
+});
+
+describe('every YouTube slot on the page (ticket 17)', () => {
+  it('finds a src-less 11-character data-video-id frame without arming it', () => {
+    const html = `<iframe data-video-id=lV1WCvNGnmM class=th_video title="YouTube video: x"></iframe>`;
+    expect(youtubeSlots(html)).toEqual(['lV1WCvNGnmM']);
+    const r = embedPass(html);
+    expect(r.reshaped.youtube).toBe(1);
+    expect(r.hosts).toEqual(['www.youtube.com']);
+    // the interactions runtime points the frame at the player on the click; a
+    // build-time `src` would fetch a frame nobody can see
+    expect(r.html).toBe(html);
+  });
+
+  it('does not confuse a longer podcast id or a numeric Vidzflow id', () => {
+    expect(youtubeSlots(`<iframe data-video-id=7hyzp0tDLlLVy2BWG284Qt></iframe>`)).toEqual([]);
+    expect(youtubeSlots(`<iframe data-video-id=32614></iframe>`)).toEqual([]);
+  });
+
+  it('ignores a frame that already carries a src', () => {
+    expect(youtubeSlots(`<iframe src="https://www.youtube.com/embed/lV1WCvNGnmM" data-video-id=lV1WCvNGnmM></iframe>`)).toEqual([]);
+  });
+});
+
+describe('the hidden Vidzflow player documents (ticket 19)', () => {
+  it('removes the srcdoc player document and keeps the visible sibling still', () => {
+    const html = `<img class="l-img r-cc" src=/assets/still.svg><div class="video-desktop is-hidden w-embed w-iframe"><div style=aspect-ratio:1;overflow:hidden data-video-id=32614><iframe srcdoc="<!DOCTYPE html><style class=vjs-styles-defaults></style><div class=vidzflow-player-dimensions></div>"></iframe></div></div>`;
+    const r = stripHiddenVidzflow(html);
+    expect(r.removed).toBe(1);
+    expect(r.html).toContain('/assets/still.svg');
+    expect(r.html).not.toContain('vjs-styles-defaults');
+    expect(r.html).not.toContain('<iframe');
+  });
+
+  it('leaves a non-Vidzflow srcdoc frame alone', () => {
+    const html = `<iframe srcdoc="<form action=/api/mock></form>"></iframe>`;
+    expect(stripHiddenVidzflow(html)).toEqual({ html, removed: 0 });
+  });
+
+  it('leaves a Wistia player document that happens to use video.js inside it', () => {
+    // Wistia's own player is video.js-based, so `vjs-styles-defaults` is not a
+    // Vidzflow marker: trusting it stripped 55 live Wistia slots in a rebuild.
+    const html = `<iframe srcdoc="<style class=vjs-styles-defaults></style><script class=w-json-ld type=application/ld+json>{&quot;embedUrl&quot;:&quot;https://fast.wistia.net/embed/iframe/aaaaaaaaaa&quot;}</script>"></iframe>`;
+    expect(stripHiddenVidzflow(html)).toEqual({ html, removed: 0 });
+  });
+});
+
+describe('the srcdoc script audit (ticket 20)', () => {
+  it('sees a script inside a srcdoc payload — the census could only see it by luck', () => {
+    expect(srcdocScripts(`<iframe srcdoc="<script>alert(1)</script>"></iframe>`).executable).toBe(1);
+  });
+
+  it('treats the captured allow-scripts ld+json payload as benign', () => {
+    const html = `<iframe sandbox="allow-scripts" srcdoc="<script nonce type=application/ld+json>{}</script>"></iframe>`;
+    expect(srcdocScripts(html)).toEqual({ total: 1, executable: 0, allowScripts: 1, allowScriptsExecutable: 0 });
+  });
+
+  it('counts only the srcdoc payloads, never the page scripts outside them', () => {
+    const html = `<script data-flock-parody>1</script><iframe srcdoc="<script>alert(1)</script>"></iframe>`;
+    expect(srcdocScripts(html).executable).toBe(1);
+  });
+
+  it('sees an entity-escaped script, which the parser decodes before the frame runs', () => {
+    // The raw attribute value has no `<`, but the browser decodes `&lt;` before
+    // instantiating the frame — scanning the raw value would score this 0.
+    const html = `<iframe srcdoc="&lt;script&gt;alert(1)&lt;/script&gt;"></iframe>`;
+    expect(srcdocScripts(html).executable).toBe(1);
+  });
+});
+
+describe('the remote-reference class audit (ticket 20)', () => {
+  it('flags a remote reference in an unexpected fetcher position', () => {
+    expect(unclassifiedRemoteRefs(`<img src="https://evil.example/x.jpg">`)).toEqual(['https://evil.example/x.jpg']);
+    expect(unclassifiedRemoteRefs(`<link rel=stylesheet href="https://evil.example/x.css">`)).toEqual(['https://evil.example/x.css']);
+    expect(unclassifiedRemoteRefs(`<script src="https://evil.example/x.js"></script>`)).toEqual(['https://evil.example/x.js']);
+  });
+
+  it('accepts the documented inert classes and the allow-listed frames', () => {
+    const html = `<iframe src="${wistiaEmbedUrl('llllllllll')}"></iframe>`
+      + `<video poster="https://r2.example/p.jpg"></video>`
+      + `<div data-animation-type=lottie data-src="https://cdn.example/a.json"></div>`
+      + `<meta property=og:image content="https://cdn.example/a.png">`
+      + `<a href="https://external.example/page">link</a>`
+      + `<link rel=canonical href="https://www.example.com/page">`;
+    expect(unclassifiedRemoteRefs(html)).toEqual([]);
+  });
+
+  it('flags a remote @import in a stylesheet', () => {
+    expect(unclassifiedRemoteRefs(`<style>@import url(https://evil.example/x.css);</style>`)).toEqual(['https://evil.example/x.css']);
+  });
+
+  it('does not read a `data-src` as a `src`', () => {
+    expect(unclassifiedRemoteRefs(`<img data-src="https://cdn.example/a.jpg">`)).toEqual([]);
   });
 });
 

@@ -17,6 +17,15 @@
 // probe's report meaningful: a dead embed is a blank slot, a dead link is
 // broken copy.
 //
+// Coverage is scoped to the providers whose slots survive the build: Wistia
+// (URLs and `<wistia-player media-id>` attributes) and YouTube (URLs and
+// `data-video-id`). Vidzflow — the fourth provider, a video.js player inlined
+// in an `srcdoc` — is deliberately not modelled: the build strips its hidden
+// player documents (ticket 19), so no Vidzflow slot survives to inventory. A
+// *new* provider is caught at build time by the embeds summary plus the
+// `unclassified remote refs` audit, not by this tool; this tool's job is the
+// liveness of the players that actually reach the network.
+//
 // Pure transformation: reads the served tree, writes dated inventory files.
 // No network access of its own — the upstream liveness probe is a separate ops
 // tool, `pipeline/video-probe.mjs`, whose fast tier takes the dated inventory
@@ -46,6 +55,16 @@ const YOUTUBE_EMBED = /youtube(?:-nocookie)?\.com\/(?:embed|shorts|live|v)\/([A-
 const YOUTUBE_LINK = /(?:youtube(?:-nocookie)?\.com\/watch\?(?:[^"'`\s>]*&)?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/g;
 const WISTIA_EMBED = /(?:fast\.wistia\.(?:net|com)\/embed\/(?:iframe|medias)\/|wistia_async_)([a-z0-9]{10})/g;
 const WISTIA_LINK = /flocksafety\.wistia\.com\/medias\/([a-z0-9]{10})/g;
+// Slot elements that name their video as an *attribute* rather than a URL. The
+// inventory missed these entirely until 2026-09-11, which cost it 16 YouTube
+// slots and one Wistia media — and, because the dead-media list is generated
+// from the inventory, shipped one live frame to a dead player (ticket 17).
+// Both are bounded: `data-video-id` must hold exactly the 11 id characters
+// (podcast episode buttons carry 24-char ids; Vidzflow's `data-video-id=32614`
+// is numeric) and `media-id` exactly 10 — and `media-id` must not be prefixed
+// (Wistia's own attribute is bare; `data-media-id` belongs to other markup).
+const YOUTUBE_ATTR = /(?<![\w-])data-video-id\s*=\s*["']?([A-Za-z0-9_-]{11})["']?(?![A-Za-z0-9_-])/g;
+const WISTIA_MEDIA_ATTR = /(?<![\w-])media-id\s*=\s*["']?([a-z0-9]{10})["']?(?![a-z0-9])/g;
 const DELIVERY = /embed-ssl\.wistia\.com\/deliveries\/([a-f0-9]{8,})(\.[a-z0-9]+)?/g;
 
 const VIDEO_EXTS = new Set(['.m3u8', '.mp4', '.webm', '.mov']);
@@ -87,7 +106,8 @@ function unescapeEntities(s) {
 
 /**
  * Extract one page's video references — w-json-ld Wistia VideoObjects, Wistia
- * embed/link hashed IDs, YouTube embed/link IDs, and delivery assets (video
+ * embed/link hashed IDs, YouTube embed/link IDs, the slot attributes that name a
+ * video without a URL (`data-video-id`, `media-id`), and delivery assets (video
  * vs poster image) — each id tagged with the contexts it appeared in.
  * @param {string} html raw page bytes
  * @returns {{wistia: Map<string, {title: string|null, duration: string|null, contentUrl: string|null, contexts: Set<'embed'|'link'>}>, youtube: Map<string, Set<'embed'|'link'>>, deliveries: Map<string, 'video'|'image'|'unknown'>}}
@@ -103,6 +123,7 @@ export function extractFromPage(html) {
 
   let mm;
   while ((mm = YOUTUBE_EMBED.exec(html)) !== null) markYouTube(mm[1], 'embed');
+  while ((mm = YOUTUBE_ATTR.exec(html)) !== null) markYouTube(mm[1], 'embed');
   while ((mm = YOUTUBE_LINK.exec(html)) !== null) markYouTube(mm[1], 'link');
   return { wistia, youtube, deliveries };
 }
@@ -168,6 +189,7 @@ export function wistiaFromPage(html) {
 
   let mm;
   while ((mm = WISTIA_EMBED.exec(html)) !== null) markWistia(mm[1], 'embed', null);
+  while ((mm = WISTIA_MEDIA_ATTR.exec(html)) !== null) markWistia(mm[1], 'embed', null);
   while ((mm = WISTIA_LINK.exec(html)) !== null) markWistia(mm[1], 'link', null);
   while ((mm = DELIVERY.exec(html)) !== null) {
     const ext = (mm[2] || '').toLowerCase();

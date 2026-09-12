@@ -464,6 +464,20 @@
       ]
     },
     {
+      "key": "wistia:ah1n072ovb",
+      "host": "wistia",
+      "kind": "media",
+      "context": "embed",
+      "id": "ah1n072ovb",
+      "url": "https://fast.wistia.com/embed/medias/ah1n072ovb.json",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/blog/vehicle-and-catalytic-converter-theft-flock-safetys-solutions-for-businesses.html"
+      ]
+    },
+    {
       "key": "wistia:b1smein42a",
       "host": "wistia",
       "kind": "media",
@@ -1804,6 +1818,20 @@
       ]
     },
     {
+      "key": "youtube:4FDsKQHJXeU",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "4FDsKQHJXeU",
+      "url": "https://www.youtube.com/watch?v=4FDsKQHJXeU",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
+      ]
+    },
+    {
       "key": "youtube:9h-CCep8M-0",
       "host": "youtube",
       "kind": "video",
@@ -1863,14 +1891,15 @@
       "key": "youtube:czWZT0qQ5HU",
       "host": "youtube",
       "kind": "video",
-      "context": "both",
+      "context": "embed",
       "id": "czWZT0qQ5HU",
       "url": "https://www.youtube.com/watch?v=czWZT0qQ5HU",
       "title": null,
       "duration": null,
       "contentUrl": null,
       "pages": [
-        "served/trust.html"
+        "served/trust.html",
+        "served/trust/myths-facts.html"
       ]
     },
     {
@@ -1943,6 +1972,20 @@
       "contentUrl": null,
       "pages": [
         "served/blog/trespassing-and-unauthorized-access-flock-safetys-solutions-for-businesses.html"
+      ]
+    },
+    {
+      "key": "youtube:Ez6Bcgr7VME",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "Ez6Bcgr7VME",
+      "url": "https://www.youtube.com/watch?v=Ez6Bcgr7VME",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/compliance-tools.html"
       ]
     },
     {
@@ -2045,6 +2088,62 @@
       ]
     },
     {
+      "key": "youtube:J0omZcIxKQc",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "J0omZcIxKQc",
+      "url": "https://www.youtube.com/watch?v=J0omZcIxKQc",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/compliance-tools.html"
+      ]
+    },
+    {
+      "key": "youtube:j1nv0pkmfGQ",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "j1nv0pkmfGQ",
+      "url": "https://www.youtube.com/watch?v=j1nv0pkmfGQ",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
+      ]
+    },
+    {
+      "key": "youtube:j2haBJmgerY",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "j2haBJmgerY",
+      "url": "https://www.youtube.com/watch?v=j2haBJmgerY",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
+      ]
+    },
+    {
+      "key": "youtube:JinwAwxUmPY",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "JinwAwxUmPY",
+      "url": "https://www.youtube.com/watch?v=JinwAwxUmPY",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
+      ]
+    },
+    {
       "key": "youtube:JsefjbPNMyU",
       "host": "youtube",
       "kind": "video",
@@ -2116,6 +2215,20 @@
       ]
     },
     {
+      "key": "youtube:l0QLkVDxgws",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "l0QLkVDxgws",
+      "url": "https://www.youtube.com/watch?v=l0QLkVDxgws",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
+      ]
+    },
+    {
       "key": "youtube:L8jtr_XMO0E",
       "host": "youtube",
       "kind": "video",
@@ -2127,6 +2240,20 @@
       "contentUrl": null,
       "pages": [
         "served/blog/neighborhood-security-flock-safety-success.html"
+      ]
+    },
+    {
+      "key": "youtube:lV1WCvNGnmM",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "lV1WCvNGnmM",
+      "url": "https://www.youtube.com/watch?v=lV1WCvNGnmM",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
       ]
     },
     {
@@ -2175,14 +2302,15 @@
       "key": "youtube:MSElcwBMm-k",
       "host": "youtube",
       "kind": "video",
-      "context": "both",
+      "context": "embed",
       "id": "MSElcwBMm-k",
       "url": "https://www.youtube.com/watch?v=MSElcwBMm-k",
       "title": null,
       "duration": null,
       "contentUrl": null,
       "pages": [
-        "served/trust.html"
+        "served/trust.html",
+        "served/trust/myths-facts.html"
       ]
     },
     {
@@ -2211,6 +2339,20 @@
       "contentUrl": null,
       "pages": [
         "served/blog/neighborhood-security-flock-safety-success.html"
+      ]
+    },
+    {
+      "key": "youtube:NLAWIargH64",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "NLAWIargH64",
+      "url": "https://www.youtube.com/watch?v=NLAWIargH64",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/compliance-tools.html"
       ]
     },
     {
@@ -2299,6 +2441,20 @@
       ]
     },
     {
+      "key": "youtube:Qq1eaw86JWw",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "Qq1eaw86JWw",
+      "url": "https://www.youtube.com/watch?v=Qq1eaw86JWw",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
+      ]
+    },
+    {
       "key": "youtube:QRsPSgrynNk",
       "host": "youtube",
       "kind": "video",
@@ -2325,6 +2481,20 @@
       "contentUrl": null,
       "pages": [
         "served/blog/flock-safety-2022-atl-startup-awards.html"
+      ]
+    },
+    {
+      "key": "youtube:sSlmOht45EE",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "sSlmOht45EE",
+      "url": "https://www.youtube.com/watch?v=sSlmOht45EE",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
       ]
     },
     {
@@ -2382,6 +2552,20 @@
       "contentUrl": null,
       "pages": [
         "served/blog/flock-safety-solved-stories-recap-edition-015.html"
+      ]
+    },
+    {
+      "key": "youtube:u3ApDgvIwII",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "u3ApDgvIwII",
+      "url": "https://www.youtube.com/watch?v=u3ApDgvIwII",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/myths-facts.html"
       ]
     },
     {
@@ -2484,6 +2668,20 @@
       ]
     },
     {
+      "key": "youtube:XB45geEbdjw",
+      "host": "youtube",
+      "kind": "video",
+      "context": "embed",
+      "id": "XB45geEbdjw",
+      "url": "https://www.youtube.com/watch?v=XB45geEbdjw",
+      "title": null,
+      "duration": null,
+      "contentUrl": null,
+      "pages": [
+        "served/trust/compliance-tools.html"
+      ]
+    },
+    {
       "key": "youtube:yAm1pTBRT-8",
       "host": "youtube",
       "kind": "video",
@@ -2501,14 +2699,15 @@
       "key": "youtube:yBQN9orr_Ho",
       "host": "youtube",
       "kind": "video",
-      "context": "both",
+      "context": "embed",
       "id": "yBQN9orr_Ho",
       "url": "https://www.youtube.com/watch?v=yBQN9orr_Ho",
       "title": null,
       "duration": null,
       "contentUrl": null,
       "pages": [
-        "served/trust.html"
+        "served/trust.html",
+        "served/trust/myths-facts.html"
       ]
     },
     {

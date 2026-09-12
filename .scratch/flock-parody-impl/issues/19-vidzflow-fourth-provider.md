@@ -14,24 +14,43 @@ be. Inventory it, decide mimic-or-strip with the user, and build the decision.
 **Blocked by:** none. **Related:** 20 (the poster reference is one of its classes),
 18 (the shared question of what a slot that cannot play should show).
 
-**Status:** open
+**Status:** resolved
 Label: ready-for-agent
 
-- [ ] `pipeline/video-inventory.mjs` covers the provider, or the inventory states
+- [x] `pipeline/video-inventory.mjs` covers the provider, or the inventory states
       plainly why it does not — either way a *fifth* provider cannot hide the same
-      way, so the criterion is a completeness check, not just this host.
-- [ ] The slot shape is documented: element, poster, sources, the surrounding
+      way, so the criterion is a completeness check, not just this host. **States
+      plainly why not:** the provider is stripped, so no Vidzflow slot survives to
+      inventory; the inventory header now says so and points at the build-time
+      guards (the embeds summary that reports `vidzflow` per page, and the
+      `unclassified remote refs` audit that catches a new fetched reference in an
+      unexpected class). The strip count is itself a per-page number, so a provider
+      that stops being stripped shows up immediately.
+- [x] The slot shape is documented: element, poster, sources, the surrounding
       layout box, and whether a playable embed URL exists for this provider at all
       (the Wistia pass works because the capture carries the player's own
-      `embedUrl`; nothing here is known to carry one).
-- [ ] The user's call is recorded and implemented — mimic in place (needs a
+      `embedUrl`; nothing here is known to carry one). Documented in
+      `pipeline/embeds.mjs` and ADR 0002: a `div.video-desktop`/`.video-tablet`
+      (`is-hidden`) wrapping a `div[data-video-id=32614]` whose `srcdoc` iframe
+      carries a whole video.js document (mp4 at `r2.vidzflow.com`, public page
+      `app.vidzflow.com/v/<id>`, remote poster `r2.vidzflow.com/thumbnails/…`,
+      sandbox without `allow-scripts`); the visible content is the sibling still
+      `img.l-img`; the layout box is `aspect-ratio:1` on the inner div. The capture
+      carries no reusable embed URL — only a direct mp4 plus the provider's own
+      page — so mimicking would mean self-hosting or a new frame host.
+- [x] The user's call is recorded and implemented — mimic in place (needs a
       playable source and a runtime), link out, or strip with the surrounding layout
       accounted for. Inert-but-showing-artwork is a resting state the user accepts
-      explicitly, not one that happened.
-- [ ] If the host is kept live: `MEDIA_HOSTS` names it, `frame-src`/`img-src` are
+      explicitly, not one that happened. **Call: strip.** `stripHiddenVidzflow()`
+      removes the 120 `srcdoc` documents (10.1 MB) on 10 pages; the
+      `is-hidden` wrapper and the sibling still survive, so the box does not move
+      and the artwork still shows. The user approved this call on 2026-09-11.
+- [x] If the host is kept live: `MEDIA_HOSTS` names it, `frame-src`/`img-src` are
       widened on exactly those pages, `off-allowlist frames` stays 0, browser
-      evidence on one page.
-- [ ] ADR 0002's "Vidzflow, uncovered" open item is closed and the spec updated.
+      evidence on one page. **N/A — the host is stripped, not kept live.**
+- [x] ADR 0002's "Vidzflow, uncovered" open item is closed and the spec updated.
+      ADR 0002 now records Vidzflow as *stripped* under Status; `spec.md`'s video
+      bullet and Out of Scope say the same.
 
 ## Comments
 
@@ -62,3 +81,11 @@ so it missed `poster=&quot;/assets/…&quot;` on the inner `<video>`. The remote
 poster sits on the `<video-js>` wrapper (a custom element, so nothing fetches it,
 and `img-src 'self' data:` would refuse it), while the artwork the visitor sees is
 the local extracted one. Corrected premise: inert but *showing artwork*.
+
+**Resolved 2026-09-11.** `stripHiddenVidzflow()` in `pipeline/embeds.mjs` removes
+each `srcdoc` frame whose value names the provider (the marker is `vidzflow`, not
+`vjs-styles-defaults` — Wistia's own player is video.js-based, and trusting the
+broader marker stripped 55 live Wistia slots in one rebuild, now pinned by a
+regression test). Build: **120 documents stripped on 10 pages**, page bytes
+–2 MB on a representative page, visible stills untouched; the hidden wrappers
+stay as empty `display:none` boxes. `npm run routes` green.

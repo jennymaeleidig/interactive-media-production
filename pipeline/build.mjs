@@ -109,7 +109,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
-import { embedPass, offAllowlistFrames } from './embeds.mjs';
+import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, unclassifiedRemoteRefs } from './embeds.mjs';
 import { DEAD_VIDEO_IDS } from './config.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
@@ -341,15 +341,25 @@ function auditHtml(html) {
   // references (a captured `poster=`, a Lottie `data-src`) are refused by the
   // captured `img-src 'self' data:` and so are not part of this count.
   audit['off-allowlist frames'] = offAllowlistFrames(html).length;
+  // The frame audit reads absolute `src` values only, and the script census
+  // reads `<script>` open tags — neither says anything about the 600-odd
+  // `srcdoc` payloads in the tree (ticket 20). `srcdoc scripts` looks inside
+  // them: an executable script there fails the invariant instead of relying on
+  // what SingleFile happened to drop.
+  audit['srcdoc scripts'] = srcdocScripts(html).executable;
+  // The catch-all for the reference classes nobody has declared inert — a
+  // remote reference in a fetcher position that is neither on the media
+  // allow-list nor in a documented inert class (ticket 20).
+  audit['unclassified remote refs'] = unclassifiedRemoteRefs(html).length;
   return audit;
 }
-/** Script census of served bytes. `executable` counts capture-derived scripts — must stay 0 (the audit invariant). `ldJson` are inert data blocks; `injected` are the Recreation's own marked runtimes (data-flock-parody). */
+/** Script census of served bytes. `executable` counts capture-derived scripts — must stay 0 (the audit invariant). `ldJson` are inert data blocks; `injected` are the Recreation's own marked runtimes (data-flock-parody); `srcdocAllowScripts` counts `srcdoc` frames whose sandbox carries `allow-scripts` (today: one captured cvt-embed document carrying only ld+json), reported so that case is visible rather than silent. */
 function scriptCensus(html) {
   const openTags = html.match(/<script\b[^>]*>/gi) ?? [];
   const injected = openTags.filter((t) => /data-flock-parody=/i.test(t)).length;
   const ldJson = openTags.filter((t) => LD_JSON_TYPE.test(t)).length;
   const executable = openTags.length - injected - ldJson;
-  return { total: openTags.length, executable, ldJson, injected };
+  return { total: openTags.length, executable, ldJson, injected, srcdocAllowScripts: srcdocScripts(html).allowScripts };
 }
 
 // ---- pass 4: form routing (ticket 02) ----------------------------------------
@@ -833,26 +843,32 @@ function storyHookPass(html, entry, source) {
  *
  * Runs before the asset pass so the snapshots' own inlined data URIs are never
  * extracted: the bytes are about to be discarded. The frame-src grant goes in
- * here, on the pages that actually carry a live frame, and nowhere else.
+ * here, on the pages that actually carry a live frame (or a slot the
+ * interactions runtime will arm on click), and nowhere else.
  *
  * @param {string} html
  * @param {LogEntry} entry
  * @returns {string}
  */
 function applyEmbeds(html, entry, deadVideoIds) {
-  const { html: out, reshaped, rewritten, unreachable, hosts } = embedPass(html, { dead: deadVideoIds });
-  // A page can carry a video story without carrying a *live* slot: a popover
-  // kept as captured, a media that is dead upstream, a media the page's JSON-LD
-  // names but no slot markup rewrote. Record all of them, or the summary loses
-  // exactly the cases an operator needs to see.
-  const touched = rewritten.length > 0 || reshaped.dead > 0 || reshaped.popover > 0 || unreachable.length > 0;
+  // The hidden Vidzflow player documents go first: their bytes are dead weight
+  // and nothing below needs to see them.
+  const { html: stripped, removed: vidzflow } = stripHiddenVidzflow(html);
+  const { html: out, reshaped, rewritten, unreachable, hosts } = embedPass(stripped, { dead: deadVideoIds });
+  // A page can carry a video story without carrying a *live* slot: a dead media,
+  // a media the page's JSON-LD names but no slot markup rewrote, a stripped
+  // Vidzflow document, or a YouTube panel that only gains its `src` on click.
+  // Record all of them, or the summary loses exactly the cases an operator needs
+  // to see.
+  const touched = rewritten.length > 0 || reshaped.dead > 0 || reshaped.popover > 0
+    || reshaped.youtube > 0 || vidzflow > 0 || unreachable.length > 0;
   if (!touched) return html;
   // `live` counts *frames*, not distinct medias: five pages embed the same media
   // twice, and a reader comparing the summary against the served bytes should get
   // the same number. `rewritten` stays deduped because it feeds `unreachable`.
   const live = reshaped.srcdoc + reshaped.element + reshaped.component;
-  entry.embeds = { ...reshaped, live, unreachable: unreachable.length };
-  if (rewritten.length === 0) return html;
+  entry.embeds = { ...reshaped, live, vidzflow, unreachable: unreachable.length };
+  if (hosts.length === 0) return stripped;
   // Only the hosts the pass actually used — never the whole allow-list, which
   // would grant a host this page has no player for.
   return grantFrameSrc(out, entry, hosts);
@@ -909,7 +925,7 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {Record<string, number>} [stripped]  Strip target → bytes (or element count) removed.
  * @property {boolean} [chatLauncher]  Whether the Capture mounted the Qualified chat launcher (`<q-root>`) — the chat-mount census (ticket 10).
  * @property {string} [csp]  The CSP grant(s) the build added to the captured policy, `'; '`-joined in pass order: `connect-src 'self'` for the chat mount, `frame-src <hosts>` for live embeds (ADR 0002).
- * @property {{srcdoc: number, element: number, component: number, popover: number, dead: number, live: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the player frames made live; `srcdoc`/`element`/`component` say which inert snapshot shape was replaced; `popover` and `dead` are the slots deliberately left as captured; `unreachable` counts the medias this page's JSON-LD names that no slot markup rewrote (mostly popovers and dead medias, which is why it overlaps them).
+ * @property {{srcdoc: number, element: number, component: number, popover: number, dead: number, youtube: number, live: number, vidzflow: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the player frames made live; `srcdoc`/`element`/`component`/`popover` say which inert snapshot shape was replaced; `youtube` counts the panels the interactions runtime arms on click; `vidzflow` counts the hidden Vidzflow player documents stripped (ticket 19); `dead` is the slots deliberately left as captured; `unreachable` counts the medias this page's JSON-LD names that no slot markup rewrote (mostly dead medias, which is why it overlaps them).
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
@@ -917,7 +933,7 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {string[]} [injected]  Recreation runtimes injected inline on this page (motion layer, interactions layer, story-hook seam — tickets 04, 05, 03).
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
- * @property {{total: number, executable: number, ldJson: number}} [scripts]  Script census of served bytes.
+ * @property {{total: number, executable: number, ldJson: number, injected: number, srcdocAllowScripts: number}} [scripts]  Script census of served bytes.
  * @property {{references: number, distinct: number, bytes: number}} [assets]  Inlined data URIs on this page: references rewritten, distinct assets, decoded bytes (ADR 0002).
  * @property {string} [error]  Set instead of the pass data when the page could not be built.
  */
@@ -1092,6 +1108,8 @@ export async function runPipeline(opts) {
       component: servedEntries.reduce((n, e) => n + (e.embeds?.component ?? 0), 0),
       popover: servedEntries.reduce((n, e) => n + (e.embeds?.popover ?? 0), 0),
       dead: servedEntries.reduce((n, e) => n + (e.embeds?.dead ?? 0), 0),
+      youtube: servedEntries.reduce((n, e) => n + (e.embeds?.youtube ?? 0), 0),
+      vidzflow: servedEntries.reduce((n, e) => n + (e.embeds?.vidzflow ?? 0), 0),
       unreachable: servedEntries.reduce((n, e) => n + (e.embeds?.unreachable ?? 0), 0),
     },
   };
@@ -1142,8 +1160,10 @@ function summarize(log, summary) {
   console.log(`chat census: ${summary.chat.mounted} page(s) mounted the launcher, ${summary.chat.absent} did not`);
   console.log(
     `embeds: ${summary.embeds.live} live player frame(s) on ${summary.embeds.pages} page(s) `
-    + `(${summary.embeds.srcdoc} srcdoc, ${summary.embeds.element} chrome, ${summary.embeds.component} web component) · `
-    + `${summary.embeds.popover} popover + ${summary.embeds.dead} dead-upstream kept as captured · `
+    + `(${summary.embeds.srcdoc} srcdoc, ${summary.embeds.element} chrome incl. ${summary.embeds.popover} popover, `
+    + `${summary.embeds.component} web component) · ${summary.embeds.dead} dead-upstream kept as captured · `
+    + `${summary.embeds.youtube} YouTube panel(s) armed on click · `
+    + `${summary.embeds.vidzflow} hidden Vidzflow document(s) stripped · `
     + `${summary.embeds.unreachable} media(s) named in JSON-LD without a slot rewrite`
   );
   console.log(
