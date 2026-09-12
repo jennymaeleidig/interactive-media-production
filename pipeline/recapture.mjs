@@ -17,9 +17,9 @@
 // SPDX-License-Identifier: CC0-1.0
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { makeArg, invokedDirectly } from './cli.mjs';
-import { SITE_ORIGIN, extractTitle, localDate, mapLimit, parseCsvLine, parseInventoryCsv, toCsv } from './inventory.mjs';
+import { SITE_ORIGIN, extractTitle, localDate, mapLimit, parseCsvTable, parseInventoryCsv, toCsv } from './inventory.mjs';
 
 /**
  * @typedef {import('./inventory.mjs').InventoryRow} InventoryRow
@@ -102,26 +102,44 @@ export function buildUncapturedManifest(rows) {
 }
 
 /**
- * Merge a retry's status rows into an existing status CSV: one row per URL,
- * the retry winning, first-seen order preserved (the 2026-09-11 run folded
- * transient retries back this way).
+ * Fold a retry's status rows into the run's per-page record, keeping the
+ * stronger provenance: a page the run already `saved` is never downgraded to
+ * `skipped-existing` by a later pass that merely found the file in place — in
+ * a resumed run that distinction is the only thing that says the capture came
+ * from this run rather than a prior one. Synthetic `skipped-stale-capture`
+ * rows (pages outside a scope) never overwrite a real verdict either.
  * @param {string} existingCsv
  * @param {StatusRow[]} newRows
  * @returns {StatusRow[]}
  */
+export function mergeRunStatus(existingCsv, newRows) {
+  const prior = parseCsvTable(existingCsv);
+  const priorUrls = new Set(prior.map((r) => r.url));
+  const priorSaved = new Set(prior.filter((r) => r.verdict === 'saved').map((r) => r.url));
+  const foldable = newRows.filter((r) => {
+    if (!priorUrls.has(r.url)) return true; // nothing on record to clobber
+    if (r.verdict === 'skipped-stale-capture') return false; // synthetic, out of this pass's scope
+    if (r.verdict === 'skipped-existing' && priorSaved.has(r.url)) return false; // `saved` is sticky
+    return true;
+  });
+  return mergeStatusRows(existingCsv, foldable);
+}
+
+/**
+ * Merge a retry's rows into an existing CSV of the same shape: one row per
+ * URL, the retry winning, first-seen order preserved (the 2026-09-11 run
+ * folded transient retries back this way, and a resume's title-repair record
+ * merges the same way).
+ * @template {{url: string}} T
+ * @param {string} existingCsv
+ * @param {T[]} newRows
+ * @returns {T[]}
+ */
 export function mergeStatusRows(existingCsv, newRows) {
-  /** @type {Map<string, StatusRow>} */
+  /** @type {Map<string, T>} */
   const byUrl = new Map();
-  const lines = existingCsv.trim().split(/\r?\n/).filter((l) => l.trim() !== '');
-  if (lines.length > 0) {
-    const cols = parseCsvLine(lines[0]);
-    for (const line of lines.slice(1)) {
-      const fields = parseCsvLine(line);
-      /** @type {Record<string, string>} */
-      const row = {};
-      cols.forEach((c, i) => { row[c] = fields[i] ?? ''; });
-      if (row.url) byUrl.set(row.url, /** @type {StatusRow} */ (row));
-    }
+  for (const row of parseCsvTable(existingCsv)) {
+    if (row.url) byUrl.set(row.url, /** @type {T} */ (/** @type {unknown} */ (row)));
   }
   for (const row of newRows) byUrl.set(row.url, row);
   return [...byUrl.values()];
@@ -189,9 +207,12 @@ export async function runRecapture({ rows, runDate, runDir, scope, capture, conc
   fs.writeFileSync(listFile, existingList + urls.filter((u) => !listed.has(u)).map((u) => `${u}\n`).join(''));
 
   // errors.log is a run artifact even when every page succeeded (wayfinding
-  // step 3 lists it unconditionally), so it always exists.
+  // step 3 lists it unconditionally), so it always exists — and it describes
+  // THIS pass: truncating at the start means a resumed retry that clears the
+  // transient failures leaves it empty, exactly as the runbook promises. The
+  // per-page record lives in capture-status.csv; this file is the diagnostic.
   const errorsFile = path.join(runDir, 'errors.log');
-  if (!fs.existsSync(errorsFile)) fs.writeFileSync(errorsFile, '');
+  fs.writeFileSync(errorsFile, '');
 
   const manifest = buildUncapturedManifest(rows);
   fs.writeFileSync(path.join(runDir, 'manifest-uncaptured.csv'), manifest.csv);
@@ -219,8 +240,12 @@ export async function runRecapture({ rows, runDate, runDir, scope, capture, conc
     return { url, rel, exit: result.exit, bytes: result.bytes, secs: result.secs, verdict: result.verdict };
   });
 
+  // A resume folds only the rows this pass actually judged into the record:
+  // `fullStatusRows` synthesizes `skipped-stale-capture` for pages outside a
+  // scope, and on a resume those synthetic rows would clobber the earlier
+  // pass's real verdicts (ticket 12 hit this re-capturing a handful of pages).
   const merged = resume && fs.existsSync(statusFile)
-    ? mergeStatusRows(fs.readFileSync(statusFile, 'utf8'), fullStatusRows(rows, statusRows))
+    ? mergeRunStatus(fs.readFileSync(statusFile, 'utf8'), fullStatusRows(rows, statusRows))
     : fullStatusRows(rows, statusRows);
   fs.writeFileSync(statusFile, toCsv(STATUS_COLUMNS, merged));
 
@@ -246,7 +271,14 @@ export async function runRecapture({ rows, runDate, runDir, scope, capture, conc
       repairs.push({ url: row.url, rel: row.rel, from: extractTitle(html), to: target });
     }
   }
-  fs.writeFileSync(path.join(runDir, 'title-repairs.csv'), toCsv(['url', 'rel', 'from', 'to'], repairs));
+  // On resume, fold this pass's repairs into the prior pass's: an already
+  // repaired page shows no change on the retry, so without the merge the run's
+  // record would shrink to the retry pass alone (ticket 12 hit this).
+  const repairsFile = path.join(runDir, 'title-repairs.csv');
+  const mergedRepairs = resume && fs.existsSync(repairsFile)
+    ? mergeStatusRows(fs.readFileSync(repairsFile, 'utf8'), repairs)
+    : repairs;
+  fs.writeFileSync(repairsFile, toCsv(['url', 'rel', 'from', 'to'], mergedRepairs));
 
   const counts = { saved: 0, failed: 0, empty: 0, skipped: 0 };
   for (const row of statusRows) {
@@ -281,8 +313,37 @@ export function singleFileArgs(url, rel) {
   ];
 }
 
-/** The real capture: one `capsulecode/singlefile` container per page. */
-export function dockerCapture(runDir) {
+/**
+ * One `docker run …` as a promise: `{ status, stderr }`. Async `spawn`, never
+ * `spawnSync`: a synchronous spawn blocks Node's event loop, so
+ * `runRecapture`'s worker pool degrades to a single file and a full
+ * re-capture stretches from ~1 h to a day (ticket 12 hit this at 1,200-page
+ * scale — one container ever ran at a time). Injectable so the capture's
+ * bookkeeping is testable without the daemon.
+ * @param {string[]} args
+ * @returns {Promise<{status: number, stderr: string}>}
+ */
+export function runDocker(args) {
+  return new Promise((resolve) => {
+    const proc = spawn('docker', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    let stderr = '';
+    proc.stderr.on('data', (chunk) => {
+      stderr += chunk;
+      if (stderr.length > 64 * 1024) stderr = stderr.slice(-64 * 1024);
+    });
+    proc.on('error', (error) => resolve({ status: 1, stderr: stderr + String(error) }));
+    proc.on('close', (status) => resolve({ status: status ?? 1, stderr }));
+  });
+}
+
+/**
+ * The real capture: one `capsulecode/singlefile` container per page. The
+ * runner is injectable so the async spawn path is testable without Docker.
+ * @param {string} runDir
+ * @param {(args: string[]) => Promise<{status: number, stderr: string}>} [run]
+ * @returns {(url: string, rel: string) => Promise<CaptureResult>}
+ */
+export function dockerCapture(runDir, run = runDocker) {
   return async (url, rel) => {
     const out = path.join(runDir, rel);
     if (fs.existsSync(out) && fs.statSync(out).size > 1000) {
@@ -290,14 +351,15 @@ export function dockerCapture(runDir) {
     }
     fs.mkdirSync(path.dirname(out), { recursive: true });
     const started = Date.now();
-    const proc = spawnSync('docker', [
+    const proc = await run([
       'run', '--rm', '--entrypoint', 'npx',
       '-v', `${path.resolve(runDir)}:/data`,
       IMAGE,
       'single-file', ...singleFileArgs(url, rel),
-    ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    ]);
     const secs = (Date.now() - started) / 1000;
     const bytes = fs.existsSync(out) ? fs.statSync(out).size : 0;
+    /** @type {'saved' | 'empty' | 'failed'} */
     const verdict = proc.status === 0 && bytes > 1000 ? 'saved' : proc.status === 0 ? 'empty' : 'failed';
     return { exit: proc.status ?? 1, bytes, secs, verdict, stderr: proc.stderr ?? '' };
   };

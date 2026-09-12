@@ -13,6 +13,7 @@ import {
   buildCaptureList,
   buildUncapturedManifest,
   captureRunDir,
+  dockerCapture,
   fullStatusRows,
   mergeStatusRows,
   repairTitle,
@@ -209,6 +210,85 @@ describe('runRecapture', () => {
     expect(fs.readFileSync(path.join(dir, 'capture-list.txt'), 'utf8')).toBe(before);
   });
 
+  it('resuming clears errors.log when the retry succeeds', async () => {
+    const dir = path.join(tmp(), 'run');
+    const rows = [row('/', '200', { title: 'Flock Safety' })];
+    const failing = async () => ({ exit: 1, bytes: 0, secs: 0, verdict: 'failed' as const, stderr: 'Load timeout' });
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture: failing, concurrency: 1 });
+    expect(fs.readFileSync(path.join(dir, 'errors.log'), 'utf8')).toContain('Load timeout');
+
+    const capture = async (_url: string, rel: string) => {
+      const file = path.join(dir, rel);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, '<html><head><title>Flock Safety</title></head></html>');
+      return { exit: 0, bytes: 42, secs: 1, verdict: 'saved' as const };
+    };
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture, concurrency: 1, resume: true });
+    // errors.log describes this pass: a clean retry leaves it empty.
+    expect(fs.readFileSync(path.join(dir, 'errors.log'), 'utf8')).toBe('');
+  });
+
+  it('keeps the run-wide title-repair record across a resume', async () => {
+    const dir = path.join(tmp(), 'run');
+    const rows = [row('/', '200', { title: 'Flock Safety' }), row('/blog/a', '200', { title: 'Post A' })];
+    // Mirrors dockerCapture: an existing capture is skipped, never re-written,
+    // so on a resume the repaired titles are already in place.
+    const capture = async (_url: string, rel: string) => {
+      const file = path.join(dir, rel);
+      if (fs.existsSync(file)) return { exit: 0, bytes: fs.statSync(file).size, secs: 0, verdict: 'skipped-existing' as const };
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, '<html><head><title>Message from Flock Safety</title></head></html>');
+      return { exit: 0, bytes: 42, secs: 1, verdict: 'saved' as const };
+    };
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture, concurrency: 2 });
+    const first = fs.readFileSync(path.join(dir, 'title-repairs.csv'), 'utf8');
+    expect(first).toContain('Post A');
+    expect(first.split('\n').filter(Boolean)).toHaveLength(3);
+
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture, concurrency: 2, resume: true });
+    // The retry pass repairs nothing (already done), but the run's record keeps
+    // what the first pass repaired.
+    expect(fs.readFileSync(path.join(dir, 'title-repairs.csv'), 'utf8')).toBe(first);
+  });
+
+  it('a scoped resume keeps the earlier pass verdicts for out-of-scope pages', async () => {
+    const dir = path.join(tmp(), 'run');
+    const rows = [row('/', '200', { title: 'Flock Safety' }), row('/blog/a', '200', { title: 'Post A' }), row('/blog/b', '200', { title: 'Post B' })];
+    const capture = async (_url: string, rel: string) => {
+      const file = path.join(dir, rel);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, `<html><head><title>${rel}</title></head></html>`);
+      return { exit: 0, bytes: 42, secs: 1, verdict: 'saved' as const };
+    };
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture, concurrency: 2 });
+    // Re-capture one page in place: the other two are out of scope, and must
+    // keep their `saved` verdicts rather than revert to `skipped-stale-capture`.
+    fs.rmSync(path.join(dir, 'blog/b.html'));
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, scope: ['/blog/b'], capture, concurrency: 1, resume: true });
+    const status = fs.readFileSync(path.join(dir, 'capture-status.csv'), 'utf8');
+    expect(status).not.toContain('skipped-stale-capture');
+    expect(status.split('\n').filter(Boolean)).toHaveLength(4);
+  });
+
+  it('a resume never downgrades a page this run saved', async () => {
+    const dir = path.join(tmp(), 'run');
+    const rows = [row('/', '200', { title: 'Flock Safety' })];
+    const saving = async (_url: string, rel: string) => {
+      const file = path.join(dir, rel);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, '<html><head><title>Flock Safety</title></head></html>');
+      return { exit: 0, bytes: 42, secs: 1, verdict: 'saved' as const };
+    };
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture: saving, concurrency: 1 });
+    const skipping = async (_url: string, rel: string) => ({ exit: 0, bytes: fs.statSync(path.join(dir, rel)).size, secs: 0, verdict: 'skipped-existing' as const });
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture: skipping, concurrency: 1, resume: true });
+    // `saved` is the record that the capture came from this run; a retry that
+    // only finds the file in place must not erase that.
+    const status = fs.readFileSync(path.join(dir, 'capture-status.csv'), 'utf8');
+    expect(status).toContain(',saved');
+    expect(status).not.toContain('skipped-existing');
+  });
+
   it('refuses to write into an existing run folder', async () => {
     const dir = tmp();
     fs.writeFileSync(path.join(dir, 'index.html'), 'old');
@@ -229,5 +309,27 @@ describe('runRecapture', () => {
     expect(fs.readFileSync(path.join(dir, 'blog/a.html'), 'utf8')).toContain('<title>Post A</title>');
     const repairs = fs.readFileSync(path.join(dir, 'title-repairs.csv'), 'utf8');
     expect(repairs).toContain('Post A');
+  });
+});
+
+describe('docker capture', () => {
+  it('spawns asynchronously so the worker pool captures pages in parallel (ticket 12)', async () => {
+    const dir = path.join(tmp(), 'run');
+    let active = 0;
+    let peak = 0;
+    const run = async (args: string[]) => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      const out = args.at(-1)!.replace('/data/', `${dir}/`);
+      fs.mkdirSync(path.dirname(out), { recursive: true });
+      fs.writeFileSync(out, 'x'.repeat(2000));
+      active -= 1;
+      return { status: 0, stderr: '' };
+    };
+    const rows = ['/a', '/b', '/c', '/d'].map((p) => row(p, '200'));
+    const result = await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture: dockerCapture(dir, run), concurrency: 4 });
+    expect(result.saved).toBe(4);
+    expect(peak).toBeGreaterThan(1);
   });
 });

@@ -95,11 +95,13 @@ function csvField(value) {
 }
 
 /**
- * Parse an inventory(-shaped) CSV into row objects, keyed by its header row.
+ * Parse a CSV with a header row into row objects keyed by that header. The
+ * shared seam for every CSV-shaped run artifact (inventory, capture status,
+ * title repairs): the header names the columns, nothing is positional.
  * @param {string} text
- * @returns {import('./inventory.mjs').InventoryRow[]}
+ * @returns {Record<string, string>[]}
  */
-export function parseInventoryCsv(text) {
+export function parseCsvTable(text) {
   const lines = text.trim().split(/\r?\n/).filter((l) => l.trim() !== '');
   if (lines.length === 0) return [];
   const cols = parseCsvLine(lines[0]).map((c) => c.trim());
@@ -108,8 +110,17 @@ export function parseInventoryCsv(text) {
     /** @type {Record<string, string>} */
     const row = {};
     cols.forEach((c, i) => { row[c] = fields[i] ?? ''; });
-    return /** @type {import('./inventory.mjs').InventoryRow} */ (row);
+    return row;
   });
+}
+
+/**
+ * Parse an inventory(-shaped) CSV into row objects, keyed by its header row.
+ * @param {string} text
+ * @returns {import('./inventory.mjs').InventoryRow[]}
+ */
+export function parseInventoryCsv(text) {
+  return parseCsvTable(text).map((row) => /** @type {import('./inventory.mjs').InventoryRow} */ (row));
 }
 
 /**

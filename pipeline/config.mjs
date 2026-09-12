@@ -2,13 +2,14 @@
 // One value — moving the Recreation to a fresh capture run is this one switch.
 // Relative to the repo root; overrides: `npm run pipeline -- --run <dir>`.
 //
-// `2026-09-11` is the corrected-flags run (ticket 15): it was captured with
-// `--remove-hidden-elements=false --remove-unused-styles=false`, so it keeps
-// the hidden subtrees (closed menus, take-overs, modal panels) and the state
-// CSS (open/active rules that matched no element at capture time) that the
-// 2026-09-09 defaults dropped. The refresh runbook (ticket 11) records the
-// corrected flags as the default for every future run.
-export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-11';
+// `2026-09-12` is the signed-off run (ticket 12, the final fidelity gate): a
+// full re-capture of the live site through the ticket-11 driver, 1,200/1,200
+// pages saved, 0 failed, with the ticket-15 corrected flags
+// (`--remove-hidden-elements=false --remove-unused-styles=false`) so the hidden
+// subtrees and state CSS survive. It is the run the phase-gate signoff covers;
+// the refresh runbook (ticket 11) records the corrected flags as the default
+// for every future run.
+export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-12';
 
 // Wistia medias that are gone upstream, so there is nothing to mimic: Wistia
 // answers their media JSON with `{"error":true}` (deleted or made private in
