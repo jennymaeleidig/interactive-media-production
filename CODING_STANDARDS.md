@@ -183,9 +183,16 @@ video.js documents are stripped, not played (ticket 19).
   asset-identity check. **Extended by ticket 17**: the video-inventory detection
   seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s
   attribute-form sweeps and their boundary rules, because an id the inventory
-  cannot see is an id the dead-media list never learns about). Per this header's
-  rule, later
-  efforts extend this list here rather than adding a seam silently.
+  cannot see is an id the dead-media list never learns about). **Extended by
+  ticket 11**: the capture-refresh ops-tool seams (`test/inventory.test.ts`,
+  `test/inventory-diff.test.ts`, `test/recapture.test.ts` — one `capture-refresh`
+  vitest project over `pipeline/inventory.mjs`, `pipeline/inventory-diff.mjs`,
+  and `pipeline/recapture.mjs`: the inventory parsers, the diff/scope/route
+  classes, and the re-capture list/manifest/status/title bookkeeping). The three
+  tools' network and Docker drivers are hand-run, never suite members — a
+  live-site or registry outage must not fail the suite, exactly as with the
+  video probe above. Per this header's rule, later efforts extend this list
+  here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature

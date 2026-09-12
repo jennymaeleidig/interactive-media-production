@@ -13,6 +13,7 @@ import {
   buildCaptureList,
   buildUncapturedManifest,
   captureRunDir,
+  fullStatusRows,
   mergeStatusRows,
   repairTitle,
   runRecapture,
@@ -141,6 +142,18 @@ describe('title repair', () => {
   });
 });
 
+describe('full status', () => {
+  it('keeps captured rows and marks live pages outside the scope skipped-stale-capture, in inventory order', () => {
+    const rows = [row('/', '200'), row('/blog/a', '200'), row('/blog/b', '200'), row('/gone', '404', { type: 'dead' })];
+    const captured = [{ url: 'https://www.flocksafety.com/', rel: 'index.html', exit: 0, bytes: 10, secs: 1, verdict: 'saved' }];
+    expect(fullStatusRows(rows, captured)).toEqual([
+      { url: 'https://www.flocksafety.com/', rel: 'index.html', exit: 0, bytes: 10, secs: 1, verdict: 'saved' },
+      { url: 'https://www.flocksafety.com/blog/a', rel: 'blog/a.html', exit: 0, bytes: 0, secs: 0, verdict: 'skipped-stale-capture' },
+      { url: 'https://www.flocksafety.com/blog/b', rel: 'blog/b.html', exit: 0, bytes: 0, secs: 0, verdict: 'skipped-stale-capture' },
+    ]);
+  });
+});
+
 describe('runRecapture', () => {
   it('writes a fresh run folder: list, manifest, status, and title repairs', async () => {
     const dir = path.join(tmp(), 'run');
@@ -163,6 +176,37 @@ describe('runRecapture', () => {
     const repairs = fs.readFileSync(path.join(dir, 'title-repairs.csv'), 'utf8');
     expect(repairs).toContain('/blog/a');
     expect(fs.readFileSync(path.join(dir, 'blog/a.html'), 'utf8')).toContain('<title>Post A</title>');
+  });
+
+  it('writes the full status CSV and always writes errors.log', async () => {
+    const dir = path.join(tmp(), 'run');
+    const rows = [row('/', '200', { title: 'Flock Safety' }), row('/blog/a', '200', { title: 'Post A' })];
+    const capture = async (_url: string, rel: string) => {
+      const file = path.join(dir, rel);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, '<html><head><title>Flock Safety</title></head></html>');
+      return { exit: 0, bytes: 42, secs: 1.5, verdict: 'saved' as const };
+    };
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, scope: ['/'], capture, concurrency: 1 });
+    const status = fs.readFileSync(path.join(dir, 'capture-status.csv'), 'utf8');
+    expect(status).toContain('/blog/a');
+    expect(status).toContain('skipped-stale-capture');
+    expect(fs.existsSync(path.join(dir, 'errors.log'))).toBe(true);
+  });
+
+  it('resuming appends only capture-list URLs that are not already listed', async () => {
+    const dir = path.join(tmp(), 'run');
+    const rows = [row('/', '200'), row('/blog/a', '200')];
+    const capture = async (_url: string, rel: string) => {
+      const file = path.join(dir, rel);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, '<html><head><title>t</title></head></html>');
+      return { exit: 0, bytes: 42, secs: 1, verdict: 'saved' as const };
+    };
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture, concurrency: 1 });
+    const before = fs.readFileSync(path.join(dir, 'capture-list.txt'), 'utf8');
+    await runRecapture({ rows, runDate: '2026-09-12', runDir: dir, capture, concurrency: 1, resume: true });
+    expect(fs.readFileSync(path.join(dir, 'capture-list.txt'), 'utf8')).toBe(before);
   });
 
   it('refuses to write into an existing run folder', async () => {

@@ -89,6 +89,12 @@ Outputs, beside the fresh inventory:
 re-capture gate. Sitemap/nav membership changes alone are not page changes —
 count drift on the `path` set and the `title` column, not the `nav` column.
 
+Because only live `200` pages are captured, the diff's class counts can exceed
+the scope list on their face: added redirect stubs or dead roots, and `retitled`
+rows whose new status is no longer `200`, are classified but never captured (a
+stub or dead page is a route action, not a capture). The scope file is the
+capture list; the diff table is the full drift record.
+
 **Removed pages** are route actions, not captures: a page that was live and is
 gone yields `drop-route`; one that now redirects yields `redirect` with its new
 target. The tool emits these in the diff report and CSV; the build turns them
@@ -124,7 +130,8 @@ node pipeline/recapture.mjs --inventory ... --fallback-inventory ... --date 2026
 ```
 
 - The driver never overwrites an earlier run folder; a scoped run gets its own
-  dated folder. Re-run a partial run with `--resume` (merges retries by URL).
+  dated folder. Re-run a partial run with `--resume` (merges retries by URL and
+  appends only capture-list URLs not already listed).
 - `--dry-run` prints the capture list and manifest without writing.
 - The title repair pass restores each capture's static `<title>` from the fresh
   inventory (the live script swaps it to "Message from Flock Safety" on some
@@ -135,6 +142,10 @@ node pipeline/recapture.mjs --inventory ... --fallback-inventory ... --date 2026
 - `manifest-uncaptured.csv` is regenerated fresh every run — redirect stubs,
   dead roots, and auth-gated stubs move between runs, and ticket 05's 301
   manifest derives from it.
+- `capture-status.csv` is the **full per-page** status even on a scoped run:
+  pages outside the scope are recorded as `skipped-stale-capture` (their
+  capture comes from the previous run), so the run folder always describes the
+  whole live set. `errors.log` is written every run, empty when nothing failed.
 - A scoped run does **not** move the build's capture pointer. The pointer moves
   only when every scoped page has been processed through the build passes
   (step 5).

@@ -9,6 +9,11 @@
 // The Docker walk is injected (`capture`), so the bookkeeping — list, manifest,
 // per-page status, title repair — is unit-tested without the daemon or network.
 //
+// Ops tool — NOT part of the build; it needs the network and Docker and reads
+// the wall clock, which the pipeline purity rule forbids, so it is the
+// documented exception (like `pipeline/video-probe.mjs`), run by hand and never
+// by `npm test`: a live-site or registry outage must not fail the suite.
+//
 // SPDX-License-Identifier: CC0-1.0
 import fs from 'node:fs';
 import path from 'node:path';
@@ -140,6 +145,22 @@ export function repairTitle(html, title) {
 }
 
 /**
+ * A run's full per-page status: every live page in inventory order, the
+ * captured rows kept and every page outside the scope marked
+ * `skipped-stale-capture` (its capture comes from the previous run). A scoped
+ * run still records the whole live set so the run folder is self-describing.
+ * @param {InventoryRow[]} rows
+ * @param {StatusRow[]} statusRows
+ * @returns {StatusRow[]}
+ */
+export function fullStatusRows(rows, statusRows) {
+  const byUrl = new Map(statusRows.map((r) => [r.url, r]));
+  return rows
+    .filter((r) => r.status === '200')
+    .map((r) => byUrl.get(r.url) ?? { url: r.url, rel: urlToRel(r.url), exit: 0, bytes: 0, secs: 0, verdict: 'skipped-stale-capture' });
+}
+
+/**
  * Run a scoped (or full) re-capture into a fresh dated run folder.
  *
  * @param {Object} options
@@ -159,11 +180,18 @@ export async function runRecapture({ rows, runDate, runDir, scope, capture, conc
   fs.mkdirSync(runDir, { recursive: true });
 
   const urls = buildCaptureList(rows, scope);
-  const listText = urls.length > 0 ? urls.map((u) => `${u}\n`).join('') : '';
-  const existingList = resume && fs.existsSync(path.join(runDir, 'capture-list.txt'))
-    ? fs.readFileSync(path.join(runDir, 'capture-list.txt'), 'utf8')
-    : '';
-  fs.writeFileSync(path.join(runDir, 'capture-list.txt'), existingList + listText);
+
+  // capture-list.txt is append-only: on resume, only URLs not already listed
+  // are appended, so a retry never duplicates the list.
+  const listFile = path.join(runDir, 'capture-list.txt');
+  const existingList = resume && fs.existsSync(listFile) ? fs.readFileSync(listFile, 'utf8') : '';
+  const listed = new Set(existingList.split(/\r?\n/).filter((l) => l.trim() !== ''));
+  fs.writeFileSync(listFile, existingList + urls.filter((u) => !listed.has(u)).map((u) => `${u}\n`).join(''));
+
+  // errors.log is a run artifact even when every page succeeded (wayfinding
+  // step 3 lists it unconditionally), so it always exists.
+  const errorsFile = path.join(runDir, 'errors.log');
+  if (!fs.existsSync(errorsFile)) fs.writeFileSync(errorsFile, '');
 
   const manifest = buildUncapturedManifest(rows);
   fs.writeFileSync(path.join(runDir, 'manifest-uncaptured.csv'), manifest.csv);
@@ -186,14 +214,14 @@ export async function runRecapture({ rows, runDate, runDir, scope, capture, conc
       log(`[${done}/${urls.length}] ${rate.toFixed(2)} pages/s, ~${Math.round((urls.length - done) / Math.max(rate, 0.01) / 60)} min left`);
     }
     if (result.verdict === 'failed' && result.stderr) {
-      fs.appendFileSync(path.join(runDir, 'errors.log'), `--- ${url} (exit ${result.exit})\n${result.stderr.trim().split('\n').slice(-8).join('\n')}\n`);
+      fs.appendFileSync(errorsFile, `--- ${url} (exit ${result.exit})\n${result.stderr.trim().split('\n').slice(-8).join('\n')}\n`);
     }
     return { url, rel, exit: result.exit, bytes: result.bytes, secs: result.secs, verdict: result.verdict };
   });
 
   const merged = resume && fs.existsSync(statusFile)
-    ? mergeStatusRows(fs.readFileSync(statusFile, 'utf8'), statusRows)
-    : statusRows;
+    ? mergeStatusRows(fs.readFileSync(statusFile, 'utf8'), fullStatusRows(rows, statusRows))
+    : fullStatusRows(rows, statusRows);
   fs.writeFileSync(statusFile, toCsv(STATUS_COLUMNS, merged));
 
   // Title repair: restore each capture's static title from the fresh inventory.
