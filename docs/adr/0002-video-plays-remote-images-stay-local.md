@@ -13,14 +13,19 @@ content-addressed file (`/assets/<sha16>.<ext>`, served same-origin by
 collapses the served tree from 10 GB to 2.1 GB (143,959 inline references → ~2,900
 files: the same logo was re-encoded on all 1,180 pages).
 
-**Status.** Accepted 2026-09-11; **built** for Wistia (115 live players on 82
-pages). Still open, each for a stated reason: YouTube's three panels sit
-`inert`/`opacity:0` until a site script reveals them and that reveal is not
-reproduced, so a live `src` would load a frame nobody can see; the 11 `popover`
-slots keep their captured click-to-play thumbnail because going inline would
-change the layout, not just the behavior; and 10 pages carry a **Vidzflow**
-video.js player (120 `r2.vidzflow.com` poster references) that no pass covers —
-found while building this, not previously inventoried.
+**Status.** Accepted 2026-09-11; **built** for Wistia (120 player frames across 82
+pages, 107 distinct medias — the pass's `live` counter reads 115 because it counts
+distinct medias per page and five pages embed one twice). Still open, each for a stated reason and each ticketed (17–20): YouTube's **16**
+slots across three `/trust` pages sit `inert`/`opacity:0` until a site script
+reveals them, and that reveal is not reproduced, so a live `src` would load a
+frame nobody can see (17); the 11 `popover` slots keep their captured
+click-to-play thumbnail, which means a play button that answers no click, because
+going inline would change the layout and not just the behavior (18); 10 pages
+carry a **Vidzflow** video.js player — 120 `<video>` elements whose poster the CSP
+refuses, so they render as black boxes — a provider no inventory, pass or ticket
+had ever named (19); and the audit's frame-only scope leaves five other classes of
+remote reference in the bytes unchecked (20), which is a stance to ratify rather
+than a bug to fix.
 
 **Considered options.** Host the videos ourselves — rejected: ~47.7 GB of
 masters to store, re-encode, and keep live for a piece that never needed to own
