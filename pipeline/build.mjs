@@ -7,7 +7,9 @@
 //                consent stack). Captures carry zero executable scripts
 //                (SingleFile stripped them at capture time), so once the
 //                strip DOM is gone, "zero outbound requests" is true by
-//                construction — the audit pass asserts it per page.
+//                construction — the audit pass asserts it per page. ADR 0002
+//                is the one exception: the video slots (pass 10) play from
+//                fast.wistia.net, an allow-listed host the audit enforces.
 //   2. (retired) header-restore — ticket 14 grafted the shared header's lost
 //                bytes (mega-menu panels, nav state CSS, sticky offset) from a
 //                vendored corrected-flags homepage artifact. Ticket 15 moved
@@ -63,13 +65,24 @@
 //                inert). The data-flock-parody attribute marks the script so
 //                the census can tell the Recreation's own runtime from
 //                capture residue (which must stay at zero executable).
-//  10. assets  — extract every asset the Capture inlined as a `data:` URI into
+//  10. embeds  — make each video slot playable by swapping the inert snapshot
+//                the Capture kept for the live player document the page's own
+//                w-json-ld names as `embedUrl` (ADR 0002). Three snapshot
+//                shapes: an inlined `srcdoc` player document, the JS-built
+//                player chrome, and a `<wistia-player>` web component. This is
+//                the ONE place a served page reaches the network; the pass
+//                widens the captured `frame-src` for exactly the hosts it used,
+//                and the audit refuses any other frame host. Popover slots and
+//                medias that are dead upstream stay in their captured
+//                end-state (11 + 4), and YouTube's panels are left alone until
+//                their reveal interaction exists.
+//  11. assets  — extract every asset the Capture inlined as a `data:` URI into
 //                one content-addressed file under served/assets/, and point
 //                the page at /assets/<sha>.<ext> (ADR 0002). The captures
-//                re-encode the same image once per referencing page — 86,079
-//                occurrences for 2,830 distinct files, a 14.9x tax — so the
-//                pass turns 7.8 GB of base64 text back into 391 MB of files.
-//                Same-origin, so the zero-outbound invariant still holds.
+//                re-encode the same image once per referencing page — 143,959
+//                references for ~3,000 distinct files, a 14.9x tax — so the
+//                pass turns 7.8 GB of base64 text back into ~370 MB of files.
+//                Same-origin, so it adds no network the CSP has to allow.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -96,6 +109,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
+import { embedPass, MEDIA_HOSTS, offAllowlistFrames } from './embeds.mjs';
+import { DEAD_VIDEO_IDS } from './config.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -321,6 +336,11 @@ function auditHtml(html) {
   for (const [name, re] of Object.entries(AUDIT_RES)) {
     audit[name] = (html.match(new RegExp(re.source, re.flags.replace('g', '') + 'g')) || []).length;
   }
+  // ADR 0002's exception is enforced here rather than held by construction: a
+  // frame may only point at an allow-listed media host. Image-side remote
+  // references (a captured `poster=`, a Lottie `data-src`) are refused by the
+  // captured `img-src 'self' data:` and so are not part of this count.
+  audit['off-allowlist frames'] = offAllowlistFrames(html).length;
   return audit;
 }
 /** Script census of served bytes. `executable` counts capture-derived scripts — must stay 0 (the audit invariant). `ldJson` are inert data blocks; `injected` are the Recreation's own marked runtimes (data-flock-parody). */
@@ -731,7 +751,43 @@ function grantConnectSelf(html, entry) {
     return html;
   }
   if (edited === meta[0]) return html;
-  entry.csp = "connect-src 'self' (chat mount)";
+  entry.csp = entry.csp ? `${entry.csp}; connect-src 'self' (chat mount)` : "connect-src 'self' (chat mount)";
+  return html.slice(0, meta.index) + edited + html.slice(meta.index + meta[0].length);
+}
+
+/**
+ * The captured policy allows frames only from `'self' data:`, so a live embed
+ * needs its host named *there* — and the directive has to be replaced, not
+ * appended to: a second `frame-src` would intersect with the captured one and
+ * the players would stay blocked. Only the hosts the pass actually used are
+ * added, and only on pages that carry a live frame (ADR 0002).
+ *
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @param {string[]} hosts
+ * @returns {string}
+ */
+function grantFrameSrc(html, entry, hosts) {
+  const meta = CSP_META_RE.exec(html);
+  if (!meta) {
+    entry.warnings.push('embeds: no CSP meta found — the live players will be blocked');
+    return html;
+  }
+  const sources = hosts.map((h) => `https://${h}`);
+  const edited = editAttr(meta[0], 'content', (value) => {
+    const directive = /(?:^|;)\s*frame-src\s+[^;]*/i.exec(value);
+    if (!directive) return value.replace(/[;\s]+$/, '') + `; frame-src 'self' data: ${sources.join(' ')};`;
+    const missing = sources.filter((s) => !directive[0].includes(s));
+    if (missing.length === 0) return value;
+    return value.replace(directive[0], `${directive[0].trimEnd()} ${missing.join(' ')}`);
+  });
+  if (edited === null) {
+    entry.warnings.push('embeds: CSP meta has no content attribute — the live players will be blocked');
+    return html;
+  }
+  if (edited === meta[0]) return html;
+  const grant = `frame-src ${sources.join(' ')} (live embeds)`;
+  entry.csp = entry.csp ? `${entry.csp}; ${grant}` : grant;
   return html.slice(0, meta.index) + edited + html.slice(meta.index + meta[0].length);
 }
 
@@ -765,7 +821,38 @@ function storyHookPass(html, entry, source) {
   return injectBeforeClose(html, entry, 'story-hook seam (inline, dormant)', tag);
 }
 
-// ---- pass 10: asset extraction (ADR 0002) -----------------------------------
+// ---- pass 10: live media embeds (ADR 0002) ----------------------------------
+
+/**
+ * Swap each video slot's inert snapshot for the live player document.
+ *
+ * The Recreation cannot play a video, so a Capture keeps one of three inert
+ * snapshots (an inlined `srcdoc` player document, the JS-built player chrome, or
+ * a `<wistia-player>` web component with a declarative shadow root) — see
+ * `pipeline/embeds.mjs` for the shapes and for what is deliberately left alone.
+ *
+ * Runs before the asset pass so the snapshots' own inlined data URIs are never
+ * extracted: the bytes are about to be discarded. The frame-src grant goes in
+ * here, on the pages that actually carry a live frame, and nowhere else.
+ *
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @returns {string}
+ */
+function embedsPass(html, entry, deadVideoIds) {
+  const { html: out, reshaped, rewritten, unreachable, hosts } = embedPass(html, { dead: deadVideoIds });
+  // A page can carry a video story without carrying a *live* slot: a popover
+  // kept as captured, a media that is dead upstream, a JSON-LD video no slot
+  // points at. Record all of them, or the summary loses exactly the cases an
+  // operator needs to see.
+  const touched = rewritten.length > 0 || reshaped.dead > 0 || reshaped.popover > 0 || unreachable.length > 0;
+  if (!touched) return html;
+  entry.embeds = { ...reshaped, live: rewritten.length, unreachable: unreachable.length };
+  if (rewritten.length === 0) return html;
+  return grantFrameSrc(out, entry, hosts.length > 0 ? hosts : MEDIA_HOSTS);
+}
+
+// ---- pass 11: asset extraction (ADR 0002) -----------------------------------
 
 /**
  * Write every asset a Capture inlined as a `data:` URI once, under a
@@ -815,7 +902,8 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {number} [bytesOut]  Served size after the passes.
  * @property {Record<string, number>} [stripped]  Strip target → bytes (or element count) removed.
  * @property {boolean} [chatLauncher]  Whether the Capture mounted the Qualified chat launcher (`<q-root>`) — the chat-mount census (ticket 10).
- * @property {string} [csp]  The CSP grant the chat mount added to the captured policy, if any — only ever `connect-src 'self'`.
+ * @property {string} [csp]  The CSP grant(s) the build added to the captured policy, `'; '`-joined in pass order: `connect-src 'self'` for the chat mount, `frame-src <hosts>` for live embeds (ADR 0002).
+ * @property {{srcdoc: number, element: number, component: number, popover: number, dead: number, live: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the players made live; `srcdoc`/`element`/`component` say which inert snapshot shape was replaced; `popover` and `dead` are the slots deliberately left as captured; `unreachable` counts the page's JSON-LD videos that no slot markup points at.
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
@@ -842,6 +930,7 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
  * @property {{mounted: number, absent: number}} chat  The chat-mount census over served pages (ticket 10): how many Captures mounted the launcher, how many did not.
  * @property {{references: number, distinct: number, bytes: number}} assets  Inlined data URIs extracted site-wide (ADR 0002): references rewritten, distinct files written, decoded bytes.
+ * @property {{live: number, pages: number, srcdoc: number, element: number, component: number, popover: number, dead: number, unreachable: number}} embeds  Live media embeds site-wide (ADR 0002): slots made live, pages carrying at least one, the snapshot shape each replaced, slots kept as captured (popover, dead upstream), and JSON-LD videos no slot points at.
  */
 
 /**
@@ -853,11 +942,11 @@ function assetsPass(html, entry, assetDir, written) {
  * when the caller listed them — "dropped from serving entirely" (spec, Serving
  * and links). The CLI passes pipeline/config.mjs DROPPED_PAGES.
  *
- * @param {{runDir: string, pages: string[], outDir: string, dropPages?: string[]}} opts
+ * @param {{runDir: string, pages: string[], outDir: string, dropPages?: string[], deadVideoIds?: string[]}} opts
  * @returns {Promise<{ log: LogEntry[], summary: BuildSummary }>}
  */
 export async function runPipeline(opts) {
-  const { runDir, pages, outDir, dropPages = [] } = opts;
+  const { runDir, pages, outDir, dropPages = [], deadVideoIds = DEAD_VIDEO_IDS } = opts;
   const dropSet = new Set(dropPages);
   // A dropped page must not be reachable, even if an earlier build wrote its
   // served file: remove it before building, and never write it.
@@ -895,6 +984,11 @@ export async function runPipeline(opts) {
     html = rewritePass(html, entry);
 
     html = formsPass(html, entry, page, formsManifest);
+
+    // Live embeds go in before the asset pass: the inert snapshots this pass
+    // discards carry inlined `data:` URIs of their own, and extracting bytes
+    // that are about to be thrown away would only litter the asset directory.
+    html = embedsPass(html, entry, deadVideoIds);
 
     // Extraction runs here, before every injection pass: the Recreation's own
     // runtimes are inlined VERBATIM (CODING_STANDARDS), so their bytes must not
@@ -984,6 +1078,16 @@ export async function runPipeline(opts) {
       distinct: assetNames.length,
       bytes: assetNames.reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
     },
+    embeds: {
+      live: servedEntries.reduce((n, e) => n + (e.embeds?.live ?? 0), 0),
+      pages: servedEntries.filter((e) => (e.embeds?.live ?? 0) > 0).length,
+      srcdoc: servedEntries.reduce((n, e) => n + (e.embeds?.srcdoc ?? 0), 0),
+      element: servedEntries.reduce((n, e) => n + (e.embeds?.element ?? 0), 0),
+      component: servedEntries.reduce((n, e) => n + (e.embeds?.component ?? 0), 0),
+      popover: servedEntries.reduce((n, e) => n + (e.embeds?.popover ?? 0), 0),
+      dead: servedEntries.reduce((n, e) => n + (e.embeds?.dead ?? 0), 0),
+      unreachable: servedEntries.reduce((n, e) => n + (e.embeds?.unreachable ?? 0), 0),
+    },
   };
   fs.writeFileSync(path.join(outDir, 'build-summary.json'), JSON.stringify(summary, null, 2));
   return { log, summary };
@@ -1030,6 +1134,12 @@ function summarize(log, summary) {
     + `${summary.authGated.length} auth-gated 404`
   );
   console.log(`chat census: ${summary.chat.mounted} page(s) mounted the launcher, ${summary.chat.absent} did not`);
+  console.log(
+    `embeds: ${summary.embeds.live} live player(s) on ${summary.embeds.pages} page(s) `
+    + `(${summary.embeds.srcdoc} srcdoc, ${summary.embeds.element} chrome, ${summary.embeds.component} web component) · `
+    + `${summary.embeds.popover} popover + ${summary.embeds.dead} dead-upstream kept as captured · `
+    + `${summary.embeds.unreachable} JSON-LD video(s) no slot points at`
+  );
   console.log(
     `assets: ${summary.assets.references} inlined reference(s) → ${summary.assets.distinct} content-addressed file(s), `
     + `${Math.round(summary.assets.bytes / 1e6)}MB decoded`

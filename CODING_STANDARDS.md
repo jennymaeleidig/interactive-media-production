@@ -28,12 +28,20 @@ Page assets are local, never remote. A Capture inlines every image, font, and
 sound as a `data:` URI, and the build extracts each one to a content-addressed
 file (`/assets/<sha16>.<ext>`, served by `app/assets/[...path]/route.ts`) rather
 than pointing at an origin URL — SingleFile keeps no origin URL, and the
-extraction is what makes the served tree ~2 GB instead of ~10 GB. The
-**decided exception is video** (ADR 0002): the slots will play from the original
-hosts' embeds, the only reason `frame-src` may ever name a remote host, and the
-only place the invariant is enforced by allow-list audit rather than by
-construction. Extraction runs before the injection passes, because the injected
-runtimes are inlined verbatim and one of them carries `data:` URIs of its own.
+extraction is what makes the served tree ~2 GB instead of ~10 GB. Extraction
+runs before the injection passes, because the injected runtimes are inlined
+verbatim and one of them carries `data:` URIs of its own.
+
+**The one exception is a video slot** (ADR 0002): a Capture cannot play a video,
+so it keeps an inert snapshot of the player — an inlined `srcdoc` player
+document, the JS-built player chrome, or a `<wistia-player>` web component — and
+the embed pass swaps that snapshot for the live player, named by the page's own
+`w-json-ld` `embedUrl`. Only those frames may reach out: the pass widens the
+captured `frame-src` by exactly the hosts it used, and the audit fails the build
+on any frame whose host is not on `pipeline/embeds.mjs`'s allow-list. Remote
+*image* references (`poster=`, a Lottie `data-src`, a Wistia swatch in CSS) still
+appear in captured bytes; the captured `img-src 'self' data:` refuses them, which
+is why the image half needs no grant and no audit key.
 
 ## Stack & layout
 

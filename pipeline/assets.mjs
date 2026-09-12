@@ -150,14 +150,16 @@ export function assetPath(sha, ext) {
 const ESCAPES = String.raw`\\(?:[0-9a-fA-F]{1,6}[ \t]?|[\s\S])`;
 const BARE_ATTR = String.raw`(?:${ESCAPES}|[^\s"'>)])*`;
 const BARE_URL = String.raw`(?:${ESCAPES}|[^\s"')])*`;
-const quoted = String.raw`&quot;[\s\S]*?&quot;|&#39;[\s\S]*?&#39;|"[^"]*"|'[^']*'`;
+const quoted = String.raw`&amp;quot;[\s\S]*?&amp;quot;|&amp;#39;[\s\S]*?&amp;#39;|&quot;[\s\S]*?&quot;|&#39;[\s\S]*?&#39;|"[^"]*"|'[^']*'`;
 const VALUE_ATTR = `(${quoted}|${BARE_ATTR})`;
 const VALUE_URL = `(${quoted}|${BARE_URL})`;
 const SRC_RE = new RegExp(String.raw`(\ssrc\s*=\s*)${VALUE_ATTR}`, 'gi');
 const POSTER_RE = new RegExp(String.raw`(\sposter\s*=\s*)${VALUE_ATTR}`, 'gi');
 // `href` on `<link rel=icon>`/inline-SVG `<use>` carries the favicon's data URI
-// (the corpus has no `<a href="data:…">`, which is why this is safe to take).
-const HREF_RE = new RegExp(String.raw`(\shref\s*=\s*)${VALUE_ATTR}`, 'gi');
+// (the corpus has no `<a href="data:…">`, which is why this is safe to take);
+// `xlink:href` is how an inline SVG references a raster `<image>`, which is
+// where `products/flock-dfr.html` keeps 130 of them.
+const HREF_RE = new RegExp(String.raw`(\s(?:xlink:)?href\s*=\s*)${VALUE_ATTR}`, 'gi');
 // CSS `url(...)` — where every inlined background image and `--sf-img-*`
 // custom property carries its payload. Base64 padding `=` is part of the
 // value, not a terminator.
@@ -187,7 +189,11 @@ export function cssUnescape(value) {
  * @returns {{inner: string, open: string, close: string}}
  */
 function undelimit(value) {
-  for (const delim of ['&quot;', '&#39;', '"', "'"]) {
+  // Double-escaped forms first: a `srcdoc` payload is escaped once when the
+  // player document is inlined and again as the attribute's own value, so its
+  // quotes read `&amp;quot;` — and the tail of that entity is `&quot;`, which
+  // the shorter delimiter would otherwise match, orphaning the `&amp;`.
+  for (const delim of ['&amp;quot;', '&amp;#39;', '&quot;', '&#39;', '"', "'"]) {
     if (value.length > delim.length * 2 && value.startsWith(delim) && value.endsWith(delim)) {
       return { inner: value.slice(delim.length, value.length - delim.length), open: delim, close: delim };
     }

@@ -2,7 +2,8 @@
 
 **The Recreation**: flocksafety.com — the entire site — served verbatim from
 SingleFile Captures through a strip-and-rewrite pipeline, as a Next.js app.
-Zero outbound requests from any served page, by construction. Spec:
+Nothing in a served page reaches the network except the video slots' own
+players (ADR 0002); every image, font, and sound is a local file. Spec:
 `.scratch/flock-parody-impl/spec.md`.
 
 ## Run it

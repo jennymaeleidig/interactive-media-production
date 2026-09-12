@@ -75,6 +75,12 @@ export default defineConfig({
           include: ['test/assets.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'embeds',
+          include: ['test/embeds.test.ts'],
+        },
+      },
     ],
   },
 });

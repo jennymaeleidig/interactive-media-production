@@ -162,6 +162,20 @@ describe('extractDataUris', () => {
     expect(out.html).toBe(`<img src=/assets/${shaOf(PNG)}.png><img src=/assets/${shaOf(gif)}.gif>`);
   });
 
+  it('rewrites an asset inside a srcdoc payload, where the quotes are escaped twice', () => {
+    // a player document inlined as `srcdoc` is escaped once for the inlining and
+    // again as the attribute value, so its quotes read `&amp;quot;`
+    const out = extractDataUris(`<iframe srcdoc="<img src=&amp;quot;data:image/png;base64,${PNG_B64}&amp;quot;>"></iframe>`);
+    expect(out.html).toBe(`<iframe srcdoc="<img src=&amp;quot;/assets/${shaOf(PNG)}.png&amp;quot;>"></iframe>`);
+    expect(out.assets.get(shaOf(PNG))?.bytes).toEqual(PNG);
+  });
+
+  it('rewrites an SVG <image> that carries its payload on xlink:href', () => {
+    const out = extractDataUris(`<image xlink:href="data:image/png;base64,${PNG_B64}" width=40></image>`);
+    expect(out.html).toBe(`<image xlink:href="/assets/${shaOf(PNG)}.png" width=40></image>`);
+    expect(out.assets.get(shaOf(PNG))?.bytes).toEqual(PNG);
+  });
+
   it('leaves ordinary references, fragments, and an empty data URI untouched', () => {
     const html = '<img src="/a.png"><use href="#icon"><a href="/b"><div style="background:url(data:,)">';
     const out = extractDataUris(html);

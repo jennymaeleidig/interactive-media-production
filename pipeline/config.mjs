@@ -10,6 +10,18 @@
 // corrected flags as the default for every future run.
 export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-11';
 
+// Wistia medias that are gone upstream, so there is nothing to mimic: Wistia
+// answers their media JSON with `{"error":true}` (deleted or made private in
+// the account), which means the embed is broken on the live site too. The embed
+// pass (ADR 0002) leaves these slots in their captured end-state instead of
+// pointing a player at a media that cannot play. Source of truth:
+// `.scratch/flock-parody-impl/video-inventory/2026-09-11/playability.csv`, which
+// `node pipeline/video-probe.mjs --inv <that dir>` regenerates.
+// A stale entry fails loudly: the pass logs `dead` slots and the audit counts
+// every off-allow-list fetch, so an id that came back to life shows up as an
+// inert slot rather than silently drifting.
+export const DEAD_VIDEO_IDS = ['77o31nkq0o', 'gayegdwaii', 'imr6vzeawt', 'ueo7k59ryn'];
+
 // Scaffold/test pages: captured 200 pages that are internal Webflow test
 // scaffolding, not site content, and are dropped from serving entirely
 // (spec, "Serving and links"). The Recreation serves the live inventory minus
