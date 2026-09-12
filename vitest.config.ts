@@ -69,6 +69,12 @@ export default defineConfig({
           include: ['test/cli.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'assets',
+          include: ['test/assets.test.ts'],
+        },
+      },
     ],
   },
 });

@@ -12,8 +12,12 @@
 //        scaffold/test page
 //
 // Plus the whole-site invariants: served + dropped + errors accounts for every
-// page the capture run listed, and the site-wide strip audit (no tracker
-// residue, no capture-derived executable script) holds on every page.
+// page the capture run listed, the site-wide strip audit (no tracker residue,
+// no capture-derived executable script) holds on every page, and every
+// extracted asset in the build's manifest answers at its content-addressed
+// path with the content type its extension declares and a byte-identical body
+// (ADR 0002) — a page's images can silently 404 while its page bytes stay
+// identical, so assets need the same guarantee the pages get.
 //
 // The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
 // `servedCandidates`, `byteMismatch` — are unit-tested in `test/routes.test.ts`.
@@ -28,6 +32,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DROPPED_PAGES } from '../pipeline/config.mjs';
+import { mimeForExt } from '../pipeline/assets.mjs';
 import { startServer } from './server.mjs';
 import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
 
@@ -180,7 +185,7 @@ async function mapLimit(items, limit, fn) {
  * it measures exactly what the build produced, not what a caller believes.
  * @param {string} base  Origin of the running server.
  * @param {{servedDir: string, runDir: string}} opts
- * @returns {Promise<{failures: string[], checked: number, counts: Record<string, number>}>}
+ * @returns {Promise<{failures: string[], checked: number, byteChecked: number, assetChecked: number, counts: Record<string, number>}>}
  */
 export async function checkRoutes(base, { servedDir, runDir }) {
   const read = (name) => JSON.parse(fs.readFileSync(path.join(servedDir, name), 'utf8'));
@@ -250,10 +255,51 @@ export async function checkRoutes(base, { servedDir, runDir }) {
     }
   }
 
+  // Extracted assets (ADR 0002): the same byte-identity guarantee the served
+  // pages get, over the build's manifest. Without it a missing or renamed
+  // asset is invisible — the page's own bytes stay identical either way.
+  let assetChecked = 0;
+  const assetNames = fs.existsSync(path.join(servedDir, 'assets.json')) ? read('assets.json') : [];
+  if (assetNames.length !== (summary.assets?.distinct ?? 0)) {
+    failures.push(`assets.json lists ${assetNames.length} file(s) but the summary says ${summary.assets?.distinct ?? 0} — re-run \`npm run pipeline\``);
+  }
+  const assetResults = await mapLimit(assetNames, 16, async (name) => {
+    try {
+      const res = await fetch(`${base}/assets/${name}`);
+      const bytes = res.status === 200 ? Buffer.from(await res.arrayBuffer()) : null;
+      return { name, status: res.status, contentType: res.headers.get('content-type'), bytes };
+    } catch (err) {
+      return { name, error: err instanceof Error ? err.message : String(err) };
+    }
+  });
+  for (const r of assetResults) {
+    if (r.error) {
+      failures.push(`/assets/${r.name}: request failed (${r.error})`);
+      continue;
+    }
+    if (r.status !== 200) {
+      failures.push(`/assets/${r.name}: expected 200, got ${r.status}`);
+      continue;
+    }
+    const expectedType = mimeForExt(path.extname(r.name).slice(1));
+    if (r.contentType !== expectedType) {
+      failures.push(`/assets/${r.name}: expected content-type ${expectedType}, got ${r.contentType ?? '(none)'}`);
+    }
+    const file = path.join(servedDir, 'assets', r.name);
+    if (!fs.existsSync(file)) {
+      failures.push(`/assets/${r.name}: served 200 but no file at served/assets/${r.name}`);
+      continue;
+    }
+    assetChecked++;
+    const mismatch = byteMismatch(`/assets/${r.name}`, r.bytes, fs.readFileSync(file));
+    if (mismatch) failures.push(mismatch);
+  }
+
   return {
     failures,
     checked: expectations.length,
     byteChecked,
+    assetChecked,
     counts: {
       served: served.length,
       redirects: Object.keys(redirects).length,
@@ -289,6 +335,7 @@ async function main() {
     console.log('Serving check (tickets 06–07) — every route class + byte-identity over HTTP');
     console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
     console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the built file`);
+    console.log(`  asset-identity: ${r.assetChecked} extracted asset(s) returned their declared content type and identical bytes`);
     console.log(`  count identity: served + dropped = ${r.counts.served} + ${r.counts.droppedRequested} = ${r.counts.served + r.counts.droppedRequested}, against ${r.counts.inventory} inventory page(s)`);
     if (r.failures.length > 0) {
       console.log(`\n✗ ${r.failures.length} failure(s):`);

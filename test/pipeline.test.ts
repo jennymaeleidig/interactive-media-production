@@ -81,12 +81,17 @@ describe('strip pass', () => {
     expect(html).not.toMatch(/onetrust-(?:banner|pc|consent|style|accept|reject|close|privacy|policy|customize|filter)|ot-sdk|ot-sync/i);
   });
 
-  it('leaves non-target content untouched: JSON-LD, data-URI assets, captured from-states, text mentions', async () => {
+  it('leaves non-target content untouched: JSON-LD, captured from-states, text mentions (data URIs are extracted, ADR 0002)', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     // 2 captured ld+json data blocks + the five injected runtimes (motion, interactions, nav, chat, story-hook)
     expect((html.match(/<script\b/gi) ?? []).length).toBe(7);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
-    expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+    // the fixture's inlined asset is externalized to a content-addressed file
+    // holding the same bytes — the strip leaves it, the asset pass moves it
+    const assetRef = /src="\/assets\/([a-f0-9]{16})\.png"/.exec(html);
+    expect(assetRef).not.toBeNull();
+    expect(await readFile(path.join(OUT, 'assets', `${assetRef?.[1]}.png`))).toEqual(Buffer.from('89504e470d0a1a0a', 'hex'));
+    expect(html).not.toContain('src="data:image');
     // a .word div outside a split container is not an animation word — left as captured
     expect(html).toContain('<div class=word style="color:rgb(142,168,184);opacity:0.45">Safety</div>');
     expect(html).toContain('We are flocksafety.com, in text.');

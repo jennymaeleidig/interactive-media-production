@@ -63,6 +63,13 @@
 //                inert). The data-flock-parody attribute marks the script so
 //                the census can tell the Recreation's own runtime from
 //                capture residue (which must stay at zero executable).
+//  10. assets  — extract every asset the Capture inlined as a `data:` URI into
+//                one content-addressed file under served/assets/, and point
+//                the page at /assets/<sha>.<ext> (ADR 0002). The captures
+//                re-encode the same image once per referencing page — 86,079
+//                occurrences for 2,830 distinct files, a 14.9x tax — so the
+//                pass turns 7.8 GB of base64 text back into 391 MB of files.
+//                Same-origin, so the zero-outbound invariant still holds.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -88,6 +95,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
+import { extractDataUris } from './assets.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -757,6 +765,46 @@ function storyHookPass(html, entry, source) {
   return injectBeforeClose(html, entry, 'story-hook seam (inline, dormant)', tag);
 }
 
+// ---- pass 10: asset extraction (ADR 0002) -----------------------------------
+
+/**
+ * Write every asset a Capture inlined as a `data:` URI once, under a
+ * content-addressed name, and point the page at it (`/assets/<sha>.<ext>`).
+ *
+ * The captures re-encode the same image on every page that shows it — 86,079
+ * occurrences for 2,830 distinct files across the served tree, a 14.9x tax.
+ * Identical bytes collapse to one file by construction (the name *is* the
+ * hash), so the caller's `written` set makes each file land on disk once per
+ * build and the reference is immutable-cacheable forever.
+ *
+ * Runs after the strip (so nothing is extracted from a subtree the strip
+ * removes) but before every injection pass, whose bytes stay verbatim. Assets
+ * are written even when their only referencing page is dropped later in the
+ * run (the write pass cannot know); an unreferenced file in an ignored build
+ * directory costs nothing and is gone on the next clean build.
+ *
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @param {string} assetDir
+ * @param {Set<string>} written  build-wide set of asset keys already on disk
+ * @returns {string}
+ */
+function assetsPass(html, entry, assetDir, written) {
+  const { html: out, assets, references } = extractDataUris(html);
+  if (assets.size === 0 && references === 0) return html;
+  fs.mkdirSync(assetDir, { recursive: true });
+  let bytes = 0;
+  for (const asset of assets.values()) {
+    bytes += asset.bytes.length;
+    const name = `${asset.sha}.${asset.ext}`;
+    if (written.has(name)) continue;
+    fs.writeFileSync(path.join(assetDir, name), asset.bytes);
+    written.add(name);
+  }
+  entry.assets = { references, distinct: assets.size, bytes };
+  return out;
+}
+
 // ---- pipeline ----------------------------------------------------------------
 
 /**
@@ -776,6 +824,7 @@ function storyHookPass(html, entry, source) {
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number}} [scripts]  Script census of served bytes.
+ * @property {{references: number, distinct: number, bytes: number}} [assets]  Inlined data URIs on this page: references rewritten, distinct assets, decoded bytes (ADR 0002).
  * @property {string} [error]  Set instead of the pass data when the page could not be built.
  */
 
@@ -792,6 +841,7 @@ function storyHookPass(html, entry, source) {
  * @property {string[]} deadRoots  Dead collection roots (404, as the live site).
  * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
  * @property {{mounted: number, absent: number}} chat  The chat-mount census over served pages (ticket 10): how many Captures mounted the launcher, how many did not.
+ * @property {{references: number, distinct: number, bytes: number}} assets  Inlined data URIs extracted site-wide (ADR 0002): references rewritten, distinct files written, decoded bytes.
  */
 
 /**
@@ -815,6 +865,8 @@ export async function runPipeline(opts) {
   const buildPages = pages.filter((p) => !dropSet.has(p));
   const log = [];
   const formsManifest = {}; // form route key → { page, formId, redirectTo }
+  const assetDir = path.join(outDir, 'assets');
+  const writtenAssets = new Set(); // asset sha → already on disk this build
   // read once — every page inlines the same runtime bytes verbatim
   const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
   const motionCss = fs.readFileSync(path.join(HERE, 'motion.css'), 'utf8');
@@ -843,6 +895,12 @@ export async function runPipeline(opts) {
     html = rewritePass(html, entry);
 
     html = formsPass(html, entry, page, formsManifest);
+
+    // Extraction runs here, before every injection pass: the Recreation's own
+    // runtimes are inlined VERBATIM (CODING_STANDARDS), so their bytes must not
+    // be rewritten — even where an injected stylesheet carries its own inlined
+    // asset (chat-widget.css has three). Only the page's captured assets move.
+    html = assetsPass(html, entry, assetDir, writtenAssets);
 
     html = motionPass(html, entry, motionCss, motionRuntime);
 
@@ -888,6 +946,14 @@ export async function runPipeline(opts) {
   const errors = log.filter((e) => e.error).map((e) => e.page);
   const servedEntries = log.filter((e) => !e.error);
   const chatMounted = servedEntries.filter((e) => e.chatLauncher).length;
+  // The extracted-asset manifest (ADR 0002): exactly what THIS build wrote, so
+  // the serving check walks the references the build resolved rather than
+  // whatever happens to sit in the directory. A referenced-but-unwritten asset
+  // then still fails the check instead of dropping out of the work list, and an
+  // orphan left by an earlier build (the directory is never swept) is not
+  // claimed as this build's output.
+  const assetNames = [...writtenAssets].sort();
+  fs.writeFileSync(path.join(outDir, 'assets.json'), JSON.stringify(assetNames, null, 2));
 
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'build-log.json'), JSON.stringify(log, null, 2));
@@ -913,6 +979,11 @@ export async function runPipeline(opts) {
     deadRoots: uncaptured.dead,
     authGated: uncaptured.authGated,
     chat: { mounted: chatMounted, absent: servedEntries.length - chatMounted },
+    assets: {
+      references: servedEntries.reduce((n, e) => n + (e.assets?.references ?? 0), 0),
+      distinct: assetNames.length,
+      bytes: assetNames.reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
+    },
   };
   fs.writeFileSync(path.join(outDir, 'build-summary.json'), JSON.stringify(summary, null, 2));
   return { log, summary };
@@ -959,6 +1030,10 @@ function summarize(log, summary) {
     + `${summary.authGated.length} auth-gated 404`
   );
   console.log(`chat census: ${summary.chat.mounted} page(s) mounted the launcher, ${summary.chat.absent} did not`);
+  console.log(
+    `assets: ${summary.assets.references} inlined reference(s) → ${summary.assets.distinct} content-addressed file(s), `
+    + `${Math.round(summary.assets.bytes / 1e6)}MB decoded`
+  );
   for (const w of [...summary.redirects.invalid, ...summary.redirects.dangling]) console.log(`⚠ redirect: ${w}`);
 }
 

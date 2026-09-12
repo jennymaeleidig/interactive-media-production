@@ -24,6 +24,17 @@ policy: it appends exactly `connect-src 'self'` on launcher pages (logged per
 page), and no pass may widen it beyond that — `'self'` is the Recreation
 origin, so the grant cannot leave the machine.
 
+Page assets are local, never remote. A Capture inlines every image, font, and
+sound as a `data:` URI, and the build extracts each one to a content-addressed
+file (`/assets/<sha16>.<ext>`, served by `app/assets/[...path]/route.ts`) rather
+than pointing at an origin URL — SingleFile keeps no origin URL, and the
+extraction is what makes the served tree ~2 GB instead of ~10 GB. The
+**decided exception is video** (ADR 0002): the slots will play from the original
+hosts' embeds, the only reason `frame-src` may ever name a remote host, and the
+only place the invariant is enforced by allow-list audit rather than by
+construction. Extraction runs before the injection passes, because the injected
+runtimes are inlined verbatim and one of them carries `data:` URIs of its own.
+
 ## Stack & layout
 
 - **Next.js (App Router) + React + TypeScript (strict)**, npm. The app lives
