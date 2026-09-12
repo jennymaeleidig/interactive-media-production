@@ -87,6 +87,12 @@ export default defineConfig({
           include: ['test/video-inventory.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'capture-refresh',
+          include: ['test/inventory.test.ts', 'test/inventory-diff.test.ts', 'test/recapture.test.ts'],
+        },
+      },
     ],
   },
 });
