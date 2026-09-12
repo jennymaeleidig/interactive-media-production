@@ -20,7 +20,13 @@ export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-1
 // A stale entry fails loudly: the pass logs `dead` slots and the audit counts
 // every off-allow-list fetch, so an id that came back to life shows up as an
 // inert slot rather than silently drifting.
-export const DEAD_VIDEO_IDS = ['77o31nkq0o', 'gayegdwaii', 'imr6vzeawt', 'ueo7k59ryn'];
+// The list is only as complete as the inventory's slot detection, and that
+// detection reads URLs. When the embed pass first turned an attribute-form slot
+// (`<wistia-player media-id=tthkbjay3c>`) into a live embed URL, the inventory saw
+// that media for the first time, the probe found it dead, and this list was one
+// entry short — the build had already made that slot live. Ticket 17 carries the
+// root fix (detect the attribute forms the inventory cannot see).
+export const DEAD_VIDEO_IDS = ['77o31nkq0o', 'gayegdwaii', 'imr6vzeawt', 'ueo7k59ryn', 'tthkbjay3c'];
 
 // Scaffold/test pages: captured 200 pages that are internal Webflow test
 // scaffolding, not site content, and are dropped from serving entirely

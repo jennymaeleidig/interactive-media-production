@@ -109,7 +109,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
-import { embedPass, MEDIA_HOSTS, offAllowlistFrames } from './embeds.mjs';
+import { embedPass, offAllowlistFrames } from './embeds.mjs';
 import { DEAD_VIDEO_IDS } from './config.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
@@ -839,17 +839,23 @@ function storyHookPass(html, entry, source) {
  * @param {LogEntry} entry
  * @returns {string}
  */
-function embedsPass(html, entry, deadVideoIds) {
+function applyEmbeds(html, entry, deadVideoIds) {
   const { html: out, reshaped, rewritten, unreachable, hosts } = embedPass(html, { dead: deadVideoIds });
   // A page can carry a video story without carrying a *live* slot: a popover
-  // kept as captured, a media that is dead upstream, a JSON-LD video no slot
-  // points at. Record all of them, or the summary loses exactly the cases an
-  // operator needs to see.
+  // kept as captured, a media that is dead upstream, a media the page's JSON-LD
+  // names but no slot markup rewrote. Record all of them, or the summary loses
+  // exactly the cases an operator needs to see.
   const touched = rewritten.length > 0 || reshaped.dead > 0 || reshaped.popover > 0 || unreachable.length > 0;
   if (!touched) return html;
-  entry.embeds = { ...reshaped, live: rewritten.length, unreachable: unreachable.length };
+  // `live` counts *frames*, not distinct medias: five pages embed the same media
+  // twice, and a reader comparing the summary against the served bytes should get
+  // the same number. `rewritten` stays deduped because it feeds `unreachable`.
+  const live = reshaped.srcdoc + reshaped.element + reshaped.component;
+  entry.embeds = { ...reshaped, live, unreachable: unreachable.length };
   if (rewritten.length === 0) return html;
-  return grantFrameSrc(out, entry, hosts.length > 0 ? hosts : MEDIA_HOSTS);
+  // Only the hosts the pass actually used — never the whole allow-list, which
+  // would grant a host this page has no player for.
+  return grantFrameSrc(out, entry, hosts);
 }
 
 // ---- pass 11: asset extraction (ADR 0002) -----------------------------------
@@ -903,7 +909,7 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {Record<string, number>} [stripped]  Strip target → bytes (or element count) removed.
  * @property {boolean} [chatLauncher]  Whether the Capture mounted the Qualified chat launcher (`<q-root>`) — the chat-mount census (ticket 10).
  * @property {string} [csp]  The CSP grant(s) the build added to the captured policy, `'; '`-joined in pass order: `connect-src 'self'` for the chat mount, `frame-src <hosts>` for live embeds (ADR 0002).
- * @property {{srcdoc: number, element: number, component: number, popover: number, dead: number, live: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the players made live; `srcdoc`/`element`/`component` say which inert snapshot shape was replaced; `popover` and `dead` are the slots deliberately left as captured; `unreachable` counts the page's JSON-LD videos that no slot markup points at.
+ * @property {{srcdoc: number, element: number, component: number, popover: number, dead: number, live: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the player frames made live; `srcdoc`/`element`/`component` say which inert snapshot shape was replaced; `popover` and `dead` are the slots deliberately left as captured; `unreachable` counts the medias this page's JSON-LD names that no slot markup rewrote (mostly popovers and dead medias, which is why it overlaps them).
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
@@ -930,7 +936,7 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
  * @property {{mounted: number, absent: number}} chat  The chat-mount census over served pages (ticket 10): how many Captures mounted the launcher, how many did not.
  * @property {{references: number, distinct: number, bytes: number}} assets  Inlined data URIs extracted site-wide (ADR 0002): references rewritten, distinct files written, decoded bytes.
- * @property {{live: number, pages: number, srcdoc: number, element: number, component: number, popover: number, dead: number, unreachable: number}} embeds  Live media embeds site-wide (ADR 0002): slots made live, pages carrying at least one, the snapshot shape each replaced, slots kept as captured (popover, dead upstream), and JSON-LD videos no slot points at.
+ * @property {{live: number, pages: number, srcdoc: number, element: number, component: number, popover: number, dead: number, unreachable: number}} embeds  Live media embeds site-wide (ADR 0002): player frames made live, pages carrying at least one, the snapshot shape each replaced, slots kept as captured (popover, dead upstream), and the medias a page's JSON-LD named without a slot rewrite.
  */
 
 /**
@@ -988,7 +994,7 @@ export async function runPipeline(opts) {
     // Live embeds go in before the asset pass: the inert snapshots this pass
     // discards carry inlined `data:` URIs of their own, and extracting bytes
     // that are about to be thrown away would only litter the asset directory.
-    html = embedsPass(html, entry, deadVideoIds);
+    html = applyEmbeds(html, entry, deadVideoIds);
 
     // Extraction runs here, before every injection pass: the Recreation's own
     // runtimes are inlined VERBATIM (CODING_STANDARDS), so their bytes must not
@@ -1135,10 +1141,10 @@ function summarize(log, summary) {
   );
   console.log(`chat census: ${summary.chat.mounted} page(s) mounted the launcher, ${summary.chat.absent} did not`);
   console.log(
-    `embeds: ${summary.embeds.live} live player(s) on ${summary.embeds.pages} page(s) `
+    `embeds: ${summary.embeds.live} live player frame(s) on ${summary.embeds.pages} page(s) `
     + `(${summary.embeds.srcdoc} srcdoc, ${summary.embeds.element} chrome, ${summary.embeds.component} web component) · `
     + `${summary.embeds.popover} popover + ${summary.embeds.dead} dead-upstream kept as captured · `
-    + `${summary.embeds.unreachable} JSON-LD video(s) no slot points at`
+    + `${summary.embeds.unreachable} media(s) named in JSON-LD without a slot rewrite`
   );
   console.log(
     `assets: ${summary.assets.references} inlined reference(s) → ${summary.assets.distinct} content-addressed file(s), `

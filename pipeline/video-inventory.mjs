@@ -93,10 +93,32 @@ function unescapeEntities(s) {
  * @returns {{wistia: Map<string, {title: string|null, duration: string|null, contentUrl: string|null, contexts: Set<'embed'|'link'>}>, youtube: Map<string, Set<'embed'|'link'>>, deliveries: Map<string, 'video'|'image'|'unknown'>}}
  */
 export function extractFromPage(html) {
-  /** @type {Map<string, {title: string|null, duration: string|null, contentUrl: string|null, contexts: Set<'embed'|'link'>}>} */
-  const wistia = new Map();
+  const { wistia, deliveries } = wistiaFromPage(html);
   /** @type {Map<string, Set<'embed'|'link'>>} */
   const youtube = new Map();
+  const markYouTube = (id, context) => {
+    if (!youtube.has(id)) youtube.set(id, new Set());
+    youtube.get(id).add(context);
+  };
+
+  let mm;
+  while ((mm = YOUTUBE_EMBED.exec(html)) !== null) markYouTube(mm[1], 'embed');
+  while ((mm = YOUTUBE_LINK.exec(html)) !== null) markYouTube(mm[1], 'link');
+  return { wistia, youtube, deliveries };
+}
+
+/**
+ * The Wistia half of {@link extractFromPage}: the `w-json-ld` VideoObject blocks
+ * (hashed ID, title, duration, delivery URL), the embed-URL / media-link /
+ * `wistia_async_*` ID sweeps, and the delivery assets those blocks name. Split
+ * out because a caller that only wants the IDs and titles — the live-embed pass
+ * — should not pay for the YouTube sweeps on every one of 1,180 pages.
+ * @param {string} html raw page bytes
+ * @returns {{wistia: Map<string, {title: string|null, duration: string|null, contentUrl: string|null, contexts: Set<'embed'|'link'>}>, deliveries: Map<string, 'video'|'image'|'unknown'>}}
+ */
+export function wistiaFromPage(html) {
+  /** @type {Map<string, {title: string|null, duration: string|null, contentUrl: string|null, contexts: Set<'embed'|'link'>}>} */
+  const wistia = new Map();
   /** @type {Map<string, 'video'|'image'|'unknown'>} */
   const deliveries = new Map();
 
@@ -109,10 +131,6 @@ export function extractFromPage(html) {
       if (info.duration != null) e.duration = info.duration;
       if (info.contentUrl != null) e.contentUrl = info.contentUrl;
     }
-  };
-  const markYouTube = (id, context) => {
-    if (!youtube.has(id)) youtube.set(id, new Set());
-    youtube.get(id).add(context);
   };
 
   // w-json-ld VideoObject blocks: hashed id + title + direct delivery URL.
@@ -149,8 +167,6 @@ export function extractFromPage(html) {
   }
 
   let mm;
-  while ((mm = YOUTUBE_EMBED.exec(html)) !== null) markYouTube(mm[1], 'embed');
-  while ((mm = YOUTUBE_LINK.exec(html)) !== null) markYouTube(mm[1], 'link');
   while ((mm = WISTIA_EMBED.exec(html)) !== null) markWistia(mm[1], 'embed', null);
   while ((mm = WISTIA_LINK.exec(html)) !== null) markWistia(mm[1], 'link', null);
   while ((mm = DELIVERY.exec(html)) !== null) {
@@ -158,7 +174,7 @@ export function extractFromPage(html) {
     const kind = VIDEO_EXTS.has(ext) ? 'video' : IMAGE_EXTS.has(ext) ? 'image' : 'unknown';
     if (!deliveries.has(mm[1]) || deliveries.get(mm[1]) === 'unknown') deliveries.set(mm[1], kind);
   }
-  return { wistia, youtube, deliveries };
+  return { wistia, deliveries };
 }
 
 /**

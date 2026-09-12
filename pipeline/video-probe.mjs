@@ -25,6 +25,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { makeArg, invokedDirectly } from './cli.mjs';
+import { csv } from './video-inventory.mjs';
 
 const CONC = 12;
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)';
@@ -147,9 +148,8 @@ export async function run(invDir, tier, diffPath) {
   }, (done) => { if (done % 25 === 0) console.error(`  ${done}/${inv.videos.length}`); });
 
   rows.sort((a, b) => (a.v.host + a.v.id).localeCompare(b.v.host + b.v.id));
-  const esc = (s) => (/[",\n]/.test(s ?? '') ? `"${String(s).replace(/"/g, '""')}"` : String(s ?? ''));
   const out = ['key,host,probe_status,playable,title,detail',
-    ...rows.map((r) => [r.v.key, r.v.host, r.status, r.playable, esc(r.detail.split('||')[0]), esc(r.detail)].join(','))];
+    ...rows.map((r) => [r.v.key, r.v.host, r.status, r.playable, csv(r.detail.split('||')[0]), csv(r.detail)].join(','))];
   const outName = tier === 'deep' ? 'playability-deep.csv' : 'playability.csv';
   fs.writeFileSync(path.join(invDir, outName), out.join('\n') + '\n');
 
@@ -161,7 +161,10 @@ export async function run(invDir, tier, diffPath) {
   let drifted = [];
   if (diffPath) {
     const ref = new Map(fs.readFileSync(diffPath, 'utf8').split('\n').slice(1).filter(Boolean)
-      .map((l) => (csvSplit(l)[0] ? [csvSplit(l)[0], csvSplit(l)[3]] : ['', ''])));
+      .map((l) => {
+        const f = csvSplit(l);
+        return f[0] ? [f[0], f[3]] : ['', ''];
+      }));
     drifted = rows.filter((r) => {
       const was = ref.get(r.v.key);
       return was === 'yes' && r.playable !== 'yes';

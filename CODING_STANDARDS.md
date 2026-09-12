@@ -164,7 +164,16 @@ is why the image half needs no grant and no audit key.
   clearing the nav's `z-index: 2000`), because jsdom cannot evaluate media
   queries — the nav seam's reduced-motion check is the same method. The rendered
   mobile result is the human side-by-side at
-  `evidence/16-chat-mobile-parity/`. Per this header's rule, later
+  `evidence/16-chat-mobile-parity/`. **Extended by the media work (ADR 0002)**:
+  two pure-module seams, each its own vitest project — the data-URI extraction
+  core (`test/assets.test.ts` — `pipeline/assets.mjs`: the attribute and `url()`
+  value classes, CSS unescaping, the MIME tables, and the payload shapes the
+  corpus actually contains) and the live-embed pass
+  (`test/embeds.test.ts` — `pipeline/embeds.mjs`: the three captured slot
+  shapes, the skip rules, idempotence, and the frame allow-list audit). Both are
+  pure HTML-in/HTML-out cores the build calls; neither reaches over HTTP, and
+  the built result of both is covered end-to-end by the serving seam and its
+  asset-identity check. Per this header's rule, later
   efforts extend this list here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.

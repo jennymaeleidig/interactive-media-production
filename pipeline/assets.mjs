@@ -158,7 +158,9 @@ const POSTER_RE = new RegExp(String.raw`(\sposter\s*=\s*)${VALUE_ATTR}`, 'gi');
 // `href` on `<link rel=icon>`/inline-SVG `<use>` carries the favicon's data URI
 // (the corpus has no `<a href="data:…">`, which is why this is safe to take);
 // `xlink:href` is how an inline SVG references a raster `<image>`, which is
-// where `products/flock-dfr.html` keeps 130 of them.
+// where six product pages kept 130 payloads the attribute sweeps above never
+// matched (13 on products/flock-dfr.html, 46–47 on gunshot-detection and
+// video-cameras; 92 distinct assets).
 const HREF_RE = new RegExp(String.raw`(\s(?:xlink:)?href\s*=\s*)${VALUE_ATTR}`, 'gi');
 // CSS `url(...)` — where every inlined background image and `--sf-img-*`
 // custom property carries its payload. Base64 padding `=` is part of the

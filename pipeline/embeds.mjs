@@ -39,7 +39,7 @@
 // Pure: HTML in, HTML out. The caller applies it and audits the result.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { extractFromPage } from './video-inventory.mjs';
+import { wistiaFromPage } from './video-inventory.mjs';
 
 /** Hosts a served page may fetch from — the ADR 0002 allow-list. */
 export const MEDIA_HOSTS = ['fast.wistia.net', 'www.youtube.com'];
@@ -114,11 +114,13 @@ export function embedPass(html, options = {}) {
   const dead = new Set(options.dead ?? []);
   const reshaped = { srcdoc: 0, element: 0, component: 0, popover: 0, dead: 0 };
   const rewritten = [];
+  /** @type {Set<string>} */
+  const deadSeen = new Set();
   const hosts = new Set();
 
   // The page's own video metadata: the JSON-LD VideoObjects carry the title
   // (for the iframe's accessible name) for the ids the markup points at.
-  const { wistia } = extractFromPage(html);
+  const { wistia } = wistiaFromPage(html);
   const titleOf = (id) => wistia.get(id)?.title ?? null;
 
   // ---- shape 1: `srcdoc` iframes (the inlined player document) --------------
@@ -127,7 +129,7 @@ export function embedPass(html, options = {}) {
   for (const span of srcdocSpans(html).reverse()) {
     const id = WISTIA_EMBED_URL.exec(span.value)?.[1];
     if (!id) continue; // a non-video srcdoc (form, map) — not ours
-    if (dead.has(id)) continue; // stays as captured — counted once, below
+    if (dead.has(id)) { deadSeen.add(id); continue; } // stays as captured — counted once, below
     const live = span.tag.replace(/\s+srcdoc\s*=\s*"[^"]*"/i, '').replace(/\s*>$/, ` src="${wistiaEmbedUrl(id)}">`);
     html = html.slice(0, span.tagStart) + live + html.slice(span.tagEnd);
     reshaped.srcdoc++;
@@ -144,13 +146,13 @@ export function embedPass(html, options = {}) {
     if (tagStart === -1 || tagEnd === -1) continue;
     const tag = html.slice(tagStart, tagEnd + 1);
     if (!/^<(div|span)\b/i.test(tag)) continue; // the marker must be in a tag…
-    if (!/\bclass\s*=/.test(tag) || !/wistia_async_/.test(tag)) continue; // …as the class this element carries
+    if (!/\bclass\s*=/.test(tag)) continue; // the marker must be the class this element carries
     if (slots.some((s) => s.tagStart === tagStart)) continue;
     slots.push({ id, tagStart, tagEnd: tagEnd + 1, tag, name: /^<(\w+)/.exec(tag)[1].toLowerCase() });
   }
   // Rewrite back-to-front so the earlier offsets stay valid.
   for (const slot of slots.sort((a, b) => b.tagStart - a.tagStart)) {
-    if (dead.has(slot.id)) continue; // stays as captured — counted once, below
+    if (dead.has(slot.id)) { deadSeen.add(slot.id); continue; } // stays as captured — counted once, below
     if (POPOVER_ATTR.test(slot.tag)) {
       reshaped.popover++;
       continue;
@@ -172,7 +174,7 @@ export function embedPass(html, options = {}) {
   for (const tag of [...html.matchAll(WISTIA_PLAYER_TAG)].reverse()) {
     const id = WISTIA_MEDIA_ID.exec(tag[0])?.[2];
     if (!id) continue;
-    if (dead.has(id)) continue; // stays as captured — counted once, below
+    if (dead.has(id)) { deadSeen.add(id); continue; } // stays as captured — counted once, below
     const start = tag.index;
     const end = html.indexOf('</wistia-player>', start);
     if (end === -1) continue; // truncated capture — leave it as captured
@@ -187,8 +189,11 @@ export function embedPass(html, options = {}) {
   const reached = new Set(rewritten);
   // Dead medias are counted by *reference*, not by slot met: their own slot
   // markup is often gone by the time this pass runs (the strip removes the
-  // popover panel), and a page that names a dead media must still say so.
-  reshaped.dead = [...wistia.keys()].filter((id) => dead.has(id)).length;
+  // popover panel), and a page that names a dead media must still say so. Both
+  // routes matter — the JSON-LD map sees medias whose slot markup vanished, and
+  // `deadSeen` sees the attribute-form slots (`<wistia-player media-id>`) that the
+  // map's URL sweeps cannot see at all.
+  reshaped.dead = new Set([...deadSeen, ...[...wistia.keys()].filter((id) => dead.has(id))]).size;
   const unreachable = [...wistia.keys()].filter((id) => !reached.has(id) && !dead.has(id));
 
   return { html, reshaped, rewritten: [...new Set(rewritten)], unreachable, hosts: [...hosts] };

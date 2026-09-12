@@ -88,6 +88,19 @@ describe('embedPass', () => {
     expect(r.rewritten).toEqual([]);
   });
 
+  it('counts a dead media whose slot the JSON-LD never names', () => {
+    // The case that shipped a live frame to a dead player (2026-09-11): a
+    // `<wistia-player media-id>` slot carries its id as an attribute, so the
+    // URL-based sweeps never see it — if the dead list were consulted through
+    // that map alone, the page would report no dead slot and the summary would
+    // lose it.
+    const html = `<wistia-player media-id="ffffffffff" aspect="1.7777777777777777"></wistia-player>`;
+    const r = embedPass(html, { dead: ['ffffffffff'] });
+    expect(r.reshaped.dead).toBe(1);
+    expect(r.rewritten).toEqual([]);
+    expect(r.html).toBe(html);
+  });
+
   it('leaves a non-video srcdoc (form, map) completely alone', () => {
     const html = `<iframe title="form" srcdoc="<form action=/api/mock></form>"></iframe>`;
     const r = embedPass(html);

@@ -19,11 +19,11 @@ oembed record, and a HEAD on each delivery stream → `playability.csv`;
 
 | Category | Count | Playing upstream |
 |---|---|---|
-| Wistia media | 120 | 116 ok · **4 gone** (`{"error":true}` from Wistia) |
+| Wistia media | 121 | 116 ok · **5 gone** (`{"error":true}` from Wistia) |
 | YouTube | 59 | 59 ok |
-| **Total unique videos** | **179** | **175 ok · 4 gone** |
+| **Total unique videos** | **180** | **175 ok · 5 gone** |
 
-Context split: **122 reference a video slot** (119 Wistia + 3 YouTube) and
+Context split: **123 reference a video slot** (120 Wistia + 3 YouTube) and
 **64 are body-copy links** (59 YouTube + 5 Wistia). That distinction is what
 makes a failure report meaningful — a dead slot is a blank box, a dead link is
 broken copy.
@@ -32,7 +32,7 @@ Zero orphan delivery assets: every `.m3u8`/poster referenced by the inline
 Wistia player markup resolves to a `w-json-ld` VideoObject → hashed media ID,
 so `wistia:<id>` covers everything.
 
-## The 4 dead Wistia medias (dead upstream, not just for us)
+## The 5 dead Wistia medias (dead upstream, not just for us)
 
 | Hashed ID | Page(s) |
 |---|---|
@@ -40,6 +40,7 @@ so `wistia:<id>` covers everything.
 | `gayegdwaii` | `served/webinar/elevate-your-response-with-flockos-r-911.html` |
 | `imr6vzeawt` | `served/webinar/video-without-limitations.html` |
 | `ueo7k59ryn` | `served/webinar/the-future-of-policing-is-real-time.html` |
+| `tthkbjay3c` | `served/webinar/prepared-for-anything-how-cities-prepare-for-planned-and-unplanned-events-video.html` |
 
 All four are old `webinar/*` popover embeds (`wistia_async_<id> popover=true`);
 Wistia answers their media JSON with HTTP 200 + `{"error":true,"iframe":true}`
@@ -60,7 +61,7 @@ yt-dlp -a yt-dlp-urls.txt \
   -o "%(extractor)s/%(title).80s-%(id)s.%(ext)s" \
   --download-archive archive.txt -ci
 
-# the 4 dead ones fail fast and are skipped; re-run the same command any time
+# the 5 dead ones fail fast and are skipped; re-run the same command any time
 ```
 
 With `--download-archive`, completed items are skipped on re-runs, so this
@@ -69,8 +70,8 @@ doubles as the drift check for ticket 11: new lines added to
 
 ## Files
 
-- `videos.json` — full model: 179 videos with context/title/duration/contentUrl (Wistia JSON-LD) + referencing pages
+- `videos.json` — full model: 180 videos with context/title/duration/contentUrl (Wistia JSON-LD) + referencing pages
 - `inventory.csv` — one row per video, dated-CSV convention (tracked); the `context` column is the slot-vs-link split
 - `playability.csv` — probe results (status + upstream title per video)
 - `playability-deep.csv` — same plus `yt-dlp --simulate` per URL (generated on demand by `--tier deep`)
-- `yt-dlp-urls.txt` — the flat download list (59 YouTube watch URLs, 120 `wistia:<id>`)
+- `yt-dlp-urls.txt` — the flat download list (59 YouTube watch URLs, 121 `wistia:<id>`)
