@@ -284,7 +284,11 @@ What only the human eye can confirm:
   scroll and reverse on scroll-back; the label markers pop in; the hover videos
   play in view; the "see it in action" button sticks to the viewport bottom and
   opens the **Safe City Action** timeline, whose route draws as the modal
-  scrolls with a marker at each stop.
+  scrolls with a marker at each stop. The sticky control must sit still while
+  you scroll (the human review caught it flickering; the stick decision now
+  measures its parent, and the section's frozen `scale(0.9)` from-state is
+  normalized away so `position: fixed` is not hijacked — see ticket 21's
+  addendum).
 
 ## Reproduce
 

@@ -90,9 +90,11 @@
 //                touched.
 //  13. scroll   — restore the captured scroll choreography and modal dialogs
 //                (ticket 21): normalize the captured scroll from-states to
-//                their end-states, then inject scroll.css + scroll-runtime.js
-//                inline. Vanilla, no GSAP/CDN, so the zero-outbound invariant
-//                holds; reduced motion and no-JS ship the settled end-state.
+//                their end-states (including the `.bg-screen.scroller` zoom,
+//                whose leftover transform would hijack `position: fixed`),
+//                then inject scroll.css + scroll-runtime.js inline. Vanilla,
+//                no GSAP/CDN, so the zero-outbound invariant holds; reduced
+//                motion and no-JS ship the settled end-state.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -870,7 +872,7 @@ const SCROLL_INJECTED = 'scroll layer (style+script, inline)';
  * without the runtime must be the settled layout), then inject the scroll
  * runtime and its CSS half inline. Keyed on captured attributes/classes only —
  * `[animate="scrub-word"]` spans, `.line-label`, `#main-progress`,
- * `.c-modal__panel` — so it is not per-page logic.
+ * `.c-modal__panel`, `.bg-screen.scroller` — so it is not per-page logic.
  * @param {string} html
  * @param {LogEntry} entry
  * @param {string} css
@@ -907,6 +909,14 @@ function scrollPass(html, entry, css, runtime) {
     if (cls.includes('c-modal__panel')) {
       const next = editAttr(tag, 'style', (v) => v.replace(/translate\(0px,\s*6rem\)/, 'translate(0px,0px)'));
       if (next && next !== tag) { bump('modal panel slide'); return next; }
+    }
+    // `.bg-screen.scroller` sections: the captured inline `scale(0.9)` is the
+    // from-state of the site's scroll zoom (live settles at scale 1). Dropping it
+    // also stops the section being a containing block for `position: fixed`,
+    // which would hijack #stickme's pinned state.
+    if (cls.includes('bg-screen') && cls.includes('scroller')) {
+      const next = editAttr(tag, 'style', (v) => v.replace(/;?transform:\s*scale\(0\.9(?:,\s*0\.9)?\)/i, ''));
+      if (next && next !== tag) { bump('section zoom settle (0.9→1)'); return next; }
     }
     return tag;
   }));

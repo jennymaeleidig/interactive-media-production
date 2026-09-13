@@ -50,7 +50,8 @@ same shape as the motion/interactions layers. The runtime is vanilla JS (no
 GSAP, no CDN, so the zero-outbound invariant holds) and keys only on captured
 attributes/classes. On `/safe-cities` the build log reads: `line-label scale
 (0→1)` ×3, `line-label marker slide (170%→0)` ×3, `scrub-word from-color` ×3,
-`main-progress draw (undrawn→drawn)` ×1, `modal panel slide` ×1.
+`main-progress draw (undrawn→drawn)` ×1, `modal panel slide` ×1,
+`section zoom settle (0.9→1)` ×1.
 
 - **The captured behavior**, from the live page's own inline scripts and the
   Webflow IX2 data in the site bundle: scrub-word colors (IX2 `t-67b5deff`:
@@ -70,3 +71,30 @@ attributes/classes. On `/safe-cities` the build log reads: `line-label scale
   is retired — the heading's own light color is the normalized end-state and the
   runtime owns the colors; `LEGIBILITY_PATCHES` keeps only the dark-subhead
   rule.
+
+**Addendum: the sticky button flickered (human review, 2026-09-12).** Two
+faults in this layer, both now fixed:
+
+- The stick decision measured the button's own rect. `.stick` makes the button
+  `position: fixed`, which moves that rect into viewport coordinates, so the
+  test flipped back on the very next scroll event — the class alternated
+  between pinned and in-flow on every tick. It now measures the parent (which
+  does not move when the button does) and reads the button's offset inside it
+  once, while it is still unstuck.
+- `.bg-screen.scroller` carries the captured inline `transform: scale(0.9)` —
+  the frozen from-state of the site's scroll zoom (live settles at scale 1). A
+  non-`none` transform makes the section the containing block for
+  `position: fixed` descendants, so the pinned button was placed at the
+  section's bottom (~2,800px below the fold) instead of the viewport bottom.
+  The build now drops that from-state (`section zoom settle (0.9→1)`), which
+  also removes the 10%-smaller section and the seam it left at the page edges.
+- `.stick--is-stuck` now keeps `.stick` applied: the captured CSS's
+  `.stick{top:auto}` is what stops `.stick--is-stuck`'s `top:0` stretching the
+  wrapper to the parent's height.
+
+Verified with real wheel input on the served page: in flow at the top, pinned
+(`bottom` = the viewport bottom) once the section reaches the fold,
+`stick--is-stuck` at the section's end with the button riding the parent's
+bottom, then back to pinned on scroll-up — with no class churn in between; plus
+a `test/scroll.seam.test.ts` regression that re-stubs the button's own rect
+while pinned.

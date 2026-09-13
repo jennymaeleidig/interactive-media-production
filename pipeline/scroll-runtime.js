@@ -41,6 +41,7 @@
     : function (f) { return setTimeout(f, 16); };
 
   function vh() { return root.clientHeight || window.innerHeight; }
+  function setClass(el, name, on) { if (on) el.classList.add(name); else el.classList.remove(name); }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
@@ -189,22 +190,33 @@
   }
 
   // ---- 4. #stickme sticky button (function; runs under reduced motion too) ---
+  // Every measurement is taken from the PARENT, never from the button. `.stick`
+  // makes the button fixed, which moves its own rect into viewport coordinates,
+  // so an element-based test flips the class on every scroll event — the button
+  // flickers between pinned and in-flow. The parent does not move when the
+  // button does. The button's only contribution is its offset inside the parent,
+  // read once while it is still unstuck.
   var stick = doc.getElementById('stickme');
   if (stick && stick.parentNode) {
     (function () {
       var parent = stick.parentNode;
-      onScroll(function () {
-        var scrollTop = root.scrollTop || doc.body.scrollTop;
-        var viewportBottom = scrollTop + vh();
-        var rect = stick.getBoundingClientRect();
-        var stickBottom = scrollTop + rect.top + stick.offsetHeight;
+      var parentTop = parent.getBoundingClientRect().top;
+      var naturalOffset = stick.getBoundingClientRect().top - parentTop;
+      var naturalHeight = stick.offsetHeight;
+      function check() {
+        var h = vh();
         var parentRect = parent.getBoundingClientRect();
-        var parentBottom = scrollTop + parentRect.top + parentRect.height;
-        if (viewportBottom > stickBottom) stick.classList.add('stick');
-        else stick.classList.remove('stick');
-        if (viewportBottom > parentBottom) stick.classList.add('stick--is-stuck');
-        else stick.classList.remove('stick--is-stuck');
-      });
+        // In flow the control scrolls normally; once its natural place passes
+        // the fold it pins to the viewport bottom, and at the parent's end it
+        // hands back to the parent's own bottom. `.stick--is-stuck` keeps
+        // `.stick` applied too — the captured CSS relies on its `top: auto`.
+        var pinned = parentRect.top + naturalOffset + naturalHeight < h;
+        var atEnd = parentRect.bottom < h;
+        setClass(stick, 'stick', pinned || atEnd);
+        setClass(stick, 'stick--is-stuck', atEnd);
+      }
+      onScroll(check);
+      check();
     })();
   }
 

@@ -709,7 +709,10 @@ describe('scroll pass (ticket 21)', () => {
   const CAPTURE = `<!DOCTYPE html><html><head></head><body>
 <h2 animate=scrub-word><span class="gsap_split_word gsap_split_word1" style="position:relative;display:inline-block;color:rgb(34,40,31)">Detect</span></h2>
 <div class=line-label style="translate:none;rotate:none;scale:none;transform:translate3d(0px,0px,0px) scale(0,0)"><img class=line-label--marker style="translate:none;rotate:none;scale:none;transform:translate(0px,170%)"></div>
+<section data-route-anim scroller class="l-section--full bg-screen scroller" style=translate:none;rotate:none;scale:none;transform:scale(0.9,0.9)>
+<div id=stickme-parent class="l-layout_z p-rel edge cc-pd"><div id=stickme class=btn-sticky--wrap></div></div>
 <svg viewBox="0 0 10 10"><path id=main-progress d="M0 0L0 10" style="stroke-dashoffset:10px;stroke-dasharray:10"></path></svg>
+</section>
 <div class="l-stack c-modal__panel" style="translate:none;rotate:none;scale:none;transform:translate(0px,6rem)"></div>
 </body></html>`;
 
@@ -727,6 +730,10 @@ describe('scroll pass (ticket 21)', () => {
     expect(html).not.toContain('color:rgb(34,40,31)');
     expect(html).toContain('stroke-dashoffset:0');
     expect(html).toContain('translate(0px,0px)');
+    // the frozen zoom from-state is dropped entirely — a leftover transform is
+    // a containing block for `position: fixed` (it hijacks #stickme)
+    expect(html).toContain('class="l-section--full bg-screen scroller" style=translate:none;rotate:none;scale:none>');
+    expect(html).not.toContain('scale(0.9,0.9)');
   });
 
   it('logs the normalizations and injects the marked scroll layer', async () => {
@@ -738,6 +745,7 @@ describe('scroll pass (ticket 21)', () => {
       'scrub-word from-color': 1,
       'main-progress draw (undrawn→drawn)': 1,
       'modal panel slide': 1,
+      'section zoom settle (0.9→1)': 1,
     });
     expect(entry.injected).toContain('scroll layer (style+script, inline)');
     const html = await readFile(path.join(SCROLL_OUT, 'scroll-page.html'), 'utf8');

@@ -168,7 +168,10 @@ describe('[data-scroll-video]', () => {
 });
 
 describe('#stickme sticky button', () => {
-  it('toggles .stick once the viewport bottom passes it', async () => {
+  // The button's own rect must never drive the decision: `.stick` makes it
+  // fixed, which moves that rect into viewport coordinates — measuring it makes
+  // the class flip on every scroll event (the button flickers).
+  it('pins once, stays pinned while its parent spans the viewport, and hands off at the parent end', async () => {
     const dom = domOf(PAGE, {
       prep: (doc) => {
         const stick = doc.getElementById('stickme')!;
@@ -177,14 +180,33 @@ describe('#stickme sticky button', () => {
         setRect(doc.getElementById('stickme-parent'), rect(9_000, 5_000));
       },
     });
-    const doc = (dom.window as Win).document;
-    const stick = doc.getElementById('stickme')!;
+    const win = dom.window as Win;
+    const stick = win.document.getElementById('stickme')!;
+    const parent = win.document.getElementById('stickme-parent')!;
+    // at load its natural place is far below the fold
+    expect(stick.classList.contains('stick')).toBe(false);
+
+    // the section reaches the fold → pinned to the viewport bottom
+    setRect(parent, rect(-1_000, 5_000));
     fire(dom.window, 'scroll');
     await sleep(50);
-    expect(stick.classList.contains('stick')).toBe(false); // viewport bottom not past it
-    setRect(stick, rect(10));
+    expect(stick.classList.contains('stick')).toBe(true);
+    expect(stick.classList.contains('stick--is-stuck')).toBe(false);
+
+    // now the button really is fixed at the viewport bottom: that new rect must
+    // not un-pin it on the next tick
+    setRect(stick, rect(win.innerHeight - 40));
     fire(dom.window, 'scroll');
     await sleep(50);
+    expect(stick.classList.contains('stick')).toBe(true);
+
+    // the parent's end passes the fold → hand back to the parent's own bottom
+    setRect(parent, rect(-4_800, 5_000));
+    fire(dom.window, 'scroll');
+    await sleep(50);
+    expect(stick.classList.contains('stick--is-stuck')).toBe(true);
+    // `.stick` stays on: the captured CSS's `.stick{top:auto}` is what keeps
+    // `.stick--is-stuck`'s `top:0` from stretching the wrapper
     expect(stick.classList.contains('stick')).toBe(true);
   });
 });
