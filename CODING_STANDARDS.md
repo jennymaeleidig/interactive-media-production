@@ -17,8 +17,8 @@ build stripped any executable `<script>` that survived, and the served bytes
 keep only `application/ld+json` data blocks. Any code that adds network
 behavior to a served page (fetch, XHR, WebSocket, remote `src`, beacon)
 violates the piece. The injected runtimes (motion, interactions, nav, chat,
-scroll) are inline, DOM-only, and must degrade to the captured end-state with
-JavaScript disabled. `pipeline/audit.mjs` is the invariant's single home —
+story-hook, scroll) are inline, DOM-only, and must degrade to the captured
+end-state with JavaScript disabled. `pipeline/audit.mjs` is the invariant's single home —
 `audit(pageHtml) → findings`, with the media allow-list as its only
 configuration. It owns the residue classes, the executable-script census (the
 `isInertScript` rule that tells a data block from code), the `srcdoc`-payload
