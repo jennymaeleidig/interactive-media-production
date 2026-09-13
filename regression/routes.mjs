@@ -34,6 +34,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DROPPED_PAGES } from '../pipeline/config.mjs';
+import { audit, scriptCensus } from '../pipeline/audit.mjs';
 import { mimeForExt, pageCandidates } from '../pipeline/served-tree.mjs';
 import { startServer } from './server.mjs';
 import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
@@ -109,24 +110,26 @@ export function countFailures({ served, dropped, errors, listing }) {
 }
 
 /**
- * The strip audit, as a site-wide invariant: every page's post-strip tracker
- * residue counts are zero and its served bytes carry no capture-derived
- * executable script — only inert ld+json and the Recreation's own marked
- * runtimes.
- * @param {{page: string, error?: string, audit?: Record<string, number>, scripts?: {executable: number}}[]} buildLog
+ * The strip audit, as a site-wide invariant, re-evaluated on the served bytes
+ * themselves rather than trusted from the build log: the residue classes are
+ * all zero and the script census shows no capture-derived executable script.
+ * The classes and the census are `pipeline/audit.mjs`'s — this only folds its
+ * findings into the check's own failure messages, so the log's key names stop
+ * being an interface between the build that wrote them and the check that reads
+ * them.
+ * @param {string} page
+ * @param {string} html  the served page's bytes, decoded
  * @returns {string[]}
  */
-export function auditFailures(buildLog) {
+export function auditFailures(page, html) {
   const failures = [];
-  for (const e of buildLog) {
-    if (e.error) continue;
-    const residue = Object.entries(e.audit ?? {}).filter(([, n]) => n > 0);
-    if (residue.length > 0) {
-      failures.push(`${e.page}: tracker residue ${residue.map(([k, n]) => `${k}=${n}`).join(' ')}`);
-    }
-    if ((e.scripts?.executable ?? 0) > 0) {
-      failures.push(`${e.page}: ${e.scripts?.executable} executable script(s) in served bytes`);
-    }
+  const residue = Object.entries(audit(html)).filter(([, n]) => n > 0);
+  if (residue.length > 0) {
+    failures.push(`${page}: tracker residue ${residue.map(([k, n]) => `${k}=${n}`).join(' ')}`);
+  }
+  const executable = scriptCensus(html).executable;
+  if (executable > 0) {
+    failures.push(`${page}: ${executable} executable script(s) in served bytes`);
   }
   return failures;
 }
@@ -199,7 +202,6 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
     failures.push(`the build requested ${summary.requested} page(s) but the page listing holds ${listing} — served tree and listing are out of sync`);
   }
   failures.push(...countFailures({ served: served.length, dropped: droppedRequested.length, errors: summary.errors?.length ?? 0, listing }));
-  failures.push(...auditFailures(buildLog));
 
   const { expectations, conflicts } = routeExpectations({ served, dropped, redirects, dead, authGated });
   failures.push(...conflicts.map((c) => `route class conflict — ${c}`));
@@ -231,6 +233,9 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
     else if (r.e.location && r.location !== r.e.location) failures.push(`${r.e.path}: expected redirect to ${r.e.location}, got ${r.location ?? '(none)'}`);
     // byte-identity for the served page the build wrote
     if (r.e.status === 200 && r.status === 200 && r.bytes) {
+      // the invariant is re-evaluated on the served bytes, not read back from
+      // the log the build wrote — an independent check of the same rule
+      failures.push(...auditFailures(r.e.path, r.bytes.toString('utf8')));
       const file = pageCandidates(servedDir, r.e.path).find((f) => fs.existsSync(f));
       if (!file) {
         failures.push(`${r.e.path}: 200 but no served file at served/${r.e.path.replace(/^\/+/, '')}.html`);

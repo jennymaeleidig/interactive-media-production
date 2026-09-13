@@ -62,13 +62,22 @@ already the captured 16:9 padding box), and YouTube's `data-video-id` panels are
 armed by the interactions runtime on the poster click, so the frame is only
 pointed at the player then. Only those frames may reach out: the pass widens the
 captured `frame-src` by exactly the hosts it used, and the audit fails the build
-on any frame whose host is not on `pipeline/embeds.mjs`'s allow-list. Remote
+on any frame whose host is not on `pipeline/audit.mjs`'s allow-list. Remote
 *image* references (`poster=`, a Lottie `data-src`, a Wistia swatch in CSS) still
 appear in captured bytes; the captured `img-src 'self' data:` refuses them, which
 is why the image half needs no grant. The audit now also reads inside `srcdoc`
 payloads (`srcdoc scripts`) and refuses any remote reference outside the classes
 ADR 0002 accepts as inert (`unclassified remote refs`); the hidden Vidzflow
 video.js documents are stripped, not played (ticket 19).
+
+The audit is one module — `pipeline/audit.mjs`, whose interface is
+`audit(pageHtml) → findings`, with the media allow-list as its only
+configuration. It owns the residue classes, the executable-script census (and
+the `isInertScript` rule the strip pass and the census share), the `srcdoc`
+payload check, and the unclassified-fetch check. The build writes those findings
+into the log; the serving check (`regression/routes.mjs`) calls the same module
+on the served bytes and folds the findings, so neither tier re-derives "clean"
+and the log's key names are not an interface between them.
 
 ## Stack & layout
 
@@ -219,7 +228,11 @@ video.js documents are stripped, not played (ticket 19).
   queries — the nav seam's reduced-motion check is the same method. The rendered
   mobile result is the human side-by-side at
   `evidence/16-chat-mobile-parity/`. **Extended by the media work (ADR 0002)**:
-  pure-module seams, each its own vitest project — the data-URI extraction
+  pure-module seams, each its own vitest project — the strip-audit core
+  (`test/audit.test.ts` — `pipeline/audit.mjs`: the residue classes, the
+  `isInertScript` rule the strip pass and the census share, the `srcdoc`-payload
+  script check, the unclassified-fetch check, and the frame allow-list — the
+  invariant the build writes and the serving check folds) and the data-URI extraction
   core (`test/assets.test.ts` — `pipeline/assets.mjs`: the attribute and `url()`
   value classes, CSS unescaping, the MIME tables, and the payload shapes the
   corpus actually contains) and the captured-policy core
@@ -245,7 +258,7 @@ video.js documents are stripped, not played (ticket 19).
   multi-megabyte unquoted attribute value, and a nested `srcdoc` document whose
   stylesheets must not be rewritten). All are
   pure HTML-in/HTML-out cores the build calls; none reaches over HTTP, and
-  the built result of both is covered end-to-end by the serving seam and its
+  the built result of each is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection
   seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s
   attribute-form sweeps and their boundary rules, because an id the inventory

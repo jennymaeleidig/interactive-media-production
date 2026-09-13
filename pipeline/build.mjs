@@ -132,7 +132,8 @@ import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
 import { dedupeBodies } from './dedupe.mjs';
-import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, stripOriginalUrls, unclassifiedRemoteRefs } from './embeds.mjs';
+import { embedPass, stripHiddenVidzflow, stripOriginalUrls } from './embeds.mjs';
+import { audit, isInertScript, scriptCensus } from './audit.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { addAttr, attrValue, contentSegments, editAttr, hasAttr, openTags, replaceTags } from './html.mjs';
 import { grantSources, readCsp, writeCsp } from './csp.mjs';
@@ -174,26 +175,6 @@ const STRIP_TARGETS = [
   { name: 'account sign-in link', start: /<a\b[^>]*?\bhref\s*=\s*("|')?(?:https?:)?\/\/(?:users|login)\.flocksafety\.com[^>]*>/i, mode: 'balance', tag: 'a', all: true, contentRe: /\bclass\s*=\s*("|')?[^"'>]*\b(?:button|footer-5_link|sign-in)\b/i },
 ];
 
-// Post-strip audit regexes — any hit suggests strip-list incompleteness.
-// Both vendor keys target the MACHINERY (ids/classes/scripts/var names), not
-// the English word: the footer "Your Privacy Choices" link keeps the brand
-// string, and page copy legitimately says "qualified" ("qualified
-// electrician", "qualified applicants" — corpus: 16 pages), so a bare-word
-// match would flag content as residue. Machinery markers, by contrast, must
-// be zero.
-const AUDIT_RES = {
-  qualified: /qualified-offer-|qualified\.com|_qualified-|q-root\b|q-focus-sentinel|q-launcher|q-messenger-frame/i,
-  onetrust: /onetrust-(?:banner|pc|consent|style|accept|reject|close|privacy|policy|customize|filter)|ot-sdk|ot-sync/i,
-  // no account/auth affordance or route off the machine may survive the strip
-  // (the account portals and the Auth0 login host)
-  account: /(?:users|login)\.flocksafety\.com/i,
-  'known trackers': /googletagmanager\.com|google-analytics\.com|hotjar\.com|hockeystack\.com|bing\.com\/bat|linkedin\.com\/px|connect\.facebook\.net|snap\.licdn\.com|6sense\.com|marketo\.com|munchkin\.marketo/i,
-  // a form action that leaves the machine (ticket 02): absolute or
-  // protocol-relative. Injected mock actions are root-relative /api/... and
-  // never match; the count must stay zero on every page.
-  externalFormActions: /<form\b[^>]*?\saction\s*=\s*("|')?(?:https?:)?\/\//i,
-};
-
 // ---- helpers ----------------------------------------------------------------
 
 /** End index (exclusive) of the balanced `tag` subtree opening at `start`. */
@@ -231,9 +212,6 @@ function captureFileFor(runDir, pagePath) {
 function servedFileFor(outDir, pagePath) {
   return path.join(outDir, relFileFor(pagePath));
 }
-
-/** The only script type allowed in served bytes — inert JSON-LD data. */
-const LD_JSON_TYPE = /\btype\s*=\s*("|')?application\/ld\+json/i;
 
 // ---- pass 1: strip -----------------------------------------------------------
 
@@ -328,7 +306,7 @@ function stripExecutableScripts(html, entry) {
     const cm = closeRe.exec(html);
     // unclosed script tag: remove the tag alone (nothing executable can hide behind it)
     const end = cm ? cm.index + cm[0].length : m.index + m[0].length;
-    if (LD_JSON_TYPE.test(m[0])) {
+    if (isInertScript(m[0])) {
       pos = end; // inert data — keep whole, and don't scan inside it
     } else {
       html = html.slice(0, m.index) + html.slice(end);
@@ -354,37 +332,6 @@ function rewritePass(html, entry) {
   html = html.replace(/href=(https?:)?\/\/(www\.)?flocksafety\.com([^\s">]+)/gi, (_, _p, _w, rest) => `href=${rewrite(rest)}`);
   if (count > 0) entry.linksRewritten = count;
   return html;
-}
-
-function auditHtml(html) {
-  const audit = {};
-  for (const [name, re] of Object.entries(AUDIT_RES)) {
-    audit[name] = (html.match(new RegExp(re.source, re.flags.replace('g', '') + 'g')) || []).length;
-  }
-  // ADR 0002's exception is enforced here rather than held by construction: a
-  // frame may only point at an allow-listed media host. Image-side remote
-  // references (a captured `poster=`, a Lottie `data-src`) are refused by the
-  // captured `img-src 'self' data:` and so are not part of this count.
-  audit['off-allowlist frames'] = offAllowlistFrames(html).length;
-  // The frame audit reads absolute `src` values only, and the script census
-  // reads `<script>` open tags — neither says anything about the 600-odd
-  // `srcdoc` payloads in the tree (ticket 20). `srcdoc scripts` looks inside
-  // them: an executable script there fails the invariant instead of relying on
-  // what SingleFile happened to drop.
-  audit['srcdoc scripts'] = srcdocScripts(html).executable;
-  // The catch-all for the reference classes nobody has declared inert — a
-  // remote reference in a fetcher position that is neither on the media
-  // allow-list nor in a documented inert class (ticket 20).
-  audit['unclassified remote refs'] = unclassifiedRemoteRefs(html).length;
-  return audit;
-}
-/** Script census of served bytes. `executable` counts capture-derived scripts — must stay 0 (the audit invariant). `ldJson` are inert data blocks; `injected` are the Recreation's own marked runtimes (data-flock-parody); `srcdocAllowScripts` counts `srcdoc` frames whose sandbox carries `allow-scripts` (today: one captured cvt-embed document carrying only ld+json), reported so that case is visible rather than silent. */
-function scriptCensus(html) {
-  const openTags = html.match(/<script\b[^>]*>/gi) ?? [];
-  const injected = openTags.filter((t) => /data-flock-parody=/i.test(t)).length;
-  const ldJson = openTags.filter((t) => LD_JSON_TYPE.test(t)).length;
-  const executable = openTags.length - injected - ldJson;
-  return { total: openTags.length, executable, ldJson, injected, srcdocAllowScripts: srcdocScripts(html).allowScripts };
 }
 
 // ---- pass 4: form routing (ticket 02) ----------------------------------------
@@ -1180,7 +1127,7 @@ export async function runPipeline(opts) {
     fs.mkdirSync(path.dirname(outFile), { recursive: true });
     fs.writeFileSync(outFile, html);
     entry.bytesOut = html.length;
-    entry.audit = auditHtml(html);
+    entry.audit = audit(html);
     entry.scripts = scriptCensus(html);
     log.push(entry);
   }
@@ -1362,7 +1309,7 @@ export function dedupeTree(outDir, { dryRun = false } = {}) {
       entry.bytesOut = result.html.length;
       // The pass moves bodies, so everything the audit and the census read has
       // to be re-read rather than carried over from the pre-dedupe bytes.
-      entry.audit = auditHtml(result.html);
+      entry.audit = audit(result.html);
       entry.scripts = scriptCensus(result.html);
       if (result.csp !== null) {
         const grants = [];

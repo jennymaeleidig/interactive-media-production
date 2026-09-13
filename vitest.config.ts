@@ -95,6 +95,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'audit',
+          include: ['test/audit.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'csp',
           include: ['test/csp.test.ts'],
         },

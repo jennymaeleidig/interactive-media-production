@@ -68,23 +68,13 @@ describe('countFailures', () => {
 });
 
 describe('auditFailures', () => {
-  it('passes a corpus with zero residue and no executable scripts', () => {
-    expect(auditFailures([
-      { page: '/', audit: { qualified: 0, onetrust: 0 }, scripts: { executable: 0 } },
-      { page: '/book-a-demo', audit: { qualified: 0 }, scripts: { executable: 0 } },
-    ])).toEqual([]);
+  it('passes a served page with zero residue and no executable scripts', () => {
+    expect(auditFailures('/', '<html><body><p>Hello</p><form action=/api/mock></form></body></html>')).toEqual([]);
   });
 
-  it('names every page with tracker residue or a capture-derived executable script', () => {
-    const failures = auditFailures([
-      { page: '/bad', audit: { qualified: 2, onetrust: 0 }, scripts: { executable: 0 } },
-      { page: '/worse', audit: { qualified: 0 }, scripts: { executable: 1 } },
-      { page: '/missing', error: 'capture file missing' },
-    ]);
-    expect(failures).toEqual([
-      '/bad: tracker residue qualified=2',
-      '/worse: 1 executable script(s) in served bytes',
-    ]);
+  it('names a page with tracker residue or a capture-derived executable script', () => {
+    expect(auditFailures('/bad', '<div class=q-root-qualified></div>')).toEqual(['/bad: tracker residue qualified=1']);
+    expect(auditFailures('/worse', '<script>alert(1)</script>')).toEqual(['/worse: 1 executable script(s) in served bytes']);
   });
 });
 
