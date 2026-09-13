@@ -23,6 +23,7 @@
     "pipeline/injected-source.mjs",
     "regression/upstream-watch.mjs",
     "regression/upstream-baseline.mjs",
+    "regression/upstream-copy.mjs",
     "pipeline/globals.d.ts"
   ]
 }
