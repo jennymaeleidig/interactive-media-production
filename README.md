@@ -3,7 +3,11 @@
 **The Recreation**: flocksafety.com — the entire site — served verbatim from
 SingleFile Captures through a strip-and-rewrite pipeline, as a Next.js app.
 Nothing in a served page reaches the network except the video slots' own
-players (ADR 0002); every image, font, and sound is a local file. Domain
+players (ADR 0002); every image, font, and sound is a local file.
+
+It is a **frozen snapshot**: the site as it stood on 2026-09-12, not a
+mirror that follows the live site. There is no refresh workflow, by decision
+([ADR 0004](docs/adr/0004-frozen-snapshot-no-upstream-sync.md)). Domain
 vocabulary and decisions: [CONTEXT.md](CONTEXT.md), [docs/adr/](docs/adr/).
 
 ## Run it
@@ -12,11 +16,12 @@ vocabulary and decisions: [CONTEXT.md](CONTEXT.md), [docs/adr/](docs/adr/).
 npm install
 
 npm run pipeline   # capture run → served/ (whole site; a scoped build reads
-                   #   pipeline/pages.list — one path per line). Needs the
-                   #   captures, which are gone — see "The scratch tree" below
+                   #   pipeline/pages.list — one path per line). The recipe the
+                   #   snapshot was built with: it needs the captures, which are
+                   #   gone, and there is no re-capture path (ADR 0004)
 npm run dedupe     # apply the body-dedupe pass to an existing served/ tree in
-                   #   place (ADR 0003) — the same pass the build runs; use it
-                   #   when there is no capture run to rebuild from
+                   #   place (ADR 0003) — the same pass the build runs, for the
+                   #   frozen tree when there is no capture run to rebuild from
 npm run build      # production build
 npm run start      # serve the captured pages at their original paths
 npm run dev        # dev server (WATCHPACK_POLLING baked in — sandbox needs it)
@@ -32,12 +37,12 @@ npm run routes     # full-scale serving check over HTTP (~10 s): every live
 
 ## How it works
 
-1. **Capture** — SingleFile snapshots of every live page (ground truth; out
-   of git, reproducible via the
-   [capture refresh runbook](docs/capture-refresh-runbook.md)). The build reads
-   the run named by the capture pointer (`pipeline/config.mjs`). The
-   signed-off run behind the current `served/` tree has been scrapped — see
-   [The scratch tree](#the-scratch-tree).
+1. **Capture** — a SingleFile snapshot of every live page, taken once, on
+   2026-09-12: the ground truth the Recreation reproduces and the run the
+   served tree came from. It is **not refreshed** (ADR 0004), and the run
+   itself is gone with the scratch tree (see [The scratch tree](#the-scratch-tree));
+   what the build needs from it is recorded in
+   `regression/capture-list-2026-09-12.txt`.
 2. **Build** (`pipeline/build.mjs`) — per page: strip the third-party
    machinery, rewrite internal links to Recreation routes, route forms to
    local mock APIs, normalize captured animation from-states, inject the
@@ -65,23 +70,33 @@ npm run routes     # full-scale serving check over HTTP (~10 s): every live
 Coding rules: [CODING_STANDARDS.md](CODING_STANDARDS.md). Domain vocabulary:
 [CONTEXT.md](CONTEXT.md).
 
-## Refreshing ground truth
+## The snapshot
 
-As the live site drifts, sync the Recreation between build phases — see
-[docs/capture-refresh-runbook.md](docs/capture-refresh-runbook.md) for the
-procedure and the ratified policy. The three ops tools (network + Docker; run
-by hand, never by `npm test`):
+The ground truth is the **frozen capture**: every live page as it stood on
+**2026-09-12**, taken with the `capsulecode/singlefile:latest` image's bundled
+`single-file` CLI and this flag set (the image tag pins no version, so the exact
+SingleFile build is not recorded — see [ADR 0004](docs/adr/0004-frozen-snapshot-no-upstream-sync.md)):
 
-```bash
-node pipeline/inventory.mjs --date <run-date>                  # re-inventory
-node pipeline/inventory-diff.mjs --old <prev.csv> --date <run-date>   # classify drift
-node pipeline/recapture.mjs --inventory <fresh.csv> --scope <recapture.txt> \
-  --fallback-inventory <prev.csv> --date <run-date>
+```
+--remove-hidden-elements=false --remove-unused-styles=false
+--save-original-urls --block-videos=false --blocked-url-pattern 'r2\.vidzflow\.com'
 ```
 
-`--fallback-inventory` keeps the real static title on the pages the live site
-currently serves with an empty `<title>` (a Webflow republish regression); see
-the runbook's title ground-truth note.
+Each flag is load-bearing for fidelity, and the reasons are recorded in
+[ADR 0004](docs/adr/0004-frozen-snapshot-no-upstream-sync.md): the first two
+keep hidden subtrees and state CSS (without them a run is not usable ground
+truth), `--block-videos=false` embeds each `<video>` source as a `data:` URI
+for the assets pass to serve locally, the Vidzflow block keeps a
+never-idle video.js host out of the capture, and `--save-original-urls` is what
+leaves a **frame's** URL in the capture at all — SingleFile empties every
+`iframe src`, and a cross-origin player cannot be inlined, so 91 frames across
+74 pages would otherwise be gone.
+
+The snapshot is not refreshed. Re-inventorying the live site, diffing drift, and
+scoped re-captures were retired with the refresh workflow (ADR 0004); the
+gitignored capture HTML is unrecoverable, and the tools that produced it are in
+git history only. `served/` is the artifact — the reason the pipeline above is
+described as a recipe rather than a runnable build.
 
 ## Publishing
 
@@ -115,19 +130,20 @@ What that means:
 - **`served/` is the artifact.** The built tree the captures produced is kept
   in full; nothing about serving, `npm run build`, or the DOM/HTTP test suite
   depended on the scratch tree.
-- **`npm run pipeline` needs a fresh capture.** It reads 1,200 capture files
-  that no longer exist, so a full re-inventory + re-capture (the runbook's
-  procedure, ~77 min) is a precondition for running it again. The same goes
-  for the ops tools (`pipeline/inventory*.mjs`, `recapture.mjs`,
-  `video-inventory.mjs`, `video-probe.mjs`): they work, and they now write to
-  `research/` at the repo root instead of `.scratch/`.
+- **`npm run pipeline` cannot run again.** It reads 1,200 capture files that no
+  longer exist, and the snapshot is frozen, so there is nothing to re-capture
+  into (ADR 0004). The build stays as the recipe the tree came from and is
+  exercised by `test/pipeline.test.ts` over a fixture capture run.
 - **`npm run routes` still runs.** It needs one thing from the run — the page
   listing behind its count invariant — and that listing is frozen at
   `regression/capture-list-2026-09-12.txt` (`CAPTURE_LIST` in
   `pipeline/config.mjs`).
 - **The record survives in git.** The tickets, spec, evidence, and prototype
   sources were tracked (555 files), so `git show <commit>:.scratch/...` still
-  has them; only the gitignored captures are unrecoverable.
+  has them; the retired refresh workflow — the runbook and the inventory /
+  diff / re-capture / video-probe tools — is one commit further on in history,
+  at the commit before the snapshot was declared final. Only the gitignored
+  captures are unrecoverable.
 - **New work still starts in `.scratch/`.** That is where the issue-tracker
   convention puts an effort's tickets ([docs/agents/issue-tracker.md](docs/agents/issue-tracker.md));
   the scrapped tree was that convention's first effort, not the convention.

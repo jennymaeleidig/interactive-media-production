@@ -1,11 +1,10 @@
 // Detection seams for the video inventory (ticket 17's first criterion).
 //
 // Why this file exists at all: every id the inventory cannot see is an id the
-// dead-media list never learns about, and on 2026-09-11 that shipped a live
-// frame to a dead Wistia player. The failing input was an *attribute* — a slot
-// that names its media without ever writing a URL — so the boundary rules below
-// are the load-bearing part: they must catch every real slot attribute and
-// nothing else.
+// build cannot act on, and on 2026-09-11 that shipped a live frame to a dead
+// Wistia player. The failing input was an *attribute* — a slot that names its
+// media without ever writing a URL — so the boundary rules below are the
+// load-bearing part: they must catch every real slot attribute and nothing else.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';

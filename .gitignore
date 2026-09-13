@@ -8,12 +8,3 @@ node_modules/
 served/
 .tmp/
 *.tsbuildinfo
-
-# Capture runs: heavy SingleFile HTML stays out of git (reproducible via the
-# docs/capture-refresh-runbook.md procedure); capture lists, status/manifest
-# CSVs, and reports stay tracked, as do dated inventories
-# (research/inventory/*.csv, *-diff.md, *-diff.csv, *-recapture.txt).
-# The initial effort's runs lived under `.scratch/` (scrapped 2026-09-13); a
-# future run lands at research/flocksafety/<run-date>/.
-research/flocksafety/**/*.html
-research/flocksafety/**/walk.log

@@ -31,6 +31,18 @@ streams and never reaches network idle, so an unblocked capture bloated to
 anyway. So the only videos still fetched from an origin host are the
 allow-listed Wistia and YouTube frames.
 
+**Amended 2026-09-13 (frozen snapshot).** The dead-upstream list below and the
+allow-list in this ADR are now **frozen with the snapshot** (ADR 0004): the
+Recreation reproduces flocksafety.com as it stood on 2026-09-12 and no longer
+follows the live site, so no probe re-derives which medias are gone and no run
+re-checks which hosts the pages use. A media that dies upstream from here on
+keeps its captured end-state in our copy — the same honest end-state the five
+below have — and a player we accept today is not re-examined. The
+`data-sf-original-src` bookkeeping this ADR's blog-video amendment relies on
+exists only because the 2026-09-12 capture was taken with
+`--save-original-urls`; ADR 0004 records that flag set, since the refresh
+runbook that used to hold it is gone.
+
 **Amended 2026-09-12 (ticket 12, blog videos).** The rejection of "load every
 YouTube frame at build time" above is about ticket 17's **hidden** click-to-arm
 panels on the three `/trust` pages: their frames are invisible until a click, so

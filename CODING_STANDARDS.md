@@ -92,9 +92,10 @@ video.js documents are stripped, not played (ticket 19).
   pages × 3 viewports for ~2 h to re-prove one code path. Visual fidelity and
   strip deltas are the human side-by-side at the phase gates (ticket 12); the
   per-page strip decision is recorded machine-readably in the build log.
-- One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) decides
-  which capture run the build serves from. Moving to a fresh run is a
-  one-value change plus a re-run of the passes. The same file's
+- One **capture pointer** (`pipeline/config.mjs` → `CAPTURE_RUN`) names the
+  capture run the served tree came from. It is a record, not a switch any more:
+  the snapshot is frozen (ADR 0004), so there is no second run to move to and
+  the pointer only decides which run a rebuild *would* read. The same file's
   `DROPPED_PAGES` lists the scaffold/test pages dropped from serving; it is
   explicit so a stale entry fails review, never a runtime heuristic.
 
@@ -215,15 +216,11 @@ video.js documents are stripped, not played (ticket 19).
   asset-identity check. **Extended by ticket 17**: the video-inventory detection
   seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s
   attribute-form sweeps and their boundary rules, because an id the inventory
-  cannot see is an id the dead-media list never learns about). **Extended by
-  ticket 11**: the capture-refresh ops-tool seams (`test/inventory.test.ts`,
-  `test/inventory-diff.test.ts`, `test/recapture.test.ts` — one `capture-refresh`
-  vitest project over `pipeline/inventory.mjs`, `pipeline/inventory-diff.mjs`,
-  and `pipeline/recapture.mjs`: the inventory parsers, the diff/scope/route
-  classes, and the re-capture list/manifest/status/title bookkeeping). The three
-  tools' network and Docker drivers are hand-run, never suite members — a
-  live-site or registry outage must not fail the suite, exactly as with the
-  video probe above. Per this header's rule, later efforts extend this list
+  cannot see is an id the build cannot act on). The network and Docker drivers
+  that used to live beside these tools (the re-inventory walk, the drift diff,
+  the scoped re-capture, the upstream video probe) were retired with the refresh
+  workflow — the Recreation is a frozen snapshot (ADR 0004) — so no suite member
+  reaches the live site. Per this header's rule, later efforts extend this list
   here rather than adding a seam silently.
   No tests against pipeline internals or module structure;
   a test that breaks in a refactor without a behavior change is wrong.
@@ -258,8 +255,9 @@ dev/build for everyone:
 - **`browserslist`** in `package.json` is required by `next build` (caniuse
   data resolution). Don't delete the field.
 - **Headless Chromium runs via Docker** (`capsulecode/singlefile`, colima) —
-  it cannot launch under the main agent sandbox. The capture run (ticket 11)
-  depends on this; the serving check does not render, so it needs no Docker.
+  it cannot launch under the main agent sandbox. The capture recipe (ADR 0004)
+  depends on this; the frozen snapshot needs no Docker to serve, and the serving
+  check does not render.
 - Servers started inside a sandboxed command must die with the command
   (self-alarm or child lifecycle) — no orphaned port squatters.
 - **The chat runtime depends on the sibling `yarnspinner-ts` checkout** —
@@ -272,10 +270,15 @@ dev/build for everyone:
 
 ## Repo hygiene
 
-- **Captures and build outputs stay out of git** (`.gitignore`): capture run
-  HTML, `served/`, `.tmp/`. Inventories, CSVs, logs, and markdown stay
-  tracked. Captures are reproducible via the capture-refresh runbook
-  (ticket 11).
+- **Build outputs stay out of git** (`.gitignore`): `served/`, `.tmp/`. The
+  snapshot's own records stay tracked: the frozen page listing
+  (`regression/capture-list-2026-09-12.txt`), `served/build-log.json`,
+  `served/build-summary.json`.
+- **The snapshot is frozen** (ADR 0004): the Recreation reproduces
+  flocksafety.com as it stood on 2026-09-12 and does not follow the live site,
+  so nothing in the repo — tool, test, or doc — reaches upstream. The retired
+  refresh procedure (re-inventory → diff → scoped re-capture, and the video
+  liveness probe) is in git history only.
 - Domain vocabulary comes from `CONTEXT.md` (Capture, Recreation, Chat
   mimic, Link policy…). Use it in names, comments, and tickets.
 - Tickets live at `.scratch/<effort>/issues/` (see `docs/agents/issue-tracker.md`).

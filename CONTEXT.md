@@ -4,7 +4,9 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 
 ## Terms
 
-- **Capture** — a SingleFile snapshot of a live flocksafety.com page; the ground truth the Recreation is verified against.
+- **Capture** — a SingleFile snapshot of a live flocksafety.com page; the ground truth the Recreation is verified against. There is one: the 2026-09-12 run, taken with the flags ADR 0004 records.
+- **Frozen snapshot** — the Recreation reproduces flocksafety.com as it stood on 2026-09-12 and does not follow the live site. Nothing in the repo reaches upstream to re-derive it, and the dead-media list the build uses is frozen with it (ADR 0004). _Avoid_: point-in-time snapshot.
+- **Refresh workflow** (retired) — the process that kept the Recreation synced to the live site by re-inventorying it, diffing the drift, and re-capturing what changed, plus the upstream video-liveness probe. It was retired when the snapshot was declared final; its tools and runbook are in git history only (ADR 0004).
 - **Recreation** — the word-for-word, CSS-exact, function-by-function rebuild of flocksafety.com as a Next.js app; the art piece's first milestone. The user's phrase: "EXACT recreation".
 - **Parody layer** — the reserved seam where the Recreation will later diverge into the art piece; deliberately unspecified until its own effort.
 - **Chat mimic** — the cloned chat assistant (the real site's is Qualified), powered by a yarnspinner-ts wrapper instead of a live backend. Yarn script content is a separate future effort written by the user.

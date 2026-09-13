@@ -1,4 +1,5 @@
 # Page subset for a scoped build. Empty = the full capture list (every page
 # in the run's capture-list.txt) — the whole-site build is the default
 # (ticket 07). Add one path per line (e.g. /products/license-plate-readers)
-# to rebuild a single route from a fresh Capture, as the refresh runbook does.
+# to rebuild a single route. A scoped build still needs the captures, which are
+# gone: the snapshot is frozen and there is no re-capture path (ADR 0004).
