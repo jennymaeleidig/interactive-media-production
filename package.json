@@ -2,7 +2,7 @@
   "name": "interactive-media-production",
   "version": "1.0.0",
   "private": true,
-  "description": "The Recreation: flocksafety.com served verbatim from SingleFile Captures through a strip-and-rewrite pipeline.",
+  "description": "The Recreation: a frozen 2026-09-12 snapshot of flocksafety.com, served verbatim from the committed static tree.",
   "license": "CC0-1.0",
   "browserslist": [
     ">0.5%",
@@ -17,8 +17,6 @@
     "dev": "WATCHPACK_POLLING=true next dev",
     "build": "next build",
     "start": "next start",
-    "pipeline": "node pipeline/build.mjs",
-    "dedupe": "node pipeline/build.mjs --dedupe-tree",
     "routes": "node regression/routes.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

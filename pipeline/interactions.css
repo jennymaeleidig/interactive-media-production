@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * The delegated interaction layer, CSS half — injected inline into every
- * served page by the build (pipeline/build.mjs pass 5, ticket 05). Pair with
+ * The delegated interaction layer, CSS half — injected into every served page
+ * and carried by the tree as a content-addressed asset (ticket 05). Pair with
  * pipeline/interactions-runtime.js: that file toggles the classes and
  * geometry these rules key on ("fpi" = flock-parody-interactions, the family
  * the data-flock-parody="interactions" tags anchor).

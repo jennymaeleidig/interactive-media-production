@@ -1,6 +1,6 @@
-// The strip audit (ADR 0001/0002): the one invariant every served page holds.
-// The build writes the per-page findings; the serving check folds them. Pure,
-// so both halves are pinned here rather than only through the site build.
+// The strip audit: the one invariant every served page holds. The serving check
+// computes the findings on the served bytes; pure, so they are pinned here
+// rather than only through the site build.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
@@ -14,7 +14,6 @@ import {
   srcdocScripts,
   unclassifiedRemoteRefs,
 } from '../pipeline/audit.mjs';
-import { wistiaEmbedUrl } from '../pipeline/embeds.mjs';
 
 describe('the residue classes', () => {
   it('reads a clean page as all zeros', () => {
@@ -101,7 +100,7 @@ describe('the remote-reference class check (ticket 20)', () => {
   });
 
   it('accepts the documented inert classes and the allow-listed frames', () => {
-    const html = `<iframe src="${wistiaEmbedUrl('llllllllll')}"></iframe>`
+    const html = `<iframe src="https://fast.wistia.net/embed/iframe/llllllllll"></iframe>`
       + `<video poster="https://r2.example/p.jpg"></video>`
       + `<div data-animation-type=lottie data-src="https://cdn.example/a.json"></div>`
       + `<meta property=og:image content="https://cdn.example/a.png">`
@@ -135,7 +134,7 @@ describe('the frame allow-list', () => {
 
   it('flags a frame outside the allow-list, and passes the media hosts', () => {
     expect(offAllowlistFrames(`<iframe src="https://evil.example/x">`)).toEqual(['https://evil.example/x']);
-    expect(offAllowlistFrames(`<iframe src="${wistiaEmbedUrl('llllllllll')}">`)).toEqual([]);
+    expect(offAllowlistFrames(`<iframe src="https://fast.wistia.net/embed/iframe/llllllllll">`)).toEqual([]);
     expect(offAllowlistFrames(`<iframe src="https://www.youtube.com/embed/abcdefghijk">`)).toEqual([]);
     // the privacy-enhanced host is the one three captured blog frames name
     expect(offAllowlistFrames(`<iframe src="https://www.youtube-nocookie.com/embed/abcdefghijk">`)).toEqual([]);

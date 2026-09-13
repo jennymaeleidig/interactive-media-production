@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
-// The motion reveal layer, runtime half — injected inline into every served
-// page by the build (pipeline/build.mjs pass 4, ticket 04). Pair with
+// The motion reveal layer, runtime half — injected into every served page, and
+// carried by the tree as a content-addressed asset (ticket 04). Pair with
 // pipeline/motion.css: this file toggles the classes its rules key on
 // ("fpm" = flock-parody-motion, the family the data-flock-parody="motion"
 // tags anchor).
@@ -39,10 +39,11 @@
   }
 
   // one-shot scroll reveals: explicit patterns + the generic sweep's tags.
-  // COUPLING: adding a census pattern means touching this selector, the
-  // from-state rules in motion.css, and the normalization branches in
-  // pipeline/build.mjs — all four listings exist so a fidelity review can
-  // see exactly which patterns reveal.
+  // COUPLING: a census pattern means touching this selector and the from-state
+  // rules in motion.css. (It also meant the reveal normalization in the build,
+  // which retired with the captures — the tree already carries its output.)
+  // Both remaining listings exist so a fidelity review can see which patterns
+  // reveal.
   var targets = d.querySelectorAll(
     '[data-animation-gsap=fade-in],[data-animation-gsap=fade-in-2],' +
     '[data-animation-gsap=image-clip],[data-animation-gsap=clip-in],' +

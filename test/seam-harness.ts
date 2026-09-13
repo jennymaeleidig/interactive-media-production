@@ -6,25 +6,41 @@
 // window and the bytes so a runtime's reduced-motion behaviour is comparable
 // across layers and a seventh seam never invents its own setup.
 //
-// The runtime bytes come from the ticket-04 layer table (pipeline/layers.mjs),
-// not hand-written pipeline/*.js paths, so moving a layer's file moves the
-// seam with it.
+// The runtime bytes come from one table below — a layer's name, not a
+// hand-written path repeated across six tests — so every seam drives the bytes
+// the layer ships.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, VirtualConsole, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 /** The Recreation origin every seam window shares (chat overrides to localhost). */
 export const SEAM_URL = 'https://recreation.test/';
 
-/** Read a layer's injected bytes through the ticket-04 table (runtime by default). */
+/**
+ * The injected runtimes, by layer: the source file each layer ships. The tree in
+ * `served/` carries these bytes as content-addressed assets; the sources here are
+ * the maintained copy, and the two agree except for a comment-only lag in the
+ * chat stylesheet and the story-hook script (see test/serving.seam.test.ts).
+ */
+const LAYER_FILES: Record<string, { runtime?: string; css?: string }> = {
+  motion: { runtime: 'motion-runtime.js', css: 'motion.css' },
+  interactions: { runtime: 'interactions-runtime.js', css: 'interactions.css' },
+  nav: { runtime: 'nav-runtime.js', css: 'nav.css' },
+  chat: { runtime: 'chat-widget.js', css: 'chat-widget.css' },
+  'story-hook': { runtime: 'story-hook.js' },
+  scroll: { runtime: 'scroll-runtime.js', css: 'scroll.css' },
+};
+
+/** Read a layer's injected bytes (runtime by default). */
 export function layerSource(layer: string, kind: 'runtime' | 'css' = 'runtime'): string {
-  return readFileSync(path.join(HERE, '..', 'pipeline', layerFile(layer, kind)), 'utf8');
+  const file = LAYER_FILES[layer]?.[kind];
+  if (file === undefined) throw new Error(`no ${kind} for injected layer '${layer}'`);
+  return readFileSync(path.join(HERE, '..', 'pipeline', file), 'utf8');
 }
 
 /** Eval the injected source into a jsdom window, as an inline body script observes it. */

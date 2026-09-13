@@ -12,10 +12,10 @@
 // drift the byte-identity check cannot see: a check that resolves differently
 // from the server passes while serving the wrong page.
 //
-// The MIME table lives here rather than in `pipeline/assets.mjs` because the
-// *build* never asks for it: `extForMime` (the inverse, naming an extracted
-// file) is the build's half and stays in assets.mjs, while `mimeForExt` is
-// asked only by the two things that answer a request for the bytes.
+// The MIME table lives here because its only askers are the two things that
+// answer a request for a file's bytes — the route and this check.
+// (`extForMime`, the inverse, named an extracted file and belonged to the
+// retired build's asset pass.)
 //
 // SPDX-License-Identifier: CC0-1.0
 import path from 'node:path';

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
-// The delegated interaction layer, runtime half — injected inline into every
-// served page by the build (pipeline/build.mjs pass 5, ticket 05). Sibling of
-// the motion reveal layer (pass 4): where that layer restores scroll/load
+// The delegated interaction layer, runtime half — injected into every served
+// page, and carried by the tree as a content-addressed asset (ticket 05).
+// Sibling of the motion reveal layer (ticket 04): where that layer restores
+// scroll/load
 // reveals, this one restores CLICK behavior — tabs, dropdowns, accordions,
 // and sliders — operating the captured classes and geometry directly, never
 // the original Webflow/Swiper/GSAP runtimes (spec, Implementation Decisions:

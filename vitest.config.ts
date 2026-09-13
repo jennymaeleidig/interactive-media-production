@@ -13,7 +13,6 @@ const project = (name: string, include: string[], extra: Record<string, unknown>
 export default defineConfig({
   test: {
     projects: [
-      project('pipeline', ['test/pipeline.test.ts']),
       project('serving-seam', ['test/serving.seam.test.ts'], {
         globalSetup: ['test/seam-global-setup.ts'],
         testTimeout: 30_000,
@@ -32,16 +31,8 @@ export default defineConfig({
       project('served-tree', ['test/served-tree.test.ts']),
       project('routes', ['test/routes.test.ts']),
       project('cli', ['test/cli.test.ts']),
-      project('assets', ['test/assets.test.ts']),
-      project('embeds', ['test/embeds.test.ts']),
       project('audit', ['test/audit.test.ts']),
-      project('csp', ['test/csp.test.ts']),
       project('html', ['test/html.test.ts']),
-      project('layers', ['test/layers.test.ts']),
-      project('passes', ['test/passes.test.ts']),
-      project('summary', ['test/summary.test.ts']),
-      project('dedupe', ['test/dedupe.test.ts']),
-      project('video-inventory', ['test/video-inventory.test.ts']),
     ],
   },
 });

@@ -1,10 +1,15 @@
 // Vitest globalSetup for the serving-seam project:
-// 1. runs the pipeline over the fixture capture run into .tmp/seam/served
-// 2. builds the Next app (next build) unless a fresh build exists
-// 3. starts `next start` on a free port with SERVED_DIR pointed at the fixture tree
-// 4. writes .tmp/seam/runtime.json — tests read the base URL from it
+// 1. builds the Next app (next build) unless a fresh build exists
+// 2. starts `next start` on a free port with SERVED_DIR pointed at the committed
+//    served/ tree — the artifact itself, so the seam asserts what ships
+// 3. writes .tmp/seam/runtime.json — tests read the base URL from it
+//
+// There is no fixture tree and no build step for one: `served/` is committed, so
+// the seam runs against the same bytes `npm run routes` checks.
+//
+// SPDX-License-Identifier: CC0-1.0
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync, existsSync, statSync, readdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,9 +17,8 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 const SEAM_TMP = path.join(ROOT, '.tmp/seam');
-const SERVED_DIR = path.join(SEAM_TMP, 'served');
+const SERVED_DIR = path.join(ROOT, 'served');
 const RUNTIME = path.join(SEAM_TMP, 'runtime.json');
-const FIXTURES = path.join(HERE, 'fixtures/capture-run');
 
 function freePort() {
   return new Promise((resolve, reject) => {
@@ -55,19 +59,11 @@ function nextBuildFresh() {
 }
 
 export async function setup() {
-  // 1. fixture served tree — the same transformation the real build runs
-  rmSync(SEAM_TMP, { recursive: true, force: true });
-  mkdirSync(SERVED_DIR, { recursive: true });
-  const { runPipeline } = await import('../pipeline/build.mjs');
-  const { log } = await runPipeline({
-    runDir: FIXTURES,
-    pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/form-test'],
-    // the scaffold/test fixture page is dropped from serving, exactly as the
-    // real build drops pipeline/config.mjs DROPPED_PAGES
-    dropPages: ['/form-test'],
-    outDir: SERVED_DIR,
-  });
-  if (log.some((e) => e.error)) throw new Error('fixture pipeline failed: ' + JSON.stringify(log));
+  // 1. the tree under test must be there — it is committed, not built
+  if (!existsSync(path.join(SERVED_DIR, 'build-summary.json'))) {
+    throw new Error(`served/ tree missing at ${SERVED_DIR} — the serving seam asserts the committed artifact`);
+  }
+  mkdirSync(SEAM_TMP, { recursive: true });
 
   // 2. app build (reused when newer than every app source)
   if (!nextBuildFresh()) {
@@ -77,7 +73,7 @@ export async function setup() {
     }
   }
 
-  // 3. production server on a free port, serving the fixture tree
+  // 3. production server on a free port, serving the committed tree
   const port = await freePort();
   const child = spawn('npx', ['next', 'start', '-p', String(port)], {
     cwd: ROOT,

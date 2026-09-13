@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: CC0-1.0
-// The story-hook seam runtime — injected inline into every served page by the
-// build (pipeline/build.mjs, ticket 03). Dormant in the Recreation: the
-// runtime ships, nothing calls it; the Parody layer's dialogue events will
+// The story-hook seam runtime — injected into every served page, and carried by
+// the tree as a content-addressed asset (ticket 03). Dormant in the Recreation:
+// the runtime ships, nothing calls it; the Parody layer's dialogue events will
 // drive it (spec, Implementation Decisions → Story-hook seam; contract
 // ratified in ticket 05 of the flock-parody effort, proven in that effort's
 // snapshot-serving prototype — both in git history).

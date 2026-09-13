@@ -12,9 +12,9 @@
 //        scaffold/test page
 //
 // Plus the whole-site invariants: served + dropped + errors accounts for every
-// page the page listing holds (`CAPTURE_LIST` — the capture run's own
-// `capture-list.txt` when `--run` names a live run, the frozen copy taken
-// before the captures were scrapped otherwise), the site-wide strip audit (no
+// page the frozen listing holds (`CAPTURE_LIST` — the page listing the
+// 2026-09-12 capture run recorded, kept after the captures were scrapped), the
+// site-wide strip audit (no
 // tracker residue, no capture-derived executable script) holds on every page,
 // and every extracted asset in the build's manifest answers at its
 // content-addressed path with the content type its extension declares and a
@@ -29,7 +29,7 @@
 // tree), so it is not a test-suite member: the suite must stay green on a
 // fresh clone.
 //
-// Usage: node regression/routes.mjs [--served served] [--run <captureRunDir>]
+// Usage: node regression/routes.mjs [--served served]
 //        [--base http://host:port]   (--base skips starting its own server)
 // SPDX-License-Identifier: CC0-1.0
 import fs from 'node:fs';
@@ -194,7 +194,7 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
   const failures = [];
 
   if (served.length !== summary.served) {
-    failures.push(`build log has ${served.length} served page(s) but the summary says ${summary.served} — re-run \`npm run pipeline\``);
+    failures.push(`build log has ${served.length} served page(s) but the summary says ${summary.served} — the tree's own two records disagree`);
   }
   if (Object.keys(redirects).length !== summary.redirects?.count) {
     failures.push(`redirects.json has ${Object.keys(redirects).length} entries but the summary says ${summary.redirects?.count}`);
@@ -255,7 +255,7 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
   let assetChecked = 0;
   const assetNames = fs.existsSync(path.join(servedDir, 'assets.json')) ? read('assets.json') : [];
   if (assetNames.length !== (summary.assets?.distinct ?? 0)) {
-    failures.push(`assets.json lists ${assetNames.length} file(s) but the summary says ${summary.assets?.distinct ?? 0} — re-run \`npm run pipeline\``);
+    failures.push(`assets.json lists ${assetNames.length} file(s) but the summary says ${summary.assets?.distinct ?? 0} — the tree's own two records disagree`);
   }
   const assetResults = await mapLimit(assetNames, 16, async (name) => {
     try {
@@ -311,21 +311,16 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
 async function main() {
   const arg = makeArg(process.argv.slice(2));
   const servedDir = path.resolve(ROOT, arg('--served') ?? 'served');
-  const { CAPTURE_LIST, CAPTURE_RUN } = await import('../pipeline/config.mjs');
-  // With a live capture run, the listing is the run's own; without one (the
-  // captures were scrapped) it is the frozen copy taken before the deletion.
-  const listingFile = arg('--run')
-    ? path.resolve(ROOT, arg('--run'), 'capture-list.txt')
-    : path.resolve(ROOT, CAPTURE_LIST);
+  const { CAPTURE_LIST } = await import('../pipeline/config.mjs');
+  // The page listing the 2026-09-12 run recorded, frozen before the captures
+  // were scrapped — the other side of the count invariant.
+  const listingFile = path.resolve(ROOT, CAPTURE_LIST);
 
   for (const [label, file] of [['served tree', servedDir], ['build-summary.json', path.join(servedDir, 'build-summary.json')], ['page listing', listingFile]]) {
     if (!fs.existsSync(file)) {
-      console.error(`✗ ${label} missing at ${file} — run \`npm run pipeline\` first`);
+      console.error(`✗ ${label} missing at ${file} — the served tree is committed; a missing file is a broken checkout`);
       process.exit(1);
     }
-  }
-  if (!arg('--run') && !fs.existsSync(path.resolve(ROOT, CAPTURE_RUN))) {
-    console.log(`  (capture run ${CAPTURE_RUN} is absent — checked against the frozen page listing)`);
   }
 
   const external = arg('--base');

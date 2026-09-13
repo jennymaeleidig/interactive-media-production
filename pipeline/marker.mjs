@@ -2,11 +2,11 @@
 //
 // Every style/script the Recreation injects carries `data-flock-parody="<layer>"`,
 // and the strip census reads that attribute to tell our bytes from the
-// Capture's. The marker has two sides — the layer table that stamps it
-// (`pipeline/layers.mjs`) and the audit that counts it (`pipeline/audit.mjs`) —
-// so it lives here, on its own, and the census does not have to reach into the
-// builder's table: importing `layers.mjs` for this one regex dragged the CSP
-// helpers and `node:fs` into the serving check's module graph.
+// Capture's. The marker has two sides — the build that used to stamp it and the
+// audit that counts it (`pipeline/audit.mjs`) — so it lives here, on its own,
+// and the census does not have to reach into a builder's table: importing that
+// table for this one regex dragged the CSP helpers and `node:fs` into the
+// serving check's module graph.
 //
 // SPDX-License-Identifier: CC0-1.0
 

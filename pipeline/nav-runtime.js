@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
-// The shared header's behavior layer, runtime half (ticket 14) — injected
-// inline into every served page by the build (pipeline/build.mjs navPass).
+// The shared header's behavior layer, runtime half (ticket 14) — injected into
+// every served page, and carried by the tree as a content-addressed asset.
 //
 // The live site's header script (fetched from the page, 2026-09-11) drives
 // three things by class, and the corrected Capture's own stylesheet renders

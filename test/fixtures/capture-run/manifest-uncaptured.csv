@@ -1,4 +1,0 @@
-path,url,type,status,redirect_target,capture
-/legal/privacy-notice,https://www.flocksafety.com/legal/privacy-notice,redirect,200 (redirect),/thank-you,redirect-stub
-/ebooks,https://www.flocksafety.com/ebooks,dead,404,,dead-not-captured
-/events/test-event,https://www.flocksafety.com/events/test-event,auth-gated,401,,auth-gated
