@@ -4,40 +4,21 @@
 // build cannot act on, and on 2026-09-11 that shipped a live frame to a dead
 // Wistia player. The failing input was an *attribute* — a slot that names its
 // media without ever writing a URL — so the boundary rules below are the
-// load-bearing part: they must catch every real slot attribute and nothing else.
+// load-bearing part: they must catch every real `media-id` and nothing else.
+//
+// Only the Wistia sweep lives here. YouTube's `data-video-id` panels are the
+// embed pass's own detection (`pipeline/embeds.mjs`'s `youtubeSlots`), pinned
+// beside it in the ticket-17 describe at `test/embeds.test.ts`.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { extractFromPage, wistiaFromPage } from '../pipeline/video-inventory.mjs';
+import { wistiaFromPage } from '../pipeline/video-inventory.mjs';
 
 describe('attribute-form slot detection', () => {
-  it('sees a src-less YouTube slot', () => {
-    const html = `<iframe data-video-id=czWZT0qQ5HU class=th_video id=youtube-player-3></iframe>`;
-    const { youtube } = extractFromPage(html);
-    expect([...youtube.keys()]).toEqual(['czWZT0qQ5HU']);
-    expect([...youtube.get('czWZT0qQ5HU')!]).toEqual(['embed']);
-  });
-
-  it('sees a quoted attribute value', () => {
-    const { youtube } = extractFromPage(`<iframe data-video-id="yBQN9orr_Ho"></iframe>`);
-    expect([...youtube.keys()]).toEqual(['yBQN9orr_Ho']);
-  });
-
-  it('does not read a longer attribute whose name merely ends in data-video-id', () => {
-    const { youtube } = extractFromPage(`<div data-data-video-id=czWZT0qQ5HU></div>`);
-    expect([...youtube.keys()]).toEqual([]);
-  });
-
-  it('does not read an 11-char prefix of a longer id', () => {
-    // podcast.html's episode buttons carry 24-char ids; matching their prefix
-    // invented a YouTube video that does not exist.
-    const { youtube } = extractFromPage(`<button data-video-id=7hyzp0tDLlLVy2BWG284Qt>x</button>`);
-    expect([...youtube.keys()]).toEqual([]);
-  });
-
-  it('does not read Vidzflow’s numeric data-video-id', () => {
-    const { youtube, wistia } = extractFromPage(`<iframe data-video-id=32614 srcdoc="<video-js></video-js>"></iframe>`);
-    expect([...youtube.keys()]).toEqual([]);
+  it('reads no Wistia media from a numeric data-video-id frame', () => {
+    // Vidzflow's hidden player document: the numeric id is not Wistia's, and
+    // the pass strips the document (ticket 19) rather than rewriting a slot.
+    const { wistia } = wistiaFromPage(`<iframe data-video-id=32614 srcdoc="<video-js></video-js>"></iframe>`);
     expect([...wistia.keys()]).toEqual([]);
   });
 

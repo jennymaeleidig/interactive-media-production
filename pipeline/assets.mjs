@@ -105,7 +105,7 @@ export function decodeDataUri(parsed) {
  * @param {string} ext
  * @returns {string}
  */
-export function assetPath(sha, ext) {
+function assetPath(sha, ext) {
   return `/assets/${sha}.${ext}`;
 }
 

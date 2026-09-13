@@ -1025,7 +1025,7 @@ function pageForServedFile(outDir, file) {
  * @param {{dryRun?: boolean}} [options]
  * @returns {{pages: number, pagesChanged: number, files: number, externalized: {style: number, script: number}, kept: number, bytesIn: number, bytesOut: number, blocked: string[]}}
  */
-export function dedupeTree(outDir, { dryRun = false } = {}) {
+function dedupeTree(outDir, { dryRun = false } = {}) {
   const assetDir = path.join(outDir, 'assets');
   const files = servedHtmlFiles(outDir).sort();
   const written = new Set();

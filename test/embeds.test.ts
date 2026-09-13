@@ -267,6 +267,15 @@ describe('every YouTube slot on the page (ticket 17)', () => {
     expect(youtubeSlots(`<iframe data-video-id=32614></iframe>`)).toEqual([]);
   });
 
+  it('bounds the attribute name and reads a quoted value', () => {
+    // `data-data-video-id` merely ends in `data-video-id`; the guarded
+    // attribute read (pipeline/html.mjs's `attrOf`) refuses it. This rule
+    // lives here rather than in a second sweep of its own — the sweep the build
+    // reads is the one that must carry the boundary.
+    expect(youtubeSlots(`<iframe data-data-video-id=lV1WCvNGnmM></iframe>`)).toEqual([]);
+    expect(youtubeSlots(`<iframe data-video-id="lV1WCvNGnmM"></iframe>`)).toEqual(['lV1WCvNGnmM']);
+  });
+
   it('ignores a frame that already carries a src', () => {
     expect(youtubeSlots(`<iframe src="https://www.youtube.com/embed/lV1WCvNGnmM" data-video-id=lV1WCvNGnmM></iframe>`)).toEqual([]);
   });

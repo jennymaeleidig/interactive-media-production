@@ -31,16 +31,13 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 
-const YOUTUBE_EMBED = /youtube(?:-nocookie)?\.com\/(?:embed|shorts|live|v)\/([A-Za-z0-9_-]{11})/g;
-const YOUTUBE_LINK = /(?:youtube(?:-nocookie)?\.com\/watch\?(?:[^"'`\s>]*&)?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/g;
 const WISTIA_EMBED = /(?:fast\.wistia\.(?:net|com)\/embed\/(?:iframe|medias)\/|wistia_async_)([a-z0-9]{10})/g;
 const WISTIA_LINK = /flocksafety\.wistia\.com\/medias\/([a-z0-9]{10})/g;
-// Slot elements that name their video as an *attribute* rather than a URL. Both
-// are bounded: `data-video-id` must hold exactly the 11 id characters (podcast
-// episode buttons carry 24-char ids; Vidzflow's `data-video-id=32614` is
-// numeric) and `media-id` exactly 10 — and `media-id` must not be prefixed
-// (Wistia's own attribute is bare; `data-media-id` belongs to other markup).
-const YOUTUBE_ATTR = /(?<![\w-])data-video-id\s*=\s*["']?([A-Za-z0-9_-]{11})["']?(?![A-Za-z0-9_-])/g;
+// The Wistia attribute form: the slot names its media without ever writing a
+// URL (`<wistia-player media-id=…>`), including a media named only in a
+// captured CSS attribute selector. Bounded to exactly 10 id characters, and not
+// prefixed — Wistia's own attribute is bare, while `data-media-id` belongs to
+// other markup.
 const WISTIA_MEDIA_ATTR = /(?<![\w-])media-id\s*=\s*["']?([a-z0-9]{10})["']?(?![a-z0-9])/g;
 
 /**
@@ -59,40 +56,15 @@ function unescapeEntities(s) {
 }
 
 /**
- * Extract one page's video references — w-json-ld Wistia VideoObjects, Wistia
- * embed/link hashed IDs, and YouTube embed/link IDs — each id tagged with the
- * contexts it appeared in.
- * @param {string} html raw page bytes
- * @returns {{wistia: WistiaEntries, youtube: Map<string, Set<'embed'|'link'>>}}
- */
-export function extractFromPage(html) {
-  const { wistia } = wistiaFromPage(html);
-  /** @type {Map<string, Set<'embed'|'link'>>} */
-  const youtube = new Map();
-  const markYouTube = (id, context) => {
-    if (!youtube.has(id)) youtube.set(id, new Set());
-    youtube.get(id).add(context);
-  };
-
-  let mm;
-  while ((mm = YOUTUBE_EMBED.exec(html)) !== null) markYouTube(mm[1], 'embed');
-  while ((mm = YOUTUBE_ATTR.exec(html)) !== null) markYouTube(mm[1], 'embed');
-  while ((mm = YOUTUBE_LINK.exec(html)) !== null) markYouTube(mm[1], 'link');
-  return { wistia, youtube };
-}
-
-/**
  * One Wistia media as the page names it: the w-json-ld metadata when captured,
  * and every context (`embed` — a slot; `link` — body copy) the id appeared in.
  * @typedef {Map<string, {title: string|null, duration: string|null, contentUrl: string|null, contexts: Set<'embed'|'link'>}>} WistiaEntries
  */
 
 /**
- * The Wistia half of {@link extractFromPage}: the `w-json-ld` VideoObject
- * blocks (hashed ID, title, duration, delivery URL) plus the embed-URL /
- * media-link / `wistia_async_*` / `media-id` ID sweeps. Split out because the
- * embed pass wants only the IDs and titles and should not pay for the YouTube
- * sweeps on every one of 1,181 pages.
+ * One page's Wistia medias: the `w-json-ld` VideoObject blocks (hashed ID,
+ * title, duration, delivery URL) plus the embed-URL / media-link /
+ * `wistia_async_*` / `media-id` ID sweeps.
  * @param {string} html raw page bytes
  * @returns {{wistia: WistiaEntries}}
  */

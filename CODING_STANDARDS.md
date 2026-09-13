@@ -294,9 +294,11 @@ and the log's key names are not an interface between them.
   pure HTML-in/HTML-out cores the build calls; none reaches over HTTP, and
   the built result of each is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection
-  seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s
-  attribute-form sweeps and their boundary rules, because an id the inventory
-  cannot see is an id the build cannot act on). The network and Docker drivers
+  seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s Wistia
+  attribute-form sweep and its boundary rules, because an id the inventory
+  cannot see is an id the build cannot act on). YouTube's `data-video-id`
+  boundary rules are pinned with the sweep the build actually reads, in the
+  ticket-17 describe at `test/embeds.test.ts`. The network and Docker drivers
   that used to live beside these tools (the re-inventory walk, the drift diff,
   the scoped re-capture, the upstream video probe) were retired with the refresh
   workflow — the Recreation is a frozen snapshot (ADR 0004) — so no suite member
