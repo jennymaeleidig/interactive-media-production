@@ -21,10 +21,22 @@
 // byte-identical body — a page's images can silently 404 while its
 // page bytes stay identical, so assets need the same guarantee the pages get.
 //
+// And the invariant over the only bytes here that are ours rather than the
+// Capture's: every served page carries exactly the marked injected members the
+// roster declares, the bytes it ships for each still match the source we
+// maintain in `pipeline/`, and each stays inside the outbound allowance the
+// roster gives it — inert for every member but the Chat mimic, which may reach
+// the local message API and nothing else. Comment-only drift is reported as a
+// note (nothing can rebuild the tree to carry a prose edit); any other
+// divergence fails.
+//
 // The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
 // `byteMismatch`, `formatRouteCounts` — are unit-tested in `test/routes.test.ts`;
 // the served-tree path rules they read live in `pipeline/served-tree.mjs`,
-// unit-tested in `test/served-tree.test.ts`.
+// unit-tested in `test/served-tree.test.ts`, and the injected-layer rules this
+// applies live in `pipeline/injected-layers.mjs`, unit-tested in
+// `test/injected-layers.test.ts`, and the outbound rule in
+// `pipeline/injected-source.mjs`, unit-tested in `test/injected-source.test.ts`.
 // The check itself is environmental (it needs the built app and the served
 // tree), so it is not a test-suite member: the suite must stay green on a
 // fresh clone.
@@ -37,6 +49,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DROPPED_PAGES } from '../pipeline/config.mjs';
 import { audit, scriptCensus } from '../pipeline/audit.mjs';
+import { LAYERS, maintainedSource, markedMembers, mirrorFindings, shippedSource } from '../pipeline/injected-layers.mjs';
+import { honoursOutbound } from '../pipeline/injected-source.mjs';
 import { mimeForExt, pageCandidates } from '../pipeline/served-tree.mjs';
 import { startServer } from './server.mjs';
 import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
@@ -177,7 +191,7 @@ async function mapLimit(items, limit, fn) {
  * it measures exactly what the build produced, not what a caller believes.
  * @param {string} base  Origin of the running server.
  * @param {{servedDir: string, listingFile: string}} opts
- * @returns {Promise<{failures: string[], checked: number, byteChecked: number, assetChecked: number, counts: Record<string, number>}>}
+ * @returns {Promise<{failures: string[], notes: string[], checked: number, byteChecked: number, assetChecked: number, counts: Record<string, number>}>}
  */
 export async function checkRoutes(base, { servedDir, listingFile }) {
   const read = (name) => JSON.parse(fs.readFileSync(path.join(servedDir, name), 'utf8'));
@@ -208,6 +222,34 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
   const { expectations, conflicts } = routeExpectations({ served, dropped, redirects, dead, authGated });
   failures.push(...conflicts.map((c) => `route class conflict — ${c}`));
 
+  // The injected-layer mirror's readers, memoized: 1,181 pages name the same ten
+  // assets and compare against the same sources, so reading them per page would
+  // be ~13,000 reads of files that cannot change under us.
+  const shippedCache = new Map();
+  const sourceCache = new Map();
+  const shipped = (member) => {
+    if (member.body !== undefined) return member.body;
+    if (!shippedCache.has(member.ref)) shippedCache.set(member.ref, shippedSource(servedDir, member.ref));
+    return shippedCache.get(member.ref);
+  };
+  const maintained = (name, kind, page) => {
+    const key = `${name}/${kind}@${page}`;
+    if (!sourceCache.has(key)) sourceCache.set(key, maintainedSource(name, kind, page, ROOT));
+    return sourceCache.get(key);
+  };
+  // expected-today facts (comment-only drift, printed once; a page out of
+  // roster order, one per page), gathered so the report never repeats a line
+  const notes = new Set();
+  // the outbound allowance each marked member is declared with, and what each
+  // member's shipped bytes actually do — read once, not once per page
+  const allowance = new Map(LAYERS.flatMap((layer) => layer.parts.map((part) => [`${layer.name}/${part.kind}`, part.outbound])));
+  const outboundCache = new Map();
+  const outboundOk = (member) => {
+    const key = `${member.name}/${member.kind}`;
+    if (!outboundCache.has(key)) outboundCache.set(key, honoursOutbound(shipped(member), allowance.get(key)));
+    return outboundCache.get(key);
+  };
+
   const results = await mapLimit(expectations, 16, async (e) => {
     try {
       const res = await fetch(base + e.path, { redirect: 'manual' });
@@ -237,7 +279,18 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
     if (r.e.status === 200 && r.status === 200 && r.bytes) {
       // the invariant is re-evaluated on the served bytes, not read back from
       // the log the build wrote — an independent check of the same rule
-      failures.push(...auditFailures(r.e.path, r.bytes.toString('utf8')));
+      const html = r.bytes.toString('utf8');
+      failures.push(...auditFailures(r.e.path, html));
+      // the marked injected members this page carries: whether the bytes it
+      // ships for them still match the sources we maintain, and whether each
+      // stays inside the allowance the roster declares for it
+      const members = markedMembers(html);
+      const marked = mirrorFindings({ page: r.e.path, members, shipped, maintained });
+      failures.push(...marked.failures);
+      for (const note of marked.notes) notes.add(note);
+      for (const member of members) {
+        if (!outboundOk(member)) failures.push(`${r.e.path}: ${member.name}/${member.kind} reaches outside its declared outbound allowance`);
+      }
       const file = pageCandidates(servedDir, r.e.path).find((f) => fs.existsSync(f));
       if (!file) {
         failures.push(`${r.e.path}: 200 but no served file at served/${r.e.path.replace(/^\/+/, '')}.html`);
@@ -291,6 +344,7 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
 
   return {
     failures,
+    notes: [...notes].sort(),
     checked: expectations.length,
     byteChecked,
     assetChecked,
@@ -328,11 +382,16 @@ async function main() {
   try {
     server = external ? { base: external, stop: async () => {} } : await startServer();
     const r = await checkRoutes(server.base, { servedDir, listingFile });
-    console.log('Serving check (tickets 06–07) — every route class + byte-identity over HTTP');
+    console.log('Serving check (tickets 06–07) — every route class, byte-identity, and the injected-layer roster over HTTP');
     console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
     console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the file in the tree`);
     console.log(`  asset-identity: ${r.assetChecked} extracted asset(s) returned their declared content type and identical bytes`);
     console.log(`  count identity: served + dropped = ${r.counts.served} + ${r.counts.droppedRequested} = ${r.counts.served + r.counts.droppedRequested}, against ${r.counts.inventory} inventory page(s)`);
+    console.log(`  layer roster: ${r.byteChecked} page(s) carried the declared marked members, with their maintained sources and outbound allowances intact`);
+    if (r.notes.length > 0) {
+      console.log(`\n• ${r.notes.length} note(s) — expected, not failures:`);
+      for (const n of r.notes) console.log(`  ${n}`);
+    }
     if (r.failures.length > 0) {
       console.log(`\n✗ ${r.failures.length} failure(s):`);
       for (const f of r.failures) console.log(`  ${f}`);

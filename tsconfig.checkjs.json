@@ -1,0 +1,26 @@
+// `checkJs` over the injected layers, so the one reader of the message API's
+// shape that actually ships (`chat-widget.js`) is typechecked where it lies —
+// against the single declaration in `pipeline/chat-turn.mjs` — instead of
+// hand-narrowing a response nobody checks.
+//
+// The scope is deliberately not `pipeline/**`. The six runtime layers are frozen:
+// their bytes ship in `served/` and `pipeline/injected-layers.mjs` fails if the
+// two diverge in code, so a type error there could only be fixed by editing code
+// the tree cannot carry. They are pinned by their own DOM seams instead. What is
+// here is the modules this effort introduced or depends on, every one of which is
+// fixable by annotation alone (comments do not change the code a page ships).
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "incremental": false
+  },
+  "include": [
+    "pipeline/chat-turn.mjs",
+    "pipeline/chat-widget.js",
+    "pipeline/injected-layers.mjs",
+    "pipeline/injected-source.mjs",
+    "pipeline/globals.d.ts"
+  ]
+}

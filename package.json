@@ -18,7 +18,7 @@
     "build": "next build",
     "start": "next start",
     "routes": "node regression/routes.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.checkjs.json",
     "test": "vitest run"
   },
   "dependencies": {

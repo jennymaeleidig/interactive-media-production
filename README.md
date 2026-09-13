@@ -42,8 +42,9 @@ There is no pipeline step and no build input: `served/` — 660 MB, 4,466 files,
    as the artifact: per page, the third-party machinery stripped, internal links
    rewritten to Recreation routes, forms routed to local mock APIs, captured
    animation from-states normalized, the motion / interactions / nav / chat /
-   story-hook / scroll layers injected as marked content-addressed assets, the
-   closing tags SingleFile truncates restored, and every stylesheet/script body
+   story-hook / scroll layers injected as marked content-addressed assets (plus
+   the page-scoped `legibility` patch on `/safe-cities`), the closing tags
+   SingleFile truncates restored, and every stylesheet/script body
    of at least 1 KB shipped once instead of re-encoded on all 1,181 pages. The
    build's own record of each page is `served/build-log.json`; the whole-site
    counts are `served/build-summary.json`, and the redirect table is
@@ -129,7 +130,7 @@ What that means:
   only the build used (its pass table, the embed / dedupe / asset passes, the
   captured-policy editor, the layer table) are deleted. What the build left
   behind stays, because the tree and the tests still need it: the injected
-  runtimes, the strip audit, the served-tree rules.
+  layers, the strip audit, the served-tree rules.
 - **The record survives in git.** The tickets, spec, evidence, prototype sources,
   and the build itself were tracked, so `git show <commit>:...` still has them;
   the retired refresh workflow — the runbook and the inventory / diff /

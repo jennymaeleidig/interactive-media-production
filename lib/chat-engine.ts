@@ -34,6 +34,13 @@ import {
 import type { DialogueOption } from 'yarnspinner-typescript';
 import { loadYarnProject } from 'yarnspinner-typescript/node';
 import path from 'node:path';
+import type { ChatLine, ChatResponse, ChatState, ChatTurn } from '../pipeline/chat-turn.mjs';
+
+// The message API's shape is declared once, in `pipeline/chat-turn.mjs`: the
+// widget that parses it and the dialogue engine that builds it are the two ends
+// of the same seam, and the widget ships. Re-exported so the seams and the route
+// keep importing it from here.
+export type { ChatLine, ChatResponse, ChatState, ChatTurn };
 
 // ---------------------------------------------------------------------------
 // Program: compiled once per server process.
@@ -52,12 +59,6 @@ const program = project.program;
 // ---------------------------------------------------------------------------
 // Sessions: one Dialogue in server memory per visitor.
 // ---------------------------------------------------------------------------
-/** One conversation message, as the widget renders it. */
-export interface ChatLine {
-  from: 'bot' | 'me';
-  text: string;
-}
-
 interface Session {
   dialogue: Dialogue;
   storage: InMemoryVariableStorage;
@@ -82,14 +83,6 @@ function newSession(): Session {
 // Turn plumbing: pull the dialogue to its next rest state (an option set or
 // completion), sweeping past line and command stops, and shape the batch.
 // ---------------------------------------------------------------------------
-interface ChatTurn {
-  /** The turn's new messages, in order. */
-  lines: ChatLine[];
-  /** The pending choice set — render as user-style bubbles — or null. */
-  options: { index: number; text: string }[] | null;
-  complete: boolean;
-}
-
 function collect(session: Session): ChatTurn {
   let { transcript, stopped } = runUntilStopped(session.dialogue, EMPTY_TRANSCRIPT);
   while (stopped === 'command' || stopped === 'line') {
@@ -166,14 +159,6 @@ export function parseChatRequest(value: unknown): ChatRequest | null {
     default:
       return null;
   }
-}
-
-export interface ChatResponse {
-  sessionId: string;
-  turn: ChatTurn;
-  state: ReturnType<typeof state>;
-  /** The whole conversation, sent on resume so a reload restores the thread. */
-  replay?: ChatLine[];
 }
 
 export function handleChat(req: ChatRequest): ChatResponse {

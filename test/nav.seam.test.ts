@@ -201,6 +201,13 @@ describe('nav layer (ticket 14)', () => {
     expect(header.classList.contains('fpn-motion')).toBe(false);
   });
 
+  it('reads the query once, at boot: a change afterwards cannot reach it', () => {
+    const seam = domOf();
+    expect(seam.reducedMotion.reads()).toBe(1);
+    seam.reducedMotion.set(true);
+    expect(seam.reducedMotion.reads()).toBe(1);
+  });
+
   it('reduced motion cancels the header transitions the corrected capture carries', () => {
     // The corrected Capture's stylesheet is injected verbatim (ticket 15) and
     // keeps the live header transitions; the authored half has to cancel the

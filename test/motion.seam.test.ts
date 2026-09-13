@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import type { DOMWindow } from 'jsdom';
 import { layerSource, seamWindow } from './seam-harness';
+import { isInertSource } from '../pipeline/injected-source.mjs';
 
 const SOURCE = layerSource('motion');
 
@@ -67,10 +68,23 @@ describe('the runtime arms the motion layer only when reduced motion allows', ()
     expect(doc.querySelector('[data-fpm-reveal]')!.classList.contains('fpm-in')).toBe(false);
     expect(doc.querySelector('[data-split-title]')!.classList.contains('is-visible')).toBe(true);
   });
+
+  it('reads the query once, at boot: a change afterwards cannot reach it', () => {
+    const dom = domOf(PAGE);
+    expect(dom.reducedMotion.reads()).toBe(1);
+    expect(dom.window.document.documentElement.classList.contains('fpm-motion')).toBe(true);
+    // the layer has already booted, so flipping the query re-reads nothing
+    dom.reducedMotion.set(true);
+    expect(dom.reducedMotion.reads()).toBe(1);
+  });
+
+  it('never observes the query for changes', () => {
+    expect(domOf(PAGE).reducedMotion.listeners()).toBe(0);
+  });
 });
 
 describe('the runtime keeps the zero-outbound invariants', () => {
   it('references no network primitive — DOM class/attribute surgery only', () => {
-    expect(SOURCE).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+    expect(isInertSource(SOURCE)).toBe(true);
   });
 });

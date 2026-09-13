@@ -16,9 +16,9 @@ re-checked on every page.** The captures carried no executable scripts, the
 build stripped any executable `<script>` that survived, and the served bytes
 keep only `application/ld+json` data blocks. Any code that adds network
 behavior to a served page (fetch, XHR, WebSocket, remote `src`, beacon)
-violates the piece. The injected runtimes (motion, interactions, nav, chat,
-story-hook, scroll) are inline, DOM-only, and must degrade to the captured
-end-state with JavaScript disabled. `pipeline/audit.mjs` is the invariant's single home —
+violates the piece. The injected layers (motion, interactions, nav, chat,
+story-hook, scroll, and the page-scoped legibility patch) are inline, DOM-only,
+and must degrade to the captured end-state with JavaScript disabled. `pipeline/audit.mjs` is the invariant's single home —
 `audit(pageHtml) → findings`, with the media allow-list as its only
 configuration. It owns the residue classes, the executable-script census (the
 `isInertScript` rule that tells a data block from code), the `srcdoc`-payload
@@ -88,6 +88,27 @@ like any other asset.
   The build that turned captures into the tree was retired with the captures it
   read (2026-09-13); [README.md](README.md) and [CONTEXT.md](CONTEXT.md) say
   why, and there is no rebuild path.
+- **The marked bytes have one owner** (`pipeline/injected-layers.mjs`): the
+  seven-member roster (`motion`, `interactions`, `nav`, `chat`, `story-hook`,
+  `scroll`, and the page-scoped `legibility`), each member's delivery form
+  (asset-backed CSS/JS, inline CSS, or no style), the order the members appear
+  in a page, and each member's maintained source. `markedMembers(pageHtml)`
+  reads a page's `data-flock-parody` tags in document order (the marker's name
+  comes from `pipeline/marker.mjs`, so the roster cannot drift from the audit's
+  census); `mirrorFindings` compares each shipped byte-group to its maintained
+  source and reports code drift (a failure) and comment-only prose drift (a
+  named, non-fatal finding). Pinned at `test/injected-layers.test.ts`; the
+  serving check folds it in per page.
+- **The injected-source outbound rule has one owner**
+  (`pipeline/injected-source.mjs`): every marked JS part must reference no
+  network primitive, except `chat`, whose single same-origin `POST /api/chat`
+  is its whole purpose and is declared as such in the roster. Pinned at
+  `test/injected-source.test.ts`; the serving check applies it to every shipped
+  JS part.
+- **The chat turn shape is declared once** (`pipeline/chat-turn.mjs`): the JSDoc
+  typedefs that the widget (`pipeline/chat-widget.js`, under `checkJs`), the
+  dialogue engine (`lib/chat-engine.ts`), and the seam tests all derive from. See
+  `tsconfig.checkjs.json`.
 - **The served tree's rules live once, in plain JavaScript**
   (`pipeline/served-tree.mjs`), for the same reason `pipeline/run-manifest.mjs`
   does: both tiers need them and only one is TypeScript. `pageCandidates` (the
@@ -99,9 +120,10 @@ like any other asset.
   `test/served-tree.test.ts`.
 - **The marker on the Recreation's own bytes lives on its own**
   (`pipeline/marker.mjs`): every style/script the Recreation injects carries
-  `data-flock-parody="<layer>"`, and the audit's script census reads that
-  attribute to tell our bytes from a capture's. It is a leaf — imported by the
-  audit and nothing else — so the census never reaches into a builder's table.
+  `data-flock-parody="<layer>"`, and two readers use that attribute to tell our
+  bytes from a capture's — the audit's script census and the injected-byte
+  roster. The name is the one fact they share, so it lives here; the census does
+  not reach into a builder's table.
 - The capture HTML's **source-text readers** (`pipeline/html.mjs`) are the
   audit's alone now: `openTags`, `srcdocSpans`, `attrOf`, and the tag-end rule
   behind them. The extra attribute-name dialects and the slot/edit views the
@@ -218,14 +240,22 @@ like any other asset.
     `[animate=scrub-word]` color sequences, `[data-scroll-video]` play/pause,
     `#stickme` staying in its captured in-flow position, `dialog.c-modal`
     open/close).
+  - **The composition seam** (`test/composition.seam.test.ts`) — all seven
+    members installed in one document, over `served/safe-cities.html` (the only
+    page carrying every marker and a `<dialog>`): the document click-listeners'
+    registration order, the `<html>` class writes each layer owns, and which
+    layer owns a modal's open state. `test/seam-harness.ts` carries one
+    reduced-motion policy per layer (`read-once`, `read-fresh`, or `none`), so a
+    layer cannot be added without declaring the policy its seam pins.
   - **The chat message API seam** (`test/chat.seam.test.ts`) — the dialogue
     engine behind `app/api/chat/route.ts`.
   All six runtime DOM seams share `test/seam-harness.ts` — one window builder
   (`runScripts: 'dangerously'`, `pretendToBeVisual`, the Recreation origin),
-  one reduced-motion `matchMedia` shape (so a layer's reduced-motion path is
-  comparable across layers), and one layer→file table, so the injected bytes
-  are read in one place rather than six. A new runtime seam adds page HTML and
-  assertions, never a seventh jsdom setup.
+  one reduced-motion `matchMedia` shape (mutable, with read/listener counters,
+  so a layer's reduced-motion path is comparable across layers and pinned at its
+  read count), and one layer→file table, so the injected bytes are read in one
+  place rather than six. A new runtime seam adds page HTML and assertions, never
+  another jsdom setup.
 - **Pure-module seams** pin a module's declared contract — its table, its
   invariant, its fold — which for these data modules *is* the behavior they
   own: the strip audit (`test/audit.test.ts`), the served-tree rules
@@ -309,7 +339,8 @@ dev/build for everyone:
 
 ## Before finishing
 
-1. `npx tsc --noEmit` — clean.
+1. `npm run typecheck` — `tsc --noEmit` clean plus `tsc -p tsconfig.checkjs.json`
+   (the `checkJs` project over the owned `pipeline/` modules).
 2. `npm test` — full suite green (not just the files you touched).
 3. `npm run build` — production build succeeds.
 4. If anything under `served/` changed: `npm run routes` for the full-scale

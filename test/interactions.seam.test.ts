@@ -9,6 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import type { DOMWindow } from 'jsdom';
 import { layerSource, seamWindow } from './seam-harness';
+import { isInertSource } from '../pipeline/injected-source.mjs';
 
 const SOURCE = layerSource('interactions');
 
@@ -209,6 +210,24 @@ describe('Webflow dropdowns open and close by their captured hiding shape', () =
 });
 
 describe('Webflow tabs switch panes with the captured classes and pairings', () => {
+  it('reads the reduced-motion query fresh at each use, so a change mid-session reaches it', async () => {
+    const dom = domOf(PAGE);
+    const doc = (dom.window as Win).document;
+    const fixedLink = doc.getElementById('w-tabs-1-data-w-tab-1')!;
+    const ptzLink = doc.getElementById('w-tabs-1-data-w-tab-0')!;
+    const ptzPane = doc.getElementById('w-tabs-1-data-w-pane-0')!;
+
+    clickIn(dom.window, fixedLink); // motion allowed at this read
+    expect(dom.reducedMotion.reads()).toBe(1);
+    await sleep(600); // let the captured fade finish before the next switch
+
+    dom.reducedMotion.set(true); // the OS setting flips mid-session
+    clickIn(dom.window, ptzLink);
+    expect(dom.reducedMotion.reads()).toBe(2);
+    // and this read took the reduced path: the swap is instant, nothing armed
+    expect(ptzPane.style.transition).toBe('');
+  });
+
   it('with reduced motion: the swap is instant — w--current/w--tab-active and data-current all move', () => {
     const dom = domOf(PAGE, { reduced: true });
     const doc = (dom.window as Win).document;
@@ -234,7 +253,8 @@ describe('Webflow tabs switch panes with the captured classes and pairings', () 
   });
 
   it('with motion allowed: the captured fade plays — out over duration-out, then in over duration-in', async () => {
-    const dom = domOf(PAGE); // jsdom matchMedia: reduce does not match → motion allowed
+    // the harness answers the query from a flag, not jsdom: reduce does not match → motion allowed
+    const dom = domOf(PAGE);
     const doc = (dom.window as Win).document;
     const fixedLink = doc.getElementById('w-tabs-1-data-w-tab-1')!;
     const ptzPane = doc.getElementById('w-tabs-1-data-w-pane-0')!;
@@ -420,7 +440,7 @@ describe('the layer is delegation-driven and keeps the zero-outbound invariants'
   });
 
   it('references no network primitive — DOM class/attribute/style surgery only', () => {
-    expect(SOURCE).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+    expect(isInertSource(SOURCE)).toBe(true);
   });
 });
 

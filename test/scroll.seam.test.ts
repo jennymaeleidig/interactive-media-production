@@ -76,6 +76,16 @@ describe('the scroll gate', () => {
     expect(doc.querySelector('dialog.c-modal')!.hasAttribute('open')).toBe(true);
     expect(doc.body.classList.contains('fps-modal-open')).toBe(true);
   });
+
+  it('reads the query once, at boot, and never observes it changing', () => {
+    const dom = domOf(PAGE);
+    expect(dom.reducedMotion.reads()).toBe(1);
+    expect(dom.reducedMotion.listeners()).toBe(0);
+    // a change mid-session reaches neither the read nor a listener
+    dom.reducedMotion.set(true);
+    dom.reducedMotion.change();
+    expect(dom.reducedMotion.reads()).toBe(1);
+  });
 });
 
 describe('[animate="scrub-word"] colors (IX2 t-67b5deff)', () => {

@@ -350,6 +350,12 @@ describe('mobile layout parity (ticket 16)', () => {
     expect(CHAT_CSS).not.toMatch(/transition|animation|@keyframes/i);
   });
 
+  it('never reads the reduced-motion query — it has nothing to suppress', () => {
+    const seam = seamWindow('chat', '<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/' });
+    expect(seam.reducedMotion.reads()).toBe(0);
+    expect(seam.reducedMotion.listeners()).toBe(0);
+  });
+
   it('keeps the widget root above the served page furniture (the nav tops out at 2000)', () => {
     // the mobile take-over is the tallest thing on a served page (.header-z is
     // z-index 2000 in the corrected capture); the widget must clear it, and do

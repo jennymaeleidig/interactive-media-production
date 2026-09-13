@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import type { DOMWindow } from 'jsdom';
 import { installRuntime, layerSource, onceReady, seamWindow } from './seam-harness';
+import { isInertSource } from '../pipeline/injected-source.mjs';
 
 const SOURCE = layerSource('story-hook');
 
@@ -195,6 +196,14 @@ describe('the seam ships inert', () => {
   });
 
   it('is DOM-only — the injected source references no network primitive', () => {
-    expect(SOURCE).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+    expect(isInertSource(SOURCE)).toBe(true);
+  });
+
+  it('never reads the reduced-motion query — the seam ships dormant', async () => {
+    const seam = seamWindow('story-hook', PAGE, { install: false, captureConsole: true });
+    await onceReady(seam.window);
+    seam.install();
+    expect(seam.reducedMotion.reads()).toBe(0);
+    expect(seam.reducedMotion.listeners()).toBe(0);
   });
 });

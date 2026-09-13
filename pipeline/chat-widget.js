@@ -38,6 +38,11 @@
    */
   var POUNCE_SCROLL_PX = 120;
   var POUNCE_DELAY_MS = 1500;
+  /**
+   * The SVG namespace, pinned as a literal so `createElementNS` resolves to the
+   * typed overload instead of returning a bare `Element`.
+   * @type {'http://www.w3.org/2000/svg'}
+   */
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   // Captured icon paths: the widget's own raw SVGs (messenger DOM dumps).
@@ -46,6 +51,11 @@
   var SEND_ICON =
     'M20.5306 2.46969C20.7315 2.67057 20.8016 2.9677 20.7118 3.2372L14.7115 21.2372C14.6156 21.525 14.3558 21.7266 14.0532 21.7481C13.7506 21.7696 13.4648 21.6068 13.3292 21.3354L9.79459 14.2662L14.0305 10.0303C14.3234 9.73744 14.3234 9.26256 14.0305 8.96967C13.7376 8.67678 13.2627 8.67678 12.9698 8.96967L8.73398 13.2055L1.6646 9.67084C1.39328 9.53518 1.23039 9.24944 1.2519 8.94685C1.2734 8.64427 1.47506 8.38443 1.76284 8.28851L19.7631 2.28851C20.0326 2.19867 20.3297 2.26882 20.5306 2.46969Z';
 
+  /**
+   * The widget's own state. `lines` and `options` mirror one turn of the message
+   * API (`chat-turn.mjs`), which `applyResponse` below is the only place to fill.
+   * @type {{ mode: string, lines: ChatLine[], options: ChatOption[]|null, sessionId: string|null, divider: string, engaged: boolean, pounceTimer: number|null }}
+   */
   var state = {
     mode: 'launcher',
     lines: [],
@@ -57,7 +67,15 @@
     engaged: false,
     pounceTimer: null,
   };
+  /**
+   * The widget's own root element, once mounted.
+   * @type {HTMLElement|null}
+   */
   var root = null;
+  /**
+   * The scrolling message log inside the surface, while it is rendered.
+   * @type {HTMLElement|null}
+   */
   var log = null;
 
   /** The captured timestamp divider format ("Today, 6:50 am"). */
@@ -65,6 +83,13 @@
     return 'Today, ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
   }
 
+  /**
+   * @template {keyof HTMLElementTagNameMap} T
+   * @param {T} tag
+   * @param {string|null} [cls]
+   * @param {string} [text]
+   * @returns {HTMLElementTagNameMap[T]}
+   */
   function el(tag, cls, text) {
     var node = document.createElement(tag);
     if (cls) node.className = cls;
@@ -72,6 +97,12 @@
     return node;
   }
 
+  /**
+   * @param {string} pathD
+   * @param {number} size
+   * @param {boolean} [evenOdd]
+   * @returns {SVGElement}
+   */
   function icon(pathD, size, evenOdd) {
     var svg = document.createElementNS(SVG_NS, 'svg');
     svg.setAttribute('viewBox', '0 0 24 24');
@@ -91,6 +122,10 @@
 
   // ---- rendering -----------------------------------------------------------
 
+  /**
+   * @param {ChatLine} line
+   * @returns {HTMLElement}
+   */
   function bubbleRow(line) {
     if (line.from === 'me') {
       var mine = el('div', 'fpc-row fpc-row--me');
@@ -215,11 +250,20 @@
     } else {
       root.appendChild(surface());
     }
+    // `log` is filled by the surface() call above and cleared at the top of this
+    // function — a flow tsc cannot follow across the call, so it reads the
+    // declared type here rather than the null it narrowed to
+    // @ts-expect-error see the declaration of `log`
     if (log) log.scrollTop = log.scrollHeight;
   }
 
   // ---- the message API (ticket 08) -----------------------------------------
 
+  /**
+   * The one place the API's response is parsed: `post` below hands it straight
+   * here, and every field it reads is part of the declared turn shape.
+   * @param {ChatResponse} res
+   */
   function applyResponse(res) {
     state.sessionId = res.sessionId;
     // A session just went live: a pounce armed by an earlier scroll must not
@@ -247,6 +291,11 @@
     render();
   }
 
+  /**
+   * One request per turn to the local message API — the Chat mimic's only
+   * outbound call (`injected-source.mjs`).
+   * @param {unknown} body
+   */
   function post(body) {
     return fetch('/api/chat', {
       method: 'POST',
@@ -262,6 +311,7 @@
       });
   }
 
+  /** @param {string} next */
   function open(next) {
     state.engaged = true;
     if (state.pounceTimer) {
@@ -278,6 +328,7 @@
     render();
   }
 
+  /** @param {ChatOption} option */
   function select(option) {
     if (!state.sessionId) return;
     // The SERVER owns the echo: the option turn already prepends the

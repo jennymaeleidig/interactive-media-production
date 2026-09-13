@@ -2,6 +2,10 @@
 // Everything page-shaped is assertable here without a browser: 200/404/301 per
 // route class, served bytes carrying no executable scripts and no tracker
 // residue, links rewritten, closing tags restored.
+// Whether the bytes a served page ships for our own injected layers still match
+// the sources we maintain is NOT here: that is `pipeline/injected-layers.mjs`,
+// asserted corpus-wide by `npm run routes` and at the interface seam in
+// `test/injected-layers.test.ts`.
 // The server under test is the production build (next start) serving the
 // committed `served/` tree — the artifact itself, not a fixture — see
 // seam-global-setup.ts.
@@ -12,41 +16,13 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isLocalTarget } from '../pipeline/run-manifest.mjs';
+import { isInertSource } from '../pipeline/injected-source.mjs';
+import { markedMembers } from '../pipeline/injected-layers.mjs';
+import type { ChatResponse } from '../lib/chat-engine';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 const { base } = JSON.parse(readFileSync(path.join(ROOT, '.tmp/seam/runtime.json'), 'utf8'));
-
-/**
- * A body's code, with comments and incidental whitespace folded away.
- *
- * The injected runtimes are ours, not captured, so a served page ships the
- * layer's own bytes — but two of them lag `pipeline/` by one comment-only edit:
- * the commit that retired the `.scratch/` paths from these sources landed after
- * the tree was built, and nothing can rebuild the tree to carry it. Compare the
- * code (a functional drift fails here), not the prose.
- */
-function codeOf(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/.*$/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-/** The marked stand-in a page carries for one injected layer. */
-function layerTag(body: string, layer: string): string {
-  const tag = [...body.matchAll(/<(link|script|style)\b[^>]*>/g)]
-    .map((m) => m[0])
-    .find((t) => t.includes(`data-flock-parody="${layer}"`));
-  expect(tag, `the ${layer} tag`).toBeDefined();
-  return tag!;
-}
-
-/** The content-addressed asset a marked tag points at, when the page carries a reference rather than bytes. */
-function assetName(tag: string): string | undefined {
-  return /\/assets\/([a-f0-9]{16}\.(?:css|js))/.exec(tag)?.[1];
-}
 
 let home: Response;
 let homeBody: string;
@@ -157,23 +133,21 @@ describe('forms & mock routes (ticket 02)', () => {
 });
 
 describe('story-hook seam present & dormant on served pages (ticket 03)', () => {
-  // the same source the DOM seam tests drive, and the bytes the tree ships
-  const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
-
   async function assertSeamAboard(body: string, label: string) {
-    const tag = layerTag(body, 'story-hook');
-    // the page carries no runtime bytes itself — only the marked stand-in
-    expect(body.replace(tag, ''), label).not.toContain('flockParody');
-    const name = assetName(tag);
-    expect(name, `${label}: externalised`).toBeDefined();
-    const res = await fetch(`${base}/assets/${name}`);
-    expect(res.status, `${label} → /assets/${name}`).toBe(200);
-    expect(res.headers.get('content-type'), name).toContain('javascript');
+    // the page carries the runtime as an external asset, not inline bytes;
+    // marker-to-asset resolution is `injected-layers`' job (this file keeps
+    // only the HTTP facts)
+    const member = markedMembers(body).find((m: { name: string }) => m.name === 'story-hook');
+    expect(member, `${label}: story-hook stand-in`).toBeDefined();
+    expect(member!.delivery, `${label}: externalised`).toBe('asset');
+    expect(member!.ref, `${label}: story-hook asset name`).toBeDefined();
+    const res = await fetch(`${base}/assets/${member!.ref}`);
+    expect(res.status, `${label} → /assets/${member!.ref}`).toBe(200);
+    expect(res.headers.get('content-type'), member!.ref).toContain('javascript');
     const source = await res.text();
-    expect(codeOf(source), label).toBe(codeOf(`\n${RUNTIME}\n`));
     // DOM-only over the wire: the served runtime source references no network
     // primitive (zero-outbound invariant)
-    expect(source, label).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+    expect(isInertSource(source), label).toBe(true);
   }
 
   it('ships the seam as a marked stand-in on the homepage', async () => {
@@ -190,26 +164,25 @@ describe('story-hook seam present & dormant on served pages (ticket 03)', () => 
 });
 
 describe('chat mount over HTTP (ticket 10)', () => {
-  // the same sources the DOM/HTTP seams drive, and the bytes the tree ships
-  const RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
-  const CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
-
-  /** The bytes the page loads for one injected chat body (`kind` of element). */
+  /** The marked stand-in a page ships for one chat body, fetched from its asset. */
   async function chatSource(body: string, kind: 'style' | 'script'): Promise<string> {
-    const tag = [...body.matchAll(/<(link|script|style)\b[^>]*>/g)]
-      .map((m) => m[0])
-      .find((t) => t.includes('data-flock-parody="chat"') && (kind === 'style' ? /^<(?:link|style)/.test(t) : t.startsWith('<script')));
-    expect(tag, `${kind} chat element`).toBeDefined();
-    const name = assetName(tag!);
-    expect(name, `${kind} chat element externalised`).toBeDefined();
-    return (await fetch(`${base}/assets/${name}`)).text();
+    const want = kind === 'style' ? 'css' : 'js';
+    const member = markedMembers(body).find((m: { name: string; kind: string }) => m.name === 'chat' && m.kind === want);
+    expect(member, `${kind} chat element`).toBeDefined();
+    expect(member!.delivery, `${kind} chat element externalised`).toBe('asset');
+    expect(member!.ref, `${kind} chat asset name`).toBeDefined();
+    const res = await fetch(`${base}/assets/${member!.ref}`);
+    expect(res.status, `/assets/${member!.ref}`).toBe(200);
+    expect(res.headers.get('content-type'), member!.ref).toContain(kind === 'style' ? 'css' : 'javascript');
+    return res.text();
   }
 
   it('ships the mimic as a marked stand-in the page points at, not inline bytes', async () => {
     // every served page's Capture mounted the launcher — the corpus has no
     // unmounted page to check the absent branch against
-    expect(codeOf(await chatSource(homeBody, 'style'))).toBe(codeOf(`\n${CSS}\n`));
-    expect(codeOf(await chatSource(homeBody, 'script'))).toBe(codeOf(`\n${RUNTIME}\n`));
+    expect(homeBody).not.toContain('flock-chat-session');
+    expect(await chatSource(homeBody, 'style')).toContain('.fpc-root');
+    expect(await chatSource(homeBody, 'script')).toContain('/api/chat');
   });
 
   it('grants the captured CSP exactly the one source the widget POST needs', async () => {
@@ -289,23 +262,18 @@ describe('path resolution', () => {
 // engine. Conversation shape and pinned copy are locked in the chat-seam
 // project; this block covers the transport.
 describe('chat message API over HTTP (ticket 08)', () => {
-  interface ChatBody {
-    sessionId: string;
-    turn: { lines: unknown[]; options: { index: number; text: string }[] | null; complete: boolean };
-    state: { vars: Record<string, unknown> };
-    replay?: unknown[];
-  }
-
-  async function post(body: unknown): Promise<{ status: number; json: ChatBody }> {
+  // The turn shape is declared once (`pipeline/chat-turn.mjs`, re-exported by the
+  // engine): this seam asserts the transport carries that shape, not a copy of it.
+  async function post(body: unknown): Promise<{ status: number; json: ChatResponse }> {
     const res = await fetch(base + '/api/chat', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return { status: res.status, json: (await res.json()) as ChatBody };
+    return { status: res.status, json: (await res.json()) as ChatResponse };
   }
 
-  const optionTexts = (json: ChatBody) => json.turn.options?.map((o) => o.text);
+  const optionTexts = (json: ChatResponse) => json.turn.options?.map((o) => o.text);
 
   it('answers start with a turn batch, the choice set, and the session variables', async () => {
     const { status, json } = await post({ type: 'start' });

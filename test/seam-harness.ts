@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, VirtualConsole, type DOMWindow } from 'jsdom';
+import { LAYERS as ROSTER } from '../pipeline/injected-layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,23 +23,65 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const SEAM_URL = 'https://recreation.test/';
 
 /**
- * The injected runtimes, by layer: the source file each layer ships. The tree in
- * `served/` carries these bytes as content-addressed assets; the sources here are
- * the maintained copy, and the two agree except for a comment-only lag in the
- * chat stylesheet and the story-hook script (see test/serving.seam.test.ts).
+ * How each injected layer reads `prefers-reduced-motion`. Three read the query
+ * once, at boot, and are blind to a change afterwards; the interaction layer
+ * reads it fresh at each use, so a change must reach it; the two that never
+ * animate do not read it at all. This is a contract, not a note: every seam
+ * asserts its own layer's policy through the counter below, so a layer that
+ * starts reading the query somewhere new fails its own seam — and a seventh
+ * layer cannot be added without declaring one.
  */
-const LAYER_FILES: Record<string, { runtime?: string; css?: string }> = {
-  motion: { runtime: 'motion-runtime.js', css: 'motion.css' },
-  interactions: { runtime: 'interactions-runtime.js', css: 'interactions.css' },
-  nav: { runtime: 'nav-runtime.js', css: 'nav.css' },
-  chat: { runtime: 'chat-widget.js', css: 'chat-widget.css' },
-  'story-hook': { runtime: 'story-hook.js' },
-  scroll: { runtime: 'scroll-runtime.js', css: 'scroll.css' },
+export type ReducedPolicy = 'read-once' | 'read-fresh' | 'none';
+
+/**
+ * How each layer reads `prefers-reduced-motion` — the one fact about a layer the
+ * harness owns. The source files are derived below from the roster
+ * (`pipeline/injected-layers.mjs` names every maintained path), so a layer's
+ * file is written down in exactly one place and this table carries only policy.
+ */
+const REDUCED: Record<string, ReducedPolicy> = {
+  motion: 'read-once',
+  interactions: 'read-fresh',
+  nav: 'read-once',
+  chat: 'none',
+  'story-hook': 'none',
+  scroll: 'read-once',
 };
+
+/** The roster, narrowed to the fields this harness reads. */
+const ROSTER_LAYERS = ROSTER as unknown as { name: string; parts: { kind: string; source?: string }[] }[];
+
+/**
+ * The injected runtimes, by layer: the source file each layer ships (the
+ * basename of the roster's maintained source), and how it reads the
+ * reduced-motion query. The tree in `served/` carries these bytes as
+ * content-addressed assets; `pipeline/injected-layers.mjs` owns the pair, and
+ * `test/injected-layers.test.ts` is where their agreement is asserted, not here.
+ */
+const LAYERS: Record<string, { runtime?: string; css?: string; reduced: ReducedPolicy }> = Object.fromEntries(
+  Object.entries(REDUCED).map(([name, reduced]) => {
+    const file = (kind: string) =>
+      ROSTER_LAYERS.find((layer) => layer.name === name)
+        ?.parts.find((part) => part.kind === kind)
+        ?.source?.split('/')
+        .pop();
+    return [name, { runtime: file('js'), css: file('css'), reduced }];
+  }),
+);
+
+/**
+ * A layer's declared reduced-motion policy. Throws for a layer that has none, so
+ * a new seam cannot quietly invent a seventh layer's behaviour.
+ */
+export function reducedPolicy(layer: string): ReducedPolicy {
+  const policy = LAYERS[layer]?.reduced;
+  if (!policy) throw new Error(`injected layer '${layer}' has no declared reduced-motion policy`);
+  return policy;
+}
 
 /** Read a layer's injected bytes (runtime by default). */
 export function layerSource(layer: string, kind: 'runtime' | 'css' = 'runtime'): string {
-  const file = LAYER_FILES[layer]?.[kind];
+  const file = LAYERS[layer]?.[kind];
   if (file === undefined) throw new Error(`no ${kind} for injected layer '${layer}'`);
   return readFileSync(path.join(HERE, '..', 'pipeline', file), 'utf8');
 }
@@ -49,33 +92,75 @@ export function installRuntime(window: DOMWindow, source: string): void {
 }
 
 /**
- * The one reduced-motion / media-query shape. jsdom's own `matchMedia` is
- * queried fresh at each read; this stub answers the reduce query from the
- * caller's flag and reports `matches: false` for everything else — one shape,
- * so a layer's reduced-motion path is exercised the same way in every seam.
+ * The reduced-motion answer: mutable, and counted.
+ *
+ * jsdom's own `matchMedia` means nothing, and the layers disagree about when they
+ * read it, so the harness answers the reduce query from a flag a seam can flip at
+ * any point — and counts the reads, because "once at boot" and "fresh at each
+ * use" are distinguishable only through that count. A `change` subscription is
+ * honoured and counted too (none of the six install one today), so a layer that
+ * starts observing the query changes something deliberate.
  */
+export interface ReducedMotion {
+  /** Flip the answer the query gives, as the OS setting would. */
+  set(reduced: boolean): void;
+  /** How many times a layer has read `matches`. */
+  reads(): number;
+  /** How many `change` listeners a layer has installed. */
+  listeners(): number;
+  /** Deliver `change` to any listener — none of the six have one. */
+  change(): void;
+}
+
 interface MediaQueryShape {
-  matches: boolean;
+  readonly matches: boolean;
   media: string;
   onchange: null;
-  addListener: () => void;
-  removeListener: () => void;
-  addEventListener: () => void;
-  removeEventListener: () => void;
+  addListener: (fn?: () => void) => void;
+  removeListener: (fn?: () => void) => void;
+  addEventListener: (type: string, fn?: () => void) => void;
+  removeEventListener: (type: string, fn?: () => void) => void;
   dispatchEvent: () => boolean;
 }
 
-function installMatchMedia(window: DOMWindow, reduced: boolean): void {
-  (window as unknown as { matchMedia: (query: string) => MediaQueryShape }).matchMedia = (query: string) => ({
-    matches: reduced && query.includes('prefers-reduced-motion'),
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => false,
-  });
+export function installReducedMotion(window: DOMWindow, reduced: boolean): ReducedMotion {
+  let answer = reduced;
+  let reads = 0;
+  let listeners: (() => void)[] = [];
+  (window as unknown as { matchMedia: (query: string) => MediaQueryShape }).matchMedia = (query: string) => {
+    const isReduceQuery = query.includes('prefers-reduced-motion');
+    return {
+      get matches() {
+        if (isReduceQuery) reads += 1;
+        return isReduceQuery && answer;
+      },
+      media: query,
+      onchange: null,
+      addListener: (fn?: () => void) => {
+        if (isReduceQuery && fn) listeners.push(fn);
+      },
+      removeListener: (fn?: () => void) => {
+        if (fn) listeners = listeners.filter((l) => l !== fn);
+      },
+      addEventListener: (type: string, fn?: () => void) => {
+        if (isReduceQuery && type === 'change' && fn) listeners.push(fn);
+      },
+      removeEventListener: (type: string, fn?: () => void) => {
+        if (fn) listeners = listeners.filter((l) => l !== fn);
+      },
+      dispatchEvent: () => false,
+    };
+  };
+  return {
+    set: (next: boolean) => {
+      answer = next;
+    },
+    reads: () => reads,
+    listeners: () => listeners.length,
+    change: () => {
+      for (const fn of [...listeners]) fn();
+    },
+  };
 }
 
 /**
@@ -161,6 +246,8 @@ export interface SeamWindow {
   install(): void;
   /** Captured console.debug argument lists (empty unless captureConsole). */
   debug: unknown[][];
+  /** The layer's reduced-motion query — flip it and read the count to pin the layer's policy. */
+  reducedMotion: ReducedMotion;
 }
 
 /**
@@ -168,6 +255,7 @@ export interface SeamWindow {
  * `matchMedia`, the layer's own runtime bytes, page HTML supplied by the test.
  */
 export function seamWindow(layer: string, html: string, opts: SeamOptions = {}): SeamWindow {
+  reducedPolicy(layer);
   const source = layerSource(layer, 'runtime');
   const capture = opts.captureConsole ? captureConsole() : null;
   const vc = opts.virtualConsole ?? capture?.vc;
@@ -178,7 +266,7 @@ export function seamWindow(layer: string, html: string, opts: SeamOptions = {}):
     ...(vc ? { virtualConsole: vc } : {}),
     ...(opts.beforeParse ? { beforeParse: opts.beforeParse } : {}),
   });
-  installMatchMedia(dom.window, opts.reduced ?? false);
+  const reducedMotion = installReducedMotion(dom.window, opts.reduced ?? false);
   if (opts.prep) opts.prep(dom.window);
   if (opts.install !== false) installRuntime(dom.window, source);
   return {
@@ -187,5 +275,6 @@ export function seamWindow(layer: string, html: string, opts: SeamOptions = {}):
     document: dom.window.document,
     install: () => installRuntime(dom.window, source),
     debug: capture?.debug ?? [],
+    reducedMotion,
   };
 }
