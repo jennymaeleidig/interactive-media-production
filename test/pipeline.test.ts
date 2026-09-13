@@ -25,7 +25,9 @@ const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'u
 const CHAT_RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
 const NAV_CSS = readFileSync(path.join(HERE, '../pipeline/nav.css'), 'utf8');
 const NAV_RUNTIME = readFileSync(path.join(HERE, '../pipeline/nav-runtime.js'), 'utf8');
-const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + NAV_CSS.length + NAV_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length;
+const SCROLL_CSS = readFileSync(path.join(HERE, '../pipeline/scroll.css'), 'utf8');
+const SCROLL_RUNTIME = readFileSync(path.join(HERE, '../pipeline/scroll-runtime.js'), 'utf8');
+const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + NAV_CSS.length + NAV_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length + SCROLL_CSS.length + SCROLL_RUNTIME.length;
 
 let result: { log: LogEntry[] };
 
@@ -83,8 +85,8 @@ describe('strip pass', () => {
 
   it('leaves non-target content untouched: JSON-LD, captured from-states, text mentions (data URIs are extracted, ADR 0002)', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    // 2 captured ld+json data blocks + the five injected runtimes (motion, interactions, nav, chat, story-hook)
-    expect((html.match(/<script\b/gi) ?? []).length).toBe(7);
+    // 2 captured ld+json data blocks + the six injected runtimes (motion, interactions, nav, chat, story-hook, scroll)
+    expect((html.match(/<script\b/gi) ?? []).length).toBe(8);
     expect(html).toContain('<script type=application/ld+json>{"@context":"https://schema.org","@type":"Organization"}</script>');
     // the fixture's inlined asset is externalized to a content-addressed file
     // holding the same bytes — the strip leaves it, the asset pass moves it
@@ -282,6 +284,7 @@ describe('story-hook pass (ticket 03)', () => {
       ];
       if (entry.chatLauncher) expected.push('chat widget (style+script, inline)');
       expected.push('story-hook seam (inline, dormant)');
+      expected.push('scroll layer (style+script, inline)');
       expect(entry.injected, entry.page).toEqual(expected);
     }
   });
@@ -289,7 +292,7 @@ describe('story-hook pass (ticket 03)', () => {
   it('keeps the zero-outbound invariants with the runtimes aboard — audit clean, no capture-derived executable', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
-    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(5); // motion + interactions + nav + chat + story-hook
+    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(6); // motion + interactions + nav + chat + story-hook + scroll
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);
@@ -566,7 +569,7 @@ describe('chat mount (ticket 10)', () => {
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0, 'off-allowlist frames': 0, 'srcdoc scripts': 0, 'unclassified remote refs': 0 });
-    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5, srcdocAllowScripts: 0 });
+    expect(home.scripts).toEqual({ total: 8, executable: 0, ldJson: 2, injected: 6, srcdocAllowScripts: 0 });
     // the widget CSS/runtime must not reintroduce the markers the strip audit keys on
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     for (const marker of ['qualified-offer-', 'qualified.com', '_qualified-', 'q-root', 'q-focus-sentinel', 'q-launcher', 'q-messenger-frame']) {
@@ -626,7 +629,7 @@ describe('write pass & mutation log', () => {
     expect(home.restored).toEqual(['</body></html> (capture was truncated)']);
     // invariants on the served bytes
     expect(home.audit).toEqual({ qualified: 0, onetrust: 0, account: 0, 'known trackers': 0, externalFormActions: 0, 'off-allowlist frames': 0, 'srcdoc scripts': 0, 'unclassified remote refs': 0 });
-    expect(home.scripts).toEqual({ total: 7, executable: 0, ldJson: 2, injected: 5, srcdocAllowScripts: 0 });
+    expect(home.scripts).toEqual({ total: 8, executable: 0, ldJson: 2, injected: 6, srcdocAllowScripts: 0 });
   });
 
   it('writes build-log.json alongside the served tree and mirrors deep paths', async () => {
@@ -695,5 +698,50 @@ describe('build-level routing & scaffolding (ticket 07)', () => {
     const { summary } = await runPipeline({ runDir: NO_MANIFEST, pages: ['/'], outDir: path.join(HERE, '.tmp/pipeline/no-manifest') });
     expect(summary.redirects.count).toBe(0);
     expect(JSON.parse(await readFile(path.join(HERE, '.tmp/pipeline/no-manifest/redirects.json'), 'utf8'))).toEqual({});
+  });
+});
+
+describe('scroll pass (ticket 21)', () => {
+  const RUN = path.join(HERE, '.tmp/pipeline/scroll-run');
+  const SCROLL_OUT = path.join(HERE, '.tmp/pipeline/scroll');
+  let run: { log: LogEntry[] };
+
+  const CAPTURE = `<!DOCTYPE html><html><head></head><body>
+<h2 animate=scrub-word><span class="gsap_split_word gsap_split_word1" style="position:relative;display:inline-block;color:rgb(34,40,31)">Detect</span></h2>
+<div class=line-label style="translate:none;rotate:none;scale:none;transform:translate3d(0px,0px,0px) scale(0,0)"><img class=line-label--marker style="translate:none;rotate:none;scale:none;transform:translate(0px,170%)"></div>
+<svg viewBox="0 0 10 10"><path id=main-progress d="M0 0L0 10" style="stroke-dashoffset:10px;stroke-dasharray:10"></path></svg>
+<div class="l-stack c-modal__panel" style="translate:none;rotate:none;scale:none;transform:translate(0px,6rem)"></div>
+</body></html>`;
+
+  beforeAll(async () => {
+    await rm(RUN, { recursive: true, force: true });
+    mkdirSync(RUN, { recursive: true });
+    writeFileSync(path.join(RUN, 'scroll-page.html'), CAPTURE);
+    run = await runPipeline({ runDir: RUN, pages: ['/scroll-page'], outDir: SCROLL_OUT });
+  });
+
+  it('normalizes every captured scroll from-state to its end-state for the no-JS page', async () => {
+    const html = await readFile(path.join(SCROLL_OUT, 'scroll-page.html'), 'utf8');
+    expect(html).toContain('scale(1,1)');
+    expect(html).toContain('translate(0px,0%)');
+    expect(html).not.toContain('color:rgb(34,40,31)');
+    expect(html).toContain('stroke-dashoffset:0');
+    expect(html).toContain('translate(0px,0px)');
+  });
+
+  it('logs the normalizations and injects the marked scroll layer', async () => {
+    const entry = run.log.find((e) => e.page === '/scroll-page');
+    if (!entry || entry.error) throw new Error('unreachable: the synthetic scroll page must build');
+    expect(entry.scroll).toMatchObject({
+      'line-label scale (0→1)': 1,
+      'line-label marker slide (170%→0)': 1,
+      'scrub-word from-color': 1,
+      'main-progress draw (undrawn→drawn)': 1,
+      'modal panel slide': 1,
+    });
+    expect(entry.injected).toContain('scroll layer (style+script, inline)');
+    const html = await readFile(path.join(SCROLL_OUT, 'scroll-page.html'), 'utf8');
+    expect(html).toContain('<style data-flock-parody="scroll">');
+    expect(html).toContain('<script data-flock-parody="scroll">');
   });
 });

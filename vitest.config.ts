@@ -38,6 +38,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'scroll-seam',
+          include: ['test/scroll.seam.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'nav-seam',
           include: ['test/nav.seam.test.ts'],
         },

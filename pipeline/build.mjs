@@ -85,9 +85,14 @@
 //                Same-origin, so it adds no network the CSP has to allow.
 //  12. legibility — inject page-scoped CSS overrides that make text the Capture
 //                left unreadable legible (config.LEGIBILITY_PATCHES; ticket
-//                12's human review found /safe-cities' frozen scrub labels and
-//                dark-on-dark subheads). Inert style only: no script, no
-//                network, and no captured byte touched.
+//                12's human review found /safe-cities' dark-on-dark subheads).
+//                Inert style only: no script, no network, and no captured byte
+//                touched.
+//  13. scroll   — restore the captured scroll choreography and modal dialogs
+//                (ticket 21): normalize the captured scroll from-states to
+//                their end-states, then inject scroll.css + scroll-runtime.js
+//                inline. Vanilla, no GSAP/CDN, so the zero-outbound invariant
+//                holds; reduced motion and no-JS ship the settled end-state.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -856,6 +861,59 @@ function legibilityPass(html, entry, page, patches) {
   return injectBeforeClose(html, entry, 'legibility CSS (inline)', tag);
 }
 
+// ---- pass 13: scroll choreography + modals (ticket 21) ----------------------
+
+const SCROLL_INJECTED = 'scroll layer (style+script, inline)';
+
+/**
+ * Normalize the captured scroll from-states to their static end-states (a page
+ * without the runtime must be the settled layout), then inject the scroll
+ * runtime and its CSS half inline. Keyed on captured attributes/classes only —
+ * `[animate="scrub-word"]` spans, `.line-label`, `#main-progress`,
+ * `.c-modal__panel` — so it is not per-page logic.
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @param {string} css
+ * @param {string} runtime
+ * @returns {string}
+ */
+function scrollPass(html, entry, css, runtime) {
+  const counts = {};
+  const bump = (k) => { counts[k] = (counts[k] ?? 0) + 1; };
+  html = mapContentSegments(html, (seg) => seg.replace(openTagRe(), (tag, _name, attrs) => {
+    const cls = (attrValue(attrs, 'class') ?? '').split(/\s+/);
+    // .line-label wrapper: the captured scale(0,0) is its reveal's from-state.
+    if (cls.includes('line-label')) {
+      const next = editAttr(tag, 'style', (v) => v.replace(/scale\(0(?:px)?,\s*0(?:px)?\)/, 'scale(1,1)'));
+      if (next && next !== tag) { bump('line-label scale (0→1)'); return next; }
+    }
+    // .line-label--marker: the captured translateY(170%) is its from-state.
+    if (cls.includes('line-label--marker')) {
+      const next = editAttr(tag, 'style', (v) => v.replace(/translate\(0px,\s*170%\)/, 'translate(0px,0%)'));
+      if (next && next !== tag) { bump('line-label marker slide (170%→0)'); return next; }
+    }
+    // scrub-word spans: drop the captured dark from-color; the heading's own
+    // light color is the end-state, and the runtime animates the sequence.
+    if (cls.includes('gsap_split_word') && /color:rgb\(34,\s*40,\s*31\)/.test(attrValue(attrs, 'style') ?? '')) {
+      const next = editAttr(tag, 'style', (v) => v.replace(/;?color:rgb\(34,\s*40,\s*31\)/, ''));
+      if (next && next !== tag) { bump('scrub-word from-color'); return next; }
+    }
+    // route path: the captured stroke-dashoffset is the draw's from-state.
+    if (attrValue(attrs, 'id') === 'main-progress') {
+      const next = editAttr(tag, 'style', (v) => v.replace(/stroke-dashoffset:\s*[0-9.]+(?:px)?/i, 'stroke-dashoffset:0'));
+      if (next && next !== tag) { bump('main-progress draw (undrawn→drawn)'); return next; }
+    }
+    // modal panel: the captured translate(0,6rem) is the open animation's from-state.
+    if (cls.includes('c-modal__panel')) {
+      const next = editAttr(tag, 'style', (v) => v.replace(/translate\(0px,\s*6rem\)/, 'translate(0px,0px)'));
+      if (next && next !== tag) { bump('modal panel slide'); return next; }
+    }
+    return tag;
+  }));
+  if (Object.keys(counts).length > 0) entry.scroll = counts;
+  return injectBeforeClose(html, entry, SCROLL_INJECTED, layerTag('scroll', css, runtime));
+}
+
 // ---- pass 10: live media embeds (ADR 0002) ----------------------------------
 
 /**
@@ -955,7 +1013,8 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
  * @property {Record<string, number>} [motion]  Motion-pass normalization/annotation counts + the hero detection, per page (ticket 04).
- * @property {string[]} [injected]  Recreation runtimes injected inline on this page (motion layer, interactions layer, story-hook seam — tickets 04, 05, 03).
+ * @property {Record<string, number>} [scroll]  Scroll-pass from-state normalizations, per page (ticket 21).
+ * @property {string[]} [injected]  Recreation runtimes injected inline on this page (motion, interactions, nav, chat, story-hook, legibility CSS, scroll — tickets 04, 05, 14, 10, 03, 12, 21).
  * @property {string[]} [restored]  Structural repairs (closing tags restored to truncated captures).
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number, injected: number, srcdocAllowScripts: number}} [scripts]  Script census of served bytes.
@@ -1005,6 +1064,8 @@ export async function runPipeline(opts) {
   const writtenAssets = new Set(); // asset sha → already on disk this build
   // read once — every page inlines the same runtime bytes verbatim
   const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
+  const scrollCss = fs.readFileSync(path.join(HERE, 'scroll.css'), 'utf8');
+  const scrollRuntime = fs.readFileSync(path.join(HERE, 'scroll-runtime.js'), 'utf8');
   const motionCss = fs.readFileSync(path.join(HERE, 'motion.css'), 'utf8');
   const motionRuntime = fs.readFileSync(path.join(HERE, 'motion-runtime.js'), 'utf8');
   const interactionsCss = fs.readFileSync(path.join(HERE, 'interactions.css'), 'utf8');
@@ -1054,6 +1115,8 @@ export async function runPipeline(opts) {
     html = storyHookPass(html, entry, storyHookSource);
 
     html = legibilityPass(html, entry, page, legibilityPatches);
+
+    html = scrollPass(html, entry, scrollCss, scrollRuntime);
 
     // Write pass: captures are truncated before </body></html> (SingleFile CLI
     // never emits them) — restore whichever closing tags the capture lacks.

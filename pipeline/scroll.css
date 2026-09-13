@@ -1,0 +1,17 @@
+/* The scroll choreography + modal layer (ticket 21). Structure and transition
+   properties only: every from-state is set by the runtime in JS, and the build
+   normalizes the captured from-states to their end-states, so a page with
+   JavaScript disabled ships the settled layout. With JS but reduced motion the
+   runtime returns before adding `fpm-scroll`, which leaves every rule here
+   inert. */
+
+/* SVG timeline markers scale about their own centre, not the SVG origin. */
+html.fpm-scroll .marker {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Lock body scroll while a modal is open. */
+html.fpm-scroll body.fps-modal-open {
+  overflow: hidden;
+}

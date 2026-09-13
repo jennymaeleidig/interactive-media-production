@@ -238,14 +238,15 @@ as defects):
 - **54 pages with a blank live `<title>`** (a Webflow republish regression) took
   the prior inventory's title; `title-check.mjs` verifies the result.
 - **`/safe-cities` legibility CSS** — the build injects a page-scoped `<style>`
-  (pass 12, `config.LEGIBILITY_PATCHES`) that paints the frozen GSAP scrub
-  labels (`Detect` / `Investigate` / `Respond`) and the dark-on-dark
+  (pass 12, `config.LEGIBILITY_PATCHES`) that paints the dark-on-dark
   `.t-subhead-1` copy white inside the `.bg-screen.scroller` sections. The
-  Capture — and the live page — leave them dark: the scrub timeline froze at its
-  start colour, and the page's own `.t-subhead-1{color:#304833}` rule fights the
-  `#061602` background. Scoped so the FAQ subheads on white stay dark. Ticket
-  12's human review asked for this; the markers stay clear of the rest of the
-  page.
+  page's own `.t-subhead-1{color:#304833}` rule fights the `#061602` background
+  (true on the live page too). Scoped so the FAQ subheads on white stay dark.
+  Ticket 12's human review asked for this; the markers stay clear of the rest of
+  the page. (The section's scrub-word headings were part of the same finding;
+  ticket 21's scroll layer now owns their color — the build drops the captured
+  dark from-color, so the heading's own light color is the end-state and the
+  runtime animates the sequence — and this patch no longer covers them.)
 
 ## 5. Human review (the remaining signoff step)
 
@@ -269,14 +270,21 @@ What only the human eye can confirm:
 - **Runtime feel** — animations and reveals, the header morph on scroll, menus /
   tabs / accordions / sliders, the chat launcher and panel, YouTube slots
   revealing and playing.
-- **Divergences seen match §4** — the dead Wistia facades and the frozen tier-3
-  labels, nothing else.
+- **Divergences seen match §4** — the dead Wistia facades, the inert
+  source-less player videos, and the deliberately-stripped hidden Vidzflow
+  player documents, nothing else.
 - **CDN videos play.** The `/safe-cities` hover videos and the `/gsx`,
   `/upcoming-events`, `/products/flock-dfr`, `/products/mobile-security-trailer`
   HTML5 videos now play from same-origin `/assets` files (§3a); no CDN link
   remains.
-- **`/safe-cities` text is legible.** The frozen scrub labels and the dark
-  screen-section subheads render white (§4).
+- **`/safe-cities` text is legible.** The dark screen-section subheads render
+  white (§4).
+- **`/safe-cities` scroll behavior and modal (ticket 21).** The scrub headings
+  (Detect / Investigate / Respond) run their dark → green → white sequence on
+  scroll and reverse on scroll-back; the label markers pop in; the hover videos
+  play in view; the "see it in action" button sticks to the viewport bottom and
+  opens the **Safe City Action** timeline, whose route draws as the modal
+  scrolls with a marker at each stop.
 
 ## Reproduce
 
