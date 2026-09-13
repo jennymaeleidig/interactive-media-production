@@ -121,47 +121,72 @@ describe('forms & mock routes (ticket 02)', () => {
 });
 
 describe('story-hook seam present & dormant on served pages (ticket 03)', () => {
-  // the same source the DOM seam tests drive — the build inlines it verbatim
+  // the same source the DOM seam tests drive — the build injects it verbatim,
+  // and pass 14 (ADR 0003) then ships it as a file the page points at
   const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
 
-  function assertSeamAboard(body: string, label: string) {
-    const open = '<script data-flock-parody="story-hook">';
+  async function assertSeamAboard(body: string, label: string) {
+    const open = '<script data-flock-parody="story-hook"';
     const start = body.indexOf(open);
     expect(start, label).toBeGreaterThan(-1);
-    const end = body.indexOf('</script>', start);
-    // verbatim: the served bytes carry the exact runtime file, marked
-    expect(body.slice(start, end), label).toContain(RUNTIME);
+    const tag = body.slice(start, body.indexOf('>', start) + 1);
+    // the page carries no runtime bytes itself — only the marked stand-in
+    expect(body.replace(tag, ''), label).not.toContain('flockParody');
+    // verbatim: the source the page loads is the exact runtime file, and it
+    // rides over the wire (fetched the way the browser would fetch it)
+    const name = /\/assets\/([a-f0-9]{16}\.js)/.exec(tag)?.[1];
+    if (name === undefined) {
+      const end = body.indexOf('</script>', start);
+      expect(body.slice(start, end), label).toContain(RUNTIME);
+      expect(body.slice(start, end), label).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+      return;
+    }
+    const res = await fetch(`${base}/assets/${name}`);
+    expect(res.status, `${label} → /assets/${name}`).toBe(200);
+    expect(res.headers.get('content-type'), name).toContain('javascript');
+    const source = await res.text();
+    expect(source, label).toContain(RUNTIME);
     // dormant: outside the runtime's own definition, no byte in the page
     // (i.e. nothing capture-derived) references the seam — nothing calls it
-    const outside = body.slice(0, start) + body.slice(end);
-    expect(outside, label).not.toContain('flockParody');
     // DOM-only over the wire: the served runtime source references no
     // network primitive (zero-outbound invariant)
-    expect(body.slice(start, end), label).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
+    expect(source, label).not.toMatch(/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b|\bimport\s*\(/);
   }
 
-  it('rides inline on the homepage', () => {
-    assertSeamAboard(homeBody, '/');
+  it('ships the seam verbatim on the homepage', async () => {
+    await assertSeamAboard(homeBody, '/');
   });
 
-  it('rides inline on every other served page too', async () => {
+  it('ships the seam on every other served page too', async () => {
     for (const route of ['/products/gun-detection', '/book-a-demo', '/thank-you']) {
       const res = await fetch(base + route);
       expect(res.status, route).toBe(200);
-      assertSeamAboard(await res.text(), route);
+      await assertSeamAboard(await res.text(), route);
     }
   });
 });
 
 describe('chat mount over HTTP (ticket 10)', () => {
-  // the exact sources the build inlines on launcher pages
+  // the exact sources the build injects on launcher pages
   const RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
   const CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
-  const TAG = `<style data-flock-parody="chat">\n${CSS}\n</style>\n<script data-flock-parody="chat">\n${RUNTIME}\n</script>`;
 
-  it('serves the mimic inline, verbatim, on a page whose Capture mounted the launcher', async () => {
+  /** The bytes the page loads for one injected chat body (`kind` of element). */
+  async function chatBody(body: string, kind: 'style' | 'script'): Promise<string> {
+    const tag = [...body.matchAll(/<(link|script|style)\b[^>]*>/g)]
+      .map((m) => m[0])
+      .find((t) => t.includes('data-flock-parody="chat"') && (kind === 'style' ? /^<(?:link|style)/.test(t) : t.startsWith('<script')));
+    expect(tag, `${kind} chat element`).toBeDefined();
+    const name = /\/assets\/([a-f0-9]{16}\.(?:css|js))/.exec(tag!)?.[1];
+    if (name !== undefined) return (await fetch(`${base}/assets/${name}`)).text();
+    const start = body.indexOf(tag!) + tag!.length;
+    return body.slice(start, body.indexOf(kind === 'style' ? '</style>' : '</script>', start));
+  }
+
+  it('serves the mimic verbatim, on a page whose Capture mounted the launcher', async () => {
     // the fixture homepage mounted <q-root>
-    expect(homeBody).toContain(TAG);
+    expect(await chatBody(homeBody, 'style')).toBe(`\n${CSS}\n`);
+    expect(await chatBody(homeBody, 'script')).toBe(`\n${RUNTIME}\n`);
   });
 
   it('grants the captured CSP exactly the one source the widget POST needs', async () => {

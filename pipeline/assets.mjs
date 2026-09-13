@@ -64,6 +64,8 @@ const MIME_BY_EXT = {
   mp4: 'video/mp4',
   webm: 'video/webm',
   mp3: 'audio/mpeg',
+  css: 'text/css',
+  js: 'text/javascript',
 };
 
 /**

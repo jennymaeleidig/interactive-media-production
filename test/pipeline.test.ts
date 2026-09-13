@@ -6,7 +6,7 @@
 // stack, truncated tail).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { rm, readFile } from 'node:fs/promises';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runPipeline, type LogEntry } from '../pipeline/build.mjs';
@@ -28,6 +28,39 @@ const NAV_RUNTIME = readFileSync(path.join(HERE, '../pipeline/nav-runtime.js'), 
 const SCROLL_CSS = readFileSync(path.join(HERE, '../pipeline/scroll.css'), 'utf8');
 const SCROLL_RUNTIME = readFileSync(path.join(HERE, '../pipeline/scroll-runtime.js'), 'utf8');
 const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + NAV_CSS.length + NAV_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length + SCROLL_CSS.length + SCROLL_RUNTIME.length;
+
+// Pass 14 (ADR 0003) moves every body over KEEP_INLINE_BYTES into
+// `/assets/<sha>.css|.js` and leaves a marked stand-in where the body stood —
+// served bytes no longer carry the runtime bodies — so the "injected verbatim"
+// assertions read the file the stand-in points at. Verbatim then means exactly
+// that: the file's bytes are the bytes the pass injected.
+
+/** The marked elements for one pass, in document order (`link` → `style`). */
+function markedTags(html: string, marker: string): { kind: 'style' | 'script'; tag: string }[] {
+  return [...html.matchAll(/<(link|script|style)\b[^>]*>/g)]
+    .map((m) => ({ kind: (m[1] === 'link' ? 'style' : m[1]) as 'style' | 'script', tag: m[0] }))
+    .filter((t) => t.tag.includes(`data-flock-parody="${marker}"`));
+}
+
+/** The `/assets/<sha>.css|.js` name a stand-in points at, or null when inline. */
+function standInName(tag: string): string | null {
+  return /\/assets\/([a-f0-9]{16}\.(?:css|js))/.exec(tag)?.[1] ?? null;
+}
+
+/**
+ * The bytes one injected body ends up as, however the page carries them: the
+ * file pass 14 wrote, or the element's own text when it stayed inline (a body
+ * under the threshold, or a page whose CSP had no directive to grant).
+ */
+async function injectedBody(html: string, marker: string, kind: 'style' | 'script'): Promise<string> {
+  const standIn = markedTags(html, marker).find((t) => t.kind === kind);
+  if (standIn === undefined) throw new Error(`no ${kind} element tagged ${marker}`);
+  const name = standInName(standIn.tag);
+  if (name !== null) return readFile(path.join(OUT, 'assets', name), 'utf8');
+  const start = html.indexOf(standIn.tag) + standIn.tag.length;
+  const close = kind === 'style' ? '</style>' : '</script>';
+  return html.slice(start, html.indexOf(close, start));
+}
 
 let result: { log: LogEntry[] };
 
@@ -261,16 +294,19 @@ describe('forms pass (ticket 02)', () => {
 });
 
 describe('story-hook pass (ticket 03)', () => {
-  it('injects the runtime inline, verbatim and marked, on every served page', async () => {
+  it('writes the runtime verbatim into a marked body file on every served page', async () => {
     for (const page of ['index', 'products/gun-detection', 'book-a-demo', 'thank-you', 'gsx', 'chilipiper-2']) {
       const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
-      expect(html, page).toContain(`<script data-flock-parody="story-hook">\n${RUNTIME}\n</script>`);
+      const [standIn, ...rest] = markedTags(html, 'story-hook');
+      expect(rest, page).toEqual([]);
+      expect(standIn.tag, page).toMatch(/^<script data-flock-parody="story-hook"( src=\/assets\/[a-f0-9]{16}\.js)?>$/);
+      expect(await injectedBody(html, 'story-hook', 'script'), page).toBe(`\n${RUNTIME}\n`);
     }
   });
 
   it('places the runtime inside <body>, before the closing tags the write pass restores', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    const tag = html.indexOf('<script data-flock-parody="story-hook">');
+    const tag = html.indexOf('<script data-flock-parody="story-hook"');
     expect(tag).toBeGreaterThan(-1);
     expect(tag).toBeLessThan(html.lastIndexOf('</body>'));
   });
@@ -447,14 +483,16 @@ describe('motion pass (ticket 04)', () => {
     expect(result.log.find((e) => e.page === '/chilipiper-2')?.motion).toEqual({});
   });
 
-  it('injects the motion layer inline, verbatim and marked, on every served page — style before script, both before </body>', async () => {
-    const motionTag = `<style data-flock-parody="motion">\n${MOTION_CSS}\n</style>\n<script data-flock-parody="motion">\n${MOTION_RUNTIME}\n</script>`;
+  it('writes the motion layer verbatim into marked body files on every served page — style before script, both before </body>', async () => {
     for (const page of ['index', 'products/gun-detection', 'book-a-demo', 'thank-you', 'gsx', 'chilipiper-2']) {
       const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
-      expect(html, page).toContain(motionTag);
-      expect(html.indexOf('<style data-flock-parody="motion">'), page).toBeLessThan(html.indexOf('<script data-flock-parody="story-hook">'));
-      const closeBody = html.lastIndexOf('</body>');
-      expect(html.lastIndexOf('</script>', closeBody), page).toBeGreaterThan(-1);
+      expect(markedTags(html, 'motion').map((t) => t.kind), page).toEqual(['style', 'script']);
+      expect(await injectedBody(html, 'motion', 'style'), page).toBe(`\n${MOTION_CSS}\n`);
+      expect(await injectedBody(html, 'motion', 'script'), page).toBe(`\n${MOTION_RUNTIME}\n`);
+      const [style, script] = markedTags(html, 'motion');
+      expect(html.indexOf(style.tag), page).toBeLessThan(html.indexOf(script.tag));
+      expect(html.indexOf(script.tag), page).toBeLessThan(html.indexOf(markedTags(html, 'story-hook')[0].tag));
+      expect(html.indexOf(script.tag), page).toBeLessThan(html.lastIndexOf('</body>'));
     }
   });
 
@@ -473,9 +511,9 @@ describe('motion pass (ticket 04)', () => {
   it('ships the static contract by construction — every injected from-state rule is gated on the JS-added html class', async () => {
     // no-JS / reduced-motion pages never carry html.fpm-motion (the runtime is
     // what adds it), so any rule NOT gated under it would break the static end-state.
-    // Asserted on the SERVED bytes: the style block the page actually carries.
+    // Asserted on the SERVED bytes: the stylesheet the page actually carries.
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    const block = /<style data-flock-parody="motion">\n([\s\S]*?)\n<\/style>/.exec(html)?.[1];
+    const block = await injectedBody(html, 'motion', 'style');
     expect(block).toBeDefined();
     const body = block!
       .replace(/\/\*[\s\S]*?\*\//g, '') // comments
@@ -487,14 +525,15 @@ describe('motion pass (ticket 04)', () => {
 });
 
 describe('interactions pass (ticket 05)', () => {
-  it('injects the layer inline, verbatim and marked, on every served page — after motion, before the story-hook seam', async () => {
-    const interactionsTag = `<style data-flock-parody="interactions">\n${INTERACTIONS_CSS}\n</style>\n<script data-flock-parody="interactions">\n${INTERACTIONS_RUNTIME}\n</script>`;
+  it('writes the layer verbatim into marked body files on every served page — after motion, before the story-hook seam', async () => {
     for (const page of ['index', 'products/gun-detection', 'book-a-demo', 'thank-you', 'gsx', 'chilipiper-2']) {
       const html = await readFile(path.join(OUT, `${page}.html`), 'utf8');
-      expect(html, page).toContain(interactionsTag);
-      const motion = html.indexOf('<script data-flock-parody="motion">');
-      const interactions = html.indexOf('<script data-flock-parody="interactions">');
-      const storyHook = html.indexOf('<script data-flock-parody="story-hook">');
+      expect(markedTags(html, 'interactions').map((t) => t.kind), page).toEqual(['style', 'script']);
+      expect(await injectedBody(html, 'interactions', 'style'), page).toBe(`\n${INTERACTIONS_CSS}\n`);
+      expect(await injectedBody(html, 'interactions', 'script'), page).toBe(`\n${INTERACTIONS_RUNTIME}\n`);
+      const motion = html.indexOf(markedTags(html, 'motion')[1].tag);
+      const interactions = html.indexOf(markedTags(html, 'interactions')[1].tag);
+      const storyHook = html.indexOf(markedTags(html, 'story-hook')[0].tag);
       expect(motion, page).toBeGreaterThan(-1);
       expect(interactions, page).toBeGreaterThan(motion);
       expect(storyHook, page).toBeGreaterThan(interactions);
@@ -512,9 +551,8 @@ describe('interactions pass (ticket 05)', () => {
 
   it('ships the suppress-only CSS contract: the layer may silence the captured accordion tween, never add animation', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    const block = /<style data-flock-parody="interactions">\n([\s\S]*?)\n<\/style>/.exec(html)?.[1];
-    expect(block).toBeDefined();
-    const body = block!.replace(/\/\*[\s\S]*?\*\//g, ''); // comments
+    const block = await injectedBody(html, 'interactions', 'style');
+    const body = block.replace(/\/\*[\s\S]*?\*\//g, ''); // comments
     // the ticket's fidelity ruling, byte-present: the license-plate-reader
     // accordion is function-only — the captured grid-rows tween is suppressed
     expect(body).toContain('.accordion-css__item-bottom { transition: none !important; }');
@@ -526,7 +564,8 @@ describe('interactions pass (ticket 05)', () => {
 });
 
 describe('chat mount (ticket 10)', () => {
-  const CHAT_TAG = `<style data-flock-parody="chat">\n${CHAT_CSS}\n</style>\n<script data-flock-parody="chat">\n${CHAT_RUNTIME}\n</script>`;
+  // pass 14 replaces both bodies with marked stand-ins (ADR 0003)
+  const CHAT_STAND_IN = (html: string) => markedTags(html, 'chat');
   // the fixture captures that mounted <q-root>, and those that did not
   const MOUNTED = ['/', '/products/gun-detection', '/book-a-demo', '/thank-you'];
   const ABSENT = ['/gsx', '/chilipiper-2', '/var-ref', '/account'];
@@ -543,7 +582,7 @@ describe('chat mount (ticket 10)', () => {
   it('mounts the mimic on every page the original had it, and nowhere else', async () => {
     for (const page of MOUNTED) {
       const html = await readFile(path.join(OUT, `${fileFor(page)}.html`), 'utf8');
-      expect(html, page).toContain(CHAT_TAG);
+      expect(CHAT_STAND_IN(html).map((t) => t.kind), page).toEqual(['style', 'script']);
     }
     for (const page of ABSENT) {
       const html = await readFile(path.join(OUT, `${fileFor(page)}.html`), 'utf8');
@@ -552,17 +591,24 @@ describe('chat mount (ticket 10)', () => {
   });
 
   it('mounts the same runtime bytes on every mounted page — one behavior site-wide', async () => {
+    const names = new Set<string>();
     for (const page of MOUNTED) {
       const html = await readFile(path.join(OUT, `${fileFor(page)}.html`), 'utf8');
-      expect(html, page).toContain(`<script data-flock-parody="chat">\n${CHAT_RUNTIME}\n</script>`);
+      expect(await injectedBody(html, 'chat', 'style'), page).toBe(`\n${CHAT_CSS}\n`);
+      expect(await injectedBody(html, 'chat', 'script'), page).toBe(`\n${CHAT_RUNTIME}\n`);
+      const name = standInName(CHAT_STAND_IN(html)[1].tag);
+      expect(name, page).not.toBeNull();
+      names.add(name!);
     }
+    // identical bodies hash identically, so the four pages share one file
+    expect(names.size).toBe(1);
   });
 
   it('injects chat before the story-hook seam, so the seam stays the final runtime', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
-    const chat = html.indexOf('<script data-flock-parody="chat">');
-    expect(chat).toBeGreaterThan(html.indexOf('<script data-flock-parody="interactions">'));
-    expect(chat).toBeLessThan(html.indexOf('<script data-flock-parody="story-hook">'));
+    const at = (marker: string) => html.indexOf(markedTags(html, marker)[1].tag);
+    expect(at('chat')).toBeGreaterThan(at('interactions'));
+    expect(at('chat')).toBeLessThan(html.indexOf(markedTags(html, 'story-hook')[0].tag));
   });
 
   it('keeps the zero-outbound invariants: chat is a marked injected runtime, and reintroduces no machinery marker', async () => {
@@ -595,9 +641,10 @@ describe('chat mount (ticket 10)', () => {
     expect(meta).not.toMatch(/connect-src\s+https?:/);
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
-    expect(home.csp).toBe("connect-src 'self' (chat mount)");
+    // pass 14 grants `'self'` for the bodies it moved, on top of the chat grant
+    expect(home.csp?.split('; ')[0]).toBe("connect-src 'self' (chat mount)");
     for (const page of ABSENT) {
-      expect(result.log.find((e) => e.page === page)?.csp, page).toBeUndefined();
+      expect(result.log.find((e) => e.page === page)?.csp ?? '', page).not.toContain('connect-src');
     }
   });
 });
@@ -612,13 +659,16 @@ describe('write pass & mutation log', () => {
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
     const stripped = home.stripped!;
-    // growth invariant: the injected runtimes are the ONLY things that can
-    // grow a page — stripping never adds bytes, normalization removes them,
-    // annotations add a bounded per-element few bytes. (On the real corpus
-    // pages still shrink: strip removes ~MB.)
-    const growth = home.bytesOut! - home.bytesIn!;
+    // growth invariant, measured where it is true: every pass before 14 adds at
+    // most the injected runtimes — stripping never adds bytes, normalization
+    // removes them, annotations add a bounded per-element few bytes. (On the
+    // real corpus pages still shrink: strip removes ~MB.)
+    const growth = home.deduped!.bytesIn! - home.bytesIn!;
     expect(growth).toBeGreaterThan(0);
     expect(growth).toBeLessThanOrEqual(INJECTED_BYTES + 300);
+    // …and pass 14 then takes the bodies back out of the page (ADR 0003)
+    expect(home.bytesOut).toBe(home.deduped!.bytesOut);
+    expect(home.bytesOut!).toBeLessThan(home.deduped!.bytesIn!);
     // strip mutations: per-target removed-byte counts
     expect(stripped['qualified-offer-host']).toBeGreaterThan(0);
     expect(stripped['q-root (chat launcher)']).toBeGreaterThan(0);
@@ -643,6 +693,86 @@ describe('write pass & mutation log', () => {
     const missing = result.log.find((e) => e.page === '/missing');
     expect(missing).toEqual({ page: '/missing', error: 'capture file missing' });
     expect(result.log.filter((e) => !e.error)).toHaveLength(8);
+  });
+});
+
+describe('pass 14: bodies ship as files (ADR 0003)', () => {
+  const assetsIndex = () => JSON.parse(readFileSync(path.join(OUT, 'assets.json'), 'utf8')) as string[];
+
+  it('names every body file after its own bytes, and writes them where the assets live', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const standIns = markedTags(html, 'motion').concat(markedTags(html, 'chat'));
+    expect(standIns.length).toBeGreaterThan(0);
+    for (const { tag } of standIns) {
+      const name = standInName(tag);
+      if (name === null) continue;
+      const bytes = readFileSync(path.join(OUT, 'assets', name));
+      // <sha256[:16]> of the body, so the name is the content
+      const { createHash } = await import('node:crypto');
+      expect(createHash('sha256').update(bytes).digest('hex').slice(0, 16)).toBe(name.replace(/\.\w+$/, ''));
+    }
+  });
+
+  it('lists the body files in assets.json, so the serving check walks and types them', () => {
+    // every stand-in the served tree carries points at a name the manifest lists
+    const listed = new Set(assetsIndex());
+    const referenced = new Set<string>();
+    for (const file of readdirSync(OUT, { recursive: true, encoding: 'utf8' })) {
+      if (!file.endsWith('.html')) continue;
+      const html = readFileSync(path.join(OUT, file), 'utf8');
+      for (const m of html.matchAll(/<link rel=stylesheet href=\/assets\/([a-f0-9]{16}\.css)|<script[^>]*src=\/assets\/([a-f0-9]{16}\.js)/g)) {
+        const name = (m[1] ?? m[2])!;
+        expect(listed.has(name), `${file} → ${name}`).toBe(true);
+        referenced.add(name);
+      }
+    }
+    expect(referenced.size).toBeGreaterThan(0);
+    // and the summary counts the same files (extra .css/.js names in the
+    // manifest are data: URIs the asset pass extracted, which is its business)
+    const summary = JSON.parse(readFileSync(path.join(OUT, 'build-summary.json'), 'utf8'));
+    expect(summary.bodies.files).toBe(referenced.size);
+    expect(summary.assets.distinct).toBe(listed.size);
+    expect(summary.bodies.styles).toBeGreaterThan(0);
+    // six injected runtimes per page, on the pages whose captured CSP allows a grant
+    expect(summary.bodies.scripts % 6, `${summary.bodies.scripts} scripts`).toBe(0);
+    expect(summary.bodies.scripts).toBeGreaterThan(0);
+    expect(summary.bodies.kept).toBeGreaterThan(0);
+  });
+
+  it('keeps a body inline on a page whose captured CSP has no directive to grant', async () => {
+    // the fixture's /gsx capture carries no CSP meta, and a body left inline is
+    // the only safe answer: a file the page cannot load would drop the runtime
+    const html = await readFile(path.join(OUT, 'gsx.html'), 'utf8');
+    expect(html).not.toContain('content-security-policy');
+    const storyHook = markedTags(html, 'story-hook')[0];
+    expect(storyHook.tag).toBe('<script data-flock-parody="story-hook">');
+    expect(await injectedBody(html, 'story-hook', 'script')).toBe(`\n${RUNTIME}\n`);
+    const entry = result.log.find((e) => e.page === '/gsx');
+    if (!entry || entry.error) throw new Error('unreachable: fixture gsx must log cleanly');
+    expect(entry.deduped!.script).toBe(0);
+    expect(entry.deduped!.style).toBe(0);
+    expect(entry.warnings).toContain('dedupe: no CSP meta — bodies left inline');
+    expect(entry.csp).toBeUndefined();
+  });
+
+  it('grants `self` for the kinds it moved, replacing each directive once', async () => {
+    const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
+    const meta = /<meta\b[^>]*http-equiv=\s*content-security-policy[^>]*>/i.exec(html)?.[0];
+    expect(meta).toContain("style-src 'unsafe-inline' 'self';");
+    expect(meta).toContain("script-src 'unsafe-inline' data: 'self';");
+    // a second directive would intersect with the captured one and keep the
+    // files blocked, so neither may appear twice
+    expect(meta!.match(/style-src/g)).toHaveLength(1);
+    expect(meta!.match(/script-src/g)).toHaveLength(1);
+  });
+
+  it('shrinks the page and logs the pass per page', async () => {
+    const home = result.log.find((e) => e.page === '/');
+    if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
+    expect(home.deduped).toMatchObject({ style: 4, script: 6 });
+    expect(home.deduped!.bytesOut).toBeLessThan(home.deduped!.bytesIn);
+    expect(home.warnings).toEqual([]);
+    expect(home.injected).toContain('scroll layer (style+script, inline)'); // 671 bytes: under the threshold, stays put
   });
 });
 

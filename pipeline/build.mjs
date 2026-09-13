@@ -95,6 +95,15 @@
 //                then inject scroll.css + scroll-runtime.js inline. Vanilla,
 //                no GSAP/CDN, so the zero-outbound invariant holds; reduced
 //                motion and no-JS ship the settled end-state.
+//  14. dedupe   — write every style/script body over KEEP_INLINE_BYTES once as
+//                a content-addressed `/assets/<sha>.css|.js` and point the page
+//                at it from the position the body held, so the sheets a
+//                Capture re-encodes per page are paid for once (ADR 0003).
+//                The captured `style-src`/`script-src` carry no `'self'`, so
+//                the pass grants it in those two directives — replaced, never
+//                appended, exactly as the embed pass does for `frame-src`.
+//                Same-origin, so the zero-outbound invariant is untouched;
+//                JSON-LD and sub-kilobyte bodies stay inline.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -113,6 +122,7 @@
 //
 // Usage: node pipeline/build.mjs [--run <captureRunDir>] [--out <dir>]
 //                                [--pages /a,/b] [--list <file>]
+//        node pipeline/build.mjs --dedupe-tree [<dir>] [--dry-run]
 //   Defaults: --run pipeline/config.mjs CAPTURE_RUN, --out served,
 //             pages from pipeline/pages.list (empty = the full capture list).
 
@@ -121,6 +131,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
+import { dedupeBodies } from './dedupe.mjs';
 import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, stripOriginalUrls, unclassifiedRemoteRefs } from './embeds.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
@@ -1027,6 +1038,67 @@ function assetsPass(html, entry, assetDir, written) {
   return out;
 }
 
+// ---- pass 14: body deduplication (ADR 0003) ---------------------------------
+/**
+ * Write every style/script body above the inline threshold once as a
+ * content-addressed file, and leave a `<link>`/`<script src>` where the body
+ * was.
+ *
+ * A Capture re-encodes the page's stylesheets once per page — 29,686 `<style>`
+ * elements holding 1,642 MB of CSS — and the Recreation inlines its six
+ * runtimes on every page as well. Identical bodies hash identically, so the
+ * caller's `written` set puts each one on disk once per build and every page
+ * after the first pays a cache hit. That is what makes the tree publishable at
+ * all: GitHub Pages caps a published site at 1 GB and the tree is 2.36 GB
+ * (docs/adr/0003-bodies-ship-as-files.md).
+ *
+ * Runs last, after every injection pass, so the bodies it moves are the final
+ * ones — the runtimes are injected verbatim, and their bytes are not rewritten
+ * by moving them. A body whose kind could not be granted `'self'` in the CSP
+ * stays inline (the module says so in `blocked`) rather than becoming a request
+ * the browser refuses.
+ *
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @param {string} assetDir
+ * @param {Set<string>} written  build-wide set of asset keys already on disk
+ * @param {Set<string>} bodies  build-wide set of body file names (for the summary)
+ * @returns {string}
+ */
+function dedupePass(html, entry, assetDir, written, bodies) {
+  const result = dedupeBodies(html);
+  for (const reason of result.blocked) {
+    const warning = `dedupe: ${reason}`;
+    if (!entry.warnings.includes(warning)) entry.warnings.push(warning);
+  }
+  // Logged even when nothing moved, the way the motion pass logs an empty
+  // record: the mutation log says what happened here, including "nothing".
+  entry.deduped = {
+    style: result.externalized.style,
+    script: result.externalized.script,
+    kept: result.kept.style + result.kept.script,
+    files: result.files.size,
+    bytesIn: result.bytesIn,
+    bytesOut: result.bytesOut,
+  };
+  if (result.externalized.style === 0 && result.externalized.script === 0) return html;
+  fs.mkdirSync(assetDir, { recursive: true });
+  for (const file of result.files.values()) {
+    bodies.add(file.name);
+    if (written.has(file.name)) continue;
+    fs.writeFileSync(path.join(assetDir, file.name), file.bytes);
+    written.add(file.name);
+  }
+  if (result.csp !== null) {
+    const grants = [];
+    if (result.externalized.style > 0) grants.push("style-src 'self' (deduped stylesheet)");
+    if (result.externalized.script > 0) grants.push("script-src 'self' (deduped runtime)");
+    const grant = grants.join('; ');
+    entry.csp = entry.csp ? `${entry.csp}; ${grant}` : grant;
+  }
+  return result.html;
+}
+
 // ---- pipeline ----------------------------------------------------------------
 
 /**
@@ -1050,6 +1122,7 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {Record<string, number>} [audit]  Post-strip tracker-residue counts; all zeros is clean.
  * @property {{total: number, executable: number, ldJson: number, injected: number, srcdocAllowScripts: number}} [scripts]  Script census of served bytes.
  * @property {{references: number, distinct: number, bytes: number}} [assets]  Inlined data URIs on this page: references rewritten, distinct assets, decoded bytes (ADR 0002).
+ * @property {{style: number, script: number, kept: number, files: number, bytesIn: number, bytesOut: number}} [deduped]  Style/script bodies this page wrote out as content-addressed files (ADR 0003): `style`/`script` count the bodies externalized, `kept` the ones left inline (too small, JSON-LD, or no CSP grant), `files` the distinct files among them, `bytesIn`/`bytesOut` the page's size across the pass.
  * @property {string} [error]  Set instead of the pass data when the page could not be built.
  */
 
@@ -1094,6 +1167,7 @@ export async function runPipeline(opts) {
   const formsManifest = {}; // form route key → { page, formId, redirectTo }
   const assetDir = path.join(outDir, 'assets');
   const writtenAssets = new Set(); // asset sha → already on disk this build
+  const writtenBodies = new Set(); // style/script body files written this build
   // read once — every page inlines the same runtime bytes verbatim
   const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
   const scrollCss = fs.readFileSync(path.join(HERE, 'scroll.css'), 'utf8');
@@ -1165,6 +1239,9 @@ export async function runPipeline(opts) {
       entry.restored = [`${missing.join('')} (capture was truncated)`];
     }
 
+    // Last, so the bodies it moves are the final ones.
+    html = dedupePass(html, entry, assetDir, writtenAssets, writtenBodies);
+
     const outFile = servedFileFor(outDir, page);
     fs.mkdirSync(path.dirname(outFile), { recursive: true });
     fs.writeFileSync(outFile, html);
@@ -1197,7 +1274,6 @@ export async function runPipeline(opts) {
   // claimed as this build's output.
   const assetNames = [...writtenAssets].sort();
   fs.writeFileSync(path.join(outDir, 'assets.json'), JSON.stringify(assetNames, null, 2));
-
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'build-log.json'), JSON.stringify(log, null, 2));
   // The mock route's redirect table (ticket 02): written even when empty so
@@ -1223,6 +1299,15 @@ export async function runPipeline(opts) {
     authGated: uncaptured.authGated,
     chat: { mounted: chatMounted, absent: servedEntries.length - chatMounted },
     originalUrls: servedEntries.reduce((n, e) => n + (e.originalUrls ?? 0), 0),
+    bodies: {
+      styles: servedEntries.reduce((n, e) => n + (e.deduped?.style ?? 0), 0),
+      scripts: servedEntries.reduce((n, e) => n + (e.deduped?.script ?? 0), 0),
+      kept: servedEntries.reduce((n, e) => n + (e.deduped?.kept ?? 0), 0),
+      files: writtenBodies.size,
+      bytes: [...writtenBodies].reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
+      bytesIn: servedEntries.reduce((n, e) => n + (e.deduped?.bytesIn ?? 0), 0),
+      bytesOut: servedEntries.reduce((n, e) => n + (e.deduped?.bytesOut ?? 0), 0),
+    },
     assets: {
       references: servedEntries.reduce((n, e) => n + (e.assets?.references ?? 0), 0),
       distinct: assetNames.length,
@@ -1256,6 +1341,134 @@ function loadRunManifest(runDir) {
   const file = path.join(runDir, 'manifest-uncaptured.csv');
   if (!fs.existsSync(file)) return { redirects: {}, dead: [], authGated: [], invalidRedirects: [] };
   return parseUncapturedManifest(fs.readFileSync(file, 'utf8'));
+}
+
+// ---- tree mode: dedupe an already-built tree ---------------------------------
+/** Every `.html` under `dir`, assets excluded. */
+function servedHtmlFiles(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== 'assets') servedHtmlFiles(full, out);
+    } else if (entry.name.endsWith('.html')) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+/** The page path a served file holds (`served/a/b.html` → `/a/b`). */
+function pageForServedFile(outDir, file) {
+  const rel = path.relative(outDir, file).split(path.sep).join('/');
+  return rel === 'index.html' ? '/' : `/${rel.replace(/\.html$/, '')}`;
+}
+
+/**
+ * Run pass 14 over a served tree that already exists, in place, and keep its
+ * manifests true.
+ *
+ * The pass runs inside the build, so a build's own output comes out deduped
+ * already. This entry point is for a tree a build wrote before the pass existed
+ * (the scrapped capture run's, which cannot be rebuilt until a fresh capture)
+ * and for re-running the pass after a threshold change. Same pass, page by
+ * page, then `assets.json`, `build-log.json` and `build-summary.json` are
+ * updated to match: the serving check reads all three and asserts they agree
+ * with the tree and with each other.
+ *
+ * @param {string} outDir
+ * @param {{dryRun?: boolean}} [options]
+ * @returns {{pages: number, pagesChanged: number, files: number, externalized: {style: number, script: number}, kept: number, bytesIn: number, bytesOut: number, blocked: string[]}}
+ */
+export function dedupeTree(outDir, { dryRun = false } = {}) {
+  const assetDir = path.join(outDir, 'assets');
+  const files = servedHtmlFiles(outDir).sort();
+  const written = new Set();
+  const logFile = path.join(outDir, 'build-log.json');
+  const summaryFile = path.join(outDir, 'build-summary.json');
+  const log = fs.existsSync(logFile) ? JSON.parse(fs.readFileSync(logFile, 'utf8')) : null;
+  const summary = fs.existsSync(summaryFile) ? JSON.parse(fs.readFileSync(summaryFile, 'utf8')) : null;
+  const byPage = new Map((log ?? []).map((e) => [e.page, e]));
+  const externalized = { style: 0, script: 0 };
+  const blocked = new Set();
+  let kept = 0;
+  let bytesIn = 0;
+  let bytesOut = 0;
+  let pagesChanged = 0;
+  for (const file of files) {
+    const before = fs.readFileSync(file, 'utf8');
+    const result = dedupeBodies(before);
+    bytesIn += result.bytesIn;
+    bytesOut += result.bytesOut;
+    externalized.style += result.externalized.style;
+    externalized.script += result.externalized.script;
+    kept += result.kept.style + result.kept.script;
+    for (const reason of result.blocked) blocked.add(reason);
+    if (result.externalized.style === 0 && result.externalized.script === 0) continue;
+    pagesChanged += 1;
+    for (const bodyFile of result.files.values()) {
+      if (written.has(bodyFile.name)) continue;
+      written.add(bodyFile.name);
+      if (!dryRun) {
+        fs.mkdirSync(assetDir, { recursive: true });
+        fs.writeFileSync(path.join(assetDir, bodyFile.name), bodyFile.bytes);
+      }
+    }
+    if (dryRun) continue;
+    fs.writeFileSync(file, result.html);
+    const entry = byPage.get(pageForServedFile(outDir, file));
+    if (entry !== undefined) {
+      entry.deduped = {
+        style: result.externalized.style,
+        script: result.externalized.script,
+        kept: result.kept.style + result.kept.script,
+        files: result.files.size,
+        bytesIn: result.bytesIn,
+        bytesOut: result.bytesOut,
+      };
+      entry.bytesOut = result.html.length;
+      // The pass moves bodies, so everything the audit and the census read has
+      // to be re-read rather than carried over from the pre-dedupe bytes.
+      entry.audit = auditHtml(result.html);
+      entry.scripts = scriptCensus(result.html);
+      if (result.csp !== null) {
+        const grants = [];
+        if (result.externalized.style > 0) grants.push("style-src 'self' (deduped stylesheet)");
+        if (result.externalized.script > 0) grants.push("script-src 'self' (deduped runtime)");
+        const grant = grants.join('; ');
+        entry.csp = entry.csp ? `${entry.csp}; ${grant}` : grant;
+      }
+    }
+  }
+  if (dryRun) {
+    return { pages: files.length, pagesChanged, files: written.size, externalized, kept, bytesIn, bytesOut, blocked: [...blocked] };
+  }
+  // The asset manifest is what the serving check walks, so the new files must
+  // be in it, and the summary's count must match the manifest it is checked
+  // against.
+  const assetsFile = path.join(outDir, 'assets.json');
+  const named = new Set(fs.existsSync(assetsFile) ? JSON.parse(fs.readFileSync(assetsFile, 'utf8')) : []);
+  for (const name of written) named.add(name);
+  const assetNames = [...named].sort();
+  fs.writeFileSync(assetsFile, JSON.stringify(assetNames, null, 2));
+  if (log !== null) fs.writeFileSync(logFile, JSON.stringify(log, null, 2));
+  if (summary !== null) {
+    summary.assets = {
+      ...summary.assets,
+      distinct: assetNames.length,
+      bytes: assetNames.reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
+    };
+    summary.bodies = {
+      styles: externalized.style,
+      scripts: externalized.script,
+      kept,
+      files: written.size,
+      bytes: [...written].reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
+      bytesIn,
+      bytesOut,
+    };
+    fs.writeFileSync(summaryFile, JSON.stringify(summary, null, 2));
+  }
+  return { pages: files.length, pagesChanged, files: written.size, externalized, kept, bytesIn, bytesOut, blocked: [...blocked] };
 }
 
 // ---- summary (CLI) ------------------------------------------------------------
@@ -1303,6 +1516,11 @@ function summarize(log, summary) {
     `assets: ${summary.assets.references} inlined reference(s) → ${summary.assets.distinct} content-addressed file(s), `
     + `${Math.round(summary.assets.bytes / 1e6)}MB decoded`
   );
+  console.log(
+    `bodies: ${summary.bodies.styles} style + ${summary.bodies.scripts} script body(ies) → ${summary.bodies.files} file(s), `
+    + `${Math.round(summary.bodies.bytes / 1e6)}MB (${summary.bodies.kept} kept inline); `
+    + `html ${(summary.bodies.bytesIn / 1e6).toFixed(1)}MB → ${(summary.bodies.bytesOut / 1e6).toFixed(1)}MB`
+  );
   for (const w of [...summary.redirects.invalid, ...summary.redirects.dangling]) console.log(`⚠ redirect: ${w}`);
 }
 
@@ -1310,6 +1528,25 @@ function summarize(log, summary) {
 
 async function main() {
   const arg = makeArg(process.argv.slice(2));
+
+  // Tree mode: apply pass 14 to a served tree that already exists, in place.
+  // The build runs the pass itself, so this is for the tree a build wrote
+  // before the pass existed (and for a threshold change) — the captures it came
+  // from need not exist. `npm run dedupe` is the script.
+  const treeIndex = process.argv.indexOf('--dedupe-tree');
+  if (treeIndex >= 0) {
+    const next = process.argv[treeIndex + 1];
+    const treeDir = path.resolve(ROOT, next !== undefined && !next.startsWith('--') ? next : 'served');
+    const dryRun = process.argv.includes('--dry-run');
+    const r = dedupeTree(treeDir, { dryRun });
+    console.log(
+      `${dryRun ? '(dry run) ' : ''}dedupe ${r.pages} page(s): ${r.externalized.style} style + ${r.externalized.script} script body(ies) → `
+      + `${r.files} file(s) (${r.pagesChanged} page(s) rewritten), ${r.kept} kept inline`
+    );
+    console.log(`html: ${(r.bytesIn / 1e6).toFixed(1)}MB → ${(r.bytesOut / 1e6).toFixed(1)}MB`);
+    for (const reason of r.blocked) console.log(`⚠ dedupe: ${reason}`);
+    return;
+  }
 
   const { CAPTURE_RUN, DROPPED_PAGES } = await import('./config.mjs');
   const runDir = path.resolve(ROOT, arg('--run') ?? CAPTURE_RUN);

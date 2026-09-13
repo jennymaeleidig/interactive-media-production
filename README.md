@@ -14,6 +14,9 @@ npm install
 npm run pipeline   # capture run → served/ (whole site; a scoped build reads
                    #   pipeline/pages.list — one path per line). Needs the
                    #   captures, which are gone — see "The scratch tree" below
+npm run dedupe     # apply the body-dedupe pass to an existing served/ tree in
+                   #   place (ADR 0003) — the same pass the build runs; use it
+                   #   when there is no capture run to rebuild from
 npm run build      # production build
 npm run start      # serve the captured pages at their original paths
 npm run dev        # dev server (WATCHPACK_POLLING baked in — sandbox needs it)
@@ -38,12 +41,13 @@ npm run routes     # full-scale serving check over HTTP (~10 s): every live
 2. **Build** (`pipeline/build.mjs`) — per page: strip the third-party
    machinery, rewrite internal links to Recreation routes, route forms to
    local mock APIs, normalize captured animation from-states, inject the
-   motion / interactions / story-hook layers inline, restore the closing tags
-   SingleFile truncates, and log every mutation to `served/build-log.json`.
-   Build-level outputs: `served/redirects.json` (the run manifest's legacy
-   stubs → local targets) and `served/build-summary.json` (the whole-site
-   counts). Scaffold/test pages (`pipeline/config.mjs` `DROPPED_PAGES`) are
-   never written.
+   motion / interactions / story-hook layers, restore the closing tags
+   SingleFile truncates, then ship the page's stylesheets and scripts as
+   content-addressed files (ADR 0003) and log every mutation to
+   `served/build-log.json`. Build-level outputs: `served/redirects.json` (the
+   run manifest's legacy stubs → local targets) and `served/build-summary.json`
+   (the whole-site counts). Scaffold/test pages (`pipeline/config.mjs`
+   `DROPPED_PAGES`) are never written.
 3. **Serve** (`app/[[...path]]/route.ts`) — a catch-all route answers
    original site paths from `served/`; a miss answers `redirects.json` with a
    permanent redirect (legacy stubs); dead collection roots, auth-gated stubs,
@@ -78,6 +82,27 @@ node pipeline/recapture.mjs --inventory <fresh.csv> --scope <recapture.txt> \
 `--fallback-inventory` keeps the real static title on the pages the live site
 currently serves with an empty `<title>` (a Webflow republish regression); see
 the runbook's title ground-truth note.
+
+## Publishing
+
+The built tree is static HTML plus hashed files, so serving it needs no export
+step — but two constraints come from the build's own shape:
+
+- **It must live at a site root**, not under a path. Every reference is
+  root-absolute (`/assets/<sha16>.<ext>`, `/products/gun-detection`), so a
+  project-page URL (`https://<owner>.github.io/<repo>/`) 404s every asset
+  unless a publish step rewrites the prefix.
+- **Size is the binding limit.** GitHub Pages caps a published site at 1 GB and
+the tree measured 2.36 GB before ADR 0003: 89% of it was the same stylesheets
+re-encoded on all 1,181 pages. Pass 14 now ships each body once — the tree is
+**660 MB** (HTML 149 MB, assets 513 MB) — and 158 body files are in
+`assets.json`, so `npm run routes` verifies their bytes and content types like
+any other asset.
+
+An educational reproduction of this kind also needs a visible non-affiliation
+disclaimer on the published site (it is not yet in the build), and the captured
+consent/tracker machinery must stay stripped — it is: the strip audit fails the
+build on tracker residue, and the tree carries no live analytics tag.
 
 ## The scratch tree
 

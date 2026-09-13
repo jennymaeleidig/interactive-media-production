@@ -18,6 +18,7 @@
     "build": "next build",
     "start": "next start",
     "pipeline": "node pipeline/build.mjs",
+    "dedupe": "node pipeline/build.mjs --dedupe-tree",
     "routes": "node regression/routes.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

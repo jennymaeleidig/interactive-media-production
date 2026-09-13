@@ -32,6 +32,21 @@ extraction is what makes the served tree ~2 GB instead of ~10 GB. Extraction
 runs before the injection passes, because the injected runtimes are inlined
 verbatim and one of them carries `data:` URIs of its own.
 
+**Styles and scripts ship as files too** (ADR 0003). Extraction moves a page's
+`data:` URIs out; pass 14 (`pipeline/dedupe.mjs`) moves its *bodies* out — every
+`<style>`/`<script>` body of at least 1 KB becomes one content-addressed
+`/assets/<sha16>.css|.js` with a marked `<link>`/`<script src>` left in the
+position the body held, because a Capture inlines the same stylesheets on all
+1,181 pages (1,642 MB of CSS, 1,476 distinct bodies). It runs **last**, after
+every injection pass, so the bodies it moves are the final ones; it stays pure
+HTML-in/HTML-out, and a body whose `style-src`/`script-src` could not be granted
+`'self'` — replaced, never appended, or the directives intersect — stays inline
+with a per-page warning rather than becoming a request the browser refuses.
+Bodies under 1 KB and non-JavaScript scripts (`application/ld+json`, an
+`importmap`) stay inline: a `<script src>` of a data type is fetched and ignored.
+The body files live in `assets.json`, so the serving check's asset-identity walk
+covers them like any other asset.
+
 **The one exception is a video slot** (ADR 0002): a Capture cannot play a video,
 so it keeps an inert snapshot of the player — an inlined `srcdoc` player
 document, the JS-built player chrome, or a `<wistia-player>` web component — and
@@ -191,8 +206,11 @@ video.js documents are stripped, not played (ticket 19).
   via `data-sf-original-src`, the YouTube `data-video-id` detection, the
   Vidzflow strip, the `data-sf-original-*` bookkeeping sweep and its linear-time
   bound, the skip rules, idempotence, and the
-  frame/srcdoc/remote-reference audits). Both are
-  pure HTML-in/HTML-out cores the build calls; neither reaches over HTTP, and
+  frame/srcdoc/remote-reference audits) and the body-deduplication pass
+  (`test/dedupe.test.ts` — `pipeline/dedupe.mjs`: the tokenizer that refuses to
+  read a `srcdoc` payload as markup, the keep-inline rules, the carried
+  attributes, the `'self'` grant, the blocked reasons, and idempotence). All are
+  pure HTML-in/HTML-out cores the build calls; none reaches over HTTP, and
   the built result of both is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection
   seam (`test/video-inventory.test.ts` — `pipeline/video-inventory.mjs`'s
@@ -269,6 +287,9 @@ dev/build for everyone:
 3. `npm run build` — production build succeeds.
 4. If the pipeline or served bytes changed: `npm run pipeline`, spot-check the
    mutation log and strip audit, `npm run build`, then `npm run routes` for the
-   full-scale serving check (route classes + byte-identity).
+   full-scale serving check (route classes + byte-identity). With no capture run
+   to rebuild from, `npm run dedupe` applies pass 14 to the existing `served/`
+   tree in place and updates its manifests — the same pass the build runs —
+   so `npm run routes` still measures what a visitor gets (ADR 0003).
 5. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to
    the current branch — staging only files the ticket touched.
