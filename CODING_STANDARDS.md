@@ -91,10 +91,19 @@ video.js documents are stripped, not played (ticket 19).
 - The serving check (`regression/routes.mjs`, one command `npm run routes`) is
   plain Node ESM + JSDoc and **environmental**: it starts the production
   server and measures it over HTTP. Its pure cores — `routeExpectations`,
-  `countFailures`, `auditFailures`, `servedCandidates`, `byteMismatch` — are
+  `countFailures`, `auditFailures`, `byteMismatch` — are
   unit-tested at `test/routes.test.ts`; the check itself runs against the real
   build and capture run, never in `npm test` (the suite must stay green on a
   fresh clone).
+- **The served tree's rules live once, in plain JavaScript**
+  (`pipeline/served-tree.mjs`), for the same reason `pipeline/run-manifest.mjs`
+  does: both tiers need them and only one is TypeScript. `pageCandidates` (the
+  `<rel>.html` then `<rel>/index.html` resolution), `insideTree` (the traversal
+  guard) and `mimeForExt` (the extension → content-type table) are read by the
+  Next page route, by `lib/serving.ts`'s asset read, and by the serving check —
+  so the check cannot resolve a route differently from the server that answers
+  it, which byte-identity alone would never catch. Pinned at
+  `test/served-tree.test.ts`.
 - **The serving layer is verified in bytes, not pixels.** Every served page's
   HTTP body must be byte-identical to the file the build wrote — same bytes ⇒
   same pixels, so byte-identity is the strictly stronger guarantee, and it

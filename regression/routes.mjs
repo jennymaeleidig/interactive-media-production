@@ -22,7 +22,7 @@
 // page bytes stay identical, so assets need the same guarantee the pages get.
 //
 // The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
-// `servedCandidates`, `byteMismatch` — are unit-tested in `test/routes.test.ts`.
+// `pageCandidates`, `byteMismatch` — are unit-tested in `test/routes.test.ts`.
 // The check itself is environmental (it needs the built app and the served
 // tree), so it is not a test-suite member: the suite must stay green on a
 // fresh clone.
@@ -34,7 +34,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DROPPED_PAGES } from '../pipeline/config.mjs';
-import { mimeForExt } from '../pipeline/assets.mjs';
+import { mimeForExt, pageCandidates } from '../pipeline/served-tree.mjs';
 import { startServer } from './server.mjs';
 import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
 
@@ -129,21 +129,6 @@ export function auditFailures(buildLog) {
     }
   }
   return failures;
-}
-
-/**
- * The served file candidates for a route path, in the route's own order:
- * `<rel>.html` then `<rel>/index.html` (root → `index.html`). Mirrors
- * `app/[[...path]]/route.ts` so the byte check measures the same resolution
- * the request did.
- * @param {string} servedDir
- * @param {string} page  a route path, e.g. '/' or '/a/b'
- * @returns {string[]}
- */
-export function servedCandidates(servedDir, page) {
-  const rel = page.replace(/^\/+/, '');
-  if (rel === '') return [path.join(servedDir, 'index.html')];
-  return [path.join(servedDir, `${rel}.html`), path.join(servedDir, rel, 'index.html')];
 }
 
 /** First differing byte offset of two buffers, or min length when one is a prefix. */
@@ -246,7 +231,7 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
     else if (r.e.location && r.location !== r.e.location) failures.push(`${r.e.path}: expected redirect to ${r.e.location}, got ${r.location ?? '(none)'}`);
     // byte-identity for the served page the build wrote
     if (r.e.status === 200 && r.status === 200 && r.bytes) {
-      const file = servedCandidates(servedDir, r.e.path).find((f) => fs.existsSync(f));
+      const file = pageCandidates(servedDir, r.e.path).find((f) => fs.existsSync(f));
       if (!file) {
         failures.push(`${r.e.path}: 200 but no served file at served/${r.e.path.replace(/^\/+/, '')}.html`);
       } else {

@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { cssUnescape, decodeDataUri, extForMime, extractDataUris, mimeForExt, parseDataUri } from '../pipeline/assets.mjs';
+import { cssUnescape, decodeDataUri, extForMime, extractDataUris, parseDataUri } from '../pipeline/assets.mjs';
 
 const PNG = Buffer.from('89504e470d0a1a0a', 'hex');
 const PNG_B64 = PNG.toString('base64');
@@ -50,13 +50,11 @@ describe('decodeDataUri', () => {
   });
 });
 
-describe('extForMime and mimeForExt', () => {
-  it('maps the captured media types both ways', () => {
+describe('extForMime', () => {
+  it('maps the captured media types', () => {
     expect(extForMime('image/svg+xml')).toBe('svg');
     expect(extForMime('image/jpeg')).toBe('jpg');
     expect(extForMime('font/woff2')).toBe('woff2');
-    expect(mimeForExt('woff2')).toBe('font/woff2');
-    expect(mimeForExt('svg')).toBe('image/svg+xml');
   });
 
   it('falls back to the subtype, then to .bin', () => {
@@ -64,7 +62,6 @@ describe('extForMime and mimeForExt', () => {
     expect(extForMime('image/x-thing+xml')).toBe('x-thing');
     expect(extForMime('application/octet-stream')).toBe('octet-stream');
     expect(extForMime('weird')).toBe('bin');
-    expect(mimeForExt('nope')).toBe('application/octet-stream');
   });
 
   it('maps the legacy aliases the captures actually carry', () => {
@@ -73,9 +70,6 @@ describe('extForMime and mimeForExt', () => {
     expect(extForMime('application/x-font-woff')).toBe('woff');
     expect(extForMime('application/font-woff')).toBe('woff');
     expect(extForMime('video/mpeg')).toBe('mpeg');
-    expect(mimeForExt('woff')).toBe('font/woff');
-    expect(mimeForExt('mpeg')).toBe('video/mpeg');
-    expect(mimeForExt('woff2')).toBe('font/woff2');
   });
 });
 

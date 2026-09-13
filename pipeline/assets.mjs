@@ -44,30 +44,6 @@ const EXT_BY_MIME = {
   'audio/mpeg': 'mp3',
 };
 
-/** Extension → MIME, the serving route's content-type table (the inverse). */
-const MIME_BY_EXT = {
-  svg: 'image/svg+xml',
-  jpg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-  avif: 'image/avif',
-  gif: 'image/gif',
-  ico: 'image/x-icon',
-  bmp: 'image/bmp',
-  tiff: 'image/tiff',
-  woff2: 'font/woff2',
-  woff: 'font/woff',
-  ttf: 'font/ttf',
-  otf: 'font/otf',
-  eot: 'application/vnd.ms-fontobject',
-  mpeg: 'video/mpeg',
-  mp4: 'video/mp4',
-  webm: 'video/webm',
-  mp3: 'audio/mpeg',
-  css: 'text/css',
-  js: 'text/javascript',
-};
-
 /**
  * The extension an inlined asset is written under: the known mapping, else the
  * MIME subtype (`image/heic` → `heic`), else `.bin` for a typeless payload.
@@ -81,14 +57,9 @@ export function extForMime(mime) {
   return clean === '' ? 'bin' : clean.toLowerCase();
 }
 
-/**
- * The content type the asset route answers an extracted file with.
- * @param {string} ext  without the dot
- * @returns {string}
- */
-export function mimeForExt(ext) {
-  return MIME_BY_EXT[ext.toLowerCase()] ?? 'application/octet-stream';
-}
+// `mimeForExt` (the inverse, what the serving layer answers a file with) lives
+// in pipeline/served-tree.mjs: only the two tiers that answer a request for the
+// bytes ask for it, and the build never does.
 
 /**
  * Split a `data:` URI into its media type and payload.

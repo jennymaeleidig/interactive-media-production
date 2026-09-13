@@ -1,6 +1,6 @@
 # 06 — One seam owns the served-tree rules
 
-Status: open
+Status: resolved
 Blocked by: none
 
 ## What to build
@@ -21,10 +21,28 @@ serving check enumerates through it.
 
 ## Acceptance criteria
 
-- [ ] One candidate-order rule; the check imports it (no "Mirrors …" comment).
-- [ ] One traversal guard.
-- [ ] The forms route calls the shared local-target predicate.
-- [ ] The serving tier does not import build internals (the mime table moves to
+- [x] One candidate-order rule; the check imports it (no "Mirrors …" comment).
+- [x] One traversal guard.
+- [x] The forms route calls the shared local-target predicate.
+- [x] The serving tier does not import build internals (the mime table moves to
       the serving tier, or is re-exported through it).
-- [ ] `npm run routes` green against the frozen `served/` tree (unchanged bytes).
-- [ ] `CODING_STANDARDS.md` "Stack & layout" updated.
+- [x] `npm run routes` green against the frozen `served/` tree (unchanged bytes).
+- [x] `CODING_STANDARDS.md` "Stack & layout" updated.
+
+## Comments
+
+The rule both tiers need has to be plain JavaScript — `regression/routes.mjs`
+cannot import `lib/serving.ts` — so it went to `pipeline/served-tree.mjs`,
+following the precedent CODING_STANDARDS already blesses for
+`pipeline/run-manifest.mjs` (a cross-tier seam both layers import).
+
+`mimeForExt` turned out to be a cleaner move than the ticket assumed: the build
+never calls it (`extForMime`, its inverse, is the build's half and stays in
+`pipeline/assets.mjs`), so it existed only for the two things that answer a
+request for the bytes. It now sits with the rest of the served tree's rules,
+which also stops the serving tier importing the asset-extraction core.
+
+Evidence: `npm run build` then `npm run routes` green against the frozen tree
+(1,290 routes, 1,181 byte-identical pages, 3,118 assets with their declared
+content type); `.tmp/golden` tree and log identical; 341 tests green in 18 files;
+`tsc --noEmit` clean.

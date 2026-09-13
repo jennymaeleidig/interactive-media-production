@@ -129,7 +129,7 @@ describe('replaceTags / contentSegments', () => {
     // The nested document (regression 2): the inner stylesheet is text inside
     // the outer tag's attribute, so the outer pass must not edit it.
     const html = '<style>.a{opacity:0}</style><!-- <div id=main-progress> --><iframe srcdoc="<style>.b{opacity:0}</style>"></iframe>';
-    const touched = [];
+    const touched: string[] = [];
     const out = contentSegments(html, (seg) =>
       replaceTags(seg, (tag, _name, attrs) => {
         const id = attrValue(attrs, 'id');
@@ -184,11 +184,11 @@ describe('the attribute dialects', () => {
 
 describe('editAttr / addAttr', () => {
   it('returns the tag untouched when the edit changes nothing', () => {
-    expect(editAttr('<div a="1">', 'a', (v) => v)).toBe('<div a="1">');
+    expect(editAttr('<div a="1">', 'a', (v: string) => v)).toBe('<div a="1">');
   });
 
   it('returns null when the attribute is absent', () => {
-    expect(editAttr('<div a="1">', 'b', (v) => v)).toBeNull();
+    expect(editAttr('<div a="1">', 'b', (v: string) => v)).toBeNull();
   });
 
   it('drops the attribute whole when the edit returns empty', () => {

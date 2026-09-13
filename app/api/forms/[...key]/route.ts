@@ -11,6 +11,7 @@
 // it defaults to <cwd>/served — see lib/serving.ts.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { isLocalTarget } from '@/pipeline/run-manifest.mjs';
 import { notFound, servedDir } from '@/lib/serving';
 
 export const dynamic = 'force-dynamic';
@@ -27,8 +28,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ key?: 
   const redirectTo = typeof route?.redirectTo === 'string' ? route.redirectTo : null;
   // the mock only ever points at a root-relative local path — not
   // protocol-relative (`//host` would leave the machine), not absolute. A
-  // manifest entry without one is a build bug, not a redirect.
-  if (!redirectTo || !redirectTo.startsWith('/') || redirectTo.startsWith('//')) return notFound();
+  // manifest entry without one is a build bug, not a redirect. Same predicate
+  // the serving layer applies to redirects.json, so the two cannot drift.
+  if (!isLocalTarget(redirectTo)) return notFound();
   return new Response(null, {
     status: 303,
     headers: { location: redirectTo, 'cache-control': 'no-store' },

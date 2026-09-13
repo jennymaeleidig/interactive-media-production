@@ -8,7 +8,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isLocalTarget } from '../pipeline/run-manifest.mjs';
-import { mimeForExt } from '../pipeline/assets.mjs';
+import { insideTree, mimeForExt } from '../pipeline/served-tree.mjs';
 
 export function servedDir(): string {
   return process.env.SERVED_DIR ?? path.join(process.cwd(), 'served');
@@ -32,9 +32,9 @@ export function assetsDir(): string {
  */
 export async function readAsset(name: string): Promise<{ body: Uint8Array<ArrayBuffer>; contentType: string } | null> {
   if (name === '' || name.includes('/')) return null;
-  const root = path.resolve(assetsDir());
+  const root = assetsDir();
   const file = path.resolve(path.join(root, name));
-  if (!file.startsWith(root + path.sep)) return null;
+  if (!insideTree(root, file)) return null;
   try {
     // `Uint8Array<ArrayBuffer>` (not Node's `Buffer`, nor the `ArrayBufferLike`
     // default) is what the DOM lib's `BodyInit` accepts

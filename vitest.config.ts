@@ -65,6 +65,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'served-tree',
+          include: ['test/served-tree.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'routes',
           include: ['test/routes.test.ts'],
         },
