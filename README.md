@@ -109,7 +109,7 @@ step — but two constraints come from the build's own shape:
   unless a publish step rewrites the prefix.
 - **Size is the binding limit.** GitHub Pages caps a published site at 1 GB and
 the tree measured 2.36 GB before ADR 0003: 89% of it was the same stylesheets
-re-encoded on all 1,181 pages. Pass 14 now ships each body once — the tree is
+re-encoded on all 1,181 pages. The dedupe pass now ships each body once — the tree is
 **660 MB** (HTML 149 MB, assets 513 MB) — and 158 body files are in
 `assets.json`, so `npm run routes` verifies their bytes and content types like
 any other asset.

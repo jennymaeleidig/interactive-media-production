@@ -1,7 +1,7 @@
 // The capture HTML's source text: one home for the rules that read it.
 //
 // Three passes grew their own way of reading the Capture's markup — the write
-// pass (`build.mjs`), the embed pass (`embeds.mjs`), and pass 14
+// pass (`build.mjs`), the embed pass (`embeds.mjs`), and the dedupe pass
 // (`dedupe.mjs`) — and the three disagree in ways that have each cost a bug
 // (ticket 12: a scanner that let an unquoted `&quot;` open a quoted section
 // swallowed 83KB of one page and rewrote a *nested* document's stylesheets;
@@ -21,7 +21,7 @@
 //                alternation the write pass has always used, backtracking
 //                semantics included.
 //   attr name    `attrValue` is the write pass's `\b` rule; `attrOf` is the
-//                embed pass's `(?<![\w-])` guard; `rawAttr` is pass 14's
+//                embed pass's `(?<![\w-])` guard; `rawAttr` is the dedupe pass's
 //                `(?:^|\s)` rule. They are NOT interchangeable even though all
 //                three usually agree: a real page carries
 //                `<div class=grecaptcha-badge data-style=bottomright style=…>`

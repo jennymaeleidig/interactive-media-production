@@ -122,7 +122,7 @@ describe('forms & mock routes (ticket 02)', () => {
 
 describe('story-hook seam present & dormant on served pages (ticket 03)', () => {
   // the same source the DOM seam tests drive — the build injects it verbatim,
-  // and pass 14 (ADR 0003) then ships it as a file the page points at
+  // and the dedupe pass (ADR 0003) then ships it as a file the page points at
   const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
 
   async function assertSeamAboard(body: string, label: string) {

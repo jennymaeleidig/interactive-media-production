@@ -9,7 +9,8 @@ import { rm, readFile } from 'node:fs/promises';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runPipeline, type LogEntry } from '../pipeline/build.mjs';
+import { runPipeline, PASS_IMPL_NAMES, type LogEntry } from '../pipeline/build.mjs';
+import { PASS_NAMES } from '../pipeline/passes.mjs';
 import { LAYERS, MARKER_RE, readLayerBodies } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -37,7 +38,7 @@ const SCROLL_CSS = layerBody('scroll', 'css');
 const SCROLL_RUNTIME = layerBody('scroll', 'runtime');
 const INJECTED_BYTES = [...BODIES.values()].reduce((n, b) => n + (b.css?.length ?? 0) + (b.runtime?.length ?? 0), 0);
 
-// Pass 14 (ADR 0003) moves every body over KEEP_INLINE_BYTES into
+// The dedupe pass (ADR 0003) moves every body over KEEP_INLINE_BYTES into
 // `/assets/<sha>.css|.js` and leaves a marked stand-in where the body stood —
 // served bytes no longer carry the runtime bodies — so the "injected verbatim"
 // assertions read the file the stand-in points at. Verbatim then means exactly
@@ -57,7 +58,7 @@ function standInName(tag: string): string | null {
 
 /**
  * The bytes one injected body ends up as, however the page carries them: the
- * file pass 14 wrote, or the element's own text when it stayed inline (a body
+ * file the dedupe pass wrote, or the element's own text when it stayed inline (a body
  * under the threshold, or a page whose CSP had no directive to grant).
  */
 async function injectedBody(html: string, marker: string, kind: 'style' | 'script'): Promise<string> {
@@ -78,6 +79,14 @@ beforeAll(async () => {
     runDir: FIXTURES,
     pages: ['/', '/products/gun-detection', '/book-a-demo', '/thank-you', '/gsx', '/chilipiper-2', '/var-ref', '/account', '/missing'],
     outDir: OUT,
+  });
+});
+
+describe('pass table agreement', () => {
+  it('implements exactly the passes pipeline/passes.mjs lists', () => {
+    // build.mjs also checks this at import; the test pins it so a rename that
+    // passes silently cannot ship
+    expect([...PASS_IMPL_NAMES].sort()).toEqual([...PASS_NAMES].sort());
   });
 });
 
@@ -324,7 +333,7 @@ describe('story-hook pass (ticket 03)', () => {
       // the labels of the layers that mount on this page, in mount order —
       // the table the build itself reads (pipeline/layers.mjs)
       const expected = LAYERS
-        .filter((layer) => layer.mounts(entry, { page: entry.page }))
+        .filter((layer) => layer.mounts === undefined || layer.mounts(entry, { page: entry.page }))
         .map((layer) => layer.label);
       expect(entry.injected, entry.page).toEqual(expected);
     }
@@ -335,7 +344,7 @@ describe('story-hook pass (ticket 03)', () => {
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
     const entry = result.log.find((e) => e.page === '/');
     if (!entry) throw new Error('unreachable: index must log');
-    const expectedScripts = LAYERS.filter((layer) => layer.parts.includes('script') && layer.mounts(entry, { page: entry.page })).length;
+    const expectedScripts = LAYERS.filter((layer) => layer.parts.includes('script') && (layer.mounts === undefined || layer.mounts(entry, { page: entry.page }))).length;
     expect(census.filter((t) => MARKER_RE.test(t))).toHaveLength(expectedScripts); // every mounted script layer
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
@@ -572,7 +581,7 @@ describe('interactions pass (ticket 05)', () => {
 });
 
 describe('chat mount (ticket 10)', () => {
-  // pass 14 replaces both bodies with marked stand-ins (ADR 0003)
+  // the dedupe pass replaces both bodies with marked stand-ins (ADR 0003)
   const CHAT_STAND_IN = (html: string) => markedTags(html, 'chat');
   // the fixture captures that mounted <q-root>, and those that did not
   const MOUNTED = ['/', '/products/gun-detection', '/book-a-demo', '/thank-you'];
@@ -649,7 +658,7 @@ describe('chat mount (ticket 10)', () => {
     expect(meta).not.toMatch(/connect-src\s+https?:/);
     const home = result.log.find((e) => e.page === '/');
     if (!home || home.error) throw new Error('unreachable: fixture homepage must log cleanly');
-    // pass 14 grants `'self'` for the bodies it moved, on top of the chat grant
+    // the dedupe pass grants `'self'` for the bodies it moved, on top of the chat grant
     expect(home.csp?.split('; ')[0]).toBe("connect-src 'self' (chat mount)");
     for (const page of ABSENT) {
       expect(result.log.find((e) => e.page === page)?.csp ?? '', page).not.toContain('connect-src');
@@ -674,7 +683,7 @@ describe('write pass & mutation log', () => {
     const growth = home.deduped!.bytesIn! - home.bytesIn!;
     expect(growth).toBeGreaterThan(0);
     expect(growth).toBeLessThanOrEqual(INJECTED_BYTES + 300);
-    // …and pass 14 then takes the bodies back out of the page (ADR 0003)
+    // …and the dedupe pass then takes the bodies back out of the page (ADR 0003)
     expect(home.bytesOut).toBe(home.deduped!.bytesOut);
     expect(home.bytesOut!).toBeLessThan(home.deduped!.bytesIn!);
     // strip mutations: per-target removed-byte counts
@@ -704,7 +713,7 @@ describe('write pass & mutation log', () => {
   });
 });
 
-describe('pass 14: bodies ship as files (ADR 0003)', () => {
+describe('the dedupe pass: bodies ship as files (ADR 0003)', () => {
   const assetsIndex = () => JSON.parse(readFileSync(path.join(OUT, 'assets.json'), 'utf8')) as string[];
 
   it('names every body file after its own bytes, and writes them where the assets live', async () => {

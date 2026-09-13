@@ -2,6 +2,8 @@
 // marker, inline files, mount predicate, and CSP grant lives in the table the
 // build reads, so this file pins the table rather than the six hand-kept
 // call sites it replaced — including that a new layer is one record.
+//
+// SPDX-License-Identifier: CC0-1.0
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -66,7 +68,6 @@ describe('layer table', () => {
       parts: ['style'] as ('style' | 'script')[],
       css: null,
       runtime: null,
-      mounts: () => true,
       grants: [],
     };
     const e = entry();
@@ -82,11 +83,14 @@ describe('layer table', () => {
   });
 
   it('mounts only when the layer predicate says so', () => {
-    expect(layerNamed('chat').mounts({}, {})).toBe(false);
-    expect(layerNamed('chat').mounts({ chatLauncher: true }, {})).toBe(true);
-    expect(layerNamed('legibility').mounts({}, { page: '/a', legibilityPatches: {} })).toBe(false);
-    expect(layerNamed('legibility').mounts({}, { page: '/a', legibilityPatches: { '/a': '.x{}' } })).toBe(true);
-    expect(layerNamed('motion').mounts({}, {})).toBe(true);
+    // chat and legibility are the only conditional layers; an absent `mounts`
+    // means the layer always mounts, so the five unconditional records carry
+    // no constant-true predicate to keep in sync
+    expect(layerNamed('chat').mounts!({}, {})).toBe(false);
+    expect(layerNamed('chat').mounts!({ chatLauncher: true }, {})).toBe(true);
+    expect(layerNamed('legibility').mounts!({}, { page: '/a', legibilityPatches: {} })).toBe(false);
+    expect(layerNamed('legibility').mounts!({}, { page: '/a', legibilityPatches: { '/a': '.x{}' } })).toBe(true);
+    expect(layerNamed('motion').mounts).toBeUndefined();
   });
 
   it('inserts before </body>, or at EOF for a truncated capture', () => {
@@ -102,7 +106,7 @@ describe('layer table', () => {
     const out = grantLayer(html, e, layerNamed('chat'));
     expect(readCsp(out)?.value).toContain("connect-src 'self'");
     expect(e.csp).toBe("connect-src 'self' (chat mount)");
-    // pass 14's replace-not-append invariant, seen from the table: a second
+    // the dedupe pass's replace-not-append invariant, seen from the table: a second
     // grant adds nothing
     expect(grantLayer(out, e, layerNamed('chat'))).toBe(out);
     expect(e.csp).toBe("connect-src 'self' (chat mount)");

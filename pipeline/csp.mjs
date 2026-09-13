@@ -15,22 +15,26 @@
 //                      players stay blocked until their hosts are named there
 //                      (ADR 0002, enforced by the audit rather than by
 //                      construction).
-//   pass 14            widens `style-src` / `script-src` with `'self'` — a
+//   the dedupe pass    widens `style-src` / `script-src` with `'self'` — a
 //                      body that moves to /assets/<sha> is blocked until the
 //                      directive that governs it allows the origin (ADR 0003).
 //
 // The rule all three share, and the reason this is one module: **a directive is
 // replaced, never appended to.** A second `frame-src` (or `style-src`) would
 // intersect with the captured one and keep the resource blocked — the failure
-// looks exactly like the grant having never been made. One grant operation, so
-// a fourth caller cannot get that wrong; `test/csp.test.ts` pins the invariant
-// by granting twice and counting directives.
+// looks exactly like the grant having never been made. `grantSources` is the
+// only function that edits a policy value: the layer grants (chat) and the
+// embed pass both go through `applyGrant` here, and the dedupe pass calls
+// `grantSources` directly because it tracks per-kind grant status against an
+// offset-preserving edit list and owns that bookkeeping. `test/csp.test.ts`
+// pins the invariant by granting twice and counting directives.
 //
-// Measured on the frozen tree (ADR 0004), which is why the branches are known:
-// 1,181 served pages, 22 with no CSP meta at all (the append-a-warning path),
-// none with a content attribute missing, and no page with a duplicate directive
-// — every one of the six distinct policy values the tree carries ends in the
-// appended `connect-src 'self';`, and each names frame-src exactly once.
+// Measured on the frozen tree (ADR 0004): 1,181 served pages, none without a
+// CSP meta and none with a content attribute missing, and no page with a
+// duplicate directive — every one of the six distinct policy values the tree
+// carries ends in the appended `connect-src 'self';`, and each names frame-src
+// exactly once. The no-meta / no-content branches are defensive: the frozen
+// corpus never reaches them, but an unfrozen capture may.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { unquote } from './html.mjs';
@@ -56,7 +60,7 @@ export function readCsp(html) {
 /**
  * The meta tag with its `content` value replaced, keeping the captured quote
  * style. Callers that must express their edit in the *original* document's
- * offsets (pass 14 applies a whole list back-to-front) need the tag text.
+ * offsets (the dedupe pass applies a whole list back-to-front) need the tag text.
  * @param {{tag: string, raw: string|null}} read
  * @param {string} value
  * @returns {string}
@@ -84,8 +88,8 @@ export function writeCsp(html, read, value) {
  * The directive is found once and *replaced* with itself plus the sources it
  * does not already name, so a second call adds nothing and never produces a
  * second directive. When the directive is absent the behaviour is the caller's
- * choice: `append` (the default) writes one, seeded with `defaults`; pass 14
- * sets `append: false` because a page with no `style-src` is governed by
+ * choice: `append` (the default) writes one, seeded with `defaults`; the dedupe
+ * pass sets `append: false` because a page with no `style-src` is governed by
  * `default-src 'none'` and the caller keeps that kind inline instead of
  * shipping a stylesheet that can never load.
  *
@@ -107,4 +111,35 @@ export function grantSources(value, directive, sources, { defaults = sources, ap
   const added = sources.filter((s) => !found[0].includes(s));
   if (added.length === 0) return { value, existed: true, added: [] };
   return { value: value.replace(found[0], `${found[0].trimEnd()} ${added.join(' ')}`), existed: true, added };
+}
+
+/**
+ * Apply one grant to a document's captured policy and record it: read, warn if
+ * the page carries no policy, widen (replace, never append), write, and append
+ * the mutation-log note. This is the one grant operation the layer records and
+ * the embed pass share; the dedupe pass calls `grantSources` directly because
+ * its per-kind status and offset-preserving edit list are its own.
+ * @param {string} html
+ * @param {{warnings: string[], csp?: string}} entry
+ * @param {{directive: string, sources: string[], defaults?: string[], append?: boolean, note: string, missing: string, noContent: string}} grant
+ * @returns {string}
+ */
+export function applyGrant(html, entry, grant) {
+  const csp = readCsp(html);
+  if (csp === null) {
+    entry.warnings.push(grant.missing);
+    return html;
+  }
+  if (csp.value === null) {
+    entry.warnings.push(grant.noContent);
+    return html;
+  }
+  const granted = grantSources(csp.value, grant.directive, grant.sources, {
+    defaults: grant.defaults ?? grant.sources,
+    append: grant.append ?? true,
+  });
+  if (granted.value === csp.value) return html;
+  const note = `${grant.directive} ${grant.sources.join(' ')} (${grant.note})`;
+  entry.csp = entry.csp ? `${entry.csp}; ${note}` : note;
+  return writeCsp(html, csp, granted.value);
 }

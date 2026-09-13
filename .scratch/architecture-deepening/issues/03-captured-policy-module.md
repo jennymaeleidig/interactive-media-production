@@ -14,7 +14,7 @@ and the regex that finds it is copied into two modules.
 Create `pipeline/csp.mjs`: parse the meta, grant a source to a directive by
 **replacing** it (never appending: a second directive intersects and blocks),
 and return the new bytes plus the grant it recorded. The chat pass, the embed
-pass, and pass 14 all call it.
+pass, and the dedupe pass all call it.
 
 ## Acceptance criteria
 
@@ -30,12 +30,14 @@ pass, and pass 14 all call it.
 ## Comments
 
 Measured the frozen tree before writing the module, which settled which branches
-are live and how to word the invariant: 1,181 pages, **22 with no CSP meta at
-all** (that warning path is real, not defensive), none missing a `content`
-attribute, **no page with a duplicate directive**, and six distinct policy
-values that all end in the appended `connect-src 'self';` — so the captured
-policy carries no `connect-src` and every served `connect-src` is the chat
-mount's append.
+are live and how to word the invariant: 1,181 pages, **none without a CSP
+meta and none missing a `content` attribute** — so the `missing`/`noContent`
+warning branches are defensive, kept for an unfrozen capture but unreachable on
+this corpus (a recheck during the review follow-up found 0, where an earlier
+probe of the same tree had reported 22; the earlier number was wrong) — **no
+page with a duplicate directive**, and six distinct policy values that all end
+in the appended `connect-src 'self';` — so the captured policy carries no
+`connect-src` and every served `connect-src` is the chat mount's append.
 
 The one behavioural change, unreachable in the corpus and a strict improvement:
 the chat mount used to leave an *existing* `connect-src` untouched; it now

@@ -7,6 +7,8 @@
 // The JSON key names, nesting, and key order are the compatibility surface:
 // build-summary.json is read by regression/routes.mjs and the serving layer, so
 // project() reproduces the exact shape the hand-written literal had.
+//
+// SPDX-License-Identifier: CC0-1.0
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,6 +23,10 @@ import path from 'node:path';
  *  - `sum`    — add the value across entries (a missing slice is 0)
  *  - `count`  — entries where the value is positive/truthy
  *  - `absent` — the served entries minus the `count`
+ *
+ * A group that mixes the log with numbers only the filesystem carries (the two
+ * ADR groups) declares a `combine` that layers those totals over the folded
+ * slice, so the loop in `project` has no per-group-name case.
  *
  * Adding a metric is one row here; `project` needs no change (proven by
  * `test/summary.test.ts`).
@@ -46,12 +52,14 @@ export const SUMMARY_GROUPS = [
       { key: 'bytesIn', from: 'deduped.bytesIn', kind: 'sum' },
       { key: 'bytesOut', from: 'deduped.bytesOut', kind: 'sum' },
     ],
+    combine: (run, slice) => bodyTotals(run.assetDir, run.bodyFiles, slice),
   },
   {
     // ADR 0002 — `references` folds the log; `distinct`/`bytes` are the files
     // on disk, added by `assetTotals`.
     group: 'assets',
     metrics: [{ key: 'references', from: 'assets.references', kind: 'sum' }],
+    combine: (run, slice) => assetTotals(run.assetDir, run.assetNames, slice.references),
   },
   {
     group: 'embeds',
@@ -72,8 +80,10 @@ export const SUMMARY_GROUPS = [
 ];
 
 /**
- * One row of the metric table: a scalar group or a group of named fields.
- * @typedef {{group: string, scalar?: {from: string, kind: string}, metrics?: Array<{key: string, from: string, kind: string}>}} SummaryGroup
+ * One row of the metric table: a scalar group or a group of named fields,
+ * plus an optional `combine` that layers filesystem totals over the folded
+ * slice for a group the log alone cannot fill in.
+ * @typedef {{group: string, scalar?: {from: string, kind: string}, metrics?: Array<{key: string, from: string, kind: string}>, combine?: (run: any, slice: any) => any}} SummaryGroup
  */
 
 /**
@@ -88,15 +98,24 @@ function pick(obj, dotted) {
   return value;
 }
 
+/** The served entries with a positive value at `from` — `count`/`absent` share it. */
+const positive = (entries, from) => entries.filter((e) => (pick(e, from) ?? 0) > 0);
+
 /** How the entries fold for one metric kind. */
 const FOLDS = {
   sum: (entries, from) => entries.reduce((n, e) => n + (pick(e, from) ?? 0), 0),
-  count: (entries, from) => entries.filter((e) => (pick(e, from) ?? 0) > 0).length,
-  absent: (entries, from) => entries.length - entries.filter((e) => (pick(e, from) ?? 0) > 0).length,
+  count: (entries, from) => positive(entries, from).length,
+  absent: (entries, from) => entries.length - positive(entries, from).length,
 };
 
-/** Fold the log into the summary groups, in the table's order. */
-function projectGroups(servedEntries, groups) {
+/**
+ * Fold the log into the summary groups, in the table's order. The generic core
+ * `project` runs over `SUMMARY_GROUPS`; exported so a test can fold a table it
+ * extends without a test-only parameter on the production projection.
+ * @param {Array<object>} servedEntries
+ * @param {SummaryGroup[]} groups
+ */
+export function projectGroups(servedEntries, groups) {
   const out = {};
   for (const group of groups) {
     if (group.scalar) {
@@ -175,12 +194,11 @@ export function assetTotals(assetDir, names, references) {
  *
  * @param {Array<{page: string, error?: string}>} entries  The build's LogEntry[].
  * @param {{captureRun: string, requested: number, dropped: string[], redirects: {count: number, invalid: string[], dangling: string[]}, deadRoots: string[], authGated: string[], assetDir: string, assetNames: string[], bodyFiles: Set<string>}} run  The run-level facts the log cannot carry.
- * @param {SummaryGroup[]} [groups]  The metric table (overridable so a test can prove a new row flows through).
  * @returns {BuildSummary}
  */
-export function project(entries, run, groups = SUMMARY_GROUPS) {
+export function project(entries, run) {
   const servedEntries = entries.filter((e) => !e.error);
-  const projected = projectGroups(servedEntries, groups);
+  const projected = projectGroups(servedEntries, SUMMARY_GROUPS);
   const summary = {
     captureRun: run.captureRun,
     requested: run.requested,
@@ -195,11 +213,11 @@ export function project(entries, run, groups = SUMMARY_GROUPS) {
     deadRoots: run.deadRoots,
     authGated: run.authGated,
   };
-  for (const [group, slice] of Object.entries(projected)) {
-    // the two ADR groups mix log-folded numbers with the files on disk
-    if (group === 'bodies') summary[group] = bodyTotals(run.assetDir, run.bodyFiles, slice);
-    else if (group === 'assets') summary[group] = assetTotals(run.assetDir, run.assetNames, slice.references);
-    else summary[group] = slice;
+  for (const group of SUMMARY_GROUPS) {
+    const slice = projected[group.group];
+    // a group the log alone cannot fill in (the two ADR groups) layers its
+    // filesystem totals over the folded slice through its own `combine`
+    summary[group.group] = group.combine ? group.combine(run, slice) : slice;
   }
   return summary;
 }

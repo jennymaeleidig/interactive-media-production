@@ -23,7 +23,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { grantSources, readCsp, writeCsp } from './csp.mjs';
+import { applyGrant } from './csp.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,6 +37,8 @@ export const MARKER_RE = new RegExp(`${MARKER_ATTR}=`, 'i');
  * @typedef {object} LayerGrant
  * @property {string} directive  the CSP directive to widen (e.g. `connect-src`)
  * @property {string[]} sources  the sources to add
+ * @property {string[]} [defaults]  sources for an appended directive (default: `sources`)
+ * @property {boolean} [append]  append the directive when absent (default: true)
  * @property {string} note       the mutation-log note appended after the grant
  * @property {string} missing    warning when the page carries no CSP meta
  * @property {string} noContent  warning when the meta has no content attribute
@@ -48,7 +50,9 @@ export const MARKER_RE = new RegExp(`${MARKER_ATTR}=`, 'i');
  * @property {string|null} css     stylesheet file under pipeline/, or null
  * @property {string|null} runtime runtime file under pipeline/, or null
  * @property {boolean} [trim]    trim the css body (page-scoped patch CSS)
- * @property {(entry: any, ctx: any) => boolean} mounts  whether the layer mounts
+ * @property {(entry: any, ctx: any) => boolean} [mounts]  whether the layer
+ *   mounts; absent means always, and the pass that owns a conditional layer
+ *   gates on it (so a grant on a layer that does not mount is never made)
  * @property {LayerGrant[]} grants  the CSP the layer needs to function
  */
 
@@ -64,7 +68,6 @@ export const LAYERS = [
     parts: ['style', 'script'],
     css: 'motion.css',
     runtime: 'motion-runtime.js',
-    mounts: () => true,
     grants: [],
   },
   {
@@ -73,7 +76,6 @@ export const LAYERS = [
     parts: ['style', 'script'],
     css: 'interactions.css',
     runtime: 'interactions-runtime.js',
-    mounts: () => true,
     grants: [],
   },
   {
@@ -82,7 +84,6 @@ export const LAYERS = [
     parts: ['style', 'script'],
     css: 'nav.css',
     runtime: 'nav-runtime.js',
-    mounts: () => true,
     grants: [],
   },
   {
@@ -113,7 +114,6 @@ export const LAYERS = [
     parts: ['script'],
     css: null,
     runtime: 'story-hook.js',
-    mounts: () => true,
     grants: [],
   },
   {
@@ -133,7 +133,6 @@ export const LAYERS = [
     parts: ['style', 'script'],
     css: 'scroll.css',
     runtime: 'scroll-runtime.js',
-    mounts: () => true,
     grants: [],
   },
 ];
@@ -249,21 +248,6 @@ export function mountLayer(html, entry, layer, bodies) {
  * @returns {string}
  */
 export function grantLayer(html, entry, layer) {
-  for (const grant of layer.grants) {
-    const csp = readCsp(html);
-    if (csp === null) {
-      entry.warnings.push(grant.missing);
-      continue;
-    }
-    if (csp.value === null) {
-      entry.warnings.push(grant.noContent);
-      continue;
-    }
-    const granted = grantSources(csp.value, grant.directive, grant.sources);
-    if (granted.value === csp.value) continue;
-    const note = `${grant.directive} ${grant.sources.join(' ')} (${grant.note})`;
-    entry.csp = entry.csp ? `${entry.csp}; ${note}` : note;
-    html = writeCsp(html, csp, granted.value);
-  }
+  for (const grant of layer.grants) html = applyGrant(html, entry, grant);
   return html;
 }

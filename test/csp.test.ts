@@ -1,17 +1,17 @@
 // The captured policy and the grants the build makes to it: one grant
-// operation, and the invariant that a directive is replaced rather than
-// appended to. Pure, so it is pinned here rather than only through the site
-// build.
+// operation (`applyGrant`), and the invariant that a directive is replaced
+// rather than appended to. Pure, so it is pinned here rather than only through
+// the site build.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { grantSources, readCsp, writeCsp, writeCspTag } from '../pipeline/csp.mjs';
+import { applyGrant, grantSources, readCsp, writeCsp, writeCspTag } from '../pipeline/csp.mjs';
 
 // The captured value, verbatim from the capture run (test/fixtures).
 const CAPTURED = "default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;";
 
 // The value the served tree carries, verbatim from the frozen artifact: the
-// chat mount appended connect-src, and pass 14 widened style-src/script-src.
+// chat mount appended connect-src, and the dedupe pass widened style-src/script-src.
 const SERVED = "default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline' 'self'; media-src 'self' data:; script-src 'unsafe-inline' data: 'self'; object-src 'self' data:; frame-src 'self' data:; connect-src 'self';";
 
 const PAGE = (value: string) =>
@@ -31,7 +31,8 @@ describe('readCsp', () => {
   });
 
   it('returns null when the document carries no policy', () => {
-    // 22 of the frozen tree's 1,181 pages are in this state.
+    // defensive: none of the frozen tree's 1,181 pages is in this state, but an
+    // unfrozen capture may be.
     expect(readCsp('<html><head></head></html>')).toBeNull();
   });
 
@@ -87,7 +88,7 @@ describe('grantSources', () => {
   });
 
   it('leaves the policy untouched when appending is refused and the directive is absent', () => {
-    // pass 14's contract: a page with no style-src is governed by
+    // the dedupe pass's contract: a page with no style-src is governed by
     // `default-src 'none'`, so the caller keeps that body inline instead.
     const out = grantSources(CAPTURED, 'worker-src', ["'self'"], { append: false });
     expect(out.existed).toBe(false);
@@ -117,14 +118,80 @@ describe('grantSources', () => {
   });
 });
 
+describe('applyGrant', () => {
+  const spec = (over: Record<string, unknown> = {}) => ({
+    directive: 'connect-src',
+    sources: ["'self'"],
+    note: 'chat mount',
+    missing: 'chat: no CSP meta found — the widget POST may be blocked',
+    noContent: 'chat: CSP meta has no content attribute — the widget POST may be blocked',
+    ...over,
+  });
+  const entry = () => ({ warnings: [] as string[], csp: undefined as string | undefined });
+
+  it('widens the policy, writes it, and records the note once', () => {
+    const e = entry();
+    const out = applyGrant(PAGE(CAPTURED), e, spec());
+    expect(readCsp(out)?.value).toBe(`${CAPTURED} connect-src 'self';`);
+    expect(e.csp).toBe("connect-src 'self' (chat mount)");
+    expect(e.warnings).toEqual([]);
+  });
+
+  it('is idempotent — a second grant changes nothing and logs nothing more', () => {
+    const e = entry();
+    const once = applyGrant(PAGE(CAPTURED), e, spec());
+    const twice = applyGrant(once, e, spec());
+    expect(twice).toBe(once);
+    expect(e.csp).toBe("connect-src 'self' (chat mount)");
+  });
+
+  it('warns and leaves the policy when the page carries no meta', () => {
+    const e = entry();
+    const html = '<html><body></body></html>';
+    expect(applyGrant(html, e, spec())).toBe(html);
+    expect(e.warnings).toEqual(['chat: no CSP meta found — the widget POST may be blocked']);
+    expect(e.csp).toBeUndefined();
+  });
+
+  it('warns and leaves the policy when the meta has no content attribute', () => {
+    const e = entry();
+    const html = '<meta http-equiv=content-security-policy>';
+    expect(applyGrant(html, e, spec())).toBe(html);
+    expect(e.warnings).toEqual(['chat: CSP meta has no content attribute — the widget POST may be blocked']);
+  });
+
+  it('seeds an appended directive with defaults, and can refuse to append', () => {
+    const e = entry();
+    const out = applyGrant(PAGE("default-src 'none';"), e, spec({
+      directive: 'frame-src',
+      note: 'live embeds',
+      defaults: ["'self'", 'data:'],
+    }));
+    expect(readCsp(out)?.value).toBe("default-src 'none'; frame-src 'self' data:;");
+    expect(e.csp).toBe("frame-src 'self' (live embeds)");
+
+    const refused = entry();
+    const page = PAGE(CAPTURED);
+    expect(applyGrant(page, refused, spec({ directive: 'worker-src', append: false }))).toBe(page);
+    expect(refused.csp).toBeUndefined();
+  });
+
+  it('grants the directive in place when it is already present', () => {
+    const e = entry();
+    const out = applyGrant(PAGE(CAPTURED), e, spec({ directive: 'frame-src', sources: ['https://fast.wistia.net'], note: 'live embeds' }));
+    expect(readCsp(out)?.value).toBe(CAPTURED.replace("frame-src 'self' data:;", "frame-src 'self' data: https://fast.wistia.net;"));
+    expect(e.csp).toBe("frame-src https://fast.wistia.net (live embeds)");
+  });
+});
+
 describe('the three grants together', () => {
   it('turns the captured policy into the served one, byte for byte', () => {
     // What the build does to every page that carries both a chat launcher and
     // a body above the inline threshold.
     let value = CAPTURED;
     value = grantSources(value, 'connect-src', ["'self'"]).value; // the chat mount
-    value = grantSources(value, 'style-src', ["'self'"], { append: false }).value; // pass 14
-    value = grantSources(value, 'script-src', ["'self'"], { append: false }).value; // pass 14
+    value = grantSources(value, 'style-src', ["'self'"], { append: false }).value; // the dedupe pass
+    value = grantSources(value, 'script-src', ["'self'"], { append: false }).value; // the dedupe pass
     expect(value).toBe(SERVED);
   });
 

@@ -14,7 +14,9 @@ two pipeline modules and re-derived by a third: `pipeline/build.mjs:182–196`
 
 Create `pipeline/audit.mjs` whose interface is `audit(pageHtml) → findings`,
 with the media allow-list as its only configuration. The build writes findings;
-the serving check folds them. ADR 0002 deliberately enforces the media exception
+the serving check recomputes them from the served bytes it already has (it no
+longer re-derives "clean" from the build log's key names — see Comments). ADR
+0002 deliberately enforces the media exception
 "by the audit rather than by construction" — the allow-list stays configuration
 the audit reads, and the rewrite does not gain the rule.
 

@@ -34,7 +34,7 @@ import { embedPass, stripHiddenVidzflow, stripOriginalUrls } from './embeds.mjs'
 import { audit, isInertScript, scriptCensus } from './audit.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { addAttr, attrValue, contentSegments, editAttr, hasAttr, openTags, replaceTags } from './html.mjs';
-import { grantSources, readCsp, writeCsp } from './csp.mjs';
+import { applyGrant } from './csp.mjs';
 import { grantLayer, layerNamed, mountLayer, readLayerBodies } from './layers.mjs';
 import { PASSES } from './passes.mjs';
 import { assetTotals, bodyTotals, project, render } from './summary.mjs';
@@ -488,30 +488,6 @@ function motionPass(html, entry, bodies) {
   return mountLayer(html, entry, layerNamed('motion'), bodies);
 }
 
-// ---- interactions layer (ticket 05) -----------------------------------------
-
-/**
- * Inject the delegated interaction runtime + its suppress-only CSS inline,
- * verbatim, after the motion layer and before the story-hook seam. Pure
- * injection: the layer reads the captured DOM it finds, so unlike the motion
- * pass this one makes no per-page mutations to log.
- */
-function interactionsPass(html, entry, bodies) {
-  return mountLayer(html, entry, layerNamed('interactions'), bodies);
-}
-
-// ---- nav layer (ticket 14) ---------------------------------------------------
-
-/**
- * Inject the shared header's behavior runtime + its CSS half inline, verbatim
- * (ticket 14). Pure injection: the restored live CSS keys every state on the
- * classes the runtime moves, so unlike the motion pass this one makes no
- * per-page DOM mutation to log.
- */
-function navPass(html, entry, bodies) {
-  return mountLayer(html, entry, layerNamed('nav'), bodies);
-}
-
 // ---- chat mount (ticket 10) ------------------------------------------------
 
 /**
@@ -537,21 +513,15 @@ function navPass(html, entry, bodies) {
  * @returns {string}
  */
 function grantFrameSrc(html, entry, hosts) {
-  const csp = readCsp(html);
-  if (csp === null) {
-    entry.warnings.push('embeds: no CSP meta found — the live players will be blocked');
-    return html;
-  }
-  if (csp.value === null) {
-    entry.warnings.push('embeds: CSP meta has no content attribute — the live players will be blocked');
-    return html;
-  }
   const sources = hosts.map((h) => `https://${h}`);
-  const granted = grantSources(csp.value, 'frame-src', sources, { defaults: ["'self'", 'data:', ...sources] });
-  if (granted.value === csp.value) return html;
-  const grant = `frame-src ${sources.join(' ')} (live embeds)`;
-  entry.csp = entry.csp ? `${entry.csp}; ${grant}` : grant;
-  return writeCsp(html, csp, granted.value);
+  return applyGrant(html, entry, {
+    directive: 'frame-src',
+    sources,
+    defaults: ["'self'", 'data:', ...sources],
+    note: 'live embeds',
+    missing: 'embeds: no CSP meta found — the live players will be blocked',
+    noContent: 'embeds: CSP meta has no content attribute — the live players will be blocked',
+  });
 }
 
 /**
@@ -568,18 +538,6 @@ function chatPass(html, entry, bodies) {
   if (!layer.mounts(entry)) return html;
   html = grantLayer(html, entry, layer);
   return mountLayer(html, entry, layer, bodies);
-}
-
-// ---- story-hook seam (ticket 03) --------------------------------------------
-
-/**
- * Inject the story-hook runtime inline, verbatim, before </body> (or at EOF
- * when the capture is truncated — the write pass appends the closing tags
- * after it). No captured byte carries `flockParody`, so the only occurrences
- * in served bytes are the runtime's own definition.
- */
-function storyHookPass(html, entry, bodies) {
-  return mountLayer(html, entry, layerNamed('story-hook'), bodies);
 }
 
 /**
@@ -859,15 +817,31 @@ const PASS_IMPL = {
   originalUrls: (html, ctx) => originalUrlsPass(html, ctx.entry),
   assets: (html, ctx) => assetsPass(html, ctx.entry, ctx.assetDir, ctx.writtenAssets),
   motion: (html, ctx) => motionPass(html, ctx.entry, ctx.bodies.get('motion')),
-  interactions: (html, ctx) => interactionsPass(html, ctx.entry, ctx.bodies.get('interactions')),
-  nav: (html, ctx) => navPass(html, ctx.entry, ctx.bodies.get('nav')),
+  interactions: (html, ctx) => mountLayer(html, ctx.entry, layerNamed('interactions'), ctx.bodies.get('interactions')),
+  nav: (html, ctx) => mountLayer(html, ctx.entry, layerNamed('nav'), ctx.bodies.get('nav')),
   chat: (html, ctx) => chatPass(html, ctx.entry, ctx.bodies.get('chat')),
-  storyHook: (html, ctx) => storyHookPass(html, ctx.entry, ctx.bodies.get('story-hook')),
+  storyHook: (html, ctx) => mountLayer(html, ctx.entry, layerNamed('story-hook'), ctx.bodies.get('story-hook')),
   legibility: (html, ctx) => legibilityPass(html, ctx.entry, ctx.page, ctx.legibilityPatches),
   scroll: (html, ctx) => scrollPass(html, ctx.entry, ctx.bodies.get('scroll')),
   write: (html, ctx) => writePass(html, ctx.entry),
   dedupe: (html, ctx) => dedupePass(html, ctx.entry, ctx.assetDir, ctx.writtenAssets, ctx.writtenBodies),
 };
+
+// The two tables must agree: pipeline/passes.mjs owns the order and numbering,
+// PASS_IMPL the implementations. A name in one and not the other is a build
+// that silently skips a pass. Checked at import, and pinned by
+// test/pipeline.test.ts.
+export const PASS_IMPL_NAMES = Object.keys(PASS_IMPL);
+for (const pass of PASSES) {
+  if (typeof PASS_IMPL[pass.name] !== 'function') {
+    throw new Error(`pipeline/passes.mjs names the pass "${pass.name}" but build.mjs implements none`);
+  }
+}
+for (const name of PASS_IMPL_NAMES) {
+  if (!PASSES.some((pass) => pass.name === name)) {
+    throw new Error(`build.mjs implements the pass "${name}" but pipeline/passes.mjs does not list it`);
+  }
+}
 
 // ---- pipeline ----------------------------------------------------------------
 

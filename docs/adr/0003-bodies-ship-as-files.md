@@ -10,7 +10,7 @@ HTML was the same stylesheets repeated 1,181 times, and the site measured
 not a fidelity problem — it is the same bytes — it is a size problem, and the
 only thing that makes the piece publishable.
 
-The build therefore moves each body into one content-addressed file. Pass 14
+The build therefore moves each body into one content-addressed file. The dedupe pass
 (`pipeline/dedupe.mjs`) writes every `<style>`/`<script>` body of at least
 `KEEP_INLINE_BYTES` (1,024) to `/assets/<sha256[:16]>.css|.js` — the same
 content-addressing, the same `assets/` directory, the same `assets.json`
@@ -36,7 +36,7 @@ The one thing the pass must touch outside the bodies is the page's own policy.
 Every captured page carries a `content-security-policy` meta of
 `default-src 'none'` with **neither `style-src` nor `script-src` granting
 `'self'`**, so a `<link href=/assets/x.css>` or `<script src=/assets/x.js>` is
-refused until that directive says so. Pass 14 adds `'self'` to the two
+refused until that directive says so. The dedupe pass adds `'self'` to the two
 directives **by replacing each one**, exactly as the embed pass widens
 `frame-src`: a second `style-src` would intersect with the captured one and keep
 the file blocked. If there is no directive to widen (no meta, or no such

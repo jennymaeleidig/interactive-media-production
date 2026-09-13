@@ -22,7 +22,9 @@
 // page bytes stay identical, so assets need the same guarantee the pages get.
 //
 // The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
-// `pageCandidates`, `byteMismatch` — are unit-tested in `test/routes.test.ts`.
+// `byteMismatch`, `formatRouteCounts` — are unit-tested in `test/routes.test.ts`;
+// the served-tree path rules they read live in `pipeline/served-tree.mjs`,
+// unit-tested in `test/served-tree.test.ts`.
 // The check itself is environmental (it needs the built app and the served
 // tree), so it is not a test-suite member: the suite must stay green on a
 // fresh clone.

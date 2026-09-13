@@ -2,6 +2,8 @@
 // compatibility surface build-summary.json is read through — the exact top-level
 // and group key order — and proves the acceptance claim that a new whole-site
 // metric is one row in the table, not a new reduce in build.mjs.
+//
+// SPDX-License-Identifier: CC0-1.0
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +14,7 @@ import {
   bodyTotals,
   bytesOnDisk,
   project,
+  projectGroups,
   render,
 } from '../pipeline/summary.mjs';
 
@@ -124,14 +127,16 @@ describe('summary projection', () => {
       ...SUMMARY_GROUPS,
       { group: 'custom', metrics: [{ key: 'heroes', from: 'embeds.live', kind: 'sum' }] },
     ];
-    const summary = project(ENTRIES, run, extended as never) as unknown as {
-      custom: { heroes: number };
-      embeds: { live: number };
-    };
+    // the generic fold core takes any table; `project` itself is fixed to
+    // SUMMARY_GROUPS, so no test-only parameter leaks into production
+    const slices = projectGroups(
+      ENTRIES.filter((e) => !e.error) as never,
+      extended as never,
+    ) as unknown as { custom: { heroes: number }; embeds: { live: number } };
     // the new row folds the existing slice with no code change...
-    expect(summary.custom.heroes).toBe(2);
+    expect(slices.custom.heroes).toBe(2);
     // ...and the declared groups are untouched
-    expect(summary.embeds.live).toBe(2);
+    expect(slices.embeds.live).toBe(2);
   });
 });
 

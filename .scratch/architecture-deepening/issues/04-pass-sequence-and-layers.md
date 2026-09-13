@@ -43,8 +43,12 @@ Two new plain-ESM modules, following the `html.mjs`/`csp.mjs` precedent:
   `build.mjs` keyed by pass name that holds the implementations (they need the
   build's own helpers and per-page state). The three competing sequences are
   gone: the file header's pass list is now a pointer to the table, the section
-  banners carry no numbers, and the two "pass 14" references in `dedupeTree`
-  now say "the dedupe pass".
+  banners carry no numbers, and `build.mjs` checks at import that `PASS_IMPL`
+  and `PASSES` name the same passes. (This ticket fixed the two `pass 14`
+  references inside `dedupeTree`; a review follow-up then moved the rest of the
+  tree — `CODING_STANDARDS.md`, the pipeline comments, the tests, ADR 0003, the
+  README — onto "the dedupe pass" too, so no number outside `passes.mjs` can
+  drift again.)
 - `pipeline/layers.mjs` — one record per injected layer: `name` (the marker),
   `label` (the mutation-log line), `parts`, `css`/`runtime` files, `mounts`, and
   `grants`. `injectBeforeClose`/`layerTag`/`mountLayer`/`grantLayer` take the

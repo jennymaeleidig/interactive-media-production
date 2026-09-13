@@ -19,16 +19,16 @@ served page (fetch, XHR, WebSocket, remote `src`, beacon) violates the piece.
 Injected runtimes (motion, story-hook, chat) are inline, DOM-only, and must
 degrade to the captured end-state with JavaScript disabled. The Captures'
 own CSP (`default-src 'none'`, no `connect-src`) refuses even the chat's
-same-origin POST, and the policy is edited in exactly one place —
-`pipeline/csp.mjs`, whose `grantSources` **replaces** a directive rather than
+same-origin POST, and the policy is edited through exactly one primitive —
+`pipeline/csp.mjs`'s `grantSources`, which **replaces** a directive rather than
 appending a second one (two directives intersect and the resource stays
 blocked, which looks exactly like the grant never having been made). Three
-passes make a grant, each logged per page: the chat mount appends exactly
-`connect-src 'self'` on launcher pages, the embed pass widens `frame-src` by
-the hosts it used (ADR 0002), and pass 14 widens `style-src`/`script-src` by
-`'self'` (ADR 0003). No grant may reach further: `'self'` is the Recreation
-origin, and the frame hosts are the audit's allow-list, so nothing can leave
-the machine.
+call sites make a grant, each logged per page: the chat mount (through the
+layer table's `applyGrant`) appends exactly `connect-src 'self'` on launcher
+pages, the embed pass widens `frame-src` by the hosts it used (ADR 0002), and
+the dedupe pass widens `style-src`/`script-src` by `'self'` (ADR 0003). No
+grant may reach further: `'self'` is the Recreation origin, and the frame hosts
+are the audit's allow-list, so nothing can leave the machine.
 
 Page assets are local, never remote. A Capture inlines every image, font, and
 sound as a `data:` URI, and the build extracts each one to a content-addressed
@@ -39,7 +39,7 @@ runs before the injection passes, because the injected runtimes are inlined
 verbatim and one of them carries `data:` URIs of its own.
 
 **Styles and scripts ship as files too** (ADR 0003). Extraction moves a page's
-`data:` URIs out; pass 14 (`pipeline/dedupe.mjs`) moves its *bodies* out — every
+`data:` URIs out; the dedupe pass (`pipeline/dedupe.mjs`) moves its *bodies* out — every
 `<style>`/`<script>` body of at least 1 KB becomes one content-addressed
 `/assets/<sha16>.css|.js` with a marked `<link>`/`<script src>` left in the
 position the body held, because a Capture inlines the same stylesheets on all
@@ -102,7 +102,8 @@ and the log's key names are not an interface between them.
   preconditions that make the order load-bearing (`after` / `before` with a
   `why`); `pipeline/layers.mjs` holds one record per layer — its
   `data-flock-parody` marker, the label the mutation log carries, its inline
-  files, the predicate that mounts it, and the CSP grant it needs. The build
+  files, the predicate that mounts it when the layer is conditional, and the
+  CSP grant it needs. The build
   iterates the pass table (`PASS_IMPL`, keyed by pass name); the
   injected-bytes accounting, the audit's marker census, the six runtime seam
   harnesses and the "mounted script layers" assertion all read the layer
@@ -301,8 +302,11 @@ and the log's key names are not an interface between them.
   workflow — the Recreation is a frozen snapshot (ADR 0004) — so no suite member
   reaches the live site. Per this header's rule, later efforts extend this list
   here rather than adding a seam silently.
-  No tests against pipeline internals or module structure;
-  a test that breaks in a refactor without a behavior change is wrong.
+  The named pure-module seams above are the one exception to "no tests against
+  pipeline internals": they pin a module's declared contract — its table, its
+  invariant, its fold — which for these data modules *is* the behavior they own.
+  Apart from them, no test targets incidental pipeline internals or module
+  structure, and a test that breaks in a behavior-preserving refactor is wrong.
 - Tests run against **git-tracked fixtures** (`test/fixtures/`) — miniature
   capture runs mirroring the real corpus (unquoted attrs, machinery residue,
   truncated tails). The real capture run is never a test dependency: the
@@ -370,7 +374,7 @@ dev/build for everyone:
 4. If the pipeline or served bytes changed: `npm run pipeline`, spot-check the
    mutation log and strip audit, `npm run build`, then `npm run routes` for the
    full-scale serving check (route classes + byte-identity). With no capture run
-   to rebuild from, `npm run dedupe` applies pass 14 to the existing `served/`
+   to rebuild from, `npm run dedupe` applies the dedupe pass to the existing `served/`
    tree in place and updates its manifests — the same pass the build runs —
    so `npm run routes` still measures what a visitor gets (ADR 0003).
 5. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to

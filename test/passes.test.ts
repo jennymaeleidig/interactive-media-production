@@ -2,6 +2,8 @@
 // named preconditions, replacing the three hand-kept sequences — the file
 // header's list, the section banners (scroll's banner sat before the embed
 // pass's), and the runPipeline comments — that had already drifted apart.
+//
+// SPDX-License-Identifier: CC0-1.0
 import { describe, it, expect } from 'vitest';
 import { PASSES, PASS_NAMES, passNamed } from '../pipeline/passes.mjs';
 
