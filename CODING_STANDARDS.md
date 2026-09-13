@@ -108,6 +108,13 @@ and the log's key names are not an interface between them.
   harnesses and the "mounted script layers" assertion all read the layer
   table, so adding a layer is one record. Pinned at `test/passes.test.ts` and
   `test/layers.test.ts`.
+- The **build summary** is the mutation log's projection, declared once
+  (`pipeline/summary.mjs`): the `SUMMARY_GROUPS` metric table says how each
+  whole-site number folds the per-page log, and `project` / `render` produce the
+  `build-summary.json` shape and the CLI lines. `runPipeline`, `--dedupe-tree`,
+  and the CLI all read it, so a new metric is one table row. The key names and
+  their order are the compatibility surface `regression/routes.mjs` reads.
+  Pinned at `test/summary.test.ts`.
 - The serving check (`regression/routes.mjs`, one command `npm run routes`) is
   plain Node ESM + JSDoc and **environmental**: it starts the production
   server and measures it over HTTP. Its pure cores — `routeExpectations`,
@@ -273,7 +280,10 @@ and the log's key names are not an interface between them.
   before assets, assets before every injection, dedupe last) and the layer
   table (`test/layers.test.ts` — `pipeline/layers.mjs`: one marker/files/
   predicate/grant per layer, the one mount operation, the record-driven grant,
-  and a synthetic seventh record that mounts and logs like the rest). All are
+  and a synthetic seventh record that mounts and logs like the rest) and the
+  summary projection (`test/summary.test.ts` — `pipeline/summary.mjs`: the
+  metric-table fold, the frozen key order of `build-summary.json`, and the proof
+  that a new metric is one row). All are
   pure HTML-in/HTML-out cores the build calls; none reaches over HTTP, and
   the built result of each is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection

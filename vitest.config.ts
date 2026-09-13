@@ -125,6 +125,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'summary',
+          include: ['test/summary.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'dedupe',
           include: ['test/dedupe.test.ts'],
         },

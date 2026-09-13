@@ -37,6 +37,7 @@ import { addAttr, attrValue, contentSegments, editAttr, hasAttr, openTags, repla
 import { grantSources, readCsp, writeCsp } from './csp.mjs';
 import { grantLayer, layerNamed, mountLayer, readLayerBodies } from './layers.mjs';
 import { PASSES } from './passes.mjs';
+import { assetTotals, bodyTotals, project, render } from './summary.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -896,21 +897,9 @@ const PASS_IMPL = {
  */
 
 /**
- * Build-level summary (ticket 07): the whole-site counts and the route classes
- * the serving layer answers beside the mirrored tree.
- * @typedef {Object} BuildSummary
- * @property {string} captureRun  Capture run the build read, relative to the repo root.
- * @property {number} requested  Pages the caller listed, before dropping.
- * @property {number} served  Pages written (requested − dropped − errors).
- * @property {string[]} dropped  Scaffold/test pages dropped from serving (those the request listed).
- * @property {string[]} errors  Requested pages that failed to build (missing capture, …).
- * @property {{count: number, invalid: string[], dangling: string[]}} redirects  Legacy stubs → local targets, plus warnings.
- * @property {string[]} deadRoots  Dead collection roots (404, as the live site).
- * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
- * @property {{mounted: number, absent: number}} chat  The chat-mount census over served pages (ticket 10): how many Captures mounted the launcher, how many did not.
- * @property {{references: number, distinct: number, bytes: number}} assets  Inlined data URIs extracted site-wide (ADR 0002): references rewritten, distinct files written, decoded bytes.
- * @property {{live: number, pages: number, srcdoc: number, element: number, component: number, frame: number, popover: number, dead: number, unreachable: number}} embeds  Live media embeds site-wide (ADR 0002): player frames made live, pages carrying at least one, the shape each replaced, slots kept as captured (popover, dead upstream), and the medias a page's JSON-LD named without a slot rewrite.
- * @property {number} originalUrls  `data-sf-original-*` attributes the build dropped from served bytes (ticket 12).
+ * The build summary (`BuildSummary`) and its metric table live in
+ * pipeline/summary.mjs — the mutation log owns its projection, and the build,
+ * `--dedupe-tree`, and the CLI all read that one definition.
  */
 
 /**
@@ -923,7 +912,7 @@ const PASS_IMPL = {
  * and links). The CLI passes pipeline/config.mjs DROPPED_PAGES.
  *
  * @param {{runDir: string, pages: string[], outDir: string, dropPages?: string[], deadVideoIds?: string[], legibilityPatches?: Record<string, string>}} opts
- * @returns {Promise<{ log: LogEntry[], summary: BuildSummary }>}
+ * @returns {Promise<{ log: LogEntry[], summary: import('./summary.mjs').BuildSummary }>}
  */
 export async function runPipeline(opts) {
   const { runDir, pages, outDir, dropPages = [], deadVideoIds = DEAD_VIDEO_IDS, legibilityPatches = LEGIBILITY_PATCHES } = opts;
@@ -979,9 +968,6 @@ export async function runPipeline(opts) {
   const dangling = Object.entries(redirects)
     .filter(([, target]) => !servedSet.has(target) && !(target in redirects))
     .map(([p, target]) => `${p} → ${target}`);
-  const errors = log.filter((e) => e.error).map((e) => e.page);
-  const servedEntries = log.filter((e) => !e.error);
-  const chatMounted = servedEntries.filter((e) => e.chatLauncher).length;
   // The extracted-asset manifest (ADR 0002): exactly what THIS build wrote, so
   // the serving check walks the references the build resolved rather than
   // whatever happens to sit in the directory. A referenced-but-unwritten asset
@@ -999,50 +985,20 @@ export async function runPipeline(opts) {
   // when empty so the route answers cleanly on every build.
   fs.writeFileSync(path.join(outDir, 'redirects.json'), JSON.stringify(redirects, null, 2));
 
-  /** @type {BuildSummary} */
-  const summary = {
+  // The summary is the mutation log's projection (pipeline/summary.mjs): the
+  // metric table lives there, so the build, `--dedupe-tree`, and the CLI read
+  // one definition rather than three copies of the same accounting.
+  const summary = project(log, {
     captureRun: path.relative(ROOT, runDir),
     requested: pages.length,
-    served: served.length,
-    // the dropped pages among the requested list — the count identity is
-    // served + dropped + errors === requested. (Pages the config drops that a
-    // scoped subset build never requested are absent from the tree too; the
-    // route check asserts every configured drop 404s.)
     dropped: pages.filter((p) => dropSet.has(p)),
-    errors,
     redirects: { count: Object.keys(redirects).length, invalid: uncaptured.invalidRedirects, dangling },
     deadRoots: uncaptured.dead,
     authGated: uncaptured.authGated,
-    chat: { mounted: chatMounted, absent: servedEntries.length - chatMounted },
-    originalUrls: servedEntries.reduce((n, e) => n + (e.originalUrls ?? 0), 0),
-    bodies: {
-      styles: servedEntries.reduce((n, e) => n + (e.deduped?.style ?? 0), 0),
-      scripts: servedEntries.reduce((n, e) => n + (e.deduped?.script ?? 0), 0),
-      kept: servedEntries.reduce((n, e) => n + (e.deduped?.kept ?? 0), 0),
-      files: writtenBodies.size,
-      bytes: [...writtenBodies].reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
-      bytesIn: servedEntries.reduce((n, e) => n + (e.deduped?.bytesIn ?? 0), 0),
-      bytesOut: servedEntries.reduce((n, e) => n + (e.deduped?.bytesOut ?? 0), 0),
-    },
-    assets: {
-      references: servedEntries.reduce((n, e) => n + (e.assets?.references ?? 0), 0),
-      distinct: assetNames.length,
-      bytes: assetNames.reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
-    },
-    embeds: {
-      live: servedEntries.reduce((n, e) => n + (e.embeds?.live ?? 0), 0),
-      pages: servedEntries.filter((e) => (e.embeds?.live ?? 0) > 0).length,
-      srcdoc: servedEntries.reduce((n, e) => n + (e.embeds?.srcdoc ?? 0), 0),
-      element: servedEntries.reduce((n, e) => n + (e.embeds?.element ?? 0), 0),
-      component: servedEntries.reduce((n, e) => n + (e.embeds?.component ?? 0), 0),
-      frame: servedEntries.reduce((n, e) => n + (e.embeds?.frame ?? 0), 0),
-      popover: servedEntries.reduce((n, e) => n + (e.embeds?.popover ?? 0), 0),
-      dead: servedEntries.reduce((n, e) => n + (e.embeds?.dead ?? 0), 0),
-      youtube: servedEntries.reduce((n, e) => n + (e.embeds?.youtube ?? 0), 0),
-      vidzflow: servedEntries.reduce((n, e) => n + (e.embeds?.vidzflow ?? 0), 0),
-      unreachable: servedEntries.reduce((n, e) => n + (e.embeds?.unreachable ?? 0), 0),
-    },
-  };
+    assetDir,
+    assetNames,
+    bodyFiles: writtenBodies,
+  });
   fs.writeFileSync(path.join(outDir, 'build-summary.json'), JSON.stringify(summary, null, 2));
   return { log, summary };
 }
@@ -1168,20 +1124,16 @@ export function dedupeTree(outDir, { dryRun = false } = {}) {
   fs.writeFileSync(assetsFile, JSON.stringify(assetNames, null, 2));
   if (log !== null) fs.writeFileSync(logFile, JSON.stringify(log, null, 2));
   if (summary !== null) {
-    summary.assets = {
-      ...summary.assets,
-      distinct: assetNames.length,
-      bytes: assetNames.reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
-    };
-    summary.bodies = {
+    // The same projection the build uses (pipeline/summary.mjs): tree mode may
+    // not keep its own copy of the summary's shape.
+    summary.assets = assetTotals(assetDir, assetNames, summary.assets.references);
+    summary.bodies = bodyTotals(assetDir, written, {
       styles: externalized.style,
       scripts: externalized.script,
       kept,
-      files: written.size,
-      bytes: [...written].reduce((n, f) => n + fs.statSync(path.join(assetDir, f)).size, 0),
       bytesIn,
       bytesOut,
-    };
+    });
     fs.writeFileSync(summaryFile, JSON.stringify(summary, null, 2));
   }
   return { pages: files.length, pagesChanged, files: written.size, externalized, kept, bytesIn, bytesOut, blocked: [...blocked] };
@@ -1206,38 +1158,7 @@ function summarize(log, summary) {
     );
   }
   console.log(`\n${log.length} page(s) processed`);
-  const dropped = summary.dropped.length;
-  console.log(
-    `build summary: ${summary.served} served + ${dropped} dropped = ${summary.requested} requested`
-    + (summary.errors.length > 0 ? ` (${summary.errors.length} error(s): ${summary.errors.join(', ')})` : '')
-  );
-  console.log(
-    `route classes: ${summary.redirects.count} redirect(s) → 301, ${summary.deadRoots.length} dead root(s) 404, `
-    + `${summary.authGated.length} auth-gated 404`
-  );
-  console.log(`chat census: ${summary.chat.mounted} page(s) mounted the launcher, ${summary.chat.absent} did not`);
-  console.log(
-    `embeds: ${summary.embeds.live} live player frame(s) on ${summary.embeds.pages} page(s) `
-    + `(${summary.embeds.srcdoc} srcdoc, ${summary.embeds.element} chrome incl. ${summary.embeds.popover} popover, `
-    + `${summary.embeds.component} web component, ${summary.embeds.frame} re-pointed from the Capture's own URL) · `
-    + `${summary.embeds.dead} dead-upstream kept as captured · `
-    + `${summary.embeds.youtube} YouTube panel(s) armed on click · `
-    + `${summary.embeds.vidzflow} hidden Vidzflow document(s) stripped · `
-    + `${summary.embeds.unreachable} media(s) named in JSON-LD without a slot rewrite`
-  );
-  console.log(
-    `capture url bookkeeping: ${summary.originalUrls} data-sf-original-* attribute(s) dropped from served bytes`
-  );
-  console.log(
-    `assets: ${summary.assets.references} inlined reference(s) → ${summary.assets.distinct} content-addressed file(s), `
-    + `${Math.round(summary.assets.bytes / 1e6)}MB decoded`
-  );
-  console.log(
-    `bodies: ${summary.bodies.styles} style + ${summary.bodies.scripts} script body(ies) → ${summary.bodies.files} file(s), `
-    + `${Math.round(summary.bodies.bytes / 1e6)}MB (${summary.bodies.kept} kept inline); `
-    + `html ${(summary.bodies.bytesIn / 1e6).toFixed(1)}MB → ${(summary.bodies.bytesOut / 1e6).toFixed(1)}MB`
-  );
-  for (const w of [...summary.redirects.invalid, ...summary.redirects.dangling]) console.log(`⚠ redirect: ${w}`);
+  for (const line of render(summary)) console.log(line);
 }
 
 // ---- CLI ----------------------------------------------------------------------
