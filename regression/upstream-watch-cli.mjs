@@ -1,34 +1,42 @@
-// The upstream watch's network edge (ticket 01): fetch the sitemap and homepage,
-// probe every path in the watched universe once, hand the bytes to the pure core,
-// and print what it decides. This file decides nothing itself — it adds only the
-// network and the process exit code.
+// The upstream watch's network edge (tickets 01 and 02): fetch the sitemap and
+// homepage, probe every path in the watched universe once, hand the bytes and
+// the previous baseline to the pure cores, print what they decide, and record
+// the baseline when the run is allowed to. This file decides nothing itself —
+// it adds only the network, the filesystem, and the process exit code.
 //
-// It is deliberately outside the test suite: the suite must stay green on a fresh
-// clone with no network, so the core is pinned by fixtures and this edge is run
-// by hand (`npm run upstream`). Its entire filesystem surface is the single
-// `readFileSync` named import below — it cannot write to `served/` or any tree
-// record because it has no write function in scope. The baseline is the frozen
-// Capture list; there is no flag to point the run at another list or origin.
+// It is deliberately outside the test suite: the suite must stay green on a
+// fresh clone with no network, so the cores are pinned by fixtures and this edge
+// is run by hand (`npm run upstream`). Since ticket 02 it writes exactly two
+// files — the baseline and the optional `--out` evidence — and refuses any
+// target inside `served/`, so a check can never become a second, unlogged editor
+// of the artifact.
 //
-// Usage: npm run upstream [-- --json]
+// Usage: npm run upstream [-- --accept] [--json] [--out <path>]
+//
+// The baseline is the moving reference point (regression/upstream-baseline.json):
+// the first run records it silently, every later run diffs against it, and only
+// `--accept` rewrites it.
 //
 // Exit codes: 0 no findings, 1 findings, 2 operational failure (an incomplete
-// measurement — a failed fetch, an unparsable sitemap, a failed probe — is never
-// reported as a clean one).
+// measurement — a failed fetch, an unparsable sitemap, a failed probe, an
+// unreadable baseline — is never reported as a clean one).
 //
 // SPDX-License-Identifier: CC0-1.0
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAPTURE_LIST } from '../pipeline/config.mjs';
-import { invokedDirectly, mapLimit } from '../pipeline/cli.mjs';
-import { buildWatchReport, exitCode, formatWatchReport, watchedUniverse } from './upstream-watch.mjs';
+import { invokedDirectly, makeArg, mapLimit } from '../pipeline/cli.mjs';
+import { exitCode, formatWatchReport, watchedUniverse } from './upstream-watch.mjs';
+import { outsideServedTree, readBaseline, runWatch, serializeBaseline } from './upstream-baseline.mjs';
 
 const ORIGIN = 'https://www.flocksafety.com';
 const CONCURRENCY = 8;
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 const CAPTURE_FILE = path.resolve(ROOT, CAPTURE_LIST);
+const BASELINE_FILE = path.resolve(ROOT, 'regression', 'upstream-baseline.json');
+const SERVED_ROOT = path.resolve(ROOT, 'served');
 
 /** @param {unknown} err @returns {string} */
 const message = (err) => (err instanceof Error ? err.message : String(err));
@@ -53,12 +61,53 @@ async function probe(url) {
   return { status: res.status, location: res.headers.get('location') };
 }
 
+/** The previous baseline, or null when there is none yet (the silent first run). */
+function readPreviousBaseline() {
+  let text;
+  try {
+    text = readFileSync(BASELINE_FILE, 'utf8');
+  } catch (err) {
+    if (err instanceof Error && /** @type {NodeJS.ErrnoException} */ (err).code === 'ENOENT') return null;
+    throw err;
+  }
+  return readBaseline(text);
+}
+
+/**
+ * The run's write targets, each checked against the served tree before any
+ * write happens, so a refused target can never leave a half-written pair.
+ * @param {string|null} out
+ * @returns {string[]}
+ */
+function writeTargets(out) {
+  const targets = [BASELINE_FILE];
+  if (out !== null) targets.push(path.resolve(process.cwd(), out));
+  return targets;
+}
+
 async function main() {
+  const arg = makeArg(process.argv.slice(2));
   const asJson = process.argv.includes('--json');
+  const accept = process.argv.includes('--accept');
+  const out = arg('--out');
+  const verified = new Date().toISOString().slice(0, 10);
   const captureList = readFileSync(CAPTURE_FILE, 'utf8')
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line !== '');
+
+  for (const target of writeTargets(out)) {
+    if (!outsideServedTree(target, SERVED_ROOT)) {
+      return fail(`upstream watch refuses to write inside the served tree: ${path.relative(ROOT, target) || target}`);
+    }
+  }
+
+  let previous;
+  try {
+    previous = readPreviousBaseline();
+  } catch (err) {
+    return fail(`upstream watch could not read the baseline: ${message(err)}`);
+  }
 
   let sitemapXml;
   let homepageHtml;
@@ -70,7 +119,6 @@ async function main() {
 
   const inputs = { origin: ORIGIN, sitemapXml, homepageHtml, captureList };
 
-  /** @type {string[]} */
   let universe;
   try {
     universe = watchedUniverse(inputs);
@@ -101,14 +149,20 @@ async function main() {
   const probes = {};
   for (const result of results) probes[result.path] = { status: result.probe.status, location: result.probe.location };
 
-  let report;
+  let run;
   try {
-    report = buildWatchReport({ ...inputs, probes });
+    run = runWatch({ ...inputs, probes, previous, accept, verified });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }
-  console.log(asJson ? JSON.stringify(report, null, 2) : formatWatchReport(report));
-  process.exitCode = exitCode(report);
+
+  const text = asJson ? JSON.stringify(run.report, null, 2) : formatWatchReport(run.report);
+  console.log(text);
+
+  if (run.write) writeFileSync(BASELINE_FILE, serializeBaseline(run.baseline));
+  if (out !== null) writeFileSync(path.resolve(process.cwd(), out), `${text}\n`);
+
+  process.exitCode = exitCode(run.report);
 }
 
 if (invokedDirectly(import.meta.url)) {

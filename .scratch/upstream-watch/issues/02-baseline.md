@@ -1,6 +1,6 @@
 # 02 — The baseline, and the verified-in-sync date
 
-Status: open
+Status: claimed
 Blocked by: 01
 
 ## What to build

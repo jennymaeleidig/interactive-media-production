@@ -69,8 +69,39 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
+ * One field of a baseline row that moved since the previous verified run.
+ * `field` is a baseline row's own field name (`inSitemap`, `status`,
+ * `location`), so a report never invents vocabulary the baseline does not use.
+ * @typedef {Object} FieldDelta
+ * @property {string} field
+ * @property {string|number|boolean|null} from
+ * @property {string|number|boolean|null} to
+ */
+
+/**
+ * One path present in both baselines whose carried fields moved.
+ * @typedef {Object} ChangedRow
+ * @property {string} path
+ * @property {FieldDelta[]} fields
+ */
+
+/**
+ * What moved since the previous baseline: the difference between the previous
+ * run's rows and this run's, by path. `from` is the previous
+ * **verified-in-sync date**; it is null on the **silent baseline**, which has
+ * no previous state to diff against. Ticket 02.
+ * @typedef {Object} BaselineDelta
+ * @property {string|null} from
+ * @property {string[]} added
+ * @property {string[]} removed
+ * @property {ChangedRow[]} changed
+ */
+
+/**
  * The comparison a run produces. `inventory` is the whole measurement;
- * `findings` are the only things that make the run exit 1.
+ * `findings` are the drift against the frozen Capture list, which ticket 01
+ * alone can see. Ticket 02's `since` is the drift against the moving baseline;
+ * together they are the only things that make the run exit 1.
  * @typedef {Object} WatchReport
  * @property {string} origin
  * @property {{sitemap: number, homepage: number, capture: number, universe: number}} counts
@@ -78,6 +109,8 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {{added: string[], removed: Array<{path: string, status: number, location: string|null}>}} findings
  * @property {Array<{path: string, target: string|null}>} demotions
  * @property {InventoryRow[]} inventory
+ * @property {string} [verified]  the date this run verified upstream; set by `runWatch`
+ * @property {BaselineDelta} [since]  what moved since the previous run; set by `runWatch`
  */
 
 /**
@@ -284,8 +317,10 @@ export function buildWatchReport(inputs) {
 }
 
 /**
- * The human view of a report. It reads the same `findings`, `demotions`, and
- * `liveness` the `--json` form serializes, so the two can never disagree.
+ * The human view of a report. It reads the same `findings`, `demotions`,
+ * `liveness`, and ticket 02 `since` the `--json` form serializes, so the two
+ * can never disagree. The ticket 01 lines and closing line are unchanged when
+ * no baseline section is present.
  * @param {WatchReport} report
  * @returns {string}
  */
@@ -295,7 +330,12 @@ export function formatWatchReport(report) {
   lines.push(`Upstream watch — live ${report.origin} vs the frozen 2026-09-12 Capture list`);
   lines.push(`  universe: ${counts.universe} URL(s) — ${counts.sitemap} sitemap · ${counts.homepage} homepage · ${counts.capture} capture`);
   lines.push(`  liveness: ${LIVENESS_CLASSES.map((name) => `${liveness[name] ?? 0} × ${name}`).join(' · ')}`);
+  if (report.verified) lines.push(`  verified in sync as of: ${report.verified}`);
   lines.push(`  findings: ${findings.added.length} added · ${findings.removed.length} removed`);
+  if (report.since) {
+    const { from, added, removed, changed } = report.since;
+    lines.push(`  since ${from ?? 'the first run'}: ${added.length} added · ${removed.length} removed · ${changed.length} changed`);
+  }
   if (demotions.length > 0) {
     lines.push(`  demotions (context, not findings): ${demotions.length}`);
     for (const d of demotions) lines.push(`    ${d.path} → ${d.target ?? '(no target)'}`);
@@ -308,17 +348,42 @@ export function formatWatchReport(report) {
     lines.push('  removed — Capture-list paths that no longer answer 200:');
     for (const r of findings.removed) lines.push(`    - ${r.path} (${r.status}${r.location ? ` → ${r.location}` : ''})`);
   }
-  lines.push(findings.added.length === 0 && findings.removed.length === 0 ? '✓ Index in sync with the Capture list.' : '✗ Index drift — see findings above.');
+  if (report.since) {
+    const { added, removed, changed } = report.since;
+    if (added.length > 0) {
+      lines.push('  added since the last run:');
+      for (const p of added) lines.push(`    + ${p}`);
+    }
+    if (removed.length > 0) {
+      lines.push('  removed since the last run:');
+      for (const p of removed) lines.push(`    - ${p}`);
+    }
+    if (changed.length > 0) {
+      lines.push('  changed since the last run:');
+      for (const c of changed) lines.push(`    ~ ${c.path} (${c.fields.map((f) => `${f.field} ${f.from} → ${f.to}`).join(', ')})`);
+    }
+  }
+  const indexDrift = findings.added.length > 0 || findings.removed.length > 0;
+  const baselineDrift = Boolean(report.since && (report.since.added.length > 0 || report.since.removed.length > 0 || report.since.changed.length > 0));
+  if (report.since) {
+    lines.push(indexDrift || baselineDrift ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
+  } else {
+    lines.push(indexDrift ? '✗ Index drift — see findings above.' : '✓ Index in sync with the Capture list.');
+  }
   return lines.join('\n');
 }
 
 /**
- * The command's exit code: 1 when the index drifted, 0 when it did not. An
- * operational failure (2) is the driver's, not the report's — an incomplete
- * measurement must never masquerade as a clean one.
+ * The command's exit code: 1 when the index drifted (ticket 01) or the
+ * baseline moved (ticket 02), 0 otherwise. An operational failure (2) is the
+ * driver's, not the report's — an incomplete measurement must never masquerade
+ * as a clean one.
  * @param {WatchReport} report
  * @returns {0|1}
  */
 export function exitCode(report) {
-  return report.findings.added.length > 0 || report.findings.removed.length > 0 ? 1 : 0;
+  const indexDrift = report.findings.added.length > 0 || report.findings.removed.length > 0;
+  const { since } = report;
+  const baselineDrift = since ? since.added.length > 0 || since.removed.length > 0 || since.changed.length > 0 : false;
+  return indexDrift || baselineDrift ? 1 : 0;
 }

@@ -330,12 +330,16 @@ dev/build for everyone:
   — tool, test, or doc — reaches upstream. The retired refresh procedure
   (re-inventory → diff → scoped re-capture, and the video liveness probe) is in
   git history only. **One deliberate exception**: the **upstream watch**
-  (`npm run upstream`, `regression/upstream-watch.mjs` plus its thin network
-  edge) is a hand-run tool that reads upstream's sitemap and homepage and
-  reports index drift; it never writes `served/` or any tree record, and it is
-  not the refresh workflow — it exists so the "should the snapshot move?"
-  decision can be made on evidence. Its own doc lives in the ticket and the
-  module header; see `CONTEXT.md` for **upstream watch**, **watched universe**,
+  (`npm run upstream`, `regression/upstream-watch.mjs` and
+  `regression/upstream-baseline.mjs` plus their thin network edge) is a hand-run
+  tool that reads upstream's sitemap and homepage and reports index drift and
+  what has moved since its last run; it never writes `served/` or any tree
+  record — its only writes are its committed baseline
+  (`regression/upstream-baseline.json`) and `--out` evidence, and it refuses a
+  target inside `served/` — and it is not the refresh workflow — it exists so
+  the "should the snapshot move?" decision can be made on evidence. Its own doc
+  lives in the ticket and the module header; see `CONTEXT.md` for **upstream
+  watch**, **watched universe**, **upstream baseline**, **silent baseline**,
   and **demotion**.
 - **No ADR record**: decisions live inline — in `CONTEXT.md` terms, in this
   file, and in the comments beside the code they constrain. Don't cite a

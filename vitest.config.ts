@@ -34,6 +34,7 @@ export default defineConfig({
       project('served-tree', ['test/served-tree.test.ts']),
       project('routes', ['test/routes.test.ts']),
       project('upstream-watch', ['test/upstream-watch.test.ts']),
+      project('upstream-baseline', ['test/upstream-baseline.test.ts']),
       project('cli', ['test/cli.test.ts']),
       project('audit', ['test/audit.test.ts']),
       project('html', ['test/html.test.ts']),

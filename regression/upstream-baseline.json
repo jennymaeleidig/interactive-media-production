@@ -1,0 +1,7326 @@
+{
+  "version": 1,
+  "verified": "2026-09-13",
+  "rows": [
+    {
+      "path": "/",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/amazon",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/burlington",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/disney",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/edison",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/international-paper",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/national-grid",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/nike",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/publix",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/unitedhealth-group",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/abm/walmart",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/accessibility-plan",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/accessibility-statement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/are-you-ready-for-the-new-budget-year",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/big-city-ai-tools-on-a-budget",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/10-of-reported-crime-in-the-u-s-is-solved-using-flock-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/10-safety-tips-for-the-holiday-season",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/1000-missing-persons-reunited",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/1000-worth-of-property-damage-recovered",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/17-powerful-ways-to-utilize-a-mobile-camera-trailer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/20-million-gift-card-scheme-exposed-by-video-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/20-tips-to-deter-crime-and-foster-peace-of-mind-in-your-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/200-vs-400-feet-dfr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/2022-solved-awards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/2022-yc-top-private-company",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/2023-solved-awards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/24-7-schools-how-to-best-protect-your-campus-when-youre-not-there",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/3-lessons-we-learned-from-law-enforcement-building-flock-safety-falcon-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/3-month-old-kidnapped-located-safely-michigan",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/3-ways-license-plate-readers-really-reduce-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/3-ways-your-asset-protection-and-loss-prevention-teams-can-reduce-organized-retail-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/4-ways-flocks-mobile-security-trailer-delivers-a-smarter-way-to-secure-your-property",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-crime-prevention-tips-from-police-for-hoas",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-key-insights-on-tackling-organized-retail-crime-from-law-enforcement-leaders",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-keys-to-hiring-for-drive-and-building-in-the-gray-how-two-rtic-leaders-are-shaping-real-time-policing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-lessons-on-transitioning-from-law-enforcement-to-the-private-sector",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-places-your-community-may-need-better-coverage",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-safety-tips-for-house-hunting",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-steps-to-establish-a-real-time-crime-center",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-strategies-for-smarter-parking-lot-security-with-alpr-solar-solutions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-times-license-plate-readers-saved-the-day",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-tips-keeping-your-neighborhood-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-tips-to-virtually-engage-your-community-during-covid-19",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-ways-flock-safety-is-transforming-school-campus-safety----starting-with-a-smarter-dismissal-line",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-ways-host-cities-can-prepare-for-a-safe-and-successful-2026-fifa-world-cup",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/5-ways-to-use-virtual-tools-for-neighborhood-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/6-benefits-of-lpr-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/6-career-tips-for-security-professionals-from-oscar-arango",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/6-myths-license-plate-readers-security-systems",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/6-safety-tips-your-2023-back-to-school-safety-kit",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/7-questions-with-police-chief-thompson-of-elizabethtown-kentucky",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/8-rules-hoa-boards-can-follow-to-keep-residents-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/8-security-tips-for-property-managers-save-time-and-money",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-5-step-plan-safety-plan-for-houses-worship",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-chiefs-guide-to-evaluating-license-plate-readers-9-questions-to-ask-before-investing-in-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-connected-future-how-elk-grove-pd-is-redefining-public-safety-with-drone-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-conversation-with-safe-house-projects-brittany-dunn",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-practical-guide-to-ai-policy-and-policing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-practical-lpr-and-video-strategy-for-small-patrol-teams",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-smarter-path-to-help-prosecute-offenders-why-choose-flocks-mobile-security-trailer-vs-lvt",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-smarter-path-to-real-crime-reduction-why-choose-flocks-mobile-security-trailer-vs-lvt",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-tale-of-two-cities-how-a-flock-safe-city-subscription-transforms-operations-budgets-and-outcomes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/a-wider-lens-on-justice-from-quick-ids-to-long-term-impact",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/acg-atl-names-flock-safety-number-one-on-georgias-top-40-fastest-growing-companies",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/addressing-unauthorized-access-on-your-healthcare-campus",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/aerodome-and-flock-safety-forge-strategic-partnership-to-expand-drone-as-first-responder-technology-for-public-safety-agencies",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/affordable-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/after-public-debate-these-cities-chose-safety-and-privacy-with-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ai-video-search-for-retail-theft-investigations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/airsight-and-flock-bring-airspace-intelligence-into-one-operating-picture",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/albany-pd-announces-the-addition-of-120-flock-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/alert-respond-resolve-officers-move-fast-with-the-right-signal",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/allentown-pennsylvania-is-partnering-with-flock-to-shape-a-safer-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/alpr-program-community-relations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/alpr-technology-gun-violence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/amber-alerts-partnership",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/an-asset-protection-experts-pov-on-drones-and-the-future-of-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/an-update-on-ring-partnership",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/anderson-police-bridge-people-policing-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/announcing-the-2024-flock-safety-physical-security-awards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/announcing-the-2024-flock-safety-solved-awards-winners",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/apartment-safety-tips",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/apartment-security-camera-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/apartment-security-flock-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/are-flock-products-discriminatory",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/around-the-events-involving-george-floyd-minneapolis",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/automated-license-plate-readers-and-the-fourth-amendment-a-public-safety-by-design-perspective-from-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/awareness-on-arrival-when-the-right-lead-comes-early",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/axon-plans-to-sever-apis-with-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/balancing-safety-and-experience-how-technology-is-shaping-the-future-of-retail-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/best-hoa-perimeter-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/best-lpr-camera-crime-center-solution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/best-places-to-use-mobile-security-trailers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/best-public-safety-drone",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/best-public-safety-drones-for-law-enforcement-and-emergency",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/better-together-how-lprs-and-mobile-security-trailers-strengthen-security-across-your-commercial-properties",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/beyond-crime-reduction-how-flock-forward-2025-redefined-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/beyond-kubeflow-why-we-built-traintrack",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/birds-of-a-feather-dennis-segovia",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/birds-of-a-feather-jasmine-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/blogsuspicious-activity-stopped",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/boston-globe-opinion-editor-on-flocks-value-for-community-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/brandon-simins-joins-flock-safety-as-chief-financial-officer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-a-culture-of-empowerment-women-of-flocks-impact-and-vision",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-a-real-time-crime-center-the-right-way-insights-from-industry-experts",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-a-safer-stronger-allentown-a-conversation-with-mayor-matt-tuerk",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-on-trust-updates-to-flocks-terms-and-conditions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-public-trust-through-transparency-how-flock-helps-communities--and-why-youll-want-to-be-part-of-it",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-smarter-not-just-bigger-how-flock-safety-thinks-about-product-integrations-and-the-future-of-ai",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-stronger-cases-with-layered-security-technology-using-license-plate-reader-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-the-future-inside-flock-safetys-2025-intern-experience",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/building-trust-through-tech-and-heart-how-chief-bobby-davis-is-redefining-public-safety-leadership-lsenb",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/california-sb34-what-private-organizations-using-alpr-need-to-know",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/cameras-installed-around-port-isabel",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/capture-evidence-that-matters-for-solving-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/castle-rock-police-launch-flock-dfr-for-faster-and-safer-response-time",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/catalytic-converter-theft",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/catch-crooks",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/city-leaders-choose-flock-safety-a-proven-community-focused-public-safety-solution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/city-of-el-cajon-honored-with-golden-watchdog-award-for-public-safety-innovation",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/close-the-campus-police-response-gap-with-drone-as-first-responder",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/cobb-based-cids-tactic-catch-criminals-with-tag-scanning-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/cobb-county-communities-invest-in-crime-fighting-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/collierville-cameras-scanning-license-plates-to-prevent-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/collierville-memphis-neighborhood-crime-streak",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/colorado-hoa-chose-flock-neighborhood-security-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/colorado-neighborhoods-using-flock-safety-to-reduce-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/combating-retail-fraud-with-data-driven-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/community-and-technology-unite-to-shape-a-safer-south-downtown-atlanta",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/community-camera-for-safe-neighborhoods",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/community-manager-security-options",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/congratulations-to-the-flock-safety-award-winners-at-iacp-2022",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/context-on-your-terms-why-public-safety-is-no-longer-one-size-fits-all",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/convenience-store-shooting-suspects-brought-to-justice-with-help-from-flock-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/coordinated-located-safer-flock-safety-helps-law-enforcement-close-cases-nationwide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/corporate-executive-protection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/corporate-security-101-flock-safetys-guide-for-business-leaders",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/correcting-the-record-flock-nova-will-not-supply-dark-web-data",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/could-kentuckys-hb58-change-how-alpr-data-is-used-across-the-state",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/crime-rates-rise-during-the-summer-heres-what-this-means-for-you",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/criminal-plans-disrupted-how-fast-alerts-led-to-faster-justice",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/customer-story-citrus-heights-police-department",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/customer-story-elk-grove-pd-flockos",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/customers-own-and-control-their-flock-data",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dan-haley-joins-flock-safety-as-chief-legal-officer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/data-at-the-curb-how-traffic-analytics-is-transforming-safety-and-success-for-commercial-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dekalb-county-police-partner-with-flock-and-private-citizens",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dekalb-county-votes-to-partner-with-police-department-on-crime-solving-initiative",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dekalb-police-using-new-crime-fighting-tool-to-protect-public",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/denver-residents-helping-police-protect-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/designing-safer-streets-how-connected-technologies-are-reimagining-roadway-and-biking-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dfr-1-0-vs-dfr-2-0-the-evolution-of-drone-as-first-responder",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dfr-in-action-how-corona-pd-uses-drones-for-life-saving-rescues",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dfr-need-for-speed",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/discover-the-steps-hardin-county-ky-is-taking-to-shape-a-safer-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/does-flock-enable-mass-surveillance",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/does-flock-share-data-with-ice",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/does-new-jerseys-privacy-protection-act-affect-alpr-data-sharing-across-state-lines",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dont-just-watch-crime-solve-it-with-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/donut-shop-employee-held-at-gunpoint-during-armed-robbery-flock-cameras-helped-find-suspects",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/drones-take-flight-how-long-island-is-leading-the-way-in-community-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dunwoody-detective-utilizes-flock-data-to-prevent-potentially-dangerous-heist",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dunwoody-pd-flock-aerodome-dfr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/dunwoody-police-department-unveils-real-time-crime-center-powered-by-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/eastvale-is-shaping-a-safer-community-with-license-plate-recognition-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/eighborhood-purchases-personal-license-plate-reading-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/eliminate-crime-principled-framework",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/elizabethtown-pd-sees-great-success-and-multiple-solvedstories-with-flock-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/emergency-response-drone",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/empowering-smaller-law-enforcement-agencies-the-role-of-technology-in-maximizing-your-force",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/enhance-campus-security-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/enhancing-employee-safety-with-license-plate-recognition-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ensuring-local-compliance",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/et-the-police-take-care-of-possible-thieves",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/every-second-counts-how-faster-crash-response-saves-lives",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/everything-has-changed-and-nothing-has-changed-flock-safety-raised-47m-to-solve-more-crime-and-protect-privacy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/evidence-management-best-practices-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/evidence-management-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/explore-how-white-settlement-pd-uses-flock-technology-to-protect-officers-boost-collaboration-and-solve-more-crimes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fairfax-county-police-harness-license-plate-reader-technology-to-transform-crime-fighting",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fast-intel-real-impact-this-weeks-wins-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/federal-court-confirms-license-plate-readers-are-constitutional",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fewer-victims-stronger-safeguards-the-case-for-principled-federal-collaboration",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fighting-what-hides-in-the-shadows-how-flock-is-helping-communities-combat-human-trafficking",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fill-your-campus-safety-gaps---no-power-no-problem",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fireside-chat-josh-thomas-chief-communications-officer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/first-responder-drone-use-cases",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fixed-license-plate-reader-in-marietta-leads-to-first-arrest",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-911-flock-aerodome-integration",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-aerodome-automated-security-for-retail-shopping-centers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-aerodome-software-updates-fall--2025",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-aligns-license-plate-reader-technology-with-state-specific-legal-frameworks",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-alpha-in-action-saving-lives-across-crime-response-fire-emergencies-and-search-rescue",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-applauds-virginia-court-of-appeals-ruling-affirming-constitutionality-of-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-cameras-enhance-crime-fighting-efforts-in-albany",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-commends-legislators-on-introduction-of-drone-act-of-2025",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-expands-georgia-footprint-with-new-manufacturing-facility",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-forward-2025-tackled-the-toughest-problems-in-public-safety--heres-what-we-learned",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-guardrails-address-lpr-privacy-concerns-and-police-transparency",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-honors-employees-who-bravely-served-veterans-day-2023",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-implements-enhanced-guardrails-across-california-to-ensure-lawful-and-responsible-use-of-lprs",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-innovates-to-help-agencies-tackle-sideshows",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-license-plate-reader-cameras-protect-seniors",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-lpr-cameras-drive-major-security-improvements-at-academy-sports",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-lpr-vs-fixed-video-same-camera-body-two-different-jobs",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-offers-no-cost-core-apis-to-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-provides-terms-conditions-update-to-make-definitions-simpler-and-provide-customer-clarity",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-ranks-fourth-overall-on-atlanta-business-chronicles-2024-pacesetter-list",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-2022-atl-startup-award-winners",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-2022-atl-startup-awards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-2022-deloitte-technology-fast-500",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-2024-physical-safety-awards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-2025-consumer-shopping-survey",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-and-forcemetrics-team-up-to-improve-community-and-officer-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-and-homegrown-launch-the-thriving-cities-fund",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-announces-partnership-with-innovia-co-op",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-appoints-chris-castaldo-as-chief-information-security-officer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-appoints-jennifer-ceran",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-appoints-julie-herendeen",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-appoints-matthew-webster-as-cmo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-birds-of-a-feather-meet-jay-marquez-in-atlanta-georgia",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-calls-on-mobile-network-operators-to-help-accelerate-drone-public-safety-operations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-cameras-fulton-county-schools",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-cameras-north-carolina-neighborhoods",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-cameras-play-role-in-apprehending-suspect-linked-to-fatal-shooting",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-cameras-provide-information-needed-to-locate-suspects-connected-to-bank-heist",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-cameras-purdue-university-campus",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-ceo-garrett-langley-ted2026",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-ceo-principled-framework",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-cybersecurity-how-we-protect-customer-community-data",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-does-my-neighborhood-need-flock-security-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-expands-into-drones-for-law-enforcement-with-acquisition-of-aerodome",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-helps-boost-oaklands-violent-crime-clearance-rate",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-helps-solve-and-stop-crime-through-partnerships-with-community-and-police",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-helps-storefront-boost-case-closure-rate-to-an-impressive-97",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-identifies-suspects-behind-190-000-crime-ring",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-is-the-clear-proven-choice-for-law-enforcement-looking-to-use-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-launches-flock-aerodome-drone-as-automated-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-launches-mobile-app-to-revolutionize-patrol-efficiency-and-law-enforcement-fieldwork",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-license-plate-reader-solves-miami-grand-theft-auto-residential-burglary-case",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-locates-suspects-behind-a-12-million-heist-why-ai-is-revolutionizing-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-lpr-cameras-help-bust-massive-retail-theft-fencing-operation-in-portland",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-neighborhood-crime-camera-helps-identify-burglary-suspect",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-nrtcca-foundational-sponsor",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-one-of-built-ins-2024-best-places-to-work",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-opens-new-boston-office-plans-to-bring-150-jobs-to-the-city",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-pacesetter-award-2022",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-pacesetter-award-2023",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-partners-with-blue-eye-to-deliver-next-generation-alert-responding",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-partners-with-tuskegee-next",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-ranked-number-58-on-2023-deloitte-technology-fast-500",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-raven-helps-albany-pd-uncover-30-percent-more-gunfire",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-recognized-in-forbes-2024-cloud-100",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-recognized-on-2024-deloitte-technology-fast-500-tm",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-recognized-on-the-2023-inc-5000",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-retrieves-stolen-car-for-victim-what-businesses-can-learn-from-this",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-secures-major-funding",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-shares-vision-for-a-safer-future-at-national-anti-human-trafficking-event",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-001",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-002",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-003",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-004",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-005",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-006",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-007",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-008",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-009",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-010",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-011",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-012",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-013",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-014",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-015",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-016",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-017",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-018",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-019",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-020",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-021",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-022",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-024",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-025",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-026",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-027",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-028",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-029",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-030",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-031",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-032",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-033",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-034",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-035",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-037",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-038",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-039",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-040",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-041",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-042",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-043",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-045",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-046",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-047",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-048",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-049",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-050",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-051",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-052",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-053",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-054",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-055",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-056",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-057",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-058",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-059",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-060",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-061",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-062",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-063",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-064",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-065",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-066",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-067",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-068",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-069",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-070",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-071",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-072",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-073",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-074",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-075",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-076",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-077",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-078",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-079",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-080",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-081",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-082",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-083",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-084",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-085",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-086",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-087",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-088",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-089",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-090",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-091",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-092",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-093",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-094",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-095",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-096",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-098",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-099",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-100",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-101",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-102",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-solved-stories-recap-edition-103",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-unveils-alpha-drone-as-first-responder-system",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-what-are-my-neighborhood-security-options",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-what-happens-in-the-event-of-a-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-what-its-like-to-be-a-flock-customer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safety-why-does-license-plate-recognition-matter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safetys-gun-violence-reduction-plan-a-multi-faceted-approach-to-a-complex-issue",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-safetys-response-to-illinois-lpr-data-use-and-out-of-state-sharing-concerns",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-security-testing-bishop-fox-privacy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-solves-homicide-investigation",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-stories-your-voice-a-pinecrest-family-finds-safety-after-the-terror-of-a-home-invasion",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-together-2025-reflecting-on-a-week-of-alignment-and-connection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flock-together-the-2026-recap",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flockos-empowering-tulsas-police-force-with-unprecedented-real-time-intelligence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/flocks-new-podcast-real-time-policing-when-moments-matter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fort-worth-police-department-accelerates-emergency-response-with-flock911",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fort-worth-police-launch-flock-drone-as-first-responder-program-ahead-of-a-historic-summer-in-north-texas",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/four-key-takeaways-from-the-national-retail-federations-2023-retail-security-survey",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-congestion-to-connection-rethinking-traffic-and-parking-to-improve-daily-life",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-detection-to-coordination-a-new-model-for-law-enforcement-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-flames-to-footage-flock-lpr-cameras-help-locate-arson-suspect",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-intern-to-full-time-building-careers-at-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-losses-to-savings-transforming-retail-security-with-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-lost-to-found-how-alhambra-pds-drone-program-found-a-missing-woman-in-minutes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-lost-to-found-how-alhambra-pds-drone-program-is-redefining-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-parking-pain-to-public-safety-gain-how-seal-beach-pd-reimagined-parking-with-lpr-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-passion-project-to-powerhouse-how-sugarcoat-and-the-thriving-cities-fund-are-shaping-atlantas-future",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-pilots-to-purpose-what-state-dots-need-next-to-succeed-with-ai",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/from-the-road-to-resolution-vehicle-data-powers-safer-outcomes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/fulshear-texas-detective-solve-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/future-proof-technology-how-flock-safety-continues-to-evolve-with-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/georgia-hospital-cuts-theft-55-percent",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/georgia-neighborhood-hands-georgia-neighborhood-hands-car-burglary-evidence-to-police-thanks-to-security-camera-suspect-to-police-thanks-to-security-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/getac-and-flock-safety-join-forces-to-enhance-public-safety-solutions-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/gun-violence-us-look-like",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/gunshot-detection-and-license-plate-reader-security-alert",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/gwinnett-and-gateway85cid-install-safety-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/gwinnett-county-pd-partners-with-local-business-districts-to-improve-safety-for-everyone",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/halloween-safety-13-tips-to-protect-your-family-and-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hands-off-security-solution-for-property-managers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/has-flock-been-hacked",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-1-leveraging-advanced-technology-to-reduce-security-efforts-and-errors",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-2-healthcare-security-strategies-part-2-collecting-pertinent-details-with-layered-security-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-3-use-technology-to-create-overwatch",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-4-better-protect-your-healthcare-campus-with-multiple-layers-of-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-5-prevent-attacks-of-violence-against-your-staff-with-a-virtual-security-perimeter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-6-implement-a-proactive-off-hours-security-plan",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/healthcare-security-strategies-part-7-safeguard-every-entrance-with-comprehensive-coverage",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/helping-prevent-crime-with-flock-safetyprevent-crime-with-flock-license-plate-reader-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/heres-the-data-police-actually-get-from-traditional",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hoa-board-member-neighborhood-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hoa-board-members-dont-buy-security-cameras-without-reading-this-first",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hoa-security-license-plate-reader-cameras-reduce-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hoa-security-tips",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/homeowners-associations-are-investing-in-security-cameras-to-monitor-residential-streets",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hope-rebuilt-flock-safety-aids-in-bombing-at-healthcare-clinic",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/hospital-campuses-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-a-south-carolina-neighborhood-used-flock-safety-to-catch-a-vandal",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-ai-video-search-helps-healthcare-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-ai-video-search-helps-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-an-automatic-license-plate-recognition-system-works",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-an-hoa-lpr-camera-helped-identify-a-suspect-in-a-deadly-shooting-spree",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-california-neighborhood-caught-footage-of-drive-by-shooting-suspect-1",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-can-smarter-technology-help-restore-safety-and-trust-as-the-retail-crime-crisis-deepens",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-can-your-business-deter-crime-with-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-communities-can-extend-public-safety-visibility-during-summer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-community-and-technology-are-shaping-a-safer-future-in-dunwoody-georgia",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-deputy-chief-dan-kelsos-team-harnesses-lpr-and-audio-detection-for-swift-crime-resolution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-do-experts-suggest-reducing-gun-violence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-does-flock-handle-license-plate-data-deletion",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-does-policy-evaluation-shape-new-flock-products",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-does-shared-safety-data-make-neighborhoods-stronger-safer-and-more-connected",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-effective-is-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-aerodome-is-reinventing-public-safety-from-the-sky",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-builds-transparency-into-public-safety-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-helps-address-a-violent-retail-crime-incident",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safety-is-helping-this-neighborhood-prevent-car-break-ins",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safety-is-strengthening-trust-through-transparency-in-illinois",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safety-license-plate-readers-helped-police-solve-an-aggravated-assault-case",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safety-license-plate-readers-keep-parks-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safety-protects-resident-privacy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safety-stops-crime-in-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flock-safetys-video-team-is-shaping-the-future-of-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-flocks-audio-detection-works",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-integrated-policing-platforms-crack-unsolvable-cases",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-lavon-pd-maintains-high-performance-despite-staffing-challenges",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-law-enforcement-agencies-are-funding-modern-technology--without-breaking-the-budget",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-licking-heights-local-school-district-levels-up-security-with-flock-safety-falcon-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-ncmec-and-flock-safety-bring-missing-children-home",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-one-california-community-came-together-to-advocate-for-a-safer-future",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-one-police-department-built-community-engagement-around-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-police-work-with-private-communities-to-serve-public",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-porterville-pd-transformed-digital-investigations-with-flock-nova-osint",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-property-managers-can-demonstrate-their-value-to-residents",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-residents-appreciate-hoas-that-work-proactively",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-san-jose-california-is-utilizing-technology-to-solve-more-crime-and-shape-a-safer-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-scottsdale-pd-is-redefining-response-dfr-transparency-and-tech-in-action",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-tariffs-may-impact-supply-chains-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-the-city-of-brookhaven-is-leveraging-a-suite-of-technology-to-promote-community-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-the-fort-worth-police-department-is-continually-innovating-real-time-policing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-the-safe-list-solves-privacy-concerns-in-a-neighborhood",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-the-university-of-iowa-transformed-campus-safety-with-an-lpr-perimeter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-this-property-manager-sleeps-better-with-neighborhood-security-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-be-proactive-against-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-break-the-cycle-of-recurring-safety-concerns-and-property-damage-at-your-parks",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-build-a-dfr-program-for-smaller-agencies",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-choose-a-mobile-security-trailer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-fund-a-license-plate-reader-lpr-program-in-2026-7-funding-sources-police-agencies-are-using",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-get-ahead-of-retail-crime-this-holiday-season-with-a-stronger-law-enforcement-partnership",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-handle-a-robbery-in-the-workplace",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-implement-a-3-step-approach-to-safer-neighborhoods",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-improve-retail-security-with-mobile-solutions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-maintain-customer-safety-in-retail-stores",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-mitigate-organized-retail-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-prevent-employee-theft-in-retail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-prevent-shoplifting-in-supermarkets",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-prevent-shrinkage-in-retail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-prevent-theft-in-retail-store",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-solve-crime-without-a-license-plate",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-to-use-technology-to-maximize-an-understaffed-department",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-vehicle-intelligence-helped-recover-a-kidnapped-child",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/how-wynter-lii-turned-setbacks-into-growth-with-the-support-of-the-thriving-cities-fund",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/illegal-dumping-costs-more-than-you-think",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/illegal-dumping-flock-safetys-solutions-for-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/im-an-individual-homeowner-and-i-want-security-coverage",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/improvement-district-success-story",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/independent-grand-jury-report-highlights-flocks-commitment-to-responsible-alpr-technology-through-product-design-and-safeguards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/independent-study-vehicle-thefts-fell-11-after-flock-cameras-went-live",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/infographic-fighting-orc-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/inside-fairfield-pds-real-time-crime-strategy-with-lt-nick-lt-mcdowell",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/inside-flocks-boston-office",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/inside-flocks-top-gun-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/inside-new-orleans-real-time-crime-center-a-model-of-resilience-innovation-and-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/inside-scottsdales-real-time-crime-center-a-model-of-modern-policing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/installing-a-flock-safety-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/internal-theft-vs-external-theft-in-retail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/intown-suites-boosted-guest-safety-expansion-followed-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/introducing-birds-of-a-feather-casey-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/introducing-law-enforcement-network",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/introducing-the-flock-safety-lpr-trailer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/irondale-police-using-new-technology-to-fight-property-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/is-your-unit-safe-11-apartment-safety-tips-for-renters",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/jon-mcbride-joins-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/keep-gifts-safe-from-porch-pirates-holiday-season",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/keeping-our-customers-in-control",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/keys-to-leverage-your-community-to-solve-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/knowing-where-to-look-officers-use-smart-signals-to-make-cities-safer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lagrange-to-add-cameras-for-neighborhood-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/law-enforcement-drone-policy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/law-enforcement-drones",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/law-enforcement-leaders-choose-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/law-enforcement-uses-flock-lpr-cameras-to-make-arrest-after-bomb-threat-targeting-coachella-festival",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/layering-technology-for-comprehensive-healthcare-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lessons-from-flocks-leadership-panel",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lessons-from-isc-west-responsible-technology-and-the-rise-of-dfr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lessons-from-nrtccas-california-summit",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/leveraging-advanced-technologies-to-proactively-prevent",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/leveraging-ai-powered-technology-to-keep-employees-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/leveraging-flock-safety-technology-as-force-multiplier-in-field",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/leveraging-technology-to-strengthen-inter-agency-collaboration-and-address-crime-in-albany",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-reader-camera-improvement-districts",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-reader-camera-retail-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-reader-camera-school-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-reader-cameras-construction-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-reader-deployment-strategy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-reader-improvement-districts",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-readers-contribute-mariettas-falling-crime-rate",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-readers-in-fort-mill-neighborhood-installed-to-deter-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/license-plate-recognition-cameras-to-be-placed-in-jersey-village",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/local-neighborhoods-deploying-new-technology-to-catch-criminals",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/local-neighborhoods-hoping-to-help-solve-crime-with-license-plate-reading-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/loss-prevention-strategies-in-retail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/loss-prevention-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-alert-management",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-camera-4-cases-solved",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-camera-catalytic-converter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-camera-deconfliction",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-camera-rtcc-affordable",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-camera-rtcc-internal-intelligence-sharing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-cameras-construction-site-theft",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-cameras-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-for-police-provides-community-wide-coverage-flock-safety-falcon",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/lpr-vs-video-cameras-why-your-business-needs-dedicated-license-plate-recognition",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mail-theft-deterred-indianapolis",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/marietta-assault-suspect-caught-by-license-plate-reader",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/marietta-police-credit-license-plate-reader-for-arrest-of-alleged-domestic-offender",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/marietta-wants-to-buy-license-plate-readers-after-successful-trial-run",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-ashley-marie-r",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-ashley-s-customer-success-manager",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-darien-w",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-esther-r",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-ifedayo-j",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-lois-a",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-mary-h",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-megan-p",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-stephen-j",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-taylor-t-employee-experience-specialist",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-flock-tim-s",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-new-neighborhood-watch",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/meet-the-new-neighborhood-watch-1",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/megan-adcock-birds-of-a-feather",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/memphis-city-government-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/metro-atlanta-hotel-installs-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mobile-security-camera-trailer-benefits",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mobile-security-trailer-cost-to-lease-vs-buy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mobile-security-trailer-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mobile-security-trailers-for-parking-lots",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/modern-safety-solutions-for-places-of-worship",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/more-license-plate-reading-cameras-coming-to-marietta",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/morgan-hill-pd-solves-aggravated-assault",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/most-common-type-of-workplace-violence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mpd-announces-new-smile-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/mustang-pd-thwarts-local-business-robbery-using-flock-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/nashville-community-activists-neighborhood-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/nationwide-coalition-unites-in-operation-coast-to-coast-to-combat-human-trafficking",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/natural-language-video-and-license-plate-reader",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/navigating-californias-new-retail-security-laws-what-retailers-must-know-and-how-to-leverage-these-changes-to-improve-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ncmec-and-flock-safety-partner-to-find-missing-and-kidnapped-children",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-crime-houston",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-fundraising-guide-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-gate-virtual-gate-arizona",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-houston-hoa-president-stops-car-thieves-license-plate-reader",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-keeps-eyes-open",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-recovers-stolen-3000-road-bike",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-security-flock-safety-success",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-security-solution-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-turns-to-cameras-that-read-license-plates-to-solve-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhood-uses-high-tech-to-fight-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighborhoods-use-new-tech-to-curb-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/neighbors-are-using-these-smart-cameras-to-track-strangers-cars-and-yours",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/new-ai-video-analytics-features-24-7-security-coverage-no-extra-staff-needed",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/new-security-cameras-aimed-at-catching-criminals-in-collierville",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/new-type-of-security-camera-could-be-coming-to-neighborhood-near-you",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/next-gen-policing-takes-flight-in-prosper-texas",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/north-charleston",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/not-all-license-plate-readers-are-equal-when-plate-data-fails-how-do-investigations-continue",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/notice-of-salesforce-drift-incident",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/november-2022-release-notes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/oakland-city-council-votes-to-continue-contract-with-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/oakland-naacp-endorses-flock-safety-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/october-2022-release-notes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/offense-type-dropdown-a-simpler-more-accurate-audit",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/officers-apprehend-orc-suspects-behind-20-000-in-stolen-items-with-help-from-flock-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/oman-helps-police-catch-thieves-after-spotting-car-from-surveillance-video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/one-platform-one-picture-one-clear-mission",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/one-week-three-major-cases-colorado-law-enforcement-solves-two-amber-alerts-homicide-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ongoing-retail-theft-suspects-caught-with-help-from-stores-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/open-vs-closed-dfr-ecosystem",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/organized-retail-crime-flock-safetys-solutions-for-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/os-angeles-burglar-who-used-rental-car-caught-using-flock-safety-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/oscar-arango-joins-flock-safety-as-vp-of-retail-strategy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/over-6m-in-stolen-goods-retrieved-in-porch-pirate-operation-with-help-from-flock-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ow-a-flock-protected-neighborhood-helped-police-catch-a-serial-mail-thief",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ow-an-evasive-park-burglar-was-caught-using-flock-safety-footage",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/parking-lot-break-ins-flock-safetys-solutions-for-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/partnering-with-law-enforcement-to-combat-organized-retail-crime-orc",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/plate-matching-an-entirely-new-way-for-businesses-to-collaborate-on-investigations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/police-camera-towers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/police-drones",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/police-it-leaders-choose-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/police-using-flock-readers-during-social-distancing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/policy-pulse-compliance-doesnt-have-to-be-so-hard",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/policy-pulse-for-real-communities-public-safety-is-not-hypothetical",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/policy-pulse-the-work-already-underway",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/policy-pulse-transparency-control-and-the-path-forward",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/porch-pirate-caught-by-flock-safety-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/porch-pirate-suspect-believed-to-have-more-sandy-springs-victims",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/precision-in-motion-how-flock-helped-solve-crimes-coast-to-coast-solved-stories-107",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/prevent-mail-theft-identity-theft",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/prevent-porch-pirates",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/prevent-property-crime-in-neighborhoods-and-increase-resident-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/preventing-workplace-violence-empowering-healthcare-workers-through-comprehensive-training",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/privacy-and-access",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/privacy-and-safety-flock-safety-helps-this-california",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/proactive-protection-how-alert-response-service-is-closing-the-gap-between-threat-detection-and-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/proactive-protection-how-alert-response-service-is-closing-the-gap-between-threat-detection-and-response-2",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/proactively-protect-employees-customers-and-property",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/product-announcement-q2-2023",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/property-managers-beaumont-california",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/prosper-police-department-is-the-first-agency-in-texas-to-launch-flock-aerodome-drone-as-a-first-responder",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/protect-home-from-robbery",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/protect-hospital-and-healthcare-staff-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/protect-yourself-from-job-scams-impersonating-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/protecting-your-family-doorbell-camera-or-security-system",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/providing-evidence-in-a-california-break-in",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/public-safety-drones",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/quick-installation-instant-security-flock-safety-neighborhood-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/reading-franklin-in-full-what-the-founding-father-actually-said-about-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/real-time-leads-real-world-outcomes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/realty-group-eliminates-crime-using-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/reddit-co-founder-alexis-ohanian-visits-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/reduce-case-backlogs-and-overtime-with-tech",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/residents-use-license-plate-camera-to-ward-off-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/response-to-compiled-security-research-on-flock-safety-devices",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/responsive-by-design-officers-equipped-for-the-moment",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/retail-loss-prevention-software",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/retail-shrinkage-your-number-1-holiday-security-concern",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/rethinking-infrastructure-protection-for-federally-owned-buildings",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/revolutionizing-law-enforcement-how-drones-as-first-responders-are-transforming-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/richmond-neighborhood-installs-flock-safety-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/richmond-neighborhood-plans-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/rko-2025-empowering-teams-to-shape-safer-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/rko-2026-recap",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/role-of-ai-mobile-security-trailers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/rtcc-integrations-for-emergency-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/safe-cities-are-thriving-cities-the-interconnectedness-of-crime-safety-and-quality-of-life",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/safety-is-a-fundamental-right",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/san-antonio-neighborhood-using-flock-safety-to-curb-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/san-diego-hispanic-chamber-of-commerce-voices-support-for-alpr-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/san-diego-neighborhood-gives-police-first-lead-in-burglary-case-using-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/sandy-springs-neighborhood-hands-actionable-evidence-to-police-in-mail-theft-case",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/sandy-springs-police-charge-man-with-mail-theft-identity-fraud",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/sandy-springs-police-have-arrested-a-serial-fraud-suspect-with-help-from-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/savannah-police-uses-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/scaling-success-meet-flocks-new-law-enforcement-sales-leadership",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/school-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/search-safeguards-how-flocks-search-filters-work",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/secure-warehouses-with-help-from-flock-aerodome",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/securing-summer-how-mobile-security-trailers-safeguard-soft-targets-and-strengthen-community-wellbeing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/securing-your-business-entrances-with-license-plate-reader-cameras-and-advanced-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-camera-system-specifically-for-neighborhoods",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-cameras-lead-to-fraud-suspect-arrest-in-sandy-springs",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-strategies-from-law-enforcement-investigators-part-1-enhancing-business-security-with-advanced-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-strategies-from-law-enforcement-investigators-part-3-connecting-crime-across-multiple-locations-with-license-plate-reader-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-strategies-from-law-enforcement-investigators-part-4-ensuring-equal-security-coverage-across-all-store-locations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-strategies-from-law-enforcement-investigators-part-5-creating-a-virtual-security-perimeter-using-license-plate-reader-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/security-strategies-from-law-enforcement-investigators-part-6-implementing-proactive-off-hours-security-strategies",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/sensors-and-software-help-small-and-mid-sized-communities-solve-public-safety-challenges",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/september-2022-release-notes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/series-d-fundraise-andreessen-horowitz",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/series-e-announcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/sf-takes-historic-step-to-solve-crime-with-400-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/shaping-a-safer-community-in-las-vegas-trail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/shaping-a-safer-future-together-in-hardin-county-kentucky",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/shaping-safer-communities-the-power-of-layered-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/shaping-safer-communities-with-our-flock-forward-2024-sponsors",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/shelby-county-policing-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/should-college-campuses-install-alprs-to-keep-students-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/simplifying-property-security-the-case-for-unified-systems",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/six-abducted-children-recovered-in-five-months-in-colorado-with-flock-lpr-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/smart-cameras-installed-in-midlands-neighborhood",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/smarter-not-scarier-the-role-of-ai-in-ethical-investigative-work",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/snap-the-local-hoa-just-captured-your-license-plate-number",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solar-powered-surveillance",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solved-cobb-county-officers-leverage-the-flock-system-to-detain-dangerous-suspect",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solved-marietta-pd-leverages-flock-technology-to-swiftly-solve-homicide-case",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solved-stories-recap-edition-023",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solvedstories-edition-036",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solvedstories-edition-044",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solvedstories-flock-cameras-at-har-mar-shopping-center-drive-crime-reduction-supporting-roseville-mn-pd",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solvedstories-florida-homeowners-association-staugustine-partners-with-local-law-enforcement-to-better-protect-their-community-from-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solvedstories-homeland-security-taylor-pd-join-forces-to-arrest-7-alleged-child-predators",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solvedstories-multiple-arkansas-police-departments-collaborate-and-employ-flock-lpr-cameras-to-solve-a-string-of-local-robberies",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solving-crime-with-license-plate-cameras-in-atlanta",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solving-cross-jurisdictional-crime-in-real-time-how-flock-safetys-unified-platform-makes-it-possible",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solving-hate-crimes-with-a-smart-streetlight-integration-in-san-diego",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/solving-nonviolent-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/statement-in-response-to-recent-reports",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/statement-network-sharing-use-cases-federal-cooperation",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/stolen-dog-returns-flock-safety-outdoor-security-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/stop-choosing-between-coverage-and-clarity-dual-lens-ptz-delivers-both",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/strengthening-healthcare-security-through-local-law-enforcement-partnerships",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/strengthening-relationships-with-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/sugarloaf-cid-installs-10-new-license-plate-reading-camera",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/surveillance-cameras-flock-to-memphis-area",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/swift-police-response-brings-relief-after-harrowing-ofallon-home-invasion",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/tackling-organized-retail-crime-with-flock-safetys-crime-intelligence-solution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/target-ends-self-checkout-due-to-theft-what-retailers-can-learn",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/tech-forward-policing-real-time-alerts-real-results",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/tech-that-works-tools-that-protect-this-weeks-wins-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/tega-cay-virtual-gate",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/texas-chief-innovative-policing-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-5-as-of-dfr-the-dna-of-a-drone-as-first-responder-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-cases-behind-the-alerts-how-officers-closed-the-loop",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-data-doesnt-stop-at-the-city-line-why-agencies-must-think-regionally",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-details-that-point-the-way-forward",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-evolution-of-flockos-how-customer-feedback-continues-to-shape-the-future",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-first-90-days-at-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-future-of-hotel-security-technologys-role-in-protecting-guests-and-staff",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-future-of-retail-security-insights-from-nrf-protects-big-ideas-panel",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-hidden-cost-of-data-fatigue-in-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-hidden-gaps-in-human-only-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-impact-of-data-driven-solutions-in-crime-solving",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-latest-advancements-in-dfr-aerovision-mobile-apps-and-community-engagement-dashboard",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-moment-that-changes-everything-stopping-wrong-way-driving-before-it-starts",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-power-of-connected-intelligence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-power-of-perspective-what-context-on-your-terms-really-means",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-price-of-free-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-road-to-eagles-club-what-it-takes-to-get-there",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-role-cameras-can-play-during-a-statewide-crisis",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-shift-to-proactive-security-new-tools-to-deter-crime-and-hold-offenders-accountable",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-silent-strain-addressing-mental-health-in-security-roles-with-oscar-arango",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-strategic-value-of-flock-safety-for-multifamily-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/the-university-of-toledo-installing-flock-safety-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/think-big-start-small-4-tips-to-fund-new-police-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/this-surveillance-startup-wants-to-put-cameras-in-your-neighborhood",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/this-technology-helps-police-be-everywhere-at-the-same-time",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/three-proactive-steps-your-school-can-take-to-protect-students-with-custodial-arrangements",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/thriving-cities-fund-launches-in-dfw",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/tips-for-leaving-town",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/top-10-questions-answered-from-flocks-community-safety-webinar",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/transparency-portal",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/travel-safety-tips",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/trespassing-and-unauthorized-access-flock-safetys-solutions-for-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/true-costs-of-dfr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/turning-deals-into-real-world-impact-sales-at-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/types-of-shrinkage-in-retail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/understanding-flocks-testing-and-development-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/understanding-floridas-house-bill-837-how-multifamily-property-owners-can-stay-compliant-and-protected",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/university-of-st-thomas-launches-a-connected-campus-safety-program-with-drone-as-first-responder",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/university-police-catch-serial-burglar-with-alerts-from-flock-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/unleash-the-power-of-nightvision-enhance-your-falcon-r-lpr-cameras-for-superior-nighttime-clarity",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/unlocking-a-career-defining-experience-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/unlocking-the-future-of-real-time-crime-centers-the-2025-nrtcca-conference-lineup",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/update-on-limited-condor-device-configuration-issue",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/use-flock-safety-to-help-police-stop-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/using-drones-for-security-patrols",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/vacaville-pds-blueprint-for-smarter-policing-inside-the-citys-information-centered-approach-to-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/vandalism-and-property-damage-flock-safetys-solutions-for-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/vehicle-and-catalytic-converter-theft-flock-safetys-solutions-for-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/vehicle-intelligence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/vehicle-recognition-software-for-investigation-grade-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/video-with-lpr-equips-law-enforcement-to-stay-ahead-of-summers-surge-in-violent-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/video-without-limitations-flock-safetys-newest-solutions-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/violent-crimes-plummeting-in-a-cobb-county-community",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/virtual-neighborhood-gate-that-captures-evidence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/ward-off-organized-retail-crime-this-holiday-season",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/warner-robins-flock-911",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/washington-court-of-appeals-upholds-automated-license-plate-readers-as-constitutional",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/west-cancer-center-reduces-parking-lot-crime-by-100-with-a-perimeter-security-strategy-using-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-are-the-benefits-of-flock-mobile-security-trailers-vs-traditional-security-systems",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-community-managers-say-is-their-biggest-help-when-crime-is-committed-in-a-neighborhood",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-do-flock-cameras-actually-capture",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-does-connecticut-sb397-mean-for-alpr-use-across-the-state",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-does-open-really-mean-public-safety-wins-when-the-industry-works-together",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-does-oregon-senate-bill-1516-mean-for-alpr-use-in-oregon",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-does-the-driver-privacy-and-safety-act-sb40-mean-for-alpr-use-in-new-mexico",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-does-washington-senate-bill-6002-mean-for-alpr-use-in-washington",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-flocks-privacy-and-security-updates-mean-for-private-sector-customers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-happens-if-a-flock-camera-is-damaged",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-happens-if-law-enforcement-misuses-the-flock-system",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-is-jugging-5-tips-to-keep-you-safe-from-this-dangerous-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-is-organized-retail-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-is-traffic-analytics",
+      "inSitemap": false,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-makes-a-public-safety-platform-secure",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-police-wish-you-knew-about-neighborhood-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-safety-means-to-you-building-community-on-your-terms",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-separates-great-from-good-in-your-first-90-days-at-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-the-supreme-courts-chatrie-decision-actually-means-for-alpr-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-transportation-engineers-can-learn-from-the-roads-they-already-see",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/what-your-city-council-isnt-being-told-about-lpr-privacy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/when-crime-happens-flock-safety-captures-footage-police-need",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/which-license-plate-reader-security-camera-is-best-for-my-needs",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/white-settlements-detective-ramirez-enhances-officer-safety-through-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/whitehall-pd-solves-gun-related-crime-less-than-48",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/who-really-has-access-to-your-flock-data",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-are-some-flock-cameras-being-removed-by-cities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-city-leaders-are-getting-behind-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-i-joined-flock-coo-elan-greenberg",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-i-joined-flock-safety-a-mission-you-can-feel",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-neighborhood-watch-group-need-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-police-technology-is-a-must-for-small-departments",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-public-safety-needs-a-new-kind-of-platform",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-retailers-are-using-license-plate-readers-to-fight-orc-and-fraud",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-safety-is-a-fundamental-right",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-san-leandros-civic-leaders-chose-flock-for-responsible-crime-solving",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-the-type-of-security-camera-you-have-makes-a-difference",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-vendor-competition-matters-for-your-agencys-future",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-video-is-the-missing-link-in-your-lpr-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/why-you-should-embrace-automated-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/workplace-violence-prevention-strategies",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/you-dont-need-more-security-guards-you-need-a-smarter-security-system",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/blog/your-black-friday-game-plan-steps-to-set-your-business-up-for-success",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo---ctv",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-arizona",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-blue-eye",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-form-test",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-homeowners",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-layout",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-multistep",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-neighborhoods",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-paid",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-paid-copy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-short-form",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-short-form-paid",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-short-form-test",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-demo-test",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/book-a-mobile-security-trailers-demo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/brand-partner-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/business-template",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/careers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/careers/engineering",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/careers/experience",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/careers/positions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/chilipiper-2",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/choose-your-bundle",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/city-leadership-direct",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/connected-workflows-demo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/contact",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/crash-detection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/academy-sports-tackles-organized-retail-crime-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/amplifying-intelligence-led-policing-with-fort-worth-pd",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/assessing-the-accuracy-of-computer-vision-methods-for-traffic-data-collection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/empowering-small-city-policing-in-martinsville-va",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/flock-safety-cameras-aid-police-in-arrest-just-30-minutes-after-going-live",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/flock-safety-helps-dierbergs-market-solve-orc-case-of-20k-in-stolen-merchandise",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/flock-safety-raven-and-falcon-help-morgan-hill-pd-solve-aggravated-assault",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/flock-safety-raven-gives-albany-police-department-actionable-crime-data",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/from-risk-to-resolution-ldg-developments-case-closures-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/future-honda-deploys-flock-safety-cameras-to-deter-criminals-and-shape-a-safer-future",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/georgia-hospital-cuts-theft-by-55-percent",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/georgia-school-system-sees-improved-crime-deterrence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/gwinnett-county-pd-uses-flock-lpr-to-reduce-and-solve-crime-across-diverse-roadways",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/healthcare-clinic-enhances-security-and-reduces-crime-with-flock-perimeter-protection-solution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/helping-a-utility-company-deter-violent-crime-and-keep-employees-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/hoa-board-president-enhances-community-safety-while-navigating-tight-budgets-and-local-restrictions-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/how-a-logistics-company-stopped-8-figures-losses-from-organized-crime-protected-millions-in-freight-with-flock-lpr-cameras-56tgx",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/how-castle-rock-police-department-extended-visibility-with-flock-dual-lens-ptz",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/how-columbus-is-harnessesing-flock-lpr-and-audio-detection-for-crime-resolution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/how-many-crimes-do-automated-license-plate-readers-alprs-solve-anyway",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/how-spring-branch-independent-school-district-is-stopping-crime-with-a-flock-safety-falcon-and-raven-system",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/how-tulsa-pd-empowered-their-force-with-real-time-intelligence-via-flockos",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/licking-heights-local-school-district-enhances-learning-with-flock-safety-falcon-perimeter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/licking-heights-school-proactively-leveled-up-security-with-flock-safety-falcon-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/los-angeles-community-solves-high-profile-neighborhood-crime-with-flock-safety-license-plate-recognition-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/pacific-ridge-hoa-from-four-break-ins-a-year-to-zero-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/pet-food-manufacturer-reduces-property-damage-costs-and-deters-threats-from-disgruntled-employees-with-lpr-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/reducing-crime-at-gwinnett-place-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/revolutionizing-response-flock-safetys-impact-in-scottsdale",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/san-antonio-community-considered-one-of-the-safest-communities-since-implementing-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/san-bruno-ca-community-leverages-flock-safety-technology-to-help-solve-100-crimes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/sanibel-flock-traffic-analytics",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/southeastern-metro-agency-quickly-responds-to-gun-related-crimes",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/spokane-county-sheriffs-office-experience-rapid-case-resolution",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/spokane-county-sheriffs-office-improves-investigative-efficiency-with-flockos",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/state-dot-validation-shows-reliable-traffic-data-at-scale",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/tulsa-oklahoma-shopping-center-sees-nearly-70-drop-in-retail-theft-incidents-with-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/university-of-iowa-transformed-campus-safety-with-a-flock-safety-falcon-lpr-perimeter",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/west-cancer-center-reduces-parking-lot-crime-with-flock-safety-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/customers/whitehall-pd-solves-gun-related-crime-with-flock-safety-raven",
+      "inSitemap": true,
+      "status": 301,
+      "location": "/customers"
+    },
+    {
+      "path": "/dir-contract",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/drones-demo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/dual-lens-ptz-video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/13-fall-hotspots-to-secure-with-a-mobile-security-trailer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/2023-back-to-school-safety-kit",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/2023-guide-to-community-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/2025-community-safety-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/3-proven-strategies-to-boost-patient-physician-and-staff-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/5-ways-to-mitigate-retail-risk-for-black-friday-beyond",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/7-security-strategies-from-law-enforcement-investigators-to-better-protect-your-assets-and-employees",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/7-security-strategies-from-law-enforcement-investigators-to-better-protect-your-business-from-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/7-security-strategies-to-protect-nurses-doctors-patients-from-violence-in-your-healthcare-campus-facilities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/a-complete-guide-to-layered-security-technology-for-commercial-businesses",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/a-guide-to-benchmarking-fixed-lpr-solutions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/apartment-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/build-a-stronger-defense-for-your-jobsite",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/building-safer-communities-from-the-ground-up",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/building-safer-communities-from-the-ground-up-ebook",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/checklist-secure-advanced-technology-with-a-small-budget",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/city-officials-build-community-partnerships-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/commercial-property-management-security-a-buyers-guide-use-cases",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/community-safety-use-case-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/connecting-the-dots-a-step-by-step-template-for-orc-case-building",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/coverage-where-it-counts",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/discover-4-proactive-strategies-to-deter-and-solve-more-crime-in-your-neighborhood",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/doing-more-with-less",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/drone-as-first-responder-programs-how-to-build-them-right-from-day-one",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/elevating-retail-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/empowering-communities-to-keep-their-residents-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/from-fear-to-confidence-how-technology-restores-the-retail-experience",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/from-instinct-to-evidence-modern-approaches-to-human-trafficking-investigations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/from-reactive-to-ready-a-playbook-for-the-new-era-of-crisis-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/frost-sullivan-names-flock-safety-a-2025-new-product-innovator",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/hotel-emergency-response-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/how-to-develop-a-level-1-real-time-crime-center",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/how-to-proactively-address-organized-retail-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/how-to-speak-to-city-councils-about-public-safety-technology",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/is-your-tech-ready-for-the-next-crisis",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/license-plate-reader-cameras-overview",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/lpr-funding-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/mobile-safety-tech-can-make-your-campus-safer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/neighborhood-security-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/organized-retail-crime-case-template",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/property-safety-guide-2",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/property-safety-guide-3",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/property-safety-guide-4",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/property-safety-guide-7",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/property-safety-guide-8",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/property-safety-guide-9",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/protect-people-and-profits-this-holiday-season",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/protecting-sacred-spaces-a-modern-guide-to-safety-for-houses-of-worship",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/rapid-reliable-ready-a-smarter-approach-to-crisis-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/retail-security-strategies-from-law-enforcement-investigators",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/school-safety-game-day-game-plan",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/secure-your-home-21-tips-to-keep-you-and-your-home-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/security-solutions-to-keep-your-multi-family-community-safe",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/security-strategies-from-former-law-enforcement-investigators",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/security-strategies-to-protect-nurses-doctors-and-patients-from-violence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/take-campus-safety-to-the-next-level",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/the-2025-alpr-buyers-checklist--and-how-flock-measures-up",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/the-evolving-landscape-of-retail-consumer-attitudes-crime-trends-and-the-technology-leading-the-fight",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/the-evolving-landscape-of-retail-consumer-attitudes-crime-trends-and-the-technology-leading-the-fight-infographic",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/the-power-of-integration-unifying-dispatch-and-rtic-operations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/ebooks/your-plan-for-tech-enhanced-public-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/email-exclusions-test",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/enhanced-lpr-stop-crime-patterns-that-standard-lprs-cant-see",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/events/test-event",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-small-event",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-copy",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-copy-2",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-copy-3",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-copy-4",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-copy-5",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-copy-6",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/events/test-third-party-events-past",
+      "inSitemap": true,
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/faq",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/fb-click-id",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/flock-ecosystem",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/flock-forward",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/flockone-sensors-software-stronger-together",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/form-test",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/gdot",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/gsx",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/implementation-guide",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/builders-developers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/corporate-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/corrections",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/education-campus",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/federal",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/fire-ems",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/healthcare",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/hoas",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/hospitality",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/logistics",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/manufacturing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/multifamily-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/parks-public-spaces",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/places-of-worship",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/property-management",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/public-works",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/retail",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/retail-banking",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/industries/transportation",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/kb-tickets",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/launch-your-rtcc-with-confidence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/api-integration-terms",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/customer-infosec-addendum",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/data-ownership",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/flock-evidence-policy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/flock-group-inc-standard-purchase-order-terms-and-conditions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/flock-safety-ethical-creed",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/lpr-policy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/part91-operational-agreement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/privacy-notice",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/legal/privacy-policy"
+    },
+    {
+      "path": "/legal/privacy-policy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/product-specific-terms",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/social-impact-and-inclusive-procurement-policy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/state-required-provisions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/terms-and-conditions",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/terms-of-service",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/legal/terms-and-conditions"
+    },
+    {
+      "path": "/legal/third-party-terms",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/trademark-notice",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/vendor-baa",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/vendor-compliance-addendum",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/vendor-dpa",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/vendor-infosec-addendum",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/legal/vulnerability-disclosure-policy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/flockos-waitlist",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/lpr-pro-early-access",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/lpr-pro-waitlist",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/perimeter-pro-demo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/proven-where-it-matters",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/rapid-response-shield",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/lp/retail-software",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/madd",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/mobile-security-trailers-are-the-ultimate-seasonal-sidekick",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/mobile-security-trailers-turn-deterrence-into-actionable-evidence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/newsletter",
+      "inSitemap": false,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/partner-inquiry",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/partner-program",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/podcast",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/press-center",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/pricing",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/privacy-ethics",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/trust"
+    },
+    {
+      "path": "/privacy-ethics-copy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/private-sector-drone",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/flock-aerodome-drone-as-automated-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/flock-dfr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/flock-freeform",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/flock-os",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/flock-safety-platform",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/flock911",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/freeform-search",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/products/flock-freeform"
+    },
+    {
+      "path": "/products/gunshot-detection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/investigations-manager",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/products/license-plate-readers"
+    },
+    {
+      "path": "/products/license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/lpr-cameras",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/products/license-plate-readers"
+    },
+    {
+      "path": "/products/mobile-security-trailer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/products/national-lpr-network",
+      "inSitemap": false,
+      "status": 301,
+      "location": "/products/license-plate-readers"
+    },
+    {
+      "path": "/products/video-cameras",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/reduce-guard-cost-calculator",
+      "inSitemap": false,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/refer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/reinstall-fee-schedule",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/resources",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/safe-cities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/safety-without-overtime-flock-safety-fifa-2026",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/solved-stories-awards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/solvedstories-private-sector",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/solvedstories-public-sector",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/stop-wrong-way-crashes-before-they-start",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/supplier-registration",
+      "inSitemap": false,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you-download-asset",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you-freeform",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you-hoa",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you-le-ss",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you-on-demand-webinar",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you-webinar",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/gsx2024-thankyou",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/product-overview-series-thankyou",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-2",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-3",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-4",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-5",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-download-asset",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-for-your-referral",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-freeform",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-hoa",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-le-ss",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-webinar",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thank-you-webinar-flock-forward",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thanks-meeting",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/thanks-meeting-hv",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thank-you/webinar-thankyou",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thanks-meeting",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/thanks-meeting-hv",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/traffic-analytics-for-city-managers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/trust",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/trust/compliance-tools",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/trust/data-privacy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/trust/law-enforcement-access",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/trust/myths-facts",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/trust/rights-safeguards",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/upcoming-events",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/emergency-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/event-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/organized-retail-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/package-theft",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/parking-lot-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/real-time-crime-center",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/transportation",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/trespassing-burglary",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/use-case/vehicle-catalytic-converter-theft",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video-form",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/alpha-is-built-different",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/dekalb-county-safe-city",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/drone-as-automated-security-eyes-on-threats-in-seconds",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/flock-alpha",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/flock-alpha-arrive-first-see-everything",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/flock-stories-your-voice-a-pinecrest-family-finds-safety-after-the-terror-of-a-home-invasion",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/how-alphas-parachute-system-enables-safe-drone-recovery",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/how-castle-rock-police-department-extended-visibility-with-flock-dual-lens-ptz",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/not-all-lprs-are-created-equal",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/providence-police-chief-credits-flock-with-helping-solve-mit-brown-murders",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/real-time-policing-in-action",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/video/two-families-one-frightening-night-and-how-flock-helped-bring-answers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/vs/axon",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/vs/lvt",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar-thankyou",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/ask-the-experts-how-to-prevent-crime-not-just-respond-to-it",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/beyond-the-plate-real-time-video-intelligence-for-police-operations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/boost-your-crime-solving-capabilities-with-lpr-video-bundles",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/bridging-the-gap-dispatch-and-real-time-centers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/bridging-the-gap-dispatch-and-real-time-centerson-demand",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/building-safer-communities-how-to-secure-your-neighborhoods",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/catch-threats-early-resolve-them-quickly-stronger-protection-for-businesses-and-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/catch-threats-early-resolve-them-quickly-stronger-protection-for-businesses-and-communities-on-demand",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/catch-threats-early-resolve-them-quickly-stronger-protection-for-businesses-and-communities-video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/crisis-proof-your-public-safety-tech",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/de-risk-your-response-with-ai-powered-audio-detection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/designing-safer-spaces-how-layout-lighting-and-visibility-reduce-crime",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/drone-as-automated-security-faa-compliance-whats-required",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/elevate-your-response-with-flockos-r-911",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/elevate-your-rtcc-operations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/empowering-communities-and-law-enforcement-with-flock-safety-video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/expanding-your-healthcare-security-perimeter-beyond-four-walls",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/extending-threat-awareness-beyond-store-entry",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/extending-threat-awareness-beyond-store-entry-lpm",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/faster-after-hours-response-with-drone-as-automated-security",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/fewer-incidents-faster-response-unifying-mobile-security-trailers-and-license-plate-readers",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/flock-for-neighborhoods-demo-and-ask-us-anything",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/flock-safety-for-neighborhoods-live-demo-and-ask-us-anything",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-campus-safety-can-boost-student-enrollment-trust",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-does-drone-as-automated-security-work",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-law-enforcement-can-afford-modern-tech-with-limited-budget-and-staff",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-proactive-technology-creates-safer-multifamily-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-to-build-a-dfr-program-right-from-day-one",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-to-create-a-community-wide-safety-platform",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/how-to-speak-to-city-councils",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/introducing-flock-os",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/introducing-flockos-911-demo",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/keeping-healthcare-workers-safe-reducing-the-risk-of-workplace-violence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/limited-staff-big-expectations-how-small-agencies-use-lpr",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/lp-product-launch-may-2024-on-demand",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/prepared-for-anything-how-cities-prepare-for-planned-and-unplanned-events",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/prepared-for-anything-how-cities-prepare-for-planned-and-unplanned-events-on-demand",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/prepared-for-anything-how-cities-prepare-for-planned-and-unplanned-events-video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/preventing-crime-at-your-properties",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/preventing-school-violence",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/proactive-approach-to-safety-for-houses-of-worship",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/product-launch",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/product-launch-feb-2024",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/product-launch-may-2024",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/product-launch-no-cost-apis-ai-for-faster-investigations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/product-launch-webinar",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/q-a-get-to-know-the-mobile-security-trailer",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/q1-2024-flock-safety-quarterly-product-update",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/real-time-road-safety-detect-crashes-sooner-reconstruct-scenes-faster-and-improve-your-streets",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/reduce-crime-and-increase-safety-why-communities-choose-flock-safety",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/reducing-retail-crime-webinar",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/reducing-traffic-deaths-and-building-a-safer-city",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/respond-to-incidents-faster-with-the-security-cameras-you-already-have",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/retail-threat-awareness",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/safer-together-video",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/safety-strategies-to-beat-the-holiday-crime-surge",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/thank-you-uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level-on-demand",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/the-case-for-lpr-gunshot-detection",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/the-future-of-policing-is-real-time",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/the-next-frontier-in-policing-introducing-flock-safetys-drones-for-rapid-response",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/the-safety-blueprint-security-strategies-to-elevate-residential-communities",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/the-shift-to-proactive-security-new-tools-to-deter-crime-and-hold-offenders-accountable",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/the-value-of-security-demonstrating-roi-and-business-impact",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/this-is-a-test",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level",
+      "inSitemap": true,
+      "status": 301,
+      "location": "/webinar/uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level-on-demand"
+    },
+    {
+      "path": "/webinar/uncover-and-connect-taking-human-trafficking-investigations-to-the-next-level-on-demand",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/video-without-limitations",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/video-without-limitations-flock-safetys-newest-solutions-for-law-enforcement",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-combating-orc-and-theft",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-10",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-11",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-2",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-3",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-4",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-5",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-6",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-7",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-8",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-copy-9",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/webinar-test-evens-page-past",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/webinar/you-asked-we-listened-q3-public-safety-product-updates",
+      "inSitemap": true,
+      "status": 301,
+      "location": "/resources"
+    },
+    {
+      "path": "/webinar/you-asked-we-listened-q4-public-safety-product-updates",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/what-is-flock",
+      "inSitemap": true,
+      "status": 200,
+      "location": null
+    }
+  ]
+}

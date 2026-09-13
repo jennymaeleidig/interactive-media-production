@@ -26,6 +26,9 @@ npm run routes     # full-scale serving check over HTTP (~10 s): every live
                    #   page 200 with a byte-identical body, every legacy stub
                    #   301, every dead root / dropped scaffold-test page 404,
                    #   every page's strip audit clean
+npm run upstream   # the upstream watch: is live flocksafety.com still matching
+                   #   the snapshot? hand-run; reads upstream, writes only the
+                   #   committed baseline (and --out evidence), never served/
 ```
 
 There is no pipeline step and no build input: `served/` — 660 MB, 4,466 files,
@@ -92,6 +95,13 @@ scoped re-captures were retired with the refresh workflow. The gitignored captur
 HTML is unrecoverable, and the tools that produced it are in git history only.
 `served/` is therefore the artifact, committed — and the build that produced it
 retired with the captures it read.
+
+**Verified in sync as of 2026-09-13.** The upstream watch (`npm run upstream`)
+measured the live site against the frozen Capture list that day: 1,220 watched
+URLs, 1,200 live 200s identical to the list, zero added and zero removed. The
+committed baseline (`regression/upstream-baseline.json`) records the date, and
+the watch diffs against it from then on. That is a check, not a refresh — the
+watch reports staleness and never moves the snapshot.
 
 ## Publishing
 
