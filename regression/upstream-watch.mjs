@@ -317,6 +317,17 @@ export function buildWatchReport(inputs) {
 }
 
 /**
+ * Whether a baseline delta carries anything. The exit code and the printed
+ * summary both ask this, so a clean print can never disagree with a nonzero
+ * exit.
+ * @param {BaselineDelta|undefined} since
+ * @returns {boolean}
+ */
+function baselineMoved(since) {
+  return since ? since.added.length + since.removed.length + since.changed.length > 0 : false;
+}
+
+/**
  * The human view of a report. It reads the same `findings`, `demotions`,
  * `liveness`, and ticket 02 `since` the `--json` form serializes, so the two
  * can never disagree. The ticket 01 lines and closing line are unchanged when
@@ -364,7 +375,7 @@ export function formatWatchReport(report) {
     }
   }
   const indexDrift = findings.added.length > 0 || findings.removed.length > 0;
-  const baselineDrift = Boolean(report.since && (report.since.added.length > 0 || report.since.removed.length > 0 || report.since.changed.length > 0));
+  const baselineDrift = baselineMoved(report.since);
   if (report.since) {
     lines.push(indexDrift || baselineDrift ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
   } else {
@@ -383,7 +394,5 @@ export function formatWatchReport(report) {
  */
 export function exitCode(report) {
   const indexDrift = report.findings.added.length > 0 || report.findings.removed.length > 0;
-  const { since } = report;
-  const baselineDrift = since ? since.added.length > 0 || since.removed.length > 0 || since.changed.length > 0 : false;
-  return indexDrift || baselineDrift ? 1 : 0;
+  return indexDrift || baselineMoved(report.since) ? 1 : 0;
 }

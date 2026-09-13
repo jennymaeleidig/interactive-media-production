@@ -12,9 +12,10 @@
 // The write rule: only an explicit `--accept` rewrites an existing baseline, so
 // a check can never silently move its own reference point. The one exception is
 // the **silent first run**: with no baseline present there is nothing to diff
-// against, so the run records one and reports only the count, which is why 1,209
-// URLs never register as 1,209 changes. There is one write path in the edge and
-// it is the accept path; the first run takes it because it has nothing to check.
+// against, so the run records one and reports only the count, which is why the
+// whole watched universe never registers as a change on the first run. There is
+// one write path in the edge and it is the accept path; the first run takes it
+// because it has nothing to check.
 //
 // SPDX-License-Identifier: CC0-1.0
 import path from 'node:path';
@@ -62,7 +63,16 @@ export const BASELINE_VERSION = 1;
  * @property {boolean} write
  */
 
-const VERIFIED_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const VERIFIED_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Path order: code-unit, not `localeCompare`, because the baseline is a
+ * committed file whose order must not depend on the machine's locale.
+ * @param {{path: string}} a
+ * @param {{path: string}} b
+ * @returns {number}
+ */
+const byPath = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
 
 /** @param {string} why @returns {never} */
 function bad(why) {
@@ -81,14 +91,19 @@ function readRow(value, index) {
   if (typeof inSitemap !== 'boolean') return bad(`row ${index} has no sitemap membership`);
   if (typeof status !== 'number') return bad(`row ${index} has no numeric status`);
   if (location !== undefined && location !== null && typeof location !== 'string') return bad(`row ${index} has a non-string redirect target`);
-  return { path: p, inSitemap, status, location: location ?? null };
+  // Preserve any other field rather than dropping it: the projection digests a
+  // later ticket adds ride here, and a read-then-accept must not erase state it
+  // does not yet understand. `diffBaseline` compares whatever fields it finds.
+  return { ...value, path: p, inSitemap, status, location: location ?? null };
 }
 
 /**
  * Parse a committed baseline from its text. Everything wrong with the text is
  * an error the edge turns into exit 2: a malformed or future-schema baseline
  * must never be read as an empty one, which would report the whole universe as
- * newly added.
+ * newly added. A version a reader does not know is an error; an unknown *row*
+ * field within a known version is preserved instead, because Version 1 rows are
+ * additive — a later ticket's digest must survive a read/accept round-trip.
  * @param {string} text
  * @returns {Baseline}
  */
@@ -103,7 +118,7 @@ export function readBaseline(text) {
   if (parsed === null || typeof parsed !== 'object') return bad('not an object');
   const { version, verified, rows } = /** @type {Record<string, unknown>} */ (parsed);
   if (version !== BASELINE_VERSION) return bad(`unknown version ${String(version)}`);
-  if (typeof verified !== 'string' || !VERIFIED_DATE.test(verified)) return bad('missing or malformed verified date');
+  if (typeof verified !== 'string' || !VERIFIED_DATE_PATTERN.test(verified)) return bad('missing or malformed verified date');
   if (!Array.isArray(rows)) return bad('rows is not an array');
   return { version, verified, rows: rows.map(readRow) };
 }
@@ -115,7 +130,7 @@ export function readBaseline(text) {
  * @returns {string}
  */
 export function serializeBaseline(baseline) {
-  const rows = [...baseline.rows].sort((a, b) => a.path.localeCompare(b.path));
+  const rows = [...baseline.rows].sort(byPath);
   return `${JSON.stringify({ version: baseline.version, verified: baseline.verified, rows }, null, 2)}\n`;
 }
 
@@ -131,7 +146,7 @@ export function serializeBaseline(baseline) {
 export function baselineFromReport(report, verified) {
   const rows = report.inventory
     .map((row) => ({ path: row.path, inSitemap: row.inSitemap, status: row.status, location: row.location ?? null }))
-    .sort((a, b) => a.path.localeCompare(b.path));
+    .sort(byPath);
   return { version: BASELINE_VERSION, verified, rows };
 }
 
@@ -139,8 +154,12 @@ export function baselineFromReport(report, verified) {
  * What moved between two baselines, by path. A path only in this run is added;
  * a path only in the previous run is removed — the case the frozen Capture list
  * cannot see, because a path it does not hold can leave the watched universe
- * entirely; a path in both whose sitemap membership, status, or redirect target
- * moved is changed, with the fields that moved.
+ * entirely; a path in both whose carried fields moved is changed, with the
+ * fields that moved.
+ *
+ * Every carried field is compared generically, so a field a later ticket adds
+ * to the row (a projection digest) is diffed the moment it is recorded — there
+ * is no per-field list here for that ticket to forget to update.
  * @param {Baseline} previous
  * @param {Baseline} current
  * @returns {import('./upstream-watch.mjs').BaselineDelta}
@@ -159,16 +178,21 @@ export function diffBaseline(previous, current) {
   for (const [p, row] of after) {
     const was = before.get(p);
     if (!was) continue;
+    const from = new Map(Object.entries(was));
+    const to = new Map(Object.entries(row));
     /** @type {import('./upstream-watch.mjs').FieldDelta[]} */
     const fields = [];
-    if (was.inSitemap !== row.inSitemap) fields.push({ field: 'inSitemap', from: was.inSitemap, to: row.inSitemap });
-    if (was.status !== row.status) fields.push({ field: 'status', from: was.status, to: row.status });
-    if ((was.location ?? null) !== (row.location ?? null)) fields.push({ field: 'location', from: was.location ?? null, to: row.location ?? null });
+    for (const key of [...new Set([...from.keys(), ...to.keys()])].sort()) {
+      if (key === 'path') continue;
+      const a = from.get(key) ?? null;
+      const b = to.get(key) ?? null;
+      if (a !== b) fields.push({ field: key, from: a, to: b });
+    }
     if (fields.length > 0) changed.push({ path: p, fields });
   }
   added.sort();
   removed.sort();
-  changed.sort((a, b) => a.path.localeCompare(b.path));
+  changed.sort(byPath);
   return { from: previous.verified, added, removed, changed };
 }
 
@@ -186,7 +210,13 @@ export function runWatch(inputs) {
   const baseline = baselineFromReport(report, verified);
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);
-  return { report: { ...report, verified, since }, baseline, write: previous === null || accept };
+  const write = previous === null || accept;
+  // The report states the date the committed baseline carries *after* this run:
+  // the new date when this run records one, the previous baseline's when a plain
+  // run leaves the reference point alone — never today's date for a run that
+  // recorded nothing.
+  const recorded = previous === null || accept ? verified : previous.verified;
+  return { report: { ...report, verified: recorded, since }, baseline, write };
 }
 
 /**

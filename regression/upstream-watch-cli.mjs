@@ -75,14 +75,15 @@ function readPreviousBaseline() {
 
 /**
  * The run's write targets, each checked against the served tree before any
- * write happens, so a refused target can never leave a half-written pair.
+ * write happens, so a refused target can never leave a half-written pair. The
+ * resolved `--out` path is returned too, so the guard checks exactly the value
+ * the write uses.
  * @param {string|null} out
- * @returns {string[]}
+ * @returns {{targets: string[], outPath: string|null}}
  */
 function writeTargets(out) {
-  const targets = [BASELINE_FILE];
-  if (out !== null) targets.push(path.resolve(process.cwd(), out));
-  return targets;
+  const outPath = out === null ? null : path.resolve(process.cwd(), out);
+  return { targets: outPath === null ? [BASELINE_FILE] : [BASELINE_FILE, outPath], outPath };
 }
 
 async function main() {
@@ -90,13 +91,14 @@ async function main() {
   const asJson = process.argv.includes('--json');
   const accept = process.argv.includes('--accept');
   const out = arg('--out');
+  const { targets, outPath } = writeTargets(out);
   const verified = new Date().toISOString().slice(0, 10);
   const captureList = readFileSync(CAPTURE_FILE, 'utf8')
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line !== '');
 
-  for (const target of writeTargets(out)) {
+  for (const target of targets) {
     if (!outsideServedTree(target, SERVED_ROOT)) {
       return fail(`upstream watch refuses to write inside the served tree: ${path.relative(ROOT, target) || target}`);
     }
@@ -160,7 +162,7 @@ async function main() {
   console.log(text);
 
   if (run.write) writeFileSync(BASELINE_FILE, serializeBaseline(run.baseline));
-  if (out !== null) writeFileSync(path.resolve(process.cwd(), out), `${text}\n`);
+  if (outPath !== null) writeFileSync(outPath, `${text}\n`);
 
   process.exitCode = exitCode(run.report);
 }

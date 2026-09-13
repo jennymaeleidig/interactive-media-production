@@ -100,8 +100,10 @@ retired with the captures it read.
 measured the live site against the frozen Capture list that day: 1,220 watched
 URLs, 1,200 live 200s identical to the list, zero added and zero removed. The
 committed baseline (`regression/upstream-baseline.json`) records the date, and
-the watch diffs against it from then on. That is a check, not a refresh — the
-watch reports staleness and never moves the snapshot.
+the watch diffs against it from then on. Run it before a milestone or a publish;
+it is deliberate and hand-run — there is no schedule, no CI job, and no
+notification channel. That is a check, not a refresh — the watch reports
+staleness and never moves the snapshot.
 
 ## Publishing
 

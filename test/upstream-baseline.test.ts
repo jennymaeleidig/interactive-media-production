@@ -9,7 +9,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { buildWatchReport, exitCode, formatWatchReport } from '../regression/upstream-watch.mjs';
+import { buildWatchReport, exitCode, formatWatchReport, livenessClass } from '../regression/upstream-watch.mjs';
 import { BASELINE_VERSION, baselineFromReport, diffBaseline, outsideServedTree, readBaseline, runWatch, serializeBaseline } from '../regression/upstream-baseline.mjs';
 
 const ORIGIN = 'https://www.flocksafety.com';
@@ -43,6 +43,13 @@ describe('readBaseline / serializeBaseline', () => {
   it('writes rows in path order, so the committed file is stable', () => {
     const text = serializeBaseline({ version: BASELINE_VERSION, verified: VERIFIED, rows: [row('/z', 200), row('/a', 200)] });
     expect(readBaseline(text).rows.map((r) => r.path)).toEqual(['/a', '/z']);
+  });
+
+  it('preserves a row field from a later ticket, so a read/accept cannot erase it', () => {
+    const text = JSON.stringify({ version: BASELINE_VERSION, verified: VERIFIED, rows: [{ ...row('/a', 200), copy: 'prose-digest' }] });
+    const baseline = readBaseline(text);
+    expect(baseline.rows[0]).toMatchObject({ path: '/a', copy: 'prose-digest' });
+    expect(readBaseline(serializeBaseline(baseline)).rows[0]).toMatchObject({ copy: 'prose-digest' });
   });
 
   it('throws on text that is not a baseline, so a run exits 2 rather than guessing', () => {
@@ -85,6 +92,13 @@ describe('runWatch — the silent first run', () => {
     expect(second.report.since).toEqual({ from: VERIFIED, added: [], removed: [], changed: [] });
     expect(exitCode(second.report)).toBe(0);
   });
+
+  it('states the date the committed baseline carries, not today\u2019s, on a plain run', () => {
+    const first = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED });
+    expect(first.report.verified).toBe(VERIFIED);
+    const later = runWatch({ ...steady(), previous: first.baseline, accept: false, verified: '2026-09-20' });
+    expect(later.report.verified).toBe(VERIFIED);
+  });
 });
 
 describe('runWatch — the delta since the last run', () => {
@@ -113,6 +127,12 @@ describe('runWatch — the delta since the last run', () => {
     const first = runWatch({ ...run(['/a'], [], { '/a': { status: 301, location: `${ORIGIN}/x` } }), previous: null, accept: false, verified: VERIFIED });
     const moved = runWatch({ ...run(['/a'], [], { '/a': { status: 301, location: `${ORIGIN}/y` } }), previous: first.baseline, accept: false, verified: '2026-09-14' });
     expect(moved.report.since?.changed).toEqual([{ path: '/a', fields: [{ field: 'location', from: '/x', to: '/y' }] }]);
+  });
+
+  it('diffs every carried row field, so a later ticket’s digest needs no new case here', () => {
+    const base = { version: BASELINE_VERSION, verified: VERIFIED, rows: [{ ...row('/a', 200), copy: 'one' }] };
+    const moved = { ...base, rows: [{ ...base.rows[0], copy: 'two' }] };
+    expect(diffBaseline(base, moved).changed).toEqual([{ path: '/a', fields: [{ field: 'copy', from: 'one', to: 'two' }] }]);
   });
 
   it('exits 1 when the baseline moved and 0 when it did not', () => {
@@ -179,11 +199,12 @@ describe('the committed baseline', () => {
     expect(committed.verified).toBe('2026-09-13');
     expect(committed.rows).toHaveLength(1220);
     expect(committed.rows.filter((r) => r.inSitemap)).toHaveLength(1209);
-    const tally = (predicate: (r: { status: number }) => boolean) => committed.rows.filter(predicate).length;
-    expect(tally((r) => r.status === 200)).toBe(1200);
-    expect(tally((r) => r.status >= 300 && r.status < 400)).toBe(10);
-    expect(tally((r) => r.status === 401)).toBe(10);
-    expect(tally((r) => r.status >= 400 && r.status !== 401)).toBe(0);
+    const tally = (name: string) => committed.rows.filter((r) => livenessClass(r.status) === name).length;
+    expect(tally('200')).toBe(1200);
+    expect(tally('3xx')).toBe(10);
+    expect(tally('401')).toBe(10);
+    expect(tally('4xx')).toBe(0);
+    expect(tally('5xx')).toBe(0);
   });
 
   it('carries the paths sorted and unique', () => {
