@@ -33,6 +33,7 @@ export default defineConfig({
       project('injected-source', ['test/injected-source.test.ts']),
       project('served-tree', ['test/served-tree.test.ts']),
       project('routes', ['test/routes.test.ts']),
+      project('upstream-watch', ['test/upstream-watch.test.ts']),
       project('cli', ['test/cli.test.ts']),
       project('audit', ['test/audit.test.ts']),
       project('html', ['test/html.test.ts']),

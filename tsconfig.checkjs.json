@@ -21,6 +21,7 @@
     "pipeline/chat-widget.js",
     "pipeline/injected-layers.mjs",
     "pipeline/injected-source.mjs",
+    "regression/upstream-watch.mjs",
     "pipeline/globals.d.ts"
   ]
 }

@@ -53,7 +53,7 @@ import { LAYERS, maintainedSource, markedMembers, mirrorFindings, shippedSource 
 import { honoursOutbound } from '../pipeline/injected-source.mjs';
 import { mimeForExt, pageCandidates } from '../pipeline/served-tree.mjs';
 import { startServer } from './server.mjs';
-import { makeArg, invokedDirectly } from '../pipeline/cli.mjs';
+import { invokedDirectly, makeArg, mapLimit } from '../pipeline/cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -169,21 +169,6 @@ function firstDifference(a, b) {
 export function byteMismatch(page, body, file) {
   if (body.equals(file)) return null;
   return `${page}: HTTP body differs from the served file at byte ${firstDifference(body, file)} (body ${body.length} bytes, file ${file.length} bytes)`;
-}
-
-/** Run `fn` over `items` with bounded concurrency, preserving order. */
-async function mapLimit(items, limit, fn) {
-  const out = new Array(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    for (;;) {
-      const i = next++;
-      if (i >= items.length) return;
-      out[i] = await fn(items[i]);
-    }
-  });
-  await Promise.all(workers);
-  return out;
 }
 
 /**

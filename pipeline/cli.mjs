@@ -1,7 +1,8 @@
 // The small CLI seam every Node-ESM entry point in this repo shares: parse the
-// `--flag value` pairs, and tell whether this module is the process entry point
-// (as opposed to an import from a test or another module). Both were copied
-// into each CLI; single-sourcing them keeps the entry-point guard identical.
+// `--flag value` pairs, tell whether this module is the process entry point (as
+// opposed to an import from a test or another module), and fan out over URLs
+// with bounded concurrency. All three were copied into each entry point;
+// single-sourcing them keeps the entry-point guard and the fan-out identical.
 //
 // SPDX-License-Identifier: CC0-1.0
 import path from 'node:path';
@@ -28,4 +29,29 @@ export function makeArg(argv) {
  */
 export function invokedDirectly(metaUrl) {
   return Boolean(process.argv[1]) && metaUrl === pathToFileURL(path.resolve(process.argv[1])).href;
+}
+
+/**
+ * Run `fn` over `items` with bounded concurrency, preserving input order. The
+ * serving check and the upstream watch both fan out over URLs, so the limiter
+ * lives here beside the other shared CLI glue rather than duplicated in each
+ * driver.
+ * @template T, R
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T) => Promise<R>} fn
+ * @returns {Promise<R[]>}
+ */
+export async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (;;) {
+      const i = next++;
+      if (i >= items.length) return;
+      out[i] = await fn(items[i]);
+    }
+  });
+  await Promise.all(workers);
+  return out;
 }

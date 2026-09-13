@@ -1,6 +1,6 @@
 # 01 — The index watch
 
-Status: open
+Status: claimed
 Blocked by: none
 
 ## What to build

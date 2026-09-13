@@ -18,6 +18,7 @@
     "build": "next build",
     "start": "next start",
     "routes": "node regression/routes.mjs",
+    "upstream": "node regression/upstream-watch-cli.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.checkjs.json",
     "test": "vitest run"
   },

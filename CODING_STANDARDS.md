@@ -329,7 +329,14 @@ dev/build for everyone:
   stood on 2026-09-12 and does not follow the live site, so nothing in the repo
   — tool, test, or doc — reaches upstream. The retired refresh procedure
   (re-inventory → diff → scoped re-capture, and the video liveness probe) is in
-  git history only.
+  git history only. **One deliberate exception**: the **upstream watch**
+  (`npm run upstream`, `regression/upstream-watch.mjs` plus its thin network
+  edge) is a hand-run tool that reads upstream's sitemap and homepage and
+  reports index drift; it never writes `served/` or any tree record, and it is
+  not the refresh workflow — it exists so the "should the snapshot move?"
+  decision can be made on evidence. Its own doc lives in the ticket and the
+  module header; see `CONTEXT.md` for **upstream watch**, **watched universe**,
+  and **demotion**.
 - **No ADR record**: decisions live inline — in `CONTEXT.md` terms, in this
   file, and in the comments beside the code they constrain. Don't cite a
   retired decision document; say what the rule is and why.
