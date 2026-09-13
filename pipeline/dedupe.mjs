@@ -40,6 +40,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { createHash } from 'node:crypto';
 import { bodySlots, rawAttr, unquote } from './html.mjs';
+import { grantSources, readCsp, writeCspTag } from './csp.mjs';
 
 /** Bodies smaller than this stay inline: a request costs more than the bytes. */
 export const KEEP_INLINE_BYTES = 1024;
@@ -62,16 +63,6 @@ const DATA_TYPES = new Set([
   'text/x-jquery-tmpl',
 ]);
 
-const CSP_META_RE = /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?content-security-policy["']?[^>]*>/i;
-const CONTENT_ATTR_RE = /(\bcontent\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)/i;
-
-/** The `http-equiv`/`content` pair of the first CSP meta, or null. */
-function cspMeta(html) {
-  const meta = CSP_META_RE.exec(html);
-  if (!meta) return null;
-  return { tag: meta[0], index: meta.index };
-}
-
 /**
  * Whether a slot can become a file: a body above the inline threshold, and a
  * `<script>` that is code rather than data.
@@ -85,26 +76,6 @@ function isExternalizable(slot, minBytes) {
   if (unquote(rawAttr(slot.openTag, 'src')) !== null) return false;
   const type = (unquote(rawAttr(slot.openTag, 'type')) ?? '').trim().toLowerCase().split(';')[0].trim();
   return !DATA_TYPES.has(type);
-}
-
-/** Grant `'self'` in the directives that govern the given kinds. */
-function grantSelf(cspValue, kinds) {
-  let out = cspValue;
-  const granted = { style: false, script: false };
-  for (const kind of ['style', 'script']) {
-    if (!kinds[kind]) continue;
-    const name = `${kind}-src`;
-    const directive = new RegExp(`(?:^|;)\\s*${name}\\s+[^;]*`, 'i').exec(out);
-    if (directive === null || /'self'/.test(directive[0])) {
-      // Nothing to widen: a page with no such directive is governed by
-      // `default-src 'none'`, and the caller keeps that kind inline.
-      granted[kind] = directive !== null;
-      continue;
-    }
-    out = out.replace(directive[0], `${directive[0].trimEnd()} 'self'`);
-    granted[kind] = true;
-  }
-  return { value: out, granted };
 }
 
 /**
@@ -149,26 +120,31 @@ export function dedupeBodies(html, { minBytes = KEEP_INLINE_BYTES } = {}) {
   let granted = { style: false, script: false };
   /** @type {{start: number, end: number, text: string}[]} */
   const edits = [];
-  const meta = cspMeta(html);
+  const meta = readCsp(html);
   if (meta === null) {
     blocked.push('no CSP meta — bodies left inline');
+  } else if (meta.value === null) {
+    blocked.push('CSP meta has no content attribute — bodies left inline');
   } else {
-    const raw = (CONTENT_ATTR_RE.exec(meta.tag) ?? [])[2];
-    const value = unquote(raw);
-    if (value === null) {
-      blocked.push('CSP meta has no content attribute — bodies left inline');
-    } else {
-      const result = grantSelf(value, wants);
-      granted = result.granted;
+    let value = meta.value;
+    let widened = false;
+    for (const kind of ['style', 'script']) {
+      if (!wants[kind]) continue;
+      // `append: false` — a page with no such directive is governed by
+      // `default-src 'none'`, and that kind stays inline below.
+      const result = grantSources(value, `${kind}-src`, ["'self'"], { append: false });
+      granted[kind] = result.existed;
       if (result.value !== value) {
-        csp = result.value;
-        const open = raw[0] === '"' || raw[0] === "'" ? raw[0] : '';
-        const editedTag = meta.tag.replace(CONTENT_ATTR_RE, (_m, prefix) => `${prefix}${open}${result.value}${open}`);
-        edits.push({ start: meta.index, end: meta.index + meta.tag.length, text: editedTag });
+        value = result.value;
+        widened = true;
       }
-      for (const kind of ['style', 'script']) {
-        if (wants[kind] && !granted[kind]) blocked.push(`no ${kind}-src directive to grant — ${kind} bodies left inline`);
-      }
+    }
+    if (widened) {
+      csp = value;
+      edits.push({ start: meta.index, end: meta.index + meta.tag.length, text: writeCspTag(meta, value) });
+    }
+    for (const kind of ['style', 'script']) {
+      if (wants[kind] && !granted[kind]) blocked.push(`no ${kind}-src directive to grant — ${kind} bodies left inline`);
     }
   }
 

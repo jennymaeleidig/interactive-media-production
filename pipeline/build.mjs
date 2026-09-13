@@ -135,6 +135,7 @@ import { dedupeBodies } from './dedupe.mjs';
 import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, stripOriginalUrls, unclassifiedRemoteRefs } from './embeds.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { addAttr, attrValue, contentSegments, editAttr, hasAttr, openTags, replaceTags } from './html.mjs';
+import { grantSources, readCsp, writeCsp } from './csp.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -701,9 +702,6 @@ function navPass(html, entry, css, runtime) {
 
 const CHAT_INJECTED = 'chat widget (style+script, inline)';
 
-/** The captured CSP meta every served page carries (identical across the corpus). */
-const CSP_META_RE = /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?content-security-policy["']?[^>]*>/i;
-
 /**
  * The captured CSP is `default-src 'none'` with no `connect-src`, so it
  * refuses every fetch/XHR — the chat runtime's same-origin POST to /api/chat
@@ -715,22 +713,19 @@ const CSP_META_RE = /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?content-security-policy
  * pages that carry the mimic.
  */
 function grantConnectSelf(html, entry) {
-  const meta = CSP_META_RE.exec(html);
-  if (!meta) {
+  const csp = readCsp(html);
+  if (csp === null) {
     entry.warnings.push('chat: no CSP meta found — the widget POST may be blocked');
     return html;
   }
-  const edited = editAttr(meta[0], 'content', (value) => {
-    if (/(?:^|;)\s*connect-src\b/i.test(value)) return value; // already granted
-    return value.replace(/[;\s]+$/, '') + "; connect-src 'self';";
-  });
-  if (edited === null) {
+  if (csp.value === null) {
     entry.warnings.push('chat: CSP meta has no content attribute — the widget POST may be blocked');
     return html;
   }
-  if (edited === meta[0]) return html;
+  const granted = grantSources(csp.value, 'connect-src', ["'self'"]);
+  if (granted.value === csp.value) return html;
   entry.csp = entry.csp ? `${entry.csp}; connect-src 'self' (chat mount)` : "connect-src 'self' (chat mount)";
-  return html.slice(0, meta.index) + edited + html.slice(meta.index + meta[0].length);
+  return writeCsp(html, csp, granted.value);
 }
 
 /**
@@ -746,27 +741,21 @@ function grantConnectSelf(html, entry) {
  * @returns {string}
  */
 function grantFrameSrc(html, entry, hosts) {
-  const meta = CSP_META_RE.exec(html);
-  if (!meta) {
+  const csp = readCsp(html);
+  if (csp === null) {
     entry.warnings.push('embeds: no CSP meta found — the live players will be blocked');
     return html;
   }
-  const sources = hosts.map((h) => `https://${h}`);
-  const edited = editAttr(meta[0], 'content', (value) => {
-    const directive = /(?:^|;)\s*frame-src\s+[^;]*/i.exec(value);
-    if (!directive) return value.replace(/[;\s]+$/, '') + `; frame-src 'self' data: ${sources.join(' ')};`;
-    const missing = sources.filter((s) => !directive[0].includes(s));
-    if (missing.length === 0) return value;
-    return value.replace(directive[0], `${directive[0].trimEnd()} ${missing.join(' ')}`);
-  });
-  if (edited === null) {
+  if (csp.value === null) {
     entry.warnings.push('embeds: CSP meta has no content attribute — the live players will be blocked');
     return html;
   }
-  if (edited === meta[0]) return html;
+  const sources = hosts.map((h) => `https://${h}`);
+  const granted = grantSources(csp.value, 'frame-src', sources, { defaults: ["'self'", 'data:', ...sources] });
+  if (granted.value === csp.value) return html;
   const grant = `frame-src ${sources.join(' ')} (live embeds)`;
   entry.csp = entry.csp ? `${entry.csp}; ${grant}` : grant;
-  return html.slice(0, meta.index) + edited + html.slice(meta.index + meta[0].length);
+  return writeCsp(html, csp, granted.value);
 }
 
 /**

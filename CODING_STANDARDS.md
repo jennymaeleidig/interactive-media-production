@@ -19,10 +19,16 @@ served page (fetch, XHR, WebSocket, remote `src`, beacon) violates the piece.
 Injected runtimes (motion, story-hook, chat) are inline, DOM-only, and must
 degrade to the captured end-state with JavaScript disabled. The Captures'
 own CSP (`default-src 'none'`, no `connect-src`) refuses even the chat's
-same-origin POST, so the chat mount is the **one** pass that touches the
-policy: it appends exactly `connect-src 'self'` on launcher pages (logged per
-page), and no pass may widen it beyond that — `'self'` is the Recreation
-origin, so the grant cannot leave the machine.
+same-origin POST, and the policy is edited in exactly one place —
+`pipeline/csp.mjs`, whose `grantSources` **replaces** a directive rather than
+appending a second one (two directives intersect and the resource stays
+blocked, which looks exactly like the grant never having been made). Three
+passes make a grant, each logged per page: the chat mount appends exactly
+`connect-src 'self'` on launcher pages, the embed pass widens `frame-src` by
+the hosts it used (ADR 0002), and pass 14 widens `style-src`/`script-src` by
+`'self'` (ADR 0003). No grant may reach further: `'self'` is the Recreation
+origin, and the frame hosts are the audit's allow-list, so nothing can leave
+the machine.
 
 Page assets are local, never remote. A Capture inlines every image, font, and
 sound as a `data:` URI, and the build extracts each one to a content-addressed
@@ -207,7 +213,11 @@ video.js documents are stripped, not played (ticket 19).
   pure-module seams, each its own vitest project — the data-URI extraction
   core (`test/assets.test.ts` — `pipeline/assets.mjs`: the attribute and `url()`
   value classes, CSS unescaping, the MIME tables, and the payload shapes the
-  corpus actually contains) and the live-embed pass
+  corpus actually contains) and the captured-policy core
+  (`test/csp.test.ts` — `pipeline/csp.mjs`: the policy read/write pair, the
+  grant branches the frozen tree actually reaches, and the invariant that a
+  directive is replaced rather than appended — pinned by granting three times
+  and counting directives, for all three grants) and the live-embed pass
   (`test/embeds.test.ts` — `pipeline/embeds.mjs`: the five slot shapes
   including popover inlining and the frames the Capture emptied but remembered
   via `data-sf-original-src`, the YouTube `data-video-id` detection, the

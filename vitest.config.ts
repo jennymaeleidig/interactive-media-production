@@ -89,6 +89,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'csp',
+          include: ['test/csp.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'html',
           include: ['test/html.test.ts'],
         },

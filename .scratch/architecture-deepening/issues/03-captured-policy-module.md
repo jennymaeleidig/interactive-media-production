@@ -1,6 +1,6 @@
 # 03 — One module owns the captured policy
 
-Status: open
+Status: resolved
 Blocked by: 01
 
 ## What to build
@@ -18,11 +18,30 @@ pass, and pass 14 all call it.
 
 ## Acceptance criteria
 
-- [ ] One `CSP_META_RE`-equivalent in the repo.
-- [ ] One grant operation; the three call sites express only *which* directive
+- [x] One `CSP_META_RE`-equivalent in the repo.
+- [x] One grant operation; the three call sites express only *which* directive
       and *which* sources.
-- [ ] The duplicate-directive invariant (exactly one `style-src` / `script-src` /
+- [x] The duplicate-directive invariant (exactly one `style-src` / `script-src` /
       `frame-src` after grants) is tested once, at the module.
-- [ ] `CODING_STANDARDS.md`'s "the chat mount is the one pass that touches the
+- [x] `CODING_STANDARDS.md`'s "the chat mount is the one pass that touches the
       policy" is corrected to name the module and the three grants.
-- [ ] Fixture output byte-identical (`.tmp/golden` diff empty).
+- [x] Fixture output byte-identical (`.tmp/golden` diff empty).
+
+## Comments
+
+Measured the frozen tree before writing the module, which settled which branches
+are live and how to word the invariant: 1,181 pages, **22 with no CSP meta at
+all** (that warning path is real, not defensive), none missing a `content`
+attribute, **no page with a duplicate directive**, and six distinct policy
+values that all end in the appended `connect-src 'self';` — so the captured
+policy carries no `connect-src` and every served `connect-src` is the chat
+mount's append.
+
+The one behavioural change, unreachable in the corpus and a strict improvement:
+the chat mount used to leave an *existing* `connect-src` untouched; it now
+widens it with `'self'` like the other two grants, which is what the POST needs.
+No served page has a captured `connect-src` (proven above), so the bytes do not
+move.
+
+Evidence: `.tmp/golden` tree and mutation log both identical; 334 tests green in
+17 files.
