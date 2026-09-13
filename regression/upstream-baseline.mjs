@@ -20,6 +20,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import path from 'node:path';
 import { buildWatchReport } from './upstream-watch.mjs';
+import { copyReport } from './upstream-copy.mjs';
 
 /**
  * The schema of the committed baseline. Later tickets add per-row projection
@@ -38,6 +39,7 @@ export const BASELINE_VERSION = 1;
  * @property {boolean} inSitemap
  * @property {number} status
  * @property {string|null} location
+ * @property {string} [copy]  the **copy projection** digest ticket 03 records
  */
 
 /**
@@ -49,8 +51,9 @@ export const BASELINE_VERSION = 1;
  */
 
 /**
- * Ticket 01's report inputs plus ticket 02's baseline state.
- * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string}} RunInputs
+ * Ticket 01's report inputs plus ticket 02's baseline state and ticket 03's
+ * copy pages.
+ * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copy?: import('./upstream-copy.mjs').CopyPage[]}} RunInputs
  */
 
 /**
@@ -137,15 +140,22 @@ export function serializeBaseline(baseline) {
 /**
  * The state one run records: one row per watched URL, sorted by path. The row
  * is the inventory's durable facts — path, sitemap membership, status, redirect
- * target — not a second inventory: `inCapture` comes from the frozen Capture
- * list and `lastmod` is context the baseline has no use for.
+ * target — plus, for a URL this run projected, the digest of the **live** page's
+ * copy. `inCapture` comes from the frozen Capture list and `lastmod` is context
+ * the baseline has no use for. A path with no digest keeps the plain v1 row, so
+ * a baseline recorded before ticket 03 still reads.
  * @param {import('./upstream-watch.mjs').WatchReport} report
  * @param {string} verified
+ * @param {Record<string, string>} [copy]  path → live copy-projection digest
  * @returns {Baseline}
  */
-export function baselineFromReport(report, verified) {
+export function baselineFromReport(report, verified, copy = {}) {
   const rows = report.inventory
-    .map((row) => ({ path: row.path, inSitemap: row.inSitemap, status: row.status, location: row.location ?? null }))
+    .map((row) => {
+      const carried = { path: row.path, inSitemap: row.inSitemap, status: row.status, location: row.location ?? null };
+      const digest = copy[row.path];
+      return digest === undefined ? carried : { ...carried, copy: digest };
+    })
     .sort(byPath);
   return { version: BASELINE_VERSION, verified, rows };
 }
@@ -197,17 +207,20 @@ export function diffBaseline(previous, current) {
 }
 
 /**
- * One run of the watch, as a value. Builds ticket 01's index report, derives
- * this run's baseline from it, and diffs it against the previous one. `write`
- * is true only for the silent first run (no previous baseline) or an explicit
- * accept; a plain run with a previous baseline never moves the reference point.
+ * One run of the watch, as a value. Builds ticket 01's index report, compares
+ * the copy projection live versus served when the edge hands it pages (ticket
+ * 03), derives this run's baseline — carrying the copy digests — and diffs it
+ * against the previous one. `write` is true only for the silent first run (no
+ * previous baseline) or an explicit accept; a plain run with a previous
+ * baseline never moves the reference point.
  * @param {RunInputs} inputs
  * @returns {WatchRun}
  */
 export function runWatch(inputs) {
-  const { previous = null, accept = false, verified, ...rest } = inputs;
+  const { previous = null, accept = false, verified, copy: pages, ...rest } = inputs;
   const report = buildWatchReport(rest);
-  const baseline = baselineFromReport(report, verified);
+  const copy = pages === undefined ? null : copyReport(pages);
+  const baseline = baselineFromReport(report, verified, copy?.digests ?? {});
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);
   const write = previous === null || accept;
@@ -216,7 +229,16 @@ export function runWatch(inputs) {
   // run leaves the reference point alone — never today's date for a run that
   // recorded nothing.
   const recorded = previous === null || accept ? verified : previous.verified;
-  return { report: { ...report, verified: recorded, since }, baseline, write };
+  return {
+    report: {
+      ...report,
+      verified: recorded,
+      since,
+      ...(copy === null ? {} : { copy: { compared: copy.compared, differed: copy.differed, findings: copy.findings } }),
+    },
+    baseline,
+    write,
+  };
 }
 
 /**

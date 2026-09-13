@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildWatchReport, exitCode, formatWatchReport, livenessClass } from '../regression/upstream-watch.mjs';
 import { BASELINE_VERSION, baselineFromReport, diffBaseline, outsideServedTree, readBaseline, runWatch, serializeBaseline } from '../regression/upstream-baseline.mjs';
+import { copyDigest, copyRuns } from '../regression/upstream-copy.mjs';
 
 const ORIGIN = 'https://www.flocksafety.com';
 const VERIFIED = '2026-09-13';
@@ -214,14 +215,87 @@ describe('the committed baseline', () => {
   });
 
   it('carries redirect targets and the auth-gated class as measured', () => {
-    expect(committed.rows.find((r) => r.path === '/')).toEqual(row('/', 200));
+    expect(committed.rows.find((r) => r.path === '/')).toMatchObject(row('/', 200));
     expect(committed.rows.find((r) => r.path === '/webinar/you-asked-we-listened-q3-public-safety-product-updates')).toEqual(
       row('/webinar/you-asked-we-listened-q3-public-safety-product-updates', 301, true, '/resources'),
     );
     expect(committed.rows.find((r) => r.path === '/events/test-event')).toEqual(row('/events/test-event', 401));
   });
 
+  it('carries the copy digest ticket 03 measured, on every live 200 the tree serves', () => {
+    const projected = committed.rows.filter((r) => 'copy' in r);
+    // The 1,181 pages the tree serves, out of the 1,200 live 200s; the 19
+    // served-page gaps stay plain rows, as do the 3xx and 401 paths that have
+    // no page copy to project.
+    expect(projected).toHaveLength(1181);
+    for (const r of projected) {
+      expect(r.status).toBe(200);
+      expect(r.copy).toMatch(/^[0-9a-f]{16}$/);
+    }
+  });
+
   it('diffs against itself to nothing: the steady state', () => {
     expect(diffBaseline(committed, committed)).toEqual({ from: '2026-09-13', added: [], removed: [], changed: [] });
+  });
+});
+
+// Ticket 03: the copy projection joins the baseline row and the run report. The
+// row carries the digest of the live page's prose, so a later run can report
+// that upstream's copy moved even before the per-page comparison says so; the
+// run reports the live-versus-served counts and the findings.
+describe('the copy tier — baseline row and run report', () => {
+  const pages = (live: string) => [
+    { path: '/a', served: '<p>Old</p>', live },
+    { path: '/b', served: '<p>Same</p>', live: '<p>Same</p>' },
+  ];
+
+  it('places each run’s live copy digest in the baseline row, and round-trips it', () => {
+    const report = buildWatchReport(run(['/a', '/b'], ['/a', '/b'], { '/a': { status: 200 }, '/b': { status: 200 } }));
+    const baseline = baselineFromReport(report, VERIFIED, { '/a': 'digest-a' });
+    expect(baseline.rows.find((r) => r.path === '/a')).toEqual({ path: '/a', inSitemap: true, status: 200, location: null, copy: 'digest-a' });
+    // a path the run did not project keeps the plain v1 row
+    expect(baseline.rows.find((r) => r.path === '/b')).toEqual(row('/b', 200));
+    expect(readBaseline(serializeBaseline(baseline))).toEqual(baseline);
+  });
+
+  it('records the live projection’s digest on the run’s baseline and reports the counts', () => {
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>New</p>') });
+    expect(result.report.copy).toEqual({
+      compared: 2,
+      differed: 1,
+      findings: [{ path: '/a', hunks: [{ served: ['Old'], live: ['New'] }] }],
+    });
+    expect(result.baseline.rows.find((r) => r.path === '/a')?.copy).toBe(copyDigest(copyRuns('<p>New</p>')));
+    expect(result.baseline.rows.find((r) => r.path === '/b')?.copy).toBe(copyDigest(copyRuns('<p>Same</p>')));
+  });
+
+  it('reports a copy difference as drift: exit 1, and the path and runs in human output', () => {
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>New</p>') });
+    expect(exitCode(result.report)).toBe(1);
+    const human = formatWatchReport(result.report);
+    for (const finding of result.report.copy?.findings ?? []) {
+      expect(human).toContain(finding.path);
+      for (const hunk of finding.hunks) for (const prose of [...hunk.served, ...hunk.live]) expect(human).toContain(prose);
+    }
+  });
+
+  it('exits 0 when every served page’s prose matches live', () => {
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>Old</p>') });
+    expect(result.report.copy?.differed).toBe(0);
+    expect(exitCode(result.report)).toBe(0);
+  });
+
+  it('reports a live copy move since the last run as a baseline field move', () => {
+    const first = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>Old</p>') });
+    const second = runWatch({ ...steady(), previous: first.baseline, accept: false, verified: '2026-09-14', copy: pages('<p>New</p>') });
+    expect(second.report.since?.changed).toEqual([
+      { path: '/a', fields: [{ field: 'copy', from: copyDigest(copyRuns('<p>Old</p>')), to: copyDigest(copyRuns('<p>New</p>')) }] },
+    ]);
+  });
+
+  it('leaves a run with no copy input without a copy tier', () => {
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED });
+    expect(result.report.copy).toBeUndefined();
+    expect(result.report.inventory.every((r) => !('copy' in r))).toBe(true);
   });
 });

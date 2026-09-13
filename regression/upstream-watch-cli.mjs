@@ -1,8 +1,9 @@
-// The upstream watch's network edge (tickets 01 and 02): fetch the sitemap and
-// homepage, probe every path in the watched universe once, hand the bytes and
-// the previous baseline to the pure cores, print what they decide, and record
-// the baseline when the run is allowed to. This file decides nothing itself —
-// it adds only the network, the filesystem, and the process exit code.
+// The upstream watch's network edge (tickets 01–03): fetch the sitemap and
+// homepage, probe every path in the watched universe once, fetch the body of
+// every watched page the tree serves, hand the bytes and the previous baseline
+// to the pure cores, print what they decide, and record the baseline when the
+// run is allowed to. This file decides nothing itself — it adds only the
+// network, the filesystem, and the process exit code.
 //
 // It is deliberately outside the test suite: the suite must stay green on a
 // fresh clone with no network, so the cores are pinned by fixtures and this edge
@@ -22,11 +23,12 @@
 // unreadable baseline — is never reported as a clean one).
 //
 // SPDX-License-Identifier: CC0-1.0
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAPTURE_LIST } from '../pipeline/config.mjs';
 import { invokedDirectly, makeArg, mapLimit } from '../pipeline/cli.mjs';
+import { pageCandidates } from '../pipeline/served-tree.mjs';
 import { exitCode, formatWatchReport, watchedUniverse } from './upstream-watch.mjs';
 import { outsideServedTree, readBaseline, runWatch, serializeBaseline } from './upstream-baseline.mjs';
 
@@ -54,11 +56,16 @@ async function fetchText(url) {
   return res.text();
 }
 
-/** Probe one URL without following redirects, so the raw 3xx and Location show. */
-async function probe(url) {
+/** Probe one URL without following redirects, so the raw 3xx and Location show.
+ * When the tree serves this path and upstream answers 200, read the body too —
+ * it is the live side of the copy comparison. A 3xx or 401 has no page copy to
+ * compare, so its body is cancelled unread. */
+async function probe(url, wantBody) {
   const res = await fetch(url, { redirect: 'manual' });
+  const location = res.headers.get('location');
+  if (wantBody && res.status === 200) return { status: res.status, location, body: await res.text() };
   res.body?.cancel().catch(() => {});
-  return { status: res.status, location: res.headers.get('location') };
+  return { status: res.status, location };
 }
 
 /** The previous baseline, or null when there is none yet (the silent first run). */
@@ -131,9 +138,19 @@ async function main() {
     return fail('upstream watch found no URLs to probe — the sitemap, homepage, and Capture list were all empty');
   }
 
+  // The watched URLs the tree answers, resolved through the serving layer's own
+  // rule, so the copy comparison runs on exactly the pages the server would
+  // serve for those URLs.
+  /** @type {Map<string, string>} */
+  const servedFiles = new Map();
+  for (const watched of universe) {
+    const file = pageCandidates(SERVED_ROOT, watched).find((candidate) => existsSync(candidate));
+    if (file !== undefined) servedFiles.set(watched, file);
+  }
+
   const results = await mapLimit(universe, CONCURRENCY, async (/** @type {string} */ watched) => {
     try {
-      return { path: watched, probe: await probe(ORIGIN + watched) };
+      return { path: watched, probe: await probe(ORIGIN + watched, servedFiles.has(watched)) };
     } catch (err) {
       return { path: watched, error: message(err) };
     }
@@ -149,11 +166,19 @@ async function main() {
 
   /** @type {Record<string, import('./upstream-watch.mjs').Probe>} */
   const probes = {};
-  for (const result of results) probes[result.path] = { status: result.probe.status, location: result.probe.location };
+  /** @type {import('./upstream-copy.mjs').CopyPage[]} */
+  const copy = [];
+  for (const result of results) {
+    probes[result.path] = { status: result.probe.status, location: result.probe.location };
+    const body = result.probe.body;
+    const file = servedFiles.get(result.path);
+    if (body === undefined || file === undefined) continue;
+    copy.push({ path: result.path, served: readFileSync(file, 'utf8'), live: body });
+  }
 
   let run;
   try {
-    run = runWatch({ ...inputs, probes, previous, accept, verified });
+    run = runWatch({ ...inputs, probes, previous, accept, verified, copy });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }

@@ -98,10 +98,17 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
+ * One page whose prose differs from the live page it reproduces, as ticket 03
+ * reports it: the path and the differing runs, never a page-level boolean.
+ * @typedef {import('./upstream-copy.mjs').CopyFinding} CopyFinding
+ */
+
+/**
  * The comparison a run produces. `inventory` is the whole measurement;
  * `findings` are the drift against the frozen Capture list, which ticket 01
  * alone can see. Ticket 02's `since` is the drift against the moving baseline;
- * together they are the only things that make the run exit 1.
+ * ticket 03's `copy` is the live-versus-served prose comparison. Together they
+ * are the only things that make the run exit 1.
  * @typedef {Object} WatchReport
  * @property {string} origin
  * @property {{sitemap: number, homepage: number, capture: number, universe: number}} counts
@@ -111,6 +118,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {InventoryRow[]} inventory
  * @property {string} [verified]  the date this run verified upstream; set by `runWatch`
  * @property {BaselineDelta} [since]  what moved since the previous run; set by `runWatch`
+ * @property {{compared: number, differed: number, findings: CopyFinding[]}} [copy]  the served-versus-live prose comparison; set by `runWatch`
  */
 
 /**
@@ -328,6 +336,22 @@ function baselineMoved(since) {
 }
 
 /**
+ * Whether the copy comparison carries anything.
+ * @param {WatchReport['copy']} copy
+ * @returns {boolean}
+ */
+function copyMoved(copy) {
+  return copy !== undefined && copy.differed > 0;
+}
+
+/** One run's text for the human view, bounded so a whole-page rewrite cannot
+ * bury the finding. @param {string[]} runs @returns {string} */
+function summarizeRuns(runs) {
+  const shown = runs.map((run) => (run.length > 160 ? `${run.slice(0, 157)}…` : run));
+  return shown.join(' / ');
+}
+
+/**
  * The human view of a report. It reads the same `findings`, `demotions`,
  * `liveness`, and ticket 02 `since` the `--json` form serializes, so the two
  * can never disagree. The ticket 01 lines and closing line are unchanged when
@@ -346,6 +370,10 @@ export function formatWatchReport(report) {
   if (report.since) {
     const { from, added, removed, changed } = report.since;
     lines.push(`  since ${from ?? 'the first run'}: ${added.length} added · ${removed.length} removed · ${changed.length} changed`);
+  }
+  if (report.copy) {
+    const { compared, differed } = report.copy;
+    lines.push(`  copy: ${compared} page(s) compared · ${differed} differed`);
   }
   if (demotions.length > 0) {
     lines.push(`  demotions (context, not findings): ${demotions.length}`);
@@ -374,25 +402,36 @@ export function formatWatchReport(report) {
       for (const c of changed) lines.push(`    ~ ${c.path} (${c.fields.map((f) => `${f.field} ${f.from} → ${f.to}`).join(', ')})`);
     }
   }
+  if (report.copy && report.copy.findings.length > 0) {
+    lines.push('  copy findings — served prose that no longer matches live:');
+    for (const finding of report.copy.findings) {
+      lines.push(`    ~ ${finding.path} (${finding.hunks.length} differing run group(s))`);
+      for (const hunk of finding.hunks) {
+        if (hunk.served.length > 0) lines.push(`      served: ${summarizeRuns(hunk.served)}`);
+        if (hunk.live.length > 0) lines.push(`      live:   ${summarizeRuns(hunk.live)}`);
+      }
+    }
+  }
   const indexDrift = findings.added.length > 0 || findings.removed.length > 0;
   const baselineDrift = baselineMoved(report.since);
+  const copyDrift = copyMoved(report.copy);
   if (report.since) {
-    lines.push(indexDrift || baselineDrift ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
+    lines.push(indexDrift || baselineDrift || copyDrift ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
   } else {
-    lines.push(indexDrift ? '✗ Index drift — see findings above.' : '✓ Index in sync with the Capture list.');
+    lines.push(indexDrift || copyDrift ? '✗ Drift — see findings above.' : '✓ Index in sync with the Capture list.');
   }
   return lines.join('\n');
 }
 
 /**
- * The command's exit code: 1 when the index drifted (ticket 01) or the
- * baseline moved (ticket 02), 0 otherwise. An operational failure (2) is the
- * driver's, not the report's — an incomplete measurement must never masquerade
- * as a clean one.
+ * The command's exit code: 1 when the index drifted (ticket 01), the baseline
+ * moved (ticket 02), or the served prose no longer matches live (ticket 03), 0
+ * otherwise. An operational failure (2) is the driver's, not the report's — an
+ * incomplete measurement must never masquerade as a clean one.
  * @param {WatchReport} report
  * @returns {0|1}
  */
 export function exitCode(report) {
   const indexDrift = report.findings.added.length > 0 || report.findings.removed.length > 0;
-  return indexDrift || baselineMoved(report.since) ? 1 : 0;
+  return indexDrift || baselineMoved(report.since) || copyMoved(report.copy) ? 1 : 0;
 }
