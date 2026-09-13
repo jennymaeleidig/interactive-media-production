@@ -299,7 +299,9 @@ const IMAGE = 'capsulecode/singlefile:latest';
  * SingleFile's arguments, with the corrected flags ticket 15 requires: keep
  * hidden subtrees (`--remove-hidden-elements=false`) and state CSS
  * (`--remove-unused-styles=false`). The defaults strip both site-wide. Videos
- * are embedded rather than blocked (see `--block-videos=false` below).
+ * are embedded rather than blocked (see `--block-videos=false` below), and the
+ * original URLs are kept in `data-sf-original-*` attributes (see
+ * `--save-original-urls` below).
  */
 export function singleFileArgs(url, rel) {
   return [
@@ -310,6 +312,16 @@ export function singleFileArgs(url, rel) {
     '--browser-capture-max-time', '45000',
     '--remove-hidden-elements=false',
     '--remove-unused-styles=false',
+    // SingleFile rebuilds every frame: it always removes the `src` and then
+    // either inlines the frame document (`srcdoc`) or leaves the element empty.
+    // For a cross-origin player it can only leave it empty — a src-less iframe
+    // with no trace of what it pointed at. This flag makes it record the URL it
+    // removed in `data-sf-original-src`, so the Capture keeps the ground truth
+    // the embed pass needs to point the slot at the real player again (the
+    // blog's rich-text YouTube figures: 91 empty frames on 74 pages before
+    // this flag was added). Without it those slots are unrecoverable — the
+    // served page can never play the video and the inventory can never see it.
+    '--save-original-urls',
     // Videos load and embed. SingleFile's default (true) blocks them: the page
     // keeps a source-less <video> plus a SingleFile-injected link to the CDN
     // file, so a served page shows a dead box that only works in a new tab

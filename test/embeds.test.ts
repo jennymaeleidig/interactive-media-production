@@ -6,12 +6,15 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import {
+  capturedFrameSlots,
+  capturedFrameUrl,
   embedPass,
   iframeSources,
   offAllowlistFrames,
   srcdocScripts,
   srcdocSpans,
   stripHiddenVidzflow,
+  stripOriginalUrls,
   unclassifiedRemoteRefs,
   wistiaEmbedUrl,
   wistiaIframe,
@@ -147,6 +150,110 @@ describe('embedPass', () => {
   });
 });
 
+describe('frames the Capture emptied but remembered (ticket 12)', () => {
+  // SingleFile always strips a frame's `src`; for a cross-origin player it can
+  // only leave the element empty. `--save-original-urls` puts the URL it removed
+  // into `data-sf-original-src`, which is the only surviving trace of the player
+  // the live page loaded (the blog's rich-text YouTube figures).
+  const FRAME = (orig: string) =>
+    `<figure class="w-richtext-align-fullwidth w-richtext-figure-type-video"><div><iframe title="What&#x27;s Changing at Flock" scrolling=no frameborder=0 allowfullscreen data-sf-original-src=${orig}></iframe></div></figure>`;
+
+  it('points the frame at the player the Capture recorded', () => {
+    const html = FRAME('https://www.youtube.com/embed/s2c1wtb8U7g');
+    expect(capturedFrameSlots(html)).toEqual([
+      expect.objectContaining({ url: 'https://www.youtube.com/embed/s2c1wtb8U7g' }),
+    ]);
+    const r = embedPass(html);
+    expect(r.html).toContain('src="https://www.youtube.com/embed/s2c1wtb8U7g"');
+    expect(r.html).not.toContain('data-sf-original-src');
+    expect(r.reshaped.frame).toBe(1);
+    expect(r.hosts).toEqual(['www.youtube.com']);
+  });
+
+  it('keeps a clean embed URL\u2019s own host and query parameters', () => {
+    const r = embedPass(FRAME('https://www.youtube-nocookie.com/embed/XPOILsc-TSM?si=bL0YcKfw9xqTZmxp'));
+    expect(r.html).toContain('src="https://www.youtube-nocookie.com/embed/XPOILsc-TSM?si=bL0YcKfw9xqTZmxp"');
+    expect(r.hosts).toEqual(['www.youtube-nocookie.com']);
+    // `&amp;` in the captured value is an entity: the frame URL carries a real
+    // `&`, re-escaped for the attribute it goes back into
+    const controls = embedPass(FRAME('https://www.youtube.com/embed/oBydipKbZ0Y?si=x&amp;controls=0'));
+    expect(controls.html).toContain('src="https://www.youtube.com/embed/oBydipKbZ0Y?si=x&amp;controls=0"');
+  });
+
+  it('collapses an Embedly-escaped player URL to the canonical embed the id names', () => {
+    // The live page's player was wrapped in a quoted, entity-escaped string, so
+    // the value does not parse as a URL — but the id in it is the video.
+    const raw = '&quot;https://www.youtube.com/embed/v0BiDmPloBs?wmode=opaque&amp;amp;widget_referrer=https%3A%2F%2Fwww.flocksafety.com%2F&amp;amp;origin=https%3A%2F%2Fcdn.embedly.com&amp;quot;';
+    expect(capturedFrameUrl(raw)).toBe('https://www.youtube.com/embed/v0BiDmPloBs');
+    const r = embedPass(FRAME(raw));
+    expect(r.html).toContain('src="https://www.youtube.com/embed/v0BiDmPloBs"');
+    expect(r.html).not.toContain('embedly');
+  });
+
+  it('leaves a captured frame that is not an allow-listed player alone', () => {
+    const html = FRAME('https://app.qualified.com/w/1/PkqDRmLsN1JZW8p3/messenger?uuid=abc');
+    expect(capturedFrameSlots(html)).toEqual([]);
+    const r = embedPass(html);
+    expect(r.html).toBe(html);
+    expect(r.reshaped.frame).toBe(0);
+    expect(r.hosts).toEqual([]);
+  });
+
+  it('does not arm a hidden data-video-id panel that also carries the attribute', () => {
+    const html = `<iframe data-video-id=lV1WCvNGnmM data-sf-original-src=https://www.youtube.com/embed/lV1WCvNGnmM></iframe>`;
+    expect(capturedFrameSlots(html)).toEqual([]);
+    expect(embedPass(html).html).toBe(html);
+  });
+
+  it('is idempotent \u2014 a second pass finds nothing to do', () => {
+    const once = embedPass(FRAME('https://www.youtube.com/embed/s2c1wtb8U7g')).html;
+    const twice = embedPass(once);
+    expect(twice.reshaped.frame).toBe(0);
+    expect(twice.html).toBe(once);
+  });
+});
+
+describe('the Capture’s own URL bookkeeping (ticket 12)', () => {
+  // `--save-original-urls` writes every original URL SingleFile removed or
+  // inlined into `data-sf-original-*` attributes. The embed pass consumes the
+  // frame ones; the rest must not reach served bytes — they print the
+  // original's asset URLs for no reader (ADR 0002's metadata note).
+  it('drops the attributes, keeping the element and its other attributes', () => {
+    const html = `<img src=/assets/a.svg data-sf-original-src=https://cdn.example/a.svg data-sf-original-srcset="https://cdn.example/a.svg 500w"><a href=/x data-sf-original-href=https://cdn.example/x>y</a>`;
+    const r = stripOriginalUrls(html);
+    expect(r.removed).toBe(3);
+    expect(r.html).toBe(`<img src=/assets/a.svg><a href=/x>y</a>`);
+  });
+
+  it('sweeps the attribute out of the page, wherever it is written', () => {
+    // The sweep is deliberately not tag-scoped: nothing in served bytes carries
+    // the literal string except the attribute itself. A script quoting it would
+    // lose a string constant, and no served script does (the capture's scripts
+    // are stripped before this pass runs).
+    const html = `<img src=/assets/a.svg data-sf-original-src=https://cdn.example/a>`;
+    expect(stripOriginalUrls(html)).toEqual({ html: `<img src=/assets/a.svg>`, removed: 1 });
+  });
+
+  it('is linear on a page with a multi-megabyte inlined stylesheet', () => {
+    // The tag-scoped shape this replaced (`unclassifiedRemoteRefs` masks
+    // `<script>`/`<style>` bodies) backtracks over every inlined stylesheet —
+    // minutes on a captured page, and malformed edits out of it dropped ~675KB
+    // of CSS from served bytes.
+    const html = `<style>${'.x{background:url(data:image/webp;base64,AAAA)}\n'.repeat(40000)}</style><a href=/x data-sf-original-href=https://cdn.example/x>y</a>`;
+    const started = Date.now();
+    const r = stripOriginalUrls(html);
+    expect(r.removed).toBe(1);
+    expect(r.html).toBe(html.replace(/ data-sf-original-href=https:\/\/cdn\.example\/x/, ''));
+    expect(r.html).toContain('data:image/webp;base64,AAAA');
+    expect(Date.now() - started).toBeLessThan(2000);
+  });
+
+  it('leaves markup that carries no bookkeeping byte-identical', () => {
+    const html = `<iframe src="https://www.youtube.com/embed/abcdefghijk"></iframe>`;
+    expect(stripOriginalUrls(html)).toEqual({ html, removed: 0 });
+  });
+});
+
 describe('every YouTube slot on the page (ticket 17)', () => {
   it('finds a src-less 11-character data-video-id frame without arming it', () => {
     const html = `<iframe data-video-id=lV1WCvNGnmM class=th_video title="YouTube video: x"></iframe>`;
@@ -260,7 +367,9 @@ describe('the frame allow-list', () => {
     expect(offAllowlistFrames(`<iframe src="https://evil.example/x">`)).toEqual(['https://evil.example/x']);
     expect(offAllowlistFrames(`<iframe src="${wistiaEmbedUrl('llllllllll')}">`)).toEqual([]);
     expect(offAllowlistFrames(`<iframe src="https://www.youtube.com/embed/abcdefghijk">`)).toEqual([]);
-    expect(MEDIA_HOSTS).toEqual(['fast.wistia.net', 'www.youtube.com']);
+    // the privacy-enhanced host is the one three captured blog frames name
+    expect(offAllowlistFrames(`<iframe src="https://www.youtube-nocookie.com/embed/abcdefghijk">`)).toEqual([]);
+    expect(MEDIA_HOSTS).toEqual(['fast.wistia.net', 'www.youtube.com', 'www.youtube-nocookie.com']);
   });
 
   it('does not flag image-side remote references (CSP refuses those, not this audit)', () => {

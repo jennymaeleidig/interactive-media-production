@@ -31,6 +31,27 @@ streams and never reaches network idle, so an unblocked capture bloated to
 anyway. So the only videos still fetched from an origin host are the
 allow-listed Wistia and YouTube frames.
 
+**Amended 2026-09-12 (ticket 12, blog videos).** The rejection of "load every
+YouTube frame at build time" above is about ticket 17's **hidden** click-to-arm
+panels on the three `/trust` pages: their frames are invisible until a click, so
+arming them at build time would fetch a player nobody asked for. The rich-text
+embeds are the other case, and the opposite one. A blog post's video frame is
+**visible** on load; the live page fetches it then, and the capture lost it only
+by accident — SingleFile empties every `iframe src` to re-inline the frame
+document, and a cross-origin player document cannot be inlined, leaving 91
+src-less frames across 74 pages (the blog post the review reported among them).
+The capture now passes `--save-original-urls`, so the emptied frame keeps
+`data-sf-original-src` with the URL the live page had, and the embed pass points
+the frame back at it: same host, same URL, same parameters as the live page, so
+this reproduces live behavior rather than adding a fetch. `www.youtube-nocookie.com`
+joins the host allow-list for the same reason (the privacy-enhanced embeds came
+back on that host), and `MEDIA_HOSTS` remains the only thing that can gain a
+`frame-src` grant. The bookkeeping attribute itself is dropped from served bytes
+in the build's last pass — it prints third-party asset URLs (3,583
+`data-sf-original-src`, 1,252 `srcset`, 306 `href` across the tree) that no
+reader needs, and ADR 0002's own publication/rights question (ticket 11) is
+reason enough not to ship them.
+
 **Status.** Accepted 2026-09-11; **built** the same day for all four providers:
 
 - **Wistia** — 130 live player frames across 92 pages covering 115 distinct

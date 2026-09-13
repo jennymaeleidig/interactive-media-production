@@ -22,15 +22,22 @@ bar 35 / "The capture refresh runbook governs drift").
   capture lists, status CSV, and manifests stay tracked.
 - **Corrected SingleFile flags are the default** — every run, scoped or full,
   passes `--remove-hidden-elements=false --remove-unused-styles=false
-  --block-videos=false --blocked-url-pattern 'r2\.vidzflow\.com'` (tickets 15,
-  12). The hidden/unused defaults drop every hidden subtree and every state CSS
-  rule, site-wide; a run without them is not usable ground truth. Blocking
-  videos (SingleFile's default) leaves a source-less `<video>` plus a link to
-  the CDN file, so the page cannot play inline; unblocking them embeds the mp4
-  as a `data:` URI for the assets pass to serve from `/assets`. The Vidzflow
-  media host is re-blocked because its video.js tech streams and never reaches
-  network idle — the capture bloats to ~130 MB and stalls — and ticket 19 strips
-  those hidden player documents anyway.
+  --save-original-urls --block-videos=false --blocked-url-pattern
+  'r2\.vidzflow\.com'` (tickets 15, 12). The hidden/unused defaults drop every
+  hidden subtree and every state CSS rule, site-wide; a run without them is not
+  usable ground truth. Blocking videos (SingleFile's default) leaves a
+  source-less `<video>` plus a link to the CDN file, so the page cannot play
+  inline; unblocking them embeds the mp4 as a `data:` URI for the assets pass to
+  serve from `/assets`. The Vidzflow media host is re-blocked because its
+  video.js tech streams and never reaches network idle — the capture bloats to
+  ~130 MB and stalls — and ticket 19 strips those hidden player documents
+  anyway. `--save-original-urls` is what keeps a **frame's** URL at all:
+  SingleFile empties every `iframe src` and re-inlines the frame document, and a
+  cross-origin player (a YouTube embed) cannot be inlined, so without the flag
+  the page keeps a src-less frame and the video is simply gone — 91 such frames
+  across 74 pages in the 2026-09-12 run. With it, the emptied frame carries
+  `data-sf-original-src`; `pipeline/embeds.mjs` points the frame back at it and
+  the build's last pass drops the bookkeeping attribute from served bytes.
 
 ## The tools
 
@@ -139,6 +146,14 @@ node pipeline/recapture.mjs --inventory ... --fallback-inventory ... --date 2026
 - The driver never overwrites an earlier run folder; a scoped run gets its own
   dated folder. Re-run a partial run with `--resume` (merges retries by URL and
   appends only capture-list URLs not already listed).
+- **Refreshing pages a run already holds** (a capture-config change, not site
+  drift — ticket 12's blog videos and its `--save-original-urls` refresh) is an
+  in-place re-capture into the existing run: the skip rule is unconditional, so
+  move each page's capture aside (back it up outside the run folder) and delete
+  it first, then `--resume` with a `--scope` listing those paths. The run stays
+  valid because `capture-status.csv` and `title-repairs.csv` merge with the
+  prior pass and `capture-list.txt` is append-only; a couple of dozen pages take
+  minutes, where a fresh run folder would have to hold all 1,200 to be usable.
 - `--dry-run` prints the capture list and manifest without writing.
 - The title repair pass restores each capture's static `<title>` from the fresh
   inventory (the live script swaps it to "Message from Flock Safety" on some

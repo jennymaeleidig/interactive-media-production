@@ -26,6 +26,15 @@
 // element keeps its tag, classes, and inline styles, so the box does not move;
 // only its contents become live.
 //
+// A fifth shape is not a snapshot at all: SingleFile strips every frame's `src`,
+// and for a cross-origin player it cannot inline the document, so the element is
+// left empty with nothing to play. The blog's rich-text YouTube figures are this
+// shape (91 empty frames on 74 pages). `--save-original-urls` makes the Capture
+// record the URL it removed in `data-sf-original-src`, and this pass points the
+// frame at that player again — the frame is *visible*, and the live page loaded
+// it on arrival, so the request belongs there. Hidden frames stay unarmed (see
+// the YouTube `data-video-id` panels below).
+//
 // Popover slots (`popover=true`) are inlined like every other shape: measured,
 // their box is already the 16:9 `wistia_responsive_padding` box, so replacing
 // the captured click-to-play thumbnail with the live player moves nothing and
@@ -50,7 +59,7 @@
 import { wistiaFromPage } from './video-inventory.mjs';
 
 /** Hosts a served page may fetch from — the ADR 0002 allow-list. */
-export const MEDIA_HOSTS = ['fast.wistia.net', 'www.youtube.com'];
+export const MEDIA_HOSTS = ['fast.wistia.net', 'www.youtube.com', 'www.youtube-nocookie.com'];
 
 const WISTIA_EMBED_URL = /fast\.wistia\.net\/embed\/iframe\/([a-z0-9]{10})/;
 const WISTIA_ASYNC = /wistia_async_([a-z0-9]{10})/g;
@@ -130,6 +139,12 @@ export function* openTags(html) {
 }
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+// A YouTube player URL safe to serve as-is: the canonical embed path, an
+// optional query of plain parameters (`start`, `controls`, `si`).
+const CLEAN_YOUTUBE_EMBED = /^https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/[A-Za-z0-9_-]{11}(?:\?[A-Za-z0-9_=&%.,\-]*)?$/;
+const YOUTUBE_EMBED_ID = /(?:youtube(?:-nocookie)?\.com\/(?:embed|v|shorts)\/|youtu\.be\/)([A-Za-z0-9_-]{11})/;
+const FRAME_ORIGINAL_SRC = /\s+data-sf-original-src\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i;
+const ORIGINAL_URL_ATTR = /\s+data-sf-original-[a-z0-9-]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
 
 /**
  * Read an attribute's value out of an open tag's attribute string, honoring
@@ -163,6 +178,80 @@ export function youtubeSlots(html) {
 }
 
 const VIDZFLOW_DOC = /vidzflow/i;
+
+/**
+ * Drop the `data-sf-original-*` bookkeeping SingleFile writes with
+ * `--save-original-urls` — every original URL it removed or inlined, on frames,
+ * images, stylesheets, and links alike. `embedPass` has already consumed the
+ * frame URLs; what is left would otherwise print the original's asset URLs into
+ * served bytes (the publication/rights question ADR 0002 flags) and add bytes
+ * nothing reads.
+ *
+ * A plain attribute sweep, deliberately: a tag scanner that skipped the bodies
+ * of `<script>`/`<style>` (the `unclassifiedRemoteRefs` shape) costs a
+ * backtracking pass over every inlined stylesheet, and nothing in served bytes
+ * carries the literal string `data-sf-original-` except the attributes
+ * themselves — SingleFile writes it, and the capture scripts that could quote
+ * it are stripped before this pass runs.
+ * @param {string} html
+ * @returns {{html: string, removed: number}}
+ */
+export function stripOriginalUrls(html) {
+  let removed = 0;
+  const out = html.replace(ORIGINAL_URL_ATTR, () => {
+    removed += 1;
+    return '';
+  });
+  return { html: out, removed };
+}
+
+/**
+ * The player URL a Capture recorded for a frame it emptied, or null when the
+ * frame is not one of ours (ticket 12). SingleFile strips every frame's `src`
+ * — it rebuilds the frame as `srcdoc` when it can inline the document, and for
+ * a cross-origin player it can only leave the element empty. With
+ * `--save-original-urls` it records what it removed in `data-sf-original-src`,
+ * which is the only surviving trace of the player the live page loaded.
+ *
+ * A clean embed URL is served as captured, so a `?start=…` or `?controls=0`
+ * keeps its meaning and a `www.youtube-nocookie.com` frame stays on the host
+ * the original chose. Embedly-wrapped values arrive escaped past parsing
+ * (`&quot;https://www.youtube.com/embed/<id>?wmode=…&amp;amp;…&quot;`), so those
+ * collapse to the canonical URL the id names.
+ * @param {string} raw  the captured attribute value
+ * @returns {string|null}
+ */
+export function capturedFrameUrl(raw) {
+  const value = decodeEntities(String(raw)).trim().replace(/^["']+|["']+$/g, '');
+  if (!/^(?:https?:)?\/\//i.test(value)) return null;
+  const id = YOUTUBE_EMBED_ID.exec(value)?.[1];
+  if (id) return CLEAN_YOUTUBE_EMBED.test(value) ? value : `https://www.youtube.com/embed/${id}`;
+  return MEDIA_HOSTS.includes(hostOf(value)) ? value : null;
+}
+
+/**
+ * The frames a Capture emptied but remembered: a `src`-less `<iframe>` whose
+ * `data-sf-original-src` names an allow-listed player. The YouTube
+ * `data-video-id` panels are excluded on purpose — they are hidden at rest and
+ * the interactions runtime arms them on the poster click, so a build-time `src`
+ * would fetch a frame nobody can see (ticket 17).
+ * @param {string} html
+ * @returns {Array<{index: number, tag: string, url: string}>}
+ */
+export function capturedFrameSlots(html) {
+  const slots = [];
+  for (const tag of openTags(html)) {
+    if (tag.name.toLowerCase() !== 'iframe') continue;
+    if (/\ssrc\s*=/i.test(tag.attrs)) continue; // already live
+    if (attrOf(tag.attrs, 'data-video-id') !== null) continue; // the reveal panels stay unarmed
+    const raw = attrOf(tag.attrs, 'data-sf-original-src');
+    if (raw === null) continue;
+    const url = capturedFrameUrl(raw);
+    if (url === null) continue;
+    slots.push({ index: tag.index, tag: tag.tag, url });
+  }
+  return slots;
+}
 
 /**
  * Remove the hidden Vidzflow player documents. Each slot is an `srcdoc` frame
@@ -341,11 +430,11 @@ export function srcdocSpans(html) {
  * Rewrite every playable slot to its live player document.
  * @param {string} html
  * @param {{dead?: string[]}} [options]  `dead` = hashed ids with nothing upstream to play
- * @returns {{html: string, reshaped: {srcdoc: number, element: number, component: number, popover: number, dead: number, youtube: number}, rewritten: string[], unreachable: string[], hosts: string[]}}
+ * @returns {{html: string, reshaped: {srcdoc: number, element: number, component: number, popover: number, dead: number, youtube: number, frame: number}, rewritten: string[], unreachable: string[], hosts: string[]}}
  */
 export function embedPass(html, options = {}) {
   const dead = new Set(options.dead ?? []);
-  const reshaped = { srcdoc: 0, element: 0, component: 0, popover: 0, dead: 0, youtube: 0 };
+  const reshaped = { srcdoc: 0, element: 0, component: 0, popover: 0, dead: 0, youtube: 0, frame: 0 };
   const rewritten = [];
   /** @type {Set<string>} */
   const deadSeen = new Set();
@@ -424,6 +513,19 @@ export function embedPass(html, options = {}) {
   if (youtube.length > 0) {
     hosts.add('www.youtube.com');
     reshaped.youtube = youtube.length;
+  }
+
+  // ---- shape 5: frames the Capture emptied but remembered (ticket 12) -------
+  // The blog's rich-text YouTube figures are `w-richtext-figure-type-video`
+  // frames the live page loaded on arrival. Restoring the captured URL puts the
+  // player back in the same box (the figure owns the aspect ratio), unlike the
+  // hidden reveal panels above. Back-to-front: the spans were measured on the
+  // string as it stands after shapes 1–4.
+  for (const slot of capturedFrameSlots(html).reverse()) {
+    const live = slot.tag.replace(FRAME_ORIGINAL_SRC, ` src="${escapeAttr(slot.url)}"`);
+    html = html.slice(0, slot.index) + live + html.slice(slot.index + slot.tag.length);
+    reshaped.frame++;
+    hosts.add(hostOf(slot.url));
   }
 
   // ---- what the markup never pointed at ------------------------------------

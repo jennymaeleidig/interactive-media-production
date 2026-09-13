@@ -82,6 +82,14 @@ describe('SingleFile flags', () => {
     expect(i).toBeGreaterThan(-1);
     expect(args[i + 1]).toBe('r2\\.vidzflow\\.com');
   });
+
+  it('records the URL of every frame it empties (ticket 12, blog videos)', () => {
+    // SingleFile strips a frame's `src` and only re-adds it when it can inline
+    // the frame document; a cross-origin player frame is left empty, so without
+    // this flag the Capture loses the only record of what the frame pointed at.
+    const args = singleFileArgs('https://www.flocksafety.com/a', 'a.html');
+    expect(args).toContain('--save-original-urls');
+  });
 });
 
 describe('capture list', () => {

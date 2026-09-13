@@ -121,7 +121,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
-import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, unclassifiedRemoteRefs } from './embeds.mjs';
+import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, stripOriginalUrls, unclassifiedRemoteRefs } from './embeds.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
@@ -932,6 +932,10 @@ function scrollPass(html, entry, css, runtime) {
  * snapshots (an inlined `srcdoc` player document, the JS-built player chrome, or
  * a `<wistia-player>` web component with a declarative shadow root) — see
  * `pipeline/embeds.mjs` for the shapes and for what is deliberately left alone.
+ * A fourth shape is an empty frame: the Capture could not inline a cross-origin
+ * player, so nothing is left to play — the pass re-points it at the URL the
+ * Capture remembered (`data-sf-original-src`, the blog's rich-text YouTube
+ * figures).
  *
  * Runs before the asset pass so the snapshots' own inlined data URIs are never
  * extracted: the bytes are about to be discarded. The frame-src grant goes in
@@ -953,12 +957,12 @@ function applyEmbeds(html, entry, deadVideoIds) {
   // Record all of them, or the summary loses exactly the cases an operator needs
   // to see.
   const touched = rewritten.length > 0 || reshaped.dead > 0 || reshaped.popover > 0
-    || reshaped.youtube > 0 || vidzflow > 0 || unreachable.length > 0;
+    || reshaped.youtube > 0 || reshaped.frame > 0 || vidzflow > 0 || unreachable.length > 0;
   if (!touched) return html;
   // `live` counts *frames*, not distinct medias: five pages embed the same media
   // twice, and a reader comparing the summary against the served bytes should get
   // the same number. `rewritten` stays deduped because it feeds `unreachable`.
-  const live = reshaped.srcdoc + reshaped.element + reshaped.component;
+  const live = reshaped.srcdoc + reshaped.element + reshaped.component + reshaped.frame;
   entry.embeds = { ...reshaped, live, vidzflow, unreachable: unreachable.length };
   if (hosts.length === 0) return stripped;
   // Only the hosts the pass actually used — never the whole allow-list, which
@@ -966,8 +970,25 @@ function applyEmbeds(html, entry, deadVideoIds) {
   return grantFrameSrc(out, entry, hosts);
 }
 
-// ---- pass 11: asset extraction (ADR 0002) -----------------------------------
+// ---- pass 10b: drop the Capture's URL bookkeeping (ticket 12) ---------------
+/**
+ * The `data-sf-original-*` attributes `--save-original-urls` writes are how the
+ * embed pass finds a player the Capture emptied. Everything else they carry is
+ * the Capture's own record of a URL it removed or inlined, and serving it would
+ * print the original's asset URLs into our HTML (the publication/rights
+ * question ADR 0002 flags) for no reader.
+ *
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @returns {string}
+ */
+function originalUrlsPass(html, entry) {
+  const { html: out, removed } = stripOriginalUrls(html);
+  if (removed > 0) entry.originalUrls = removed;
+  return out;
+}
 
+// ---- pass 11: asset extraction (ADR 0002) -----------------------------------
 /**
  * Write every asset a Capture inlined as a `data:` URI once, under a
  * content-addressed name, and point the page at it (`/assets/<sha>.<ext>`).
@@ -1017,7 +1038,8 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {Record<string, number>} [stripped]  Strip target → bytes (or element count) removed.
  * @property {boolean} [chatLauncher]  Whether the Capture mounted the Qualified chat launcher (`<q-root>`) — the chat-mount census (ticket 10).
  * @property {string} [csp]  The CSP grant(s) the build added to the captured policy, `'; '`-joined in pass order: `connect-src 'self'` for the chat mount, `frame-src <hosts>` for live embeds (ADR 0002).
- * @property {{srcdoc: number, element: number, component: number, popover: number, dead: number, youtube: number, live: number, vidzflow: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the player frames made live; `srcdoc`/`element`/`component`/`popover` say which inert snapshot shape was replaced; `youtube` counts the panels the interactions runtime arms on click; `vidzflow` counts the hidden Vidzflow player documents stripped (ticket 19); `dead` is the slots deliberately left as captured; `unreachable` counts the medias this page's JSON-LD names that no slot markup rewrote (mostly dead medias, which is why it overlaps them).
+ * @property {{srcdoc: number, element: number, component: number, frame: number, popover: number, dead: number, youtube: number, live: number, vidzflow: number, unreachable: number}} [embeds]  Video slots this page carried (ADR 0002): `live` counts the player frames made live; `srcdoc`/`element`/`component`/`frame` say which shape each replaced (`frame` = a frame the Capture emptied and remembered); `popover` counts the popover slots inlined; `youtube` counts the panels the interactions runtime arms on click; `vidzflow` counts the hidden Vidzflow player documents stripped (ticket 19); `dead` is the slots deliberately left as captured; `unreachable` counts the medias this page's JSON-LD names that no slot markup rewrote (mostly dead medias, which is why it overlaps them).
+ * @property {number} [originalUrls]  `data-sf-original-*` attributes dropped from the served bytes — the Capture's own URL bookkeeping, consumed by the embed pass where it matters (ticket 12).
  * @property {string[]} [warnings]  Anomalies that left bytes in place (e.g. unbalanced strip scans).
  * @property {number} [linksRewritten]  Internal hrefs rewritten to Recreation routes.
  * @property {{key: string, formId: string, action: string, redirectTo: string}[]} [forms]  Form routing injected on this page (ticket 02).
@@ -1045,7 +1067,8 @@ function assetsPass(html, entry, assetDir, written) {
  * @property {string[]} authGated  Auth-gated stubs (not captured, not served).
  * @property {{mounted: number, absent: number}} chat  The chat-mount census over served pages (ticket 10): how many Captures mounted the launcher, how many did not.
  * @property {{references: number, distinct: number, bytes: number}} assets  Inlined data URIs extracted site-wide (ADR 0002): references rewritten, distinct files written, decoded bytes.
- * @property {{live: number, pages: number, srcdoc: number, element: number, component: number, popover: number, dead: number, unreachable: number}} embeds  Live media embeds site-wide (ADR 0002): player frames made live, pages carrying at least one, the snapshot shape each replaced, slots kept as captured (popover, dead upstream), and the medias a page's JSON-LD named without a slot rewrite.
+ * @property {{live: number, pages: number, srcdoc: number, element: number, component: number, frame: number, popover: number, dead: number, unreachable: number}} embeds  Live media embeds site-wide (ADR 0002): player frames made live, pages carrying at least one, the shape each replaced, slots kept as captured (popover, dead upstream), and the medias a page's JSON-LD named without a slot rewrite.
+ * @property {number} originalUrls  `data-sf-original-*` attributes the build dropped from served bytes (ticket 12).
  */
 
 /**
@@ -1106,6 +1129,11 @@ export async function runPipeline(opts) {
     // discards carry inlined `data:` URIs of their own, and extracting bytes
     // that are about to be thrown away would only litter the asset directory.
     html = applyEmbeds(html, entry, deadVideoIds);
+
+    // The Capture's `data-sf-original-*` bookkeeping exists to feed the pass
+    // above; the rest is dropped here so served pages print no more of the
+    // original's asset URLs than before (ticket 12).
+    html = originalUrlsPass(html, entry);
 
     // Extraction runs here, before every injection pass: the Recreation's own
     // runtimes are inlined VERBATIM (CODING_STANDARDS), so their bytes must not
@@ -1194,6 +1222,7 @@ export async function runPipeline(opts) {
     deadRoots: uncaptured.dead,
     authGated: uncaptured.authGated,
     chat: { mounted: chatMounted, absent: servedEntries.length - chatMounted },
+    originalUrls: servedEntries.reduce((n, e) => n + (e.originalUrls ?? 0), 0),
     assets: {
       references: servedEntries.reduce((n, e) => n + (e.assets?.references ?? 0), 0),
       distinct: assetNames.length,
@@ -1205,6 +1234,7 @@ export async function runPipeline(opts) {
       srcdoc: servedEntries.reduce((n, e) => n + (e.embeds?.srcdoc ?? 0), 0),
       element: servedEntries.reduce((n, e) => n + (e.embeds?.element ?? 0), 0),
       component: servedEntries.reduce((n, e) => n + (e.embeds?.component ?? 0), 0),
+      frame: servedEntries.reduce((n, e) => n + (e.embeds?.frame ?? 0), 0),
       popover: servedEntries.reduce((n, e) => n + (e.embeds?.popover ?? 0), 0),
       dead: servedEntries.reduce((n, e) => n + (e.embeds?.dead ?? 0), 0),
       youtube: servedEntries.reduce((n, e) => n + (e.embeds?.youtube ?? 0), 0),
@@ -1260,10 +1290,14 @@ function summarize(log, summary) {
   console.log(
     `embeds: ${summary.embeds.live} live player frame(s) on ${summary.embeds.pages} page(s) `
     + `(${summary.embeds.srcdoc} srcdoc, ${summary.embeds.element} chrome incl. ${summary.embeds.popover} popover, `
-    + `${summary.embeds.component} web component) · ${summary.embeds.dead} dead-upstream kept as captured · `
+    + `${summary.embeds.component} web component, ${summary.embeds.frame} re-pointed from the Capture's own URL) · `
+    + `${summary.embeds.dead} dead-upstream kept as captured · `
     + `${summary.embeds.youtube} YouTube panel(s) armed on click · `
     + `${summary.embeds.vidzflow} hidden Vidzflow document(s) stripped · `
     + `${summary.embeds.unreachable} media(s) named in JSON-LD without a slot rewrite`
+  );
+  console.log(
+    `capture url bookkeeping: ${summary.originalUrls} data-sf-original-* attribute(s) dropped from served bytes`
   );
   console.log(
     `assets: ${summary.assets.references} inlined reference(s) → ${summary.assets.distinct} content-addressed file(s), `

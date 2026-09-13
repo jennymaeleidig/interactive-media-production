@@ -186,9 +186,12 @@ video.js documents are stripped, not played (ticket 19).
   core (`test/assets.test.ts` — `pipeline/assets.mjs`: the attribute and `url()`
   value classes, CSS unescaping, the MIME tables, and the payload shapes the
   corpus actually contains) and the live-embed pass
-  (`test/embeds.test.ts` — `pipeline/embeds.mjs`: the four slot shapes including
-  popover inlining, the YouTube `data-video-id` detection, the Vidzflow strip,
-  the skip rules, idempotence, and the frame/srcdoc/remote-reference audits). Both are
+  (`test/embeds.test.ts` — `pipeline/embeds.mjs`: the five slot shapes
+  including popover inlining and the frames the Capture emptied but remembered
+  via `data-sf-original-src`, the YouTube `data-video-id` detection, the
+  Vidzflow strip, the `data-sf-original-*` bookkeeping sweep and its linear-time
+  bound, the skip rules, idempotence, and the
+  frame/srcdoc/remote-reference audits). Both are
   pure HTML-in/HTML-out cores the build calls; neither reaches over HTTP, and
   the built result of both is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection

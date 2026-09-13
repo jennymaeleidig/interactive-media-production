@@ -86,3 +86,63 @@ Build pass 12 (`config.LEGIBILITY_PATCHES`) injects a page-scoped, inert
 `<style>` that paints both white inside `.bg-screen.scroller`, leaving the same
 classes on the white FAQ accordion dark. `npm run routes` stays green and the
 override is recorded as a deliberate divergence (§4).
+
+### Addendum (2026-09-12): the review's second finding — a blog video that did not load
+
+The review's next finding was `/blog/flock-guardrails-address-lpr-privacy-concerns-and-police-transparency`:
+its video is an empty box, on the live URL as well as the served one. Live, that
+page serves `<iframe src="https://www.youtube.com/embed/s2c1wtb8U7g">`; none of
+the three captures holds that id anywhere, and a fresh capture with the run's
+flags reproduced the src-less frame byte for byte, so the loss was not staleness.
+Cause, read out of SingleFile 2.10.0's `resolveFrameURLs()`: it unconditionally
+removes every `iframe`/`frame` `src` and `srcdoc` so it can re-inline the frame
+document, and a cross-origin player document (YouTube) cannot be inlined — the
+src is simply gone. `--save-original-urls` is the tool's own answer: the emptied
+frame then carries `data-sf-original-src` with the absolute URL. A scan of the
+whole run put the reported page in a set, not alone: **91 frames without any URL
+across 74 pages** (blog, customers, lp, solvedstories, video).
+
+Fix, three parts. (1) `--save-original-urls` joins the default flags in
+`singleFileArgs`, with a test in `test/recapture.test.ts`. (2) The 74 pages were
+re-captured **in place** into the 2026-09-12 run (back up each capture, delete
+it, `--resume --scope`, 74 saved / 0 failed — the skip rule is unconditional, so
+an already-captured page must be removed first); all 74 now carry the attribute,
+92 recovered URLs, the reported id among them. (3) `pipeline/embeds.mjs` gained a
+fifth embed shape: a src-less frame that carries the attribute is pointed back at
+the URL the Capture remembered, verbatim when it is a clean absolute URL on an
+allow-listed host (so `?start=`/`controls=0` survive), canonical
+`https://www.youtube.com/embed/<id>` for the four Embedly-escaped values, and
+left alone for `app.qualified.com` (the chat host the project deliberately does
+not restore). `www.youtube-nocookie.com` joins `MEDIA_HOSTS`; the frame's host
+still reaches `frame-src` only through `grantFrameSrc`. 87 frames were
+re-pointed and 5 left src-less, matching the 92 recovered URLs.
+
+Because `--save-original-urls` also records every inlined **image, stylesheet,
+and link** URL, the build gained a last pass (`originalUrlsPass` →
+`stripOriginalUrls`) that drops the remaining `data-sf-original-*` attributes
+from served bytes: 5,141 across the tree, printing `cdn.prod.website-files.com`,
+`cdnjs.cloudflare.com`, and `unpkg.com` URLs no reader needs (ADR 0002's
+publication/rights question, ticket 11). Captures stay ground truth; only the
+built output is cleaned.
+
+**Caught by the totals, worth recording.** The first `originalUrlsPass` was
+tag-scoped, masking `<script>`/`<style>` bodies before scanning so markup-looking
+text inside code could not be read as a tag. Its rebuilt totals came back
+142,488 references / 2,924 files against the previous run's 142,631 / 2,960 —
+143 fewer references, 36 fewer files, with the strip as the only code change. An
+A/B over the 74 re-captured pages (pass on vs. pass off, same captures, separate
+out-dirs) showed the pass itself was the cause: 121 references / 90 files on the
+reported page against 150 / 117 with the pass off, a missing 675 KB of inlined
+stylesheet (including Chrome's injected `#cancel-save-page-button` rules) and 71
+assets the extractor never saw. Rebuilding the edit text out of the masked tag
+had produced a malformed tag, and the mask's backtracking regex is pathological
+on a multi-megabyte inlined stylesheet (a direct call on the 12 MB capture did
+not finish in five minutes). The pass is now a plain attribute sweep — linear,
+86 ms on that capture, and nothing in served bytes carries the literal string
+`data-sf-original-` except the attributes themselves, since the capture's scripts
+are stripped before it runs. With it, the 74 pages' asset set is **identical**
+with the pass on and off (314 files, same shas) and the full build is back to
+142,631 references / 2,960 files / 508 MB, with `npm run routes` green on all
+2,960 asset-identity checks. The failure mode is recorded in
+`test/embeds.test.ts` (a linear-time test over a 3 MB synthetic stylesheet, and a
+test that documents the sweep's deliberate lack of tag scoping).
