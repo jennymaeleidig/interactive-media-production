@@ -14,15 +14,10 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { JSDOM, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
+import type { DOMWindow } from 'jsdom';
+import { layerSource, seamWindow } from './seam-harness';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('chat', 'runtime')), 'utf8');
-const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline', layerFile('chat', 'css')), 'utf8');
+const CHAT_CSS = layerSource('chat', 'css');
 
 const GREETING = 'Hey there! I\u2019m Flock, your friendly AI Sales Assistant. What questions do you have about Flock\u2019s offerings today?';
 const GENERAL = 'I can help with our products and services. How can I help you today?';
@@ -76,19 +71,24 @@ async function flush(): Promise<void> {
 function mount(opts: { script: Script; saved?: string }) {
   const scripted = scriptedFetch(opts.script);
   calls = scripted.calls;
-  const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
-    runScripts: 'dangerously',
-    pretendToBeVisual: true,
+  const seam = seamWindow('chat', '<!DOCTYPE html><html><body></body></html>', {
     url: 'http://localhost/',
+    prep: (window) => {
+      const w = window as unknown as {
+        fetch: typeof fetch;
+        setTimeout: typeof window.setTimeout;
+        clearTimeout: typeof window.clearTimeout;
+        localStorage: Storage;
+      };
+      // jsdom's own timers bypass vitest's fake timers; route the runtime's
+      // window.setTimeout/clearTimeout to the ones this test controls.
+      w.fetch = scripted.fetchMock as unknown as typeof fetch;
+      w.setTimeout = globalThis.setTimeout as unknown as typeof window.setTimeout;
+      w.clearTimeout = globalThis.clearTimeout as unknown as typeof window.clearTimeout;
+      if (opts.saved) w.localStorage.setItem('flock-chat-session', opts.saved);
+    },
   });
-  win = dom.window;
-  // jsdom's own timers bypass vitest's fake timers; route the runtime's
-  // window.setTimeout/clearTimeout to the ones this test controls.
-  win.fetch = scripted.fetchMock as unknown as typeof fetch;
-  win.setTimeout = globalThis.setTimeout as unknown as typeof window.setTimeout;
-  win.clearTimeout = globalThis.clearTimeout as unknown as typeof window.clearTimeout;
-  if (opts.saved) win.localStorage.setItem('flock-chat-session', opts.saved);
-  (win as unknown as { eval: (src: string) => void }).eval(SOURCE);
+  win = seam.window;
   // a JSDOM document is parsed synchronously; if the runtime deferred to
   // DOMContentLoaded, release it
   if (!win.document.querySelector('.fpc-root')) {

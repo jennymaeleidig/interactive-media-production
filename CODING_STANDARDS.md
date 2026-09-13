@@ -212,6 +212,12 @@ and the log's key names are not an interface between them.
   DOM seam (ticket 05 — the delegated click runtime's captured-class/geometry
   contract for tabs, dropdowns, accordions, and sliders, same
   jsdom-against-injected-bytes method; reduced motion never blocks function).
+  All six runtime DOM seams share `test/seam-harness.ts` — one window builder
+  (`runScripts: 'dangerously'`, `pretendToBeVisual`, the Recreation origin),
+  one reduced-motion `matchMedia` shape (so a layer's reduced-motion path is
+  comparable across layers), and the injected bytes read through the
+  `pipeline/layers.mjs` table rather than hand-written paths. A new runtime
+  seam adds page HTML and assertions, never a seventh jsdom setup.
   **Extended by ticket 21**: the scroll DOM seam (`test/scroll.seam.test.ts` —
   the scroll choreography + modal runtime's contract: the `[animate=scrub-word]`
   color sequence plays on scroll-in and reverses, the `.line-label` reveal

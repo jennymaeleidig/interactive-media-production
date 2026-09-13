@@ -6,14 +6,10 @@
 // every served page carries. The runtime is dormant: these tests drive it the
 // way only the Parody layer ever should (ticket 03).
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { JSDOM, VirtualConsole, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
+import type { DOMWindow } from 'jsdom';
+import { installRuntime, layerSource, onceReady, seamWindow } from './seam-harness';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('story-hook', 'runtime')), 'utf8');
+const SOURCE = layerSource('story-hook');
 
 /** The seam's public shape — `window.flockParody.apply(patches)`. */
 interface Seam {
@@ -26,39 +22,16 @@ function flockParodyOf(window: DOMWindow): Seam {
   return (window as unknown as { flockParody: Seam }).flockParody;
 }
 
-/** Eval the injected source into a jsdom window. */
-function install(window: DOMWindow): Seam {
-  (window as unknown as { eval: (src: string) => void }).eval(SOURCE);
-  return flockParodyOf(window);
-}
-
-/** jsdom's console is per-window — capture it to observe the runtime's debug notes. */
-function captureDebug(): { debug: unknown[][]; vc: VirtualConsole } {
-  const debug: unknown[][] = [];
-  const vc = new VirtualConsole();
-  vc.on('debug', (...args: unknown[]) => debug.push(args));
-  return { debug, vc };
-}
-
-/** Resolve once the (real) DOMContentLoaded lifecycle event has fired. */
-function onceReady(window: DOMWindow): Promise<void> {
-  return new Promise((resolve) => {
-    if (window.document.readyState !== 'loading') resolve();
-    else window.document.addEventListener('DOMContentLoaded', () => resolve());
-  });
-}
-
 /**
  * A jsdom window past DOM-ready with the runtime aboard — the state every
  * real visit observes (inline body scripts run while loading, then the
  * document completes; the parody layer calls apply long after).
  */
 async function seamDom(html: string = PAGE) {
-  const { debug, vc } = captureDebug();
-  const dom = new JSDOM(html, { runScripts: 'dangerously', virtualConsole: vc, url: 'https://recreation.test/' });
-  await onceReady(dom.window);
-  const seam = install(dom.window);
-  return { dom, debug, seam };
+  const seam = seamWindow('story-hook', html, { install: false, captureConsole: true });
+  await onceReady(seam.window);
+  seam.install();
+  return { dom: seam.dom, debug: seam.debug, seam: flockParodyOf(seam.window) };
 }
 
 describe('apply() mutates the DOM for each supported operation', () => {
@@ -166,23 +139,24 @@ describe('the return value counts applied patches', () => {
 describe('calls made before DOM-ready queue until DOMContentLoaded', () => {
   it('queues while the document is loading, returns 0, then applies in order at the real DOMContentLoaded', async () => {
     let readyStateAtInstall = '';
-    const { debug, vc } = captureDebug();
-    const dom = new JSDOM('<!DOCTYPE html><html><body><p id="q">start</p><span id="r"></span></body></html>', {
-      runScripts: 'dangerously',
-      virtualConsole: vc,
-      url: 'https://recreation.test/',
+    const seam = seamWindow('story-hook', '<!DOCTYPE html><html><body><p id="q">start</p><span id="r"></span></body></html>', {
+      install: false,
+      captureConsole: true,
       beforeParse(window) {
         // beforeParse runs before a single tag parses — readyState is 'loading',
         // which is exactly the state an inline body script observes
         readyStateAtInstall = window.document.readyState;
-        const seam = install(window);
-        const first = seam.apply([{ selector: '#q', text: 'queued-1' }]);
-        const second = seam.apply([{ selector: '#r', html: '<b>queued-2</b>' }]);
+        installRuntime(window, SOURCE);
+        const parody = flockParodyOf(window);
+        const first = parody.apply([{ selector: '#q', text: 'queued-1' }]);
+        const second = parody.apply([{ selector: '#r', html: '<b>queued-2</b>' }]);
         // queued calls have applied nothing yet — and say so
         expect(first).toBe(0);
         expect(second).toBe(0);
       },
     });
+    const dom = seam.dom;
+    const debug = seam.debug;
     expect(readyStateAtInstall).toBe('loading');
     // not applied early — the page sat at its captured end-state
     expect(dom.window.document.querySelector('#q')!.textContent).toBe('start');
@@ -198,7 +172,7 @@ describe('the seam ships inert', () => {
   it('exposes exactly one new global — window.flockParody with a single apply function', async () => {
     // compare against a pristine window with identical jsdom options (the
     // runScripts mode itself adds globals like Temporal) and lifecycle
-    const pristine = new JSDOM(PAGE, { runScripts: 'dangerously', url: 'https://recreation.test/' });
+    const pristine = seamWindow('story-hook', PAGE, { install: false });
     await onceReady(pristine.window);
     const before = Object.getOwnPropertyNames(pristine.window);
     const { dom } = await seamDom();
@@ -208,18 +182,16 @@ describe('the seam ships inert', () => {
   });
 
   it('is dormant — installed before parsing, it mutates and logs nothing through DOMContentLoaded', async () => {
-    const { debug, vc } = captureDebug();
-    const dom = new JSDOM('<!DOCTYPE html><html><body><p id="q">captured</p></body></html>', {
-      runScripts: 'dangerously',
-      virtualConsole: vc,
-      url: 'https://recreation.test/',
+    const seam = seamWindow('story-hook', '<!DOCTYPE html><html><body><p id="q">captured</p></body></html>', {
+      install: false,
+      captureConsole: true,
       beforeParse(window) {
-        install(window);
+        installRuntime(window, SOURCE);
       },
     });
-    await onceReady(dom.window);
-    expect(dom.window.document.body.innerHTML).toBe('<p id="q">captured</p>');
-    expect(debug).toHaveLength(0); // nothing skipped, nothing logged — the runtime only defines the seam
+    await onceReady(seam.window);
+    expect(seam.window.document.body.innerHTML).toBe('<p id="q">captured</p>');
+    expect(seam.debug).toHaveLength(0); // nothing skipped, nothing logged — the runtime only defines the seam
   });
 
   it('is DOM-only — the injected source references no network primitive', () => {

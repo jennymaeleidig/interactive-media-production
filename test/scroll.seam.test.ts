@@ -6,14 +6,8 @@
 // (pipeline/scroll-runtime.js), evaluated in a real DOM (jsdom). jsdom has no
 // layout, so geometry is stubbed per element to the real page's relationship.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { JSDOM, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
-
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('scroll', 'runtime')), 'utf8');
+import type { DOMWindow } from 'jsdom';
+import { installDomGeometryShims, seamWindow } from './seam-harness';
 
 const PAGE = `<!DOCTYPE html><html><head></head><body>
 <h2 animate=scrub-word><span class="gsap_split_word gsap_split_word1" style="position:relative;display:inline-block">Detect</span></h2>
@@ -38,36 +32,14 @@ type Win = DOMWindow & { document: Document };
 type Rect = { top: number; bottom: number; left: number; right: number; width: number; height: number; x: number; y: number };
 const rect = (top: number, height = 100): Rect => ({ top, bottom: top + height, left: 0, right: 0, width: 0, height, x: 0, y: top });
 
-function stubGeometry(doc: Document): void {
-  // jsdom has no SVGGeometryElement; the runtime reads real path lengths.
-  doc.querySelectorAll('path').forEach((p) => {
-    (p as unknown as { getTotalLength: () => number }).getTotalLength = () => 100;
-    (p as unknown as { getPointAtLength: (l: number) => { x: number; y: number } }).getPointAtLength = (l) => ({ x: l, y: l });
-  });
-  // jsdom does not implement <dialog>.showModal/close.
-  doc.querySelectorAll('dialog').forEach((d) => {
-    (d as unknown as { showModal: () => void }).showModal = function (this: Element) { this.setAttribute('open', ''); };
-    (d as unknown as { close: () => void }).close = function (this: Element) { this.removeAttribute('open'); };
-  });
-  // jsdom's media element methods are not implemented.
-  doc.querySelectorAll('video').forEach((v) => {
-    (v as unknown as { play: () => Promise<void> }).play = () => Promise.resolve();
-    (v as unknown as { pause: () => void }).pause = () => {};
-  });
-}
-
-function install(window: DOMWindow): void {
-  (window as unknown as { eval: (src: string) => void }).eval(SOURCE);
-}
-
 function domOf(html: string, opts: { reduced?: boolean; prep?: (doc: Document) => void } = {}) {
-  const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://recreation.test/' });
-  const doc = dom.window.document;
-  stubGeometry(doc);
-  if (opts.reduced) (dom.window as unknown as { matchMedia: () => unknown }).matchMedia = () => ({ matches: true });
-  if (opts.prep) opts.prep(doc);
-  install(dom.window);
-  return dom;
+  return seamWindow('scroll', html, {
+    reduced: opts.reduced,
+    prep: (window) => {
+      installDomGeometryShims(window.document);
+      if (opts.prep) opts.prep(window.document);
+    },
+  });
 }
 
 function setRect(el: Element | null, r: Rect): void {

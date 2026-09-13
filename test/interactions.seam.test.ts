@@ -7,14 +7,10 @@
 // a real DOM (jsdom) — the same bytes every served page carries. Fixtures
 // mirror the real captured shapes (research/08 census patterns 11–15).
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { JSDOM, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
+import type { DOMWindow } from 'jsdom';
+import { layerSource, seamWindow } from './seam-harness';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('interactions', 'runtime')), 'utf8');
+const SOURCE = layerSource('interactions');
 
 // Captured shapes, miniature: w-tabs (video-cameras/podcast), the custom
 // home4 tabs (flock-ecosystem), the two w-dropdown shapes (animated-height
@@ -117,19 +113,8 @@ const PAGE = `<!DOCTYPE html><html><head><style>.w-tab-pane{display:none;positio
 
 </body></html>`;
 
-/** Eval the injected source into a jsdom window (post-parse, as an inline body script observes it). */
-function install(window: DOMWindow): void {
-  (window as unknown as { eval: (src: string) => void }).eval(SOURCE);
-}
-
 function domOf(html: string, opts: { reduced?: boolean } = {}) {
-  const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://recreation.test/' });
-  if (opts.reduced) {
-    // stub before the runtime reads it at click time
-    (dom.window as unknown as { matchMedia: () => unknown }).matchMedia = () => ({ matches: true });
-  }
-  install(dom.window);
-  return dom;
+  return seamWindow('interactions', html, { reduced: opts.reduced });
 }
 
 type Win = DOMWindow & { document: Document };

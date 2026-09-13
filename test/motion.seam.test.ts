@@ -8,14 +8,10 @@
 // (pipeline/motion-runtime.js), evaluated in a real DOM (jsdom) — the same
 // bytes every served page carries. Ticket 04.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { JSDOM, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
+import type { DOMWindow } from 'jsdom';
+import { layerSource, seamWindow } from './seam-harness';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('motion', 'runtime')), 'utf8');
+const SOURCE = layerSource('motion');
 
 const PAGE = `<!DOCTYPE html><html><body>
 <h1 data-split-title class="is-split is-visible"><span class=title-word>Safer</span></h1>
@@ -25,19 +21,8 @@ const PAGE = `<!DOCTYPE html><html><body>
 <div data-fpm-reveal>generic</div>
 </body></html>`;
 
-/** Eval the injected source into a jsdom window (post-parse, as an inline body script observes it). */
-function install(window: DOMWindow): void {
-  (window as unknown as { eval: (src: string) => void }).eval(SOURCE);
-}
-
 function domOf(html: string, opts: { reduced?: boolean } = {}) {
-  const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://recreation.test/' });
-  if (opts.reduced) {
-    // stub before the runtime reads it once at eval time
-    (dom.window as unknown as { matchMedia: () => unknown }).matchMedia = () => ({ matches: true });
-  }
-  install(dom.window);
-  return dom;
+  return seamWindow('motion', html, { reduced: opts.reduced });
 }
 
 /** Resolve after two animation frames — the hero re-adds is-visible on a double rAF. */

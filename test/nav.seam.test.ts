@@ -6,15 +6,10 @@
 // the mobile take-over on the hamburger. A desktop trigger click must still
 // navigate (no preventDefault) — the empty-cream-bar break must be impossible.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { JSDOM, type DOMWindow } from 'jsdom';
-import { layerFile } from '../pipeline/layers.mjs';
+import type { DOMWindow } from 'jsdom';
+import { layerSource, releaseDomReady, seamWindow, type SeamWindow } from './seam-harness';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('nav', 'runtime')), 'utf8');
-const NAV_CSS = readFileSync(path.join(HERE, '../pipeline', layerFile('nav', 'css')), 'utf8');
+const NAV_CSS = layerSource('nav', 'css');
 
 // The restored header shape, miniature: ids/classes as the live site uses them
 // (the runtime keys on #header, .header__bg, .nav__dd, .nav__menu-list).
@@ -41,14 +36,12 @@ const PAGE = `<!DOCTYPE html><html><head></head><body>
 
 type Win = DOMWindow;
 
-function domOf(reduced = false): JSDOM {
-  const dom = new JSDOM(PAGE, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://recreation.test/' });
-  if (reduced) (dom.window as unknown as { matchMedia: (q: string) => unknown }).matchMedia = () => ({ matches: true });
-  dom.window.eval(SOURCE);
+function domOf(reduced = false): SeamWindow {
+  const seam = seamWindow('nav', PAGE, { reduced });
   // jsdom leaves readyState at 'loading' until the async load event; the
   // runtime boots on DOMContentLoaded, so fire it here
-  if (dom.window.document.readyState === 'loading') dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
-  return dom;
+  releaseDomReady(seam.window);
+  return seam;
 }
 
 function setWidth(win: Win, width: number) {
@@ -231,7 +224,7 @@ describe('nav layer (ticket 14)', () => {
   });
 
   it('is inert when the page carries no shared header', () => {
-    const dom = new JSDOM('<!DOCTYPE html><html><body><p>no header</p></body></html>', { runScripts: 'outside-only' });
-    expect(() => dom.window.eval(SOURCE)).not.toThrow();
+    const seam = seamWindow('nav', '<!DOCTYPE html><html><body><p>no header</p></body></html>', { install: false });
+    expect(() => seam.install()).not.toThrow();
   });
 });
