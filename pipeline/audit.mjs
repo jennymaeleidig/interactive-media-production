@@ -41,6 +41,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { attrOf, openTags, srcdocSpans } from './html.mjs';
+import { MARKER_RE } from './layers.mjs';
 
 /**
  * The hosts a served page may reach: the live media players the embed pass
@@ -256,7 +257,7 @@ export function offAllowlistFrames(html) {
  */
 export function scriptCensus(html) {
   const tags = html.match(/<script\b[^>]*>/gi) ?? [];
-  const injected = tags.filter((t) => /data-flock-parody=/i.test(t)).length;
+  const injected = tags.filter((t) => MARKER_RE.test(t)).length;
   const ldJson = tags.filter((t) => isInertScript(t)).length;
   const executable = tags.length - injected - ldJson;
   return { total: tags.length, executable, ldJson, injected, srcdocAllowScripts: srcdocScripts(html).allowScripts };

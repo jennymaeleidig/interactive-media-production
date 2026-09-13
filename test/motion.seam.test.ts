@@ -12,9 +12,10 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, type DOMWindow } from 'jsdom';
+import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline/motion-runtime.js'), 'utf8');
+const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('motion', 'runtime')), 'utf8');
 
 const PAGE = `<!DOCTYPE html><html><body>
 <h1 data-split-title class="is-split is-visible"><span class=title-word>Safer</span></h1>

@@ -18,10 +18,11 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, type DOMWindow } from 'jsdom';
+import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
-const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
+const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('chat', 'runtime')), 'utf8');
+const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline', layerFile('chat', 'css')), 'utf8');
 
 const GREETING = 'Hey there! I\u2019m Flock, your friendly AI Sales Assistant. What questions do you have about Flock\u2019s offerings today?';
 const GENERAL = 'I can help with our products and services. How can I help you today?';

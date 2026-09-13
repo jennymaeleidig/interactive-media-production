@@ -10,10 +10,11 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, type DOMWindow } from 'jsdom';
+import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline/nav-runtime.js'), 'utf8');
-const NAV_CSS = readFileSync(path.join(HERE, '../pipeline/nav.css'), 'utf8');
+const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('nav', 'runtime')), 'utf8');
+const NAV_CSS = readFileSync(path.join(HERE, '../pipeline', layerFile('nav', 'css')), 'utf8');
 
 // The restored header shape, miniature: ids/classes as the live site uses them
 // (the runtime keys on #header, .header__bg, .nav__dd, .nav__menu-list).

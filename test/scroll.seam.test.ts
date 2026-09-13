@@ -10,9 +10,10 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, type DOMWindow } from 'jsdom';
+import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline/scroll-runtime.js'), 'utf8');
+const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('scroll', 'runtime')), 'utf8');
 
 const PAGE = `<!DOCTYPE html><html><head></head><body>
 <h2 animate=scrub-word><span class="gsap_split_word gsap_split_word1" style="position:relative;display:inline-block">Detect</span></h2>

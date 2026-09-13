@@ -10,24 +10,32 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runPipeline, type LogEntry } from '../pipeline/build.mjs';
+import { LAYERS, MARKER_RE, readLayerBodies } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, 'fixtures/capture-run');
 const OUT = path.join(HERE, '.tmp/pipeline/served');
-// the runtimes the injection passes inline — read here so tests can bound the
-// growth they cause and assert their verbatim presence
-const RUNTIME = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
-const MOTION_CSS = readFileSync(path.join(HERE, '../pipeline/motion.css'), 'utf8');
-const MOTION_RUNTIME = readFileSync(path.join(HERE, '../pipeline/motion-runtime.js'), 'utf8');
-const INTERACTIONS_CSS = readFileSync(path.join(HERE, '../pipeline/interactions.css'), 'utf8');
-const INTERACTIONS_RUNTIME = readFileSync(path.join(HERE, '../pipeline/interactions-runtime.js'), 'utf8');
-const CHAT_CSS = readFileSync(path.join(HERE, '../pipeline/chat-widget.css'), 'utf8');
-const CHAT_RUNTIME = readFileSync(path.join(HERE, '../pipeline/chat-widget.js'), 'utf8');
-const NAV_CSS = readFileSync(path.join(HERE, '../pipeline/nav.css'), 'utf8');
-const NAV_RUNTIME = readFileSync(path.join(HERE, '../pipeline/nav-runtime.js'), 'utf8');
-const SCROLL_CSS = readFileSync(path.join(HERE, '../pipeline/scroll.css'), 'utf8');
-const SCROLL_RUNTIME = readFileSync(path.join(HERE, '../pipeline/scroll-runtime.js'), 'utf8');
-const INJECTED_BYTES = RUNTIME.length + MOTION_CSS.length + MOTION_RUNTIME.length + INTERACTIONS_CSS.length + INTERACTIONS_RUNTIME.length + NAV_CSS.length + NAV_RUNTIME.length + CHAT_CSS.length + CHAT_RUNTIME.length + SCROLL_CSS.length + SCROLL_RUNTIME.length;
+// the layer bodies the build mounts — read from the one layer table
+// (pipeline/layers.mjs) so the bytes these tests assert and the bytes the
+// build inlines cannot drift
+const BODIES = readLayerBodies();
+function layerBody(name: string, kind: 'css' | 'runtime'): string {
+  const body = BODIES.get(name)?.[kind];
+  if (body === undefined) throw new Error(`layer ${name} ships no ${kind} body`);
+  return body;
+}
+const RUNTIME = layerBody('story-hook', 'runtime');
+const MOTION_CSS = layerBody('motion', 'css');
+const MOTION_RUNTIME = layerBody('motion', 'runtime');
+const INTERACTIONS_CSS = layerBody('interactions', 'css');
+const INTERACTIONS_RUNTIME = layerBody('interactions', 'runtime');
+const CHAT_CSS = layerBody('chat', 'css');
+const CHAT_RUNTIME = layerBody('chat', 'runtime');
+const NAV_CSS = layerBody('nav', 'css');
+const NAV_RUNTIME = layerBody('nav', 'runtime');
+const SCROLL_CSS = layerBody('scroll', 'css');
+const SCROLL_RUNTIME = layerBody('scroll', 'runtime');
+const INJECTED_BYTES = [...BODIES.values()].reduce((n, b) => n + (b.css?.length ?? 0) + (b.runtime?.length ?? 0), 0);
 
 // Pass 14 (ADR 0003) moves every body over KEEP_INLINE_BYTES into
 // `/assets/<sha>.css|.js` and leaves a marked stand-in where the body stood —
@@ -313,14 +321,11 @@ describe('story-hook pass (ticket 03)', () => {
 
   it('logs the injection per page (motion, interactions, chat on launcher pages, then the story-hook seam)', () => {
     for (const entry of result.log.filter((e) => !e.error)) {
-      const expected = [
-        'motion layer (style+script, inline)',
-        'interactions layer (style+script, inline)',
-        'nav layer (style+script, inline)',
-      ];
-      if (entry.chatLauncher) expected.push('chat widget (style+script, inline)');
-      expected.push('story-hook seam (inline, dormant)');
-      expected.push('scroll layer (style+script, inline)');
+      // the labels of the layers that mount on this page, in mount order —
+      // the table the build itself reads (pipeline/layers.mjs)
+      const expected = LAYERS
+        .filter((layer) => layer.mounts(entry, { page: entry.page }))
+        .map((layer) => layer.label);
       expect(entry.injected, entry.page).toEqual(expected);
     }
   });
@@ -328,7 +333,10 @@ describe('story-hook pass (ticket 03)', () => {
   it('keeps the zero-outbound invariants with the runtimes aboard — audit clean, no capture-derived executable', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
     const census = html.match(/<script\b[^>]*>/gi) ?? [];
-    expect(census.filter((t) => /data-flock-parody=/i.test(t))).toHaveLength(6); // motion + interactions + nav + chat + story-hook + scroll
+    const entry = result.log.find((e) => e.page === '/');
+    if (!entry) throw new Error('unreachable: index must log');
+    const expectedScripts = LAYERS.filter((layer) => layer.parts.includes('script') && layer.mounts(entry, { page: entry.page })).length;
+    expect(census.filter((t) => MARKER_RE.test(t))).toHaveLength(expectedScripts); // every mounted script layer
     for (const tag of census) {
       if (/data-flock-parody=/i.test(tag)) continue;
       expect(tag).toMatch(/type\s*=\s*("|')?application\/ld\+json/i);

@@ -1,6 +1,6 @@
 # 04 — The pass sequence gets a module, and a layer becomes a record
 
-Status: open
+Status: resolved
 Blocked by: 02, 03
 
 ## What to build
@@ -24,11 +24,39 @@ primitive is extracted it must ship inside the same injected bytes.
 
 ## Acceptance criteria
 
-- [ ] The pass order and its preconditions live in one module; the three
+- [x] The pass order and its preconditions live in one module; the three
       numbering sequences become one.
-- [ ] A layer is one record; `layerTag` / `injectBeforeClose` take it.
-- [ ] The injected-bytes accounting and the "six markers" assertion derive from
+- [x] A layer is one record; `layerTag` / `injectBeforeClose` take it.
+- [x] The injected-bytes accounting and the "six markers" assertion derive from
       the table, not from hand-written constants.
-- [ ] A new layer can be added as one record (proven by a test that mounts the
+- [x] A new layer can be added as one record (proven by a test that mounts the
       table and counts the markers).
-- [ ] Fixture output byte-identical (`.tmp/golden` diff empty).
+- [x] Fixture output byte-identical (`.tmp/golden` diff empty).
+
+## Comments
+
+Two new plain-ESM modules, following the `html.mjs`/`csp.mjs` precedent:
+
+- `pipeline/passes.mjs` — the ordered passes (`n`, `name`, `summary`) with the
+  preconditions that make the order load-bearing (`after`, and `before` with a
+  `why`). The build iterates it and dispatches through `PASS_IMPL`, a table in
+  `build.mjs` keyed by pass name that holds the implementations (they need the
+  build's own helpers and per-page state). The three competing sequences are
+  gone: the file header's pass list is now a pointer to the table, the section
+  banners carry no numbers, and the two "pass 14" references in `dedupeTree`
+  now say "the dedupe pass".
+- `pipeline/layers.mjs` — one record per injected layer: `name` (the marker),
+  `label` (the mutation-log line), `parts`, `css`/`runtime` files, `mounts`, and
+  `grants`. `injectBeforeClose`/`layerTag`/`mountLayer`/`grantLayer` take the
+  record; `readLayerBodies` reads every inline file once; `layerFile` hands the
+  six runtime seam harnesses their source path. `audit.mjs`'s census reads
+  `MARKER_RE` from here, so a marked tag's provenance is one definition.
+
+The reused `chatPass`/`legibilityPass` mount predicates are unchanged behavior:
+`chat` mounts on `entry.chatLauncher`, `legibility` on a `LEGIBILITY_PATCHES`
+entry for the page. The chat CSP grant moved from a hand-written
+`grantConnectSelf` into the chat record's `grants`, producing the same
+`connect-src 'self' (chat mount)` log line and the same warnings.
+Evidence: `.tmp/golden` diff empty (24-file tree, byte for byte, plus an
+identical mutation log); full suite 362 tests green in 21 files; `tsc --noEmit`
+clean.

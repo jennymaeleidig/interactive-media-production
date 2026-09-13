@@ -113,6 +113,18 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'layers',
+          include: ['test/layers.test.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'passes',
+          include: ['test/passes.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'dedupe',
           include: ['test/dedupe.test.ts'],
         },

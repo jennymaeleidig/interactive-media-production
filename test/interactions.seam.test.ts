@@ -11,9 +11,10 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, type DOMWindow } from 'jsdom';
+import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline/interactions-runtime.js'), 'utf8');
+const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('interactions', 'runtime')), 'utf8');
 
 // Captured shapes, miniature: w-tabs (video-cameras/podcast), the custom
 // home4 tabs (flock-ecosystem), the two w-dropdown shapes (animated-height

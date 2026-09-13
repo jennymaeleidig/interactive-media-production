@@ -1,113 +1,11 @@
 // The build pipeline: Capture in → served tree + per-page mutation log out.
 // A pure transformation (spec, Testing Decisions): no live site, no network.
 //
-// Passes (this effort, ticket 01 carries the first two):
-//   1. strip   — remove the third-party machinery from the captured DOM
-//                (Qualified offer host + chat launcher + styles, OneTrust
-//                consent stack). Captures carry zero executable scripts
-//                (SingleFile stripped them at capture time), so once the
-//                strip DOM is gone, "zero outbound requests" is true by
-//                construction — the audit pass asserts it per page. ADR 0002
-//                is the one exception: the video slots (pass 10) play from
-//                fast.wistia.net, an allow-listed host the audit enforces.
-//   2. (retired) header-restore — ticket 14 grafted the shared header's lost
-//                bytes (mega-menu panels, nav state CSS, sticky offset) from a
-//                vendored corrected-flags homepage artifact. Ticket 15 moved
-//                the whole build to a corrected-flags capture run, whose
-//                stylesheet keeps every nav rule and whose DOM keeps every
-//                hidden subtree (images ride along as SingleFile's --sf-img
-//                background vars, and the mobile take-over CTA carries its
-//                live demo href), so the graft is retired. The nav behavior
-//                layer stays (pass 7) because the captures carry no scripts.
-//   3. rewrite — internal hrefs https://(www.)flocksafety.com/X → /X
-//                (Recreation routes); external links stay live.
-//   4. forms   — captured lead forms carry no action (their live submission
-//                went through the stripped JS), so the pass injects a POST to
-//                a local mock API route keyed per form; the mock route
-//                swallows the submission and 303-redirects to the captured
-//                thank-you page (spec, Forms). Nothing ever leaves the
-//                machine: the only actions in served bytes are the injected
-//                local ones, and the audit counts any external form action.
-//   5. motion  — the motion reveal layer (ticket 04): normalize every captured
-//                animation FROM-state to its end-state in the static DOM
-//                (no-JS pages are the styled end-state by construction),
-//                annotate split words with per-word --fpm-i stagger indices,
-//                tag generic inline zero-opacity from-states for the observer,
-//                then inject motion.css + motion-runtime.js inline. Reveals
-//                fire one-shot only when JS runs and reduced motion allows.
-//   6. interactions — the delegated interaction layer (ticket 05): inject
-//                interactions.css + interactions-runtime.js inline. One
-//                delegated click listener operates tabs, dropdowns,
-//                accordions, and sliders by captured classes and geometry —
-//                zero per-page bespoke logic, and reduced motion never blocks
-//                function. The CSS half is suppress-only: it silences the
-//                captured accordion height tween the ticket rules
-//                function-only, and never adds an animation.
-//   7. nav     — the shared header's behavior layer (ticket 14): inject
-//                nav.css + nav-runtime.js inline. It moves the class
-//                vocabulary the restored live CSS renders — .header-z.scroll
-//                on scroll, .nav__dd.show on desktop hover and mobile tap,
-//                .header__bg.is-open plus the mobile take-over on the
-//                hamburger. Ticket 05's sf-hidden nav placeholder is gone, and
-//                the trigger click still navigates on desktop.
-//   8. chat    — mount the Chat mimic (ticket 10) on exactly the pages whose
-//                Capture mounted the Qualified launcher (the per-page census
-//                this pass records). chat-widget.css + chat-widget.js are
-//                injected inline, verbatim; the runtime creates the whole
-//                widget DOM (no-JS pages stay at the captured end-state), so
-//                the launcher behaves identically on every mounted page. One
-//                outbound request: the same-origin POST to /api/chat.
-//   9. story-hook — the dormant DOM-patching seam, injected inline on every
-//                page (pipeline/story-hook.js, ticket 03). It only DEFINES
-//                window.flockParody — nothing in the Recreation calls it; the
-//                Parody layer will. DOM-only, zero network, and it degrades
-//                to the captured end-state with JavaScript disabled (it ships
-//                inert). The data-flock-parody attribute marks the script so
-//                the census can tell the Recreation's own runtime from
-//                capture residue (which must stay at zero executable).
-//  10. embeds  — make each video slot playable by swapping the inert snapshot
-//                the Capture kept for the live player document the page's own
-//                w-json-ld names as `embedUrl` (ADR 0002). Three snapshot
-//                shapes: an inlined `srcdoc` player document, the JS-built
-//                player chrome, and a `<wistia-player>` web component. This is
-//                the ONE place a served page reaches the network; the pass
-//                widens the captured `frame-src` for exactly the hosts it used,
-//                and the audit refuses any other frame host. Popover slots and
-//                medias that are dead upstream stay in their captured
-//                end-state (11 + 4), and YouTube's panels are left alone until
-//                their reveal interaction exists.
-//  11. assets  — extract every asset the Capture inlined as a `data:` URI into
-//                one content-addressed file under served/assets/, and point
-//                the page at /assets/<sha>.<ext> (ADR 0002). The captures
-//                re-encode the same image once per referencing page — 143,959
-//                references for ~3,000 distinct files, a 14.9x tax — so the
-//                pass turns 7.8 GB of base64 text back into ~370 MB of files.
-//                Same-origin, so it adds no network the CSP has to allow.
-//  12. legibility — inject page-scoped CSS overrides that make text the Capture
-//                left unreadable legible (config.LEGIBILITY_PATCHES; ticket
-//                12's human review found /safe-cities' dark-on-dark subheads).
-//                Inert style only: no script, no network, and no captured byte
-//                touched.
-//  13. scroll   — restore the captured scroll choreography and modal dialogs
-//                (ticket 21): normalize the captured scroll from-states to
-//                their end-states (including the `.bg-screen.scroller` zoom,
-//                whose leftover transform would hijack `position: fixed`),
-//                then inject scroll.css + scroll-runtime.js inline. Vanilla,
-//                no GSAP/CDN, so the zero-outbound invariant holds; reduced
-//                motion and no-JS ship the settled end-state.
-//  14. dedupe   — write every style/script body over KEEP_INLINE_BYTES once as
-//                a content-addressed `/assets/<sha>.css|.js` and point the page
-//                at it from the position the body held, so the sheets a
-//                Capture re-encodes per page are paid for once (ADR 0003).
-//                The captured `style-src`/`script-src` carry no `'self'`, so
-//                the pass grants it in those two directives — replaced, never
-//                appended, exactly as the embed pass does for `frame-src`.
-//                Same-origin, so the zero-outbound invariant is untouched;
-//                JSON-LD and sub-kilobyte bodies stay inline.
-//   W. write   — mirrored tree under the output dir; captures are truncated
-//                before </body></html> (SingleFile CLI never emits them), so
-//                the pass restores the closing tags; every mutation lands in
-//                build-log.json, per page.
+// Passes: the order and the preconditions that make it load-bearing live in
+// pipeline/passes.mjs — one table, one numbering, one place. The injected
+// layers (their markers, inline files, mount predicates, and CSP grants) live
+// in pipeline/layers.mjs. This file is the implementations and the
+// orchestration; read those two tables for what the build does.
 //
 // Build-level outputs (ticket 07):
 //   redirects.json  — the run's uncaptured manifest filtered to legacy
@@ -137,6 +35,8 @@ import { audit, isInertScript, scriptCensus } from './audit.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { addAttr, attrValue, contentSegments, editAttr, hasAttr, openTags, replaceTags } from './html.mjs';
 import { grantSources, readCsp, writeCsp } from './csp.mjs';
+import { grantLayer, layerNamed, mountLayer, readLayerBodies } from './layers.mjs';
+import { PASSES } from './passes.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -213,7 +113,7 @@ function servedFileFor(outDir, pagePath) {
   return path.join(outDir, relFileFor(pagePath));
 }
 
-// ---- pass 1: strip -----------------------------------------------------------
+// ---- strip -------------------------------------------------------------------
 
 function stripPass(html, entry) {
   for (const t of STRIP_TARGETS) {
@@ -318,7 +218,7 @@ function stripExecutableScripts(html, entry) {
   return html;
 }
 
-// ---- pass 3: rewrite links ---------------------------------------------------
+// ---- rewrite links -----------------------------------------------------------
 
 /** Rewrite internal hrefs (quoted, single-quoted, unquoted; absolute + protocol-relative) to root-relative Recreation routes. */
 function rewritePass(html, entry) {
@@ -334,7 +234,7 @@ function rewritePass(html, entry) {
   return html;
 }
 
-// ---- pass 4: form routing (ticket 02) ----------------------------------------
+// ---- form routing (ticket 02) ------------------------------------------------
 
 // The captured demo flow's thank-you page — the one redirect target the live
 // site's main flow observably lands on. Per-page overrides go in the table
@@ -398,7 +298,7 @@ function formsPass(html, entry, pagePath, manifest) {
   return html;
 }
 
-// ---- pass 5: motion reveal layer (ticket 04) ----------------------------------
+// ---- motion reveal layer (ticket 04) ------------------------------------------
 
 // `openTagRe`/`SKIP_ZONE`/`mapContentSegments`/`attrValue`/`hasAttr`/`editAttr`/
 // `withAddedAttr` live in html.mjs now (ticket: one home for the capture-HTML
@@ -565,37 +465,8 @@ function normalizeGenericZeroOpacity(seg, counts) {
   });
 }
 
-const MOTION_INJECTED = 'motion layer (style+script, inline)';
-
-/**
- * Insert `tag` inline before </body> — or append at EOF when the capture is
- * truncated (the write pass restores the closing tags after it) — and log
- * `label` under the page's injected list. Shared by every injection pass.
- */
-function injectBeforeClose(html, entry, label, tag) {
-  const closeBody = html.lastIndexOf('</body>');
-  if (closeBody >= 0) {
-    html = html.slice(0, closeBody) + tag + '\n' + html.slice(closeBody);
-  } else {
-    html = html + '\n' + tag;
-  }
-  entry.injected = entry.injected ?? [];
-  entry.injected.push(label);
-  return html;
-}
-
-/**
- * The inline `<style>` + `<script>` pair every injected runtime layer ships.
- * Both halves carry the layer's `data-flock-parody` marker, so the script
- * census can tell a Recreation runtime from capture residue (which must stay
- * zero executable) — shared so a new layer cannot drift from the marker shape.
- */
-function layerTag(name, css, runtime) {
-  return `<style data-flock-parody="${name}">\n${css}\n</style>\n<script data-flock-parody="${name}">\n${runtime}\n</script>`;
-}
-
-/** The motion pass: normalize → annotate → tag → inject the CSS+runtime pair. */
-function motionPass(html, entry, css, runtime) {
+/** The motion pass: normalize → annotate → mount the CSS+runtime pair. */
+function motionPass(html, entry, bodies) {
   const counts = {};
   let heroes = 0;
   html = contentSegments(html, (seg) => {
@@ -613,13 +484,10 @@ function motionPass(html, entry, css, runtime) {
   if (heroes > 0) counts['hero split-title re-fire targets'] = heroes;
   entry.motion = counts;
 
-  const motionTag = layerTag('motion', css, runtime);
-  return injectBeforeClose(html, entry, MOTION_INJECTED, motionTag);
+  return mountLayer(html, entry, layerNamed('motion'), bodies);
 }
 
-// ---- pass 6: interactions layer (ticket 05) ----------------------------------
-
-const INTERACTIONS_INJECTED = 'interactions layer (style+script, inline)';
+// ---- interactions layer (ticket 05) -----------------------------------------
 
 /**
  * Inject the delegated interaction runtime + its suppress-only CSS inline,
@@ -627,13 +495,11 @@ const INTERACTIONS_INJECTED = 'interactions layer (style+script, inline)';
  * injection: the layer reads the captured DOM it finds, so unlike the motion
  * pass this one makes no per-page mutations to log.
  */
-function interactionsPass(html, entry, css, runtime) {
-  return injectBeforeClose(html, entry, INTERACTIONS_INJECTED, layerTag('interactions', css, runtime));
+function interactionsPass(html, entry, bodies) {
+  return mountLayer(html, entry, layerNamed('interactions'), bodies);
 }
 
-// ---- pass 7: nav layer (ticket 14) --------------------------------------------
-
-const NAV_INJECTED = 'nav layer (style+script, inline)';
+// ---- nav layer (ticket 14) ---------------------------------------------------
 
 /**
  * Inject the shared header's behavior runtime + its CSS half inline, verbatim
@@ -641,39 +507,21 @@ const NAV_INJECTED = 'nav layer (style+script, inline)';
  * classes the runtime moves, so unlike the motion pass this one makes no
  * per-page DOM mutation to log.
  */
-function navPass(html, entry, css, runtime) {
-  return injectBeforeClose(html, entry, NAV_INJECTED, layerTag('nav', css, runtime));
+function navPass(html, entry, bodies) {
+  return mountLayer(html, entry, layerNamed('nav'), bodies);
 }
 
-// ---- pass 8: chat mount (ticket 10) ----------------------------------------
-
-const CHAT_INJECTED = 'chat widget (style+script, inline)';
+// ---- chat mount (ticket 10) ------------------------------------------------
 
 /**
  * The captured CSP is `default-src 'none'` with no `connect-src`, so it
  * refuses every fetch/XHR — the chat runtime's same-origin POST to /api/chat
  * is blocked on every real served page. (Found in the ticket-10 browser
- * smoke; jsdom does not enforce CSP, so the DOM seam cannot see it.) The chat
- * mount grants exactly the one source the mimic needs — `connect-src 'self'`
- * — and nothing else: `'self'` is the Recreation origin, so the grant cannot
- * reach a third party, and it is applied only on the launcher pages, the only
- * pages that carry the mimic.
+ * smoke; jsdom does not enforce CSP, so the DOM seam cannot see it.) The layer
+ * record's grant adds exactly the one source the mimic needs — `connect-src
+ * 'self'` — and nothing else: `'self'` is the Recreation origin, so it cannot
+ * reach a third party, and only the launcher pages carry the mimic.
  */
-function grantConnectSelf(html, entry) {
-  const csp = readCsp(html);
-  if (csp === null) {
-    entry.warnings.push('chat: no CSP meta found — the widget POST may be blocked');
-    return html;
-  }
-  if (csp.value === null) {
-    entry.warnings.push('chat: CSP meta has no content attribute — the widget POST may be blocked');
-    return html;
-  }
-  const granted = grantSources(csp.value, 'connect-src', ["'self'"]);
-  if (granted.value === csp.value) return html;
-  entry.csp = entry.csp ? `${entry.csp}; connect-src 'self' (chat mount)` : "connect-src 'self' (chat mount)";
-  return writeCsp(html, csp, granted.value);
-}
 
 /**
  * The captured policy allows frames only from `'self' data:`, so a live embed
@@ -714,15 +562,14 @@ function grantFrameSrc(html, entry, hosts) {
  * the original's script-injected launcher did. One request leaves the page:
  * the same-origin POST to /api/chat.
  */
-function chatPass(html, entry, css, runtime) {
-  if (!entry.chatLauncher) return html;
-  html = grantConnectSelf(html, entry);
-  return injectBeforeClose(html, entry, CHAT_INJECTED, layerTag('chat', css, runtime));
+function chatPass(html, entry, bodies) {
+  const layer = layerNamed('chat');
+  if (!layer.mounts(entry)) return html;
+  html = grantLayer(html, entry, layer);
+  return mountLayer(html, entry, layer, bodies);
 }
 
-// ---- pass 9: story-hook seam (ticket 03) -----------------------------------
-
-const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
+// ---- story-hook seam (ticket 03) --------------------------------------------
 
 /**
  * Inject the story-hook runtime inline, verbatim, before </body> (or at EOF
@@ -730,9 +577,8 @@ const STORY_HOOK_MARKER = 'data-flock-parody="story-hook"';
  * after it). No captured byte carries `flockParody`, so the only occurrences
  * in served bytes are the runtime's own definition.
  */
-function storyHookPass(html, entry, source) {
-  const tag = `<script ${STORY_HOOK_MARKER}>\n${source}\n</script>`;
-  return injectBeforeClose(html, entry, 'story-hook seam (inline, dormant)', tag);
+function storyHookPass(html, entry, bodies) {
+  return mountLayer(html, entry, layerNamed('story-hook'), bodies);
 }
 
 /**
@@ -749,15 +595,12 @@ function storyHookPass(html, entry, source) {
  * @returns {string}
  */
 function legibilityPass(html, entry, page, patches) {
-  const css = patches[page];
-  if (!css) return html;
-  const tag = `<style data-flock-parody="legibility">\n${css.trim()}\n</style>`;
-  return injectBeforeClose(html, entry, 'legibility CSS (inline)', tag);
+  const layer = layerNamed('legibility');
+  if (!layer.mounts(entry, { page, legibilityPatches: patches })) return html;
+  return mountLayer(html, entry, layer, { css: patches[page] });
 }
 
-// ---- pass 13: scroll choreography + modals (ticket 21) ----------------------
-
-const SCROLL_INJECTED = 'scroll layer (style+script, inline)';
+// ---- scroll choreography + modals (ticket 21) -------------------------------
 
 /**
  * Normalize the captured scroll from-states to their static end-states (a page
@@ -771,7 +614,7 @@ const SCROLL_INJECTED = 'scroll layer (style+script, inline)';
  * @param {string} runtime
  * @returns {string}
  */
-function scrollPass(html, entry, css, runtime) {
+function scrollPass(html, entry, bodies) {
   const counts = {};
   const bump = (k) => { counts[k] = (counts[k] ?? 0) + 1; };
   html = contentSegments(html, (seg) => replaceTags(seg, (tag, _name, attrs) => {
@@ -812,10 +655,10 @@ function scrollPass(html, entry, css, runtime) {
     return tag;
   }));
   if (Object.keys(counts).length > 0) entry.scroll = counts;
-  return injectBeforeClose(html, entry, SCROLL_INJECTED, layerTag('scroll', css, runtime));
+  return mountLayer(html, entry, layerNamed('scroll'), bodies);
 }
 
-// ---- pass 10: live media embeds (ADR 0002) ----------------------------------
+// ---- live media embeds (ADR 0002) --------------------------------------------
 
 /**
  * Swap each video slot's inert snapshot for the live player document.
@@ -862,7 +705,7 @@ function applyEmbeds(html, entry, deadVideoIds) {
   return grantFrameSrc(out, entry, hosts);
 }
 
-// ---- pass 10b: drop the Capture's URL bookkeeping (ticket 12) ---------------
+// ---- drop the Capture's URL bookkeeping (ticket 12) --------------------------
 /**
  * The `data-sf-original-*` attributes `--save-original-urls` writes are how the
  * embed pass finds a player the Capture emptied. Everything else they carry is
@@ -880,7 +723,7 @@ function originalUrlsPass(html, entry) {
   return out;
 }
 
-// ---- pass 11: asset extraction (ADR 0002) -----------------------------------
+// ---- asset extraction (ADR 0002) ---------------------------------------------
 /**
  * Write every asset a Capture inlined as a `data:` URI once, under a
  * content-addressed name, and point the page at it (`/assets/<sha>.<ext>`).
@@ -919,7 +762,7 @@ function assetsPass(html, entry, assetDir, written) {
   return out;
 }
 
-// ---- pass 14: body deduplication (ADR 0003) ---------------------------------
+// ---- body deduplication (ADR 0003) -------------------------------------------
 /**
  * Write every style/script body above the inline threshold once as a
  * content-addressed file, and leave a `<link>`/`<script src>` where the body
@@ -979,6 +822,51 @@ function dedupePass(html, entry, assetDir, written, bodies) {
   }
   return result.html;
 }
+
+/**
+ * The write pass: captures are truncated before </body></html> (SingleFile CLI
+ * never emits them) — restore whichever closing tags the capture lacks. Runs
+ * after every injection (their tags would otherwise land past EOF) and before
+ * the body dedupe (whose scan needs the close).
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @returns {string}
+ */
+function writePass(html, entry) {
+  const missing = [];
+  if (!/<\/body>/i.test(html)) missing.push('</body>');
+  if (!/<\/html>/i.test(html)) missing.push('</html>');
+  if (missing.length > 0) {
+    html += '\n' + missing.join('');
+    entry.restored = [`${missing.join('')} (capture was truncated)`];
+  }
+  return html;
+}
+
+/**
+ * The build's pass implementations, keyed by the `pipeline/passes.mjs` table.
+ * Each takes the page HTML and the per-page `ctx` and returns the next HTML.
+ * The sequence module owns the order and the preconditions; this table owns
+ * only the functions, so the two can be read together.
+ * @type {Record<string, (html: string, ctx: any) => string>}
+ */
+const PASS_IMPL = {
+  strip: (html, ctx) => stripPass(html, ctx.entry),
+  rewrite: (html, ctx) => rewritePass(html, ctx.entry),
+  forms: (html, ctx) => formsPass(html, ctx.entry, ctx.page, ctx.formsManifest),
+  embeds: (html, ctx) => applyEmbeds(html, ctx.entry, ctx.deadVideoIds),
+  originalUrls: (html, ctx) => originalUrlsPass(html, ctx.entry),
+  assets: (html, ctx) => assetsPass(html, ctx.entry, ctx.assetDir, ctx.writtenAssets),
+  motion: (html, ctx) => motionPass(html, ctx.entry, ctx.bodies.get('motion')),
+  interactions: (html, ctx) => interactionsPass(html, ctx.entry, ctx.bodies.get('interactions')),
+  nav: (html, ctx) => navPass(html, ctx.entry, ctx.bodies.get('nav')),
+  chat: (html, ctx) => chatPass(html, ctx.entry, ctx.bodies.get('chat')),
+  storyHook: (html, ctx) => storyHookPass(html, ctx.entry, ctx.bodies.get('story-hook')),
+  legibility: (html, ctx) => legibilityPass(html, ctx.entry, ctx.page, ctx.legibilityPatches),
+  scroll: (html, ctx) => scrollPass(html, ctx.entry, ctx.bodies.get('scroll')),
+  write: (html, ctx) => writePass(html, ctx.entry),
+  dedupe: (html, ctx) => dedupePass(html, ctx.entry, ctx.assetDir, ctx.writtenAssets, ctx.writtenBodies),
+};
 
 // ---- pipeline ----------------------------------------------------------------
 
@@ -1049,18 +937,8 @@ export async function runPipeline(opts) {
   const assetDir = path.join(outDir, 'assets');
   const writtenAssets = new Set(); // asset sha → already on disk this build
   const writtenBodies = new Set(); // style/script body files written this build
-  // read once — every page inlines the same runtime bytes verbatim
-  const storyHookSource = fs.readFileSync(path.join(HERE, 'story-hook.js'), 'utf8');
-  const scrollCss = fs.readFileSync(path.join(HERE, 'scroll.css'), 'utf8');
-  const scrollRuntime = fs.readFileSync(path.join(HERE, 'scroll-runtime.js'), 'utf8');
-  const motionCss = fs.readFileSync(path.join(HERE, 'motion.css'), 'utf8');
-  const motionRuntime = fs.readFileSync(path.join(HERE, 'motion-runtime.js'), 'utf8');
-  const interactionsCss = fs.readFileSync(path.join(HERE, 'interactions.css'), 'utf8');
-  const interactionsRuntime = fs.readFileSync(path.join(HERE, 'interactions-runtime.js'), 'utf8');
-  const chatCss = fs.readFileSync(path.join(HERE, 'chat-widget.css'), 'utf8');
-  const chatRuntime = fs.readFileSync(path.join(HERE, 'chat-widget.js'), 'utf8');
-  const navCss = fs.readFileSync(path.join(HERE, 'nav.css'), 'utf8');
-  const navRuntime = fs.readFileSync(path.join(HERE, 'nav-runtime.js'), 'utf8');
+  // read once — every page mounts the same runtime bytes verbatim
+  const bodies = readLayerBodies();
 
   for (const page of buildPages) {
     const src = captureFileFor(runDir, page);
@@ -1074,54 +952,11 @@ export async function runPipeline(opts) {
     // strip removes the launcher, recorded per page in the mutation log.
     const entry = { page, bytesIn: before.length, stripped: {}, chatLauncher: LAUNCHER_RE.test(before), warnings: [] };
 
-    html = stripPass(html, entry);
-
-    html = rewritePass(html, entry);
-
-    html = formsPass(html, entry, page, formsManifest);
-
-    // Live embeds go in before the asset pass: the inert snapshots this pass
-    // discards carry inlined `data:` URIs of their own, and extracting bytes
-    // that are about to be thrown away would only litter the asset directory.
-    html = applyEmbeds(html, entry, deadVideoIds);
-
-    // The Capture's `data-sf-original-*` bookkeeping exists to feed the pass
-    // above; the rest is dropped here so served pages print no more of the
-    // original's asset URLs than before (ticket 12).
-    html = originalUrlsPass(html, entry);
-
-    // Extraction runs here, before every injection pass: the Recreation's own
-    // runtimes are inlined VERBATIM (CODING_STANDARDS), so their bytes must not
-    // be rewritten — even where an injected stylesheet carries its own inlined
-    // asset (chat-widget.css has three). Only the page's captured assets move.
-    html = assetsPass(html, entry, assetDir, writtenAssets);
-
-    html = motionPass(html, entry, motionCss, motionRuntime);
-
-    html = interactionsPass(html, entry, interactionsCss, interactionsRuntime);
-
-    html = navPass(html, entry, navCss, navRuntime);
-
-    html = chatPass(html, entry, chatCss, chatRuntime);
-
-    html = storyHookPass(html, entry, storyHookSource);
-
-    html = legibilityPass(html, entry, page, legibilityPatches);
-
-    html = scrollPass(html, entry, scrollCss, scrollRuntime);
-
-    // Write pass: captures are truncated before </body></html> (SingleFile CLI
-    // never emits them) — restore whichever closing tags the capture lacks.
-    const missing = [];
-    if (!/<\/body>/i.test(html)) missing.push('</body>');
-    if (!/<\/html>/i.test(html)) missing.push('</html>');
-    if (missing.length > 0) {
-      html += '\n' + missing.join('');
-      entry.restored = [`${missing.join('')} (capture was truncated)`];
-    }
-
-    // Last, so the bodies it moves are the final ones.
-    html = dedupePass(html, entry, assetDir, writtenAssets, writtenBodies);
+    // The pass order and its preconditions live in pipeline/passes.mjs; the
+    // implementations are keyed by pass name above. `ctx` is the per-page
+    // state a pass reads (and, through `entry`, mutates).
+    const ctx = { entry, page, formsManifest, deadVideoIds, assetDir, writtenAssets, writtenBodies, bodies, legibilityPatches };
+    for (const pass of PASSES) html = PASS_IMPL[pass.name](html, ctx);
 
     const outFile = servedFileFor(outDir, page);
     fs.mkdirSync(path.dirname(outFile), { recursive: true });
@@ -1245,7 +1080,7 @@ function pageForServedFile(outDir, file) {
 }
 
 /**
- * Run pass 14 over a served tree that already exists, in place, and keep its
+ * Run the dedupe pass over a served tree that already exists, in place, and keep its
  * manifests true.
  *
  * The pass runs inside the build, so a build's own output comes out deduped
@@ -1410,7 +1245,7 @@ function summarize(log, summary) {
 async function main() {
   const arg = makeArg(process.argv.slice(2));
 
-  // Tree mode: apply pass 14 to a served tree that already exists, in place.
+  // Tree mode: apply the dedupe pass to a served tree that already exists, in place.
   // The build runs the pass itself, so this is for the tree a build wrote
   // before the pass existed (and for a threshold change) — the captures it came
   // from need not exist. `npm run dedupe` is the script.

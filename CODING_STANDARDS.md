@@ -97,6 +97,17 @@ and the log's key names are not an interface between them.
   `srcdocSpans`) and the attribute readers. It **keeps** the dialects the
   frozen tree's bytes were built under (ADR 0004) rather than merging them;
   each one is named in the module and pinned at `test/html.test.ts`.
+- The build's **pass order** and its **injected layers** are tables, not
+  position-plus-prose. `pipeline/passes.mjs` holds the ordered passes with the
+  preconditions that make the order load-bearing (`after` / `before` with a
+  `why`); `pipeline/layers.mjs` holds one record per layer — its
+  `data-flock-parody` marker, the label the mutation log carries, its inline
+  files, the predicate that mounts it, and the CSP grant it needs. The build
+  iterates the pass table (`PASS_IMPL`, keyed by pass name); the
+  injected-bytes accounting, the audit's marker census, the six runtime seam
+  harnesses and the "mounted script layers" assertion all read the layer
+  table, so adding a layer is one record. Pinned at `test/passes.test.ts` and
+  `test/layers.test.ts`.
 - The serving check (`regression/routes.mjs`, one command `npm run routes`) is
   plain Node ESM + JSDoc and **environmental**: it starts the production
   server and measures it over HTTP. Its pure cores — `routeExpectations`,
@@ -256,7 +267,13 @@ and the log's key names are not an interface between them.
   rule is the one the frozen bytes were built with), the slot scan that steps
   over comments and SVG subtrees, and the two ticket-12 regressions — a
   multi-megabyte unquoted attribute value, and a nested `srcdoc` document whose
-  stylesheets must not be rewritten). All are
+  stylesheets must not be rewritten) and the pass sequence
+  (`test/passes.test.ts` — `pipeline/passes.mjs`: unique sequential numbers,
+  only real passes named as preconditions, and the load-bearing order — embeds
+  before assets, assets before every injection, dedupe last) and the layer
+  table (`test/layers.test.ts` — `pipeline/layers.mjs`: one marker/files/
+  predicate/grant per layer, the one mount operation, the record-driven grant,
+  and a synthetic seventh record that mounts and logs like the rest). All are
   pure HTML-in/HTML-out cores the build calls; none reaches over HTTP, and
   the built result of each is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection

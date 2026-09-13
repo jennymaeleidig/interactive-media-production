@@ -10,9 +10,10 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM, VirtualConsole, type DOMWindow } from 'jsdom';
+import { layerFile } from '../pipeline/layers.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = readFileSync(path.join(HERE, '../pipeline/story-hook.js'), 'utf8');
+const SOURCE = readFileSync(path.join(HERE, '../pipeline', layerFile('story-hook', 'runtime')), 'utf8');
 
 /** The seam's public shape — `window.flockParody.apply(patches)`. */
 interface Seam {
