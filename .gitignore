@@ -4,7 +4,7 @@ node_modules/
 .sandbox/
 .DS_Store
 
-# Build outputs
-served/
+# Build outputs — `.tmp/` is scratch. `served/` is deliberately NOT ignored:
+# it is the Recreation itself, and nothing can rebuild it (its captures are gone).
 .tmp/
 *.tsbuildinfo

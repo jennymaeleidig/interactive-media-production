@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>Path</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Login" transform="translate(-1115.000000, -399.000000)" fill="#125AC4" fill-rule="nonzero">
+            <g id="flash-alert-copy-2" transform="translate(1098.000000, 377.000000)">
+                <path d="M22.1514719,39.1514719 C22.3765155,38.9264282 22.6817402,38.8 23,38.8 L37.4,38.8 C38.0627417,38.8 38.6,38.2627417 38.6,37.6 L38.6,25.6 C38.6,24.9372583 38.0627417,24.4 37.4,24.4 L20.6,24.4 C19.9372583,24.4 19.4,24.9372583 19.4,25.6 L19.4,41.9029437 L22.1514719,39.1514719 Z M19.0485281,45.6485281 C18.2925703,46.404486 17,45.8690858 17,44.8 L17,25.6 C17,23.6117749 18.6117749,22 20.6,22 L37.4,22 C39.3882251,22 41,23.6117749 41,25.6 L41,37.6 C41,39.5882251 39.3882251,41.2 37.4,41.2 L23.4970563,41.2 L19.0485281,45.6485281 Z" id="Path"></path>
+            </g>
+        </g>
+    </g>
+</svg>

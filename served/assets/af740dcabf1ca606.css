@@ -1,0 +1,99 @@
+
+/* SPDX-License-Identifier: CC0-1.0
+ *
+ * The motion reveal layer, CSS half — injected inline into every served page
+ * by the build (pipeline/build.mjs pass 4, ticket 04). Inert until the
+ * runtime adds `.fpm-motion` to <html> (JS running AND prefers-reduced-motion
+ * allowing): with JavaScript disabled, or with reduced motion requested, none
+ * of these rules apply and the page renders as the normalized static
+ * end-state the build wrote. From-values are the behavioral census's captured
+ * values (research/08, patterns 1-7,9); the end-state is the static DOM
+ * itself, so no end-rules are needed — adding `.fpm-in` (or re-adding
+ * `.is-visible`) releases the from-state and the transition plays to it.
+ * Interactions (tabs/dropdowns/accordion/swiper) are ticket 05, not here.
+ * CSS has no line comments: block comments only in this file. "fpm" =
+ * flock-parody-motion, the family the data-flock-parody="motion" tags anchor.
+ * KEEP IN SYNC: the from-values below must equal what the build strips
+ * (WORD_FROM_TOKENS in pipeline/build.mjs) — the CSS re-applies exactly the
+ * tokens the static DOM no longer carries.
+ */
+
+/* ---- smooth scroll for anchor jumps (tier 1, census pattern 16) ----
+ * Pure-CSS floor for the Lenis feel; wheel-smoothing itself is not
+ * CSS-reproducible (spec, Out of Scope). Media-gated, so it holds with or
+ * without JS and never fights reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* ---- hero split-on-load (census pattern 1, data-split-title) ----
+ * The captured CSS already carries the whole transition recipe (per-property
+ * durations, cubic-bezier(.22,1,.36,1), 58ms/word stagger via --word-index)
+ * on .title-word, driven by .is-visible. The runtime removes .is-visible and
+ * re-adds it on a double rAF; this rule only re-supplies the pre-load look
+ * the original GSAP set inline (values from the captured corpus). */
+html.fpm-motion [data-split-title]:not(.is-visible) .title-word {
+  color: rgb(142, 168, 184);
+  filter: blur(15px);
+  transform: translate(0, 0.42em);
+  opacity: 0.45;
+}
+
+/* ---- scroll-triggered word split (census pattern 2, data-split-gsap=words)
+ * and masked variant (pattern 3, data-animation-gsap=words|lines with
+ * .split-word inside .split-line-mask) ----
+ * Transition recipe copied from the captured .title-word family (same
+ * authoring system, same feel); per-word stagger via --fpm-i, annotated by
+ * the build pass in DOM order. The mask's captured overflow:clip turns the
+ * rise into a slide-up-within-mask. */
+html.fpm-motion [data-split-gsap] .word,
+html.fpm-motion [data-animation-gsap=words] .split-word,
+html.fpm-motion [data-animation-gsap=lines] .split-word {
+  transition-property: opacity, transform, filter, color;
+  transition-duration: 0.28s, 0.98s, 1.02s, 1.02s;
+  transition-timing-function: linear, cubic-bezier(0.22, 1, 0.36, 1), cubic-bezier(0.22, 1, 0.36, 1), cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--fpm-i, 0) * 58ms), calc(var(--fpm-i, 0) * 58ms), calc(var(--fpm-i, 0) * 58ms + 64ms), calc(var(--fpm-i, 0) * 58ms + 64ms);
+}
+html.fpm-motion [data-split-gsap]:not(.fpm-in) .word,
+html.fpm-motion [data-animation-gsap=words]:not(.fpm-in) .split-word,
+html.fpm-motion [data-animation-gsap=lines]:not(.fpm-in) .split-word {
+  color: rgb(142, 168, 184);
+  filter: blur(var(--fpm-blur, 15px));
+  transform: translate(0, 0.42em);
+  opacity: 0.45;
+}
+
+/* ---- one-shot scroll reveals (census patterns 4-7) ----
+ * ScrollTrigger once-behavior: the IntersectionObserver adds .fpm-in, which
+ * releases the from-state; the transition animates to the static end-state.
+ * Values captured: fade-in-2 = pure opacity; fade-in = rise-24
+ * (translate(0px,24px)); image-clip = inset(6% 10% 0% 10%round var(--clip-r))
+ * → inset(0% 0% 0% 0%round ...) — !important because the normalized END
+ * clip-path is inline on the element; clip-in ships as a fade (its captured
+ * from-class was opacity-0). Durations/eases authored: the GSAP timeline
+ * params were stripped with the site's JS (census caveat). */
+html.fpm-motion [data-animation-gsap=fade-in-2] { transition: opacity 0.6s ease-out; }
+html.fpm-motion [data-animation-gsap=fade-in-2]:not(.fpm-in) { opacity: 0; }
+
+html.fpm-motion [data-animation-gsap=fade-in] { transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+html.fpm-motion [data-animation-gsap=fade-in]:not(.fpm-in) { opacity: 0; transform: translate(0, 24px); }
+
+/* the bare fade variant (captured from-state had no transform — the build
+ * annotates it data-fpm-fade): replay as a pure fade, without the rise. */
+html.fpm-motion [data-animation-gsap=fade-in][data-fpm-fade]:not(.fpm-in) { transform: none; }
+
+html.fpm-motion [data-animation-gsap=image-clip] { transition: clip-path 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+html.fpm-motion [data-animation-gsap=image-clip]:not(.fpm-in) { clip-path: inset(6% 10% 0% 10% round var(--clip-r, 8px)) !important; }
+
+html.fpm-motion [data-animation-gsap=clip-in] { transition: opacity 0.8s ease-out; }
+html.fpm-motion [data-animation-gsap=clip-in]:not(.fpm-in) { opacity: 0; }
+
+/* ---- generic sweep reveals (census pattern 9, IX2 scroll-reveals) ----
+ * Elements whose only captured from-state was an inline opacity:0 and that
+ * carry no explicit pattern attribute are normalized by the build and tagged
+ * data-fpm-reveal; the observer releases them like the rest. IX2's tween
+ * params were stripped with the site's JS — authored as a plain ease fade
+ * per the census's guidance (~0.3-0.6s). */
+html.fpm-motion [data-fpm-reveal] { transition: opacity 0.45s ease-out; }
+html.fpm-motion [data-fpm-reveal]:not(.fpm-in) { opacity: 0; }
+

@@ -1,0 +1,10 @@
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-smoothing:antialiased;text-rendering:optimizeLegibility}*[tabindex]:focus-visible,input[type="file"]:focus-visible{outline:0.125rem solid #4d65ff;outline-offset:0.125rem}.w-richtext>:not(div):first-child,.w-richtext>div:first-child>:first-child{margin-top:0!important}.w-richtext>:last-child,.w-richtext ol li:last-child,.w-richtext ul li:last-child{margin-bottom:0!important}.div-square::after{content:"";display:block;padding-bottom:100%}.container-medium,.container-small,.container-large,.container-huge{margin-right:auto!important;margin-left:auto!important}.ts-5lines{display:-webkit-box;overflow:hidden;-webkit-line-clamp:5;-webkit-box-orient:vertical}.ts-3lines{display:-webkit-box;overflow:hidden;-webkit-line-clamp:3;-webkit-box-orient:vertical}.ts-2lines{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.ts-1line{display:-webkit-box;overflow:hidden;-webkit-line-clamp:1;-webkit-box-orient:vertical}.display-inlineflex{display:inline-flex}.hide{display:none!important}@media screen and (max-width: 991px), 
+  @media screen and (max-width: 767px), 
+  @media screen and (max-width: 479px){.hide,.hide-tablet{display:none!important}}@media screen and (max-width: 767px)
+    .hide-mobile-landscape{display: none !important;}}
+  @media screen and (max-width: 479px)
+    .hide-mobile{display:none!important}}
+
+/* Removes native scrollbar */  
+.no-scrollbar,  
+[data-scrollbar="none"]{-ms-overflow-style:none;overflow:-moz-scrollbars-none}.no-scrollbar::-webkit-scrollbar,[data-scrollbar="none"]::-webkit-scrollbar{display:none}.tm-arrow-wr{user-select:none}

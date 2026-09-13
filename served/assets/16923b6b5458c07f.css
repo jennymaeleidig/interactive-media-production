@@ -1,0 +1,45 @@
+
+/* SPDX-License-Identifier: CC0-1.0 */
+/* The shared header's behavior layer, CSS half (ticket 14), injected inline
+ * by the build on top of the corrected Capture's own stylesheet (ticket 15),
+ * which already carries every morph/open state and Webflow's
+ * `.w-condition-invisible` base rule. These rules are the mimic's
+ * own: the hamburger cross and the mobile take-over motion, which the live
+ * site performed with inline styles from a runtime its Capture lost.
+ * Transitions are gated under html.fpn-motion, which the nav runtime adds only
+ * when reduced motion is not requested — reduced motion stays instant. The
+ * captured live CSS keeps its own transitions, so the block below cancels the
+ * header's own ones. */
+html.fpn-motion .nav__menu-button .nav-line {
+  transition: transform 0.3s ease;
+}
+/* The restored live CSS is injected verbatim, and it animates the morph with
+ * its own ungated transitions (.header-z, .header__bg, .nav__dd_arrow, the
+ * product cards, the all-products card). Reduced motion has to suppress those
+ * too, so they are cancelled here rather than in the vendored file — the
+ * authored half owns every motion override, which keeps that file a clean
+ * snapshot of live. Only the header's own state transitions are listed: the
+ * generic rules the panels dragged in (.button, .blog-image, .hm-tab-heading)
+ * also match content outside the header, and silencing those would reach
+ * beyond this layer's scope. */
+@media (prefers-reduced-motion: reduce) {
+  .header-z,
+  .header__bg,
+  .nav__dd_arrow,
+  .nav__dd-product-image-wr,
+  .nav__dd-product-bg,
+  .nav__dd-product-all,
+  .nav__menu-button .nav-line {
+    transition: none !important;
+  }
+}
+/* The captures lost Webflow's base `.w-condition-invisible{display:none!important}`
+ * rule site-wide under the 2026-09-09 defaults (ticket 15). The corrected
+ * Capture carries it for every page, so no copy belongs here. */
+.nav__menu-button.is-open .nav-line.is-01 {
+  transform: translateY(4px) rotate(45deg);
+}
+.nav__menu-button.is-open .nav-line.is-02 {
+  transform: translateY(-4px) rotate(-45deg);
+}
+

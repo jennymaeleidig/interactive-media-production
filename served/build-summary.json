@@ -1,0 +1,91 @@
+{
+  "captureRun": ".scratch/flock-parody/research/flocksafety/2026-09-12",
+  "requested": 1200,
+  "served": 1181,
+  "dropped": [
+    "/book-a-demo-form-test",
+    "/book-a-demo-short-form-test",
+    "/book-a-demo-test",
+    "/email-exclusions-test",
+    "/form-test",
+    "/webinar/this-is-a-test",
+    "/webinar/webinar-test-evens-page",
+    "/webinar/webinar-test-evens-page-copy",
+    "/webinar/webinar-test-evens-page-copy-10",
+    "/webinar/webinar-test-evens-page-copy-11",
+    "/webinar/webinar-test-evens-page-copy-2",
+    "/webinar/webinar-test-evens-page-copy-3",
+    "/webinar/webinar-test-evens-page-copy-4",
+    "/webinar/webinar-test-evens-page-copy-5",
+    "/webinar/webinar-test-evens-page-copy-6",
+    "/webinar/webinar-test-evens-page-copy-7",
+    "/webinar/webinar-test-evens-page-copy-8",
+    "/webinar/webinar-test-evens-page-copy-9",
+    "/webinar/webinar-test-evens-page-past"
+  ],
+  "errors": [],
+  "redirects": {
+    "count": 67,
+    "invalid": [],
+    "dangling": []
+  },
+  "deadRoots": [
+    "/blog-audiences/community-safety",
+    "/blog-audiences/elected-officials",
+    "/blog-audiences/federal",
+    "/blog-audiences/healthcare",
+    "/blog-audiences/law-enforcement",
+    "/blog-audiences/property-managers",
+    "/blog-audiences/retail",
+    "/blog-audiences/schools",
+    "/blog-audiences/transportation",
+    "/use-case-filters/corporate-entities",
+    "/use-case-filters/large-cities",
+    "/use-case-filters/small-towns",
+    "/webinar/flock-forward-on-demand-your-front-row-seat-to-the-newest-innovations-in-public-safety"
+  ],
+  "authGated": [
+    "/events/test-event",
+    "/events/test-small-event",
+    "/events/test-third-party-events",
+    "/events/test-third-party-events-copy",
+    "/events/test-third-party-events-copy-2",
+    "/events/test-third-party-events-copy-3",
+    "/events/test-third-party-events-copy-4",
+    "/events/test-third-party-events-copy-5",
+    "/events/test-third-party-events-copy-6",
+    "/events/test-third-party-events-past"
+  ],
+  "chat": {
+    "mounted": 1181,
+    "absent": 0
+  },
+  "originalUrls": 5141,
+  "assets": {
+    "references": 142631,
+    "distinct": 3118,
+    "bytes": 526581090
+  },
+  "embeds": {
+    "live": 217,
+    "pages": 162,
+    "srcdoc": 55,
+    "element": 22,
+    "component": 53,
+    "frame": 87,
+    "popover": 11,
+    "dead": 5,
+    "youtube": 19,
+    "vidzflow": 120,
+    "unreachable": 2
+  },
+  "bodies": {
+    "styles": 13384,
+    "scripts": 7086,
+    "kept": 18004,
+    "files": 158,
+    "bytes": 18733690,
+    "bytesIn": 1843825150,
+    "bytesOut": 149139497
+  }
+}
