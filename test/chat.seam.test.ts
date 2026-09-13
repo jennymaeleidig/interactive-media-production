@@ -5,7 +5,8 @@
 // genuinely separate surface the serving seam cannot reach.
 //
 // The pinned strings are transcribed from one observed Qualified session
-// (.scratch/flock-parody/research/evidence/06-qualified-conversation-ux/); the
+// (the flock-parody effort's ticket-06 evidence — `.scratch/` at the time, in
+// git history now: evidence/06-qualified-conversation-ux/); the
 // mimic fixes one canonical string per beat, so these tests lock the copy.
 //
 // SPDX-License-Identifier: CC0-1.0

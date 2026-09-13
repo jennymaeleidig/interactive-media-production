@@ -1,9 +1,0 @@
-{
-  "name": "ticket06-capture",
-  "private": true,
-  "version": "0.0.0",
-  "description": "Throwaway capture rig for flock-parody ticket 06 (Qualified conversation UX).",
-  "dependencies": {
-    "playwright-core": "^1.63.0"
-  }
-}

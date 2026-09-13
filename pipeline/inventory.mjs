@@ -390,7 +390,7 @@ export function buildInventoryRows({ urls, sitemapUrls, headerUrls, footerUrls, 
 
 /** Where dated inventories live: tracked, independent of capture runs. */
 export function inventoryDir() {
-  return '.scratch/flock-parody/research/inventory';
+  return 'research/inventory';
 }
 
 /** A run's dated inventory CSV. */

@@ -35,7 +35,7 @@ export const STATUS_COLUMNS = ['url', 'rel', 'exit', 'bytes', 'secs', 'verdict']
 
 /** Where dated capture runs live: heavy HTML gitignored, CSVs/MD tracked. */
 export function captureRunDir(runDate) {
-  return `.scratch/flock-parody/research/flocksafety/${runDate}`;
+  return `research/flocksafety/${runDate}`;
 }
 
 /**

@@ -44,7 +44,7 @@ afterEach(() => {
 
 describe('run folder', () => {
   it('is dated under the capture runs, not the inventory directory', () => {
-    expect(captureRunDir('2026-09-12')).toBe('.scratch/flock-parody/research/flocksafety/2026-09-12');
+    expect(captureRunDir('2026-09-12')).toBe('research/flocksafety/2026-09-12');
   });
 
   it('refuses a run folder that already exists, so earlier runs are never overwritten', () => {

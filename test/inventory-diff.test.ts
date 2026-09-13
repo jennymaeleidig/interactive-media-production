@@ -159,9 +159,9 @@ describe('diff report', () => {
 
 describe('diff output paths', () => {
   it('sits beside the fresh inventory', () => {
-    expect(diffMdPath('2026-09-12')).toBe('.scratch/flock-parody/research/inventory/2026-09-12-diff.md');
-    expect(diffCsvPath('2026-09-12')).toBe('.scratch/flock-parody/research/inventory/2026-09-12-diff.csv');
-    expect(recaptureListPath('2026-09-12')).toBe('.scratch/flock-parody/research/inventory/2026-09-12-recapture.txt');
+    expect(diffMdPath('2026-09-12')).toBe('research/inventory/2026-09-12-diff.md');
+    expect(diffCsvPath('2026-09-12')).toBe('research/inventory/2026-09-12-diff.csv');
+    expect(recaptureListPath('2026-09-12')).toBe('research/inventory/2026-09-12-recapture.txt');
   });
 });
 

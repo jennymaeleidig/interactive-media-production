@@ -217,6 +217,6 @@ describe('buildInventoryRows', () => {
 
 describe('inventory paths', () => {
   it('dates the inventory beside the baseline, not inside a capture run', () => {
-    expect(inventoryCsvPath('2026-09-12')).toBe('.scratch/flock-parody/research/inventory/2026-09-12-full-site-inventory.csv');
+    expect(inventoryCsvPath('2026-09-12')).toBe('research/inventory/2026-09-12-full-site-inventory.csv');
   });
 });

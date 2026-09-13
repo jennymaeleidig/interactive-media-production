@@ -7,7 +7,9 @@
  *    live widget's own 94-property `--THEME_*` token set plus the two inlined
  *    assets (`--sf-img-2`, the Flock mark, and `--PLACEHOLDER_AVATAR_URL`).
  *    Source: the messenger iframe document inlined in the raw site Capture
- *    (.scratch/flock-parody/research/flocksafety/2026-09-09/index.html, the
+ *    (`.scratch/flock-parody/research/flocksafety/2026-09-09/index.html` before
+ *    the scratch tree was scrapped — the capture is in git history, the
+ *    gitignored HTML is not; the
  *    iframe's `srcdoc`), cross-checked against the computed theme captured in
  *    evidence/06-qualified-conversation-ux/s9-opened-convo.json. The remote
  *    asset URLs the live page used are replaced with the Capture's OWN inlined
@@ -459,8 +461,9 @@
 }
 
 /* =====================================================================
- * MOBILE VARIANT (ticket 16) — 390x844 ground truth in
- * .scratch/flock-parody-impl/evidence/16-chat-mobile-parity/
+ * MOBILE VARIANT (ticket 16) — 390x844 ground truth in the flock-parody
+ * effort's evidence/16-chat-mobile-parity/ (`.scratch/` at the time, in git
+ * history now)
  * ---------------------------------------------------------------------
  * The live widget ships TWO variants and picks one by DEVICE DETECTION, not
  * by CSS width: a mobile UA gets a bottom-sheet card and a FULLSCREEN

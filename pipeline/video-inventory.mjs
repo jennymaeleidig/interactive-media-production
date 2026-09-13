@@ -349,7 +349,7 @@ async function main() {
   const arg = makeArg(process.argv.slice(2));
   const served = arg('--served') ?? 'served';
   const out = arg('--out') ?? null;
-  const stats = run(served, out ?? path.join('.scratch/flock-parody-impl/video-inventory', localDate()));
+  const stats = run(served, out ?? path.join('research/video-inventory', localDate()));
   console.log(`scanned ${stats.pages} pages`);
   console.log(`videos: ${stats.videos} unique (${stats.wistia} wistia media, ${stats.youtube} youtube)`);
   console.log(`context: ${stats.slots} render as a slot (embed or both) · ${stats.links} appear as body-copy links`);

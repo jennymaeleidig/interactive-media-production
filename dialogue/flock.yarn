@@ -3,8 +3,9 @@
 // effort (spec, Out of Scope); the engine is content-agnostic.
 //
 // Strings marked PINNED are transcribed verbatim from one observed Qualified
-// session (evidence: .scratch/flock-parody/research/evidence/
-// 06-qualified-conversation-ux/ — s9 greeting, s10 general + support, s12
+// session (the flock-parody effort's ticket-06 evidence — `.scratch/` at the
+// time, in git history now: evidence/06-qualified-conversation-ux/ — s9
+// greeting, s10 general + support, s12
 // demo ask, 2026-09-09). The live assistant's copy is GPT-generated fresh per
 // session, so the mimic fixes one canonical string per beat.
 //

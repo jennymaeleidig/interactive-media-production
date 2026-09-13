@@ -12,12 +12,14 @@
 //        scaffold/test page
 //
 // Plus the whole-site invariants: served + dropped + errors accounts for every
-// page the capture run listed, the site-wide strip audit (no tracker residue,
-// no capture-derived executable script) holds on every page, and every
-// extracted asset in the build's manifest answers at its content-addressed
-// path with the content type its extension declares and a byte-identical body
-// (ADR 0002) — a page's images can silently 404 while its page bytes stay
-// identical, so assets need the same guarantee the pages get.
+// page the page listing holds (`CAPTURE_LIST` — the capture run's own
+// `capture-list.txt` when `--run` names a live run, the frozen copy taken
+// before the captures were scrapped otherwise), the site-wide strip audit (no
+// tracker residue, no capture-derived executable script) holds on every page,
+// and every extracted asset in the build's manifest answers at its
+// content-addressed path with the content type its extension declares and a
+// byte-identical body (ADR 0002) — a page's images can silently 404 while its
+// page bytes stay identical, so assets need the same guarantee the pages get.
 //
 // The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
 // `servedCandidates`, `byteMismatch` — are unit-tested in `test/routes.test.ts`.
@@ -184,10 +186,10 @@ async function mapLimit(items, limit, fn) {
  * Check every route class against `base`. Reads the build's own artifacts, so
  * it measures exactly what the build produced, not what a caller believes.
  * @param {string} base  Origin of the running server.
- * @param {{servedDir: string, runDir: string}} opts
+ * @param {{servedDir: string, listingFile: string}} opts
  * @returns {Promise<{failures: string[], checked: number, byteChecked: number, assetChecked: number, counts: Record<string, number>}>}
  */
-export async function checkRoutes(base, { servedDir, runDir }) {
+export async function checkRoutes(base, { servedDir, listingFile }) {
   const read = (name) => JSON.parse(fs.readFileSync(path.join(servedDir, name), 'utf8'));
   const buildLog = read('build-log.json');
   const summary = read('build-summary.json');
@@ -207,9 +209,9 @@ export async function checkRoutes(base, { servedDir, runDir }) {
   if (Object.keys(redirects).length !== summary.redirects?.count) {
     failures.push(`redirects.json has ${Object.keys(redirects).length} entries but the summary says ${summary.redirects?.count}`);
   }
-  const listing = fs.readFileSync(path.join(runDir, 'capture-list.txt'), 'utf8').trim().split('\n').filter((l) => l.trim() !== '').length;
+  const listing = fs.readFileSync(listingFile, 'utf8').trim().split('\n').filter((l) => l.trim() !== '').length;
   if (summary.requested !== listing) {
-    failures.push(`the build requested ${summary.requested} page(s) but the capture run lists ${listing} — served tree and capture run are out of sync`);
+    failures.push(`the build requested ${summary.requested} page(s) but the page listing holds ${listing} — served tree and listing are out of sync`);
   }
   failures.push(...countFailures({ served: served.length, dropped: droppedRequested.length, errors: summary.errors?.length ?? 0, listing }));
   failures.push(...auditFailures(buildLog));
@@ -317,21 +319,28 @@ export async function checkRoutes(base, { servedDir, runDir }) {
 async function main() {
   const arg = makeArg(process.argv.slice(2));
   const servedDir = path.resolve(ROOT, arg('--served') ?? 'served');
-  const { CAPTURE_RUN } = await import('../pipeline/config.mjs');
-  const runDir = path.resolve(ROOT, arg('--run') ?? CAPTURE_RUN);
+  const { CAPTURE_LIST, CAPTURE_RUN } = await import('../pipeline/config.mjs');
+  // With a live capture run, the listing is the run's own; without one (the
+  // captures were scrapped) it is the frozen copy taken before the deletion.
+  const listingFile = arg('--run')
+    ? path.resolve(ROOT, arg('--run'), 'capture-list.txt')
+    : path.resolve(ROOT, CAPTURE_LIST);
 
-  for (const [label, file] of [['served tree', servedDir], ['build-summary.json', path.join(servedDir, 'build-summary.json')], ['capture run', runDir]]) {
+  for (const [label, file] of [['served tree', servedDir], ['build-summary.json', path.join(servedDir, 'build-summary.json')], ['page listing', listingFile]]) {
     if (!fs.existsSync(file)) {
       console.error(`✗ ${label} missing at ${file} — run \`npm run pipeline\` first`);
       process.exit(1);
     }
+  }
+  if (!arg('--run') && !fs.existsSync(path.resolve(ROOT, CAPTURE_RUN))) {
+    console.log(`  (capture run ${CAPTURE_RUN} is absent — checked against the frozen page listing)`);
   }
 
   const external = arg('--base');
   let server = null;
   try {
     server = external ? { base: external, stop: async () => {} } : await startServer();
-    const r = await checkRoutes(server.base, { servedDir, runDir });
+    const r = await checkRoutes(server.base, { servedDir, listingFile });
     console.log('Serving check (tickets 06–07) — every route class + byte-identity over HTTP');
     console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
     console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the built file`);

@@ -10,7 +10,7 @@
 //          authoritative "a downloader can fetch it" check.
 //
 // Usage:
-//   node pipeline/video-probe.mjs --inv .scratch/flock-parody-impl/video-inventory/2026-09-11
+//   node pipeline/video-probe.mjs --inv research/video-inventory/2026-09-11
 //   node pipeline/video-probe.mjs --inv <dir> --tier deep
 //   node pipeline/video-probe.mjs --inv <dir> --diff <dir>/playability.csv
 //

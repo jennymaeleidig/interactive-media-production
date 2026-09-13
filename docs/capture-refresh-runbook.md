@@ -5,10 +5,18 @@ scoped re-capture. The method is ticket 01 (inventory) and ticket 03 (capture),
 re-run through the tools in `pipeline/`; this file is the procedure, the policy,
 and the invariants, not a restatement of how the tools work.
 
-Source of the method and the policy's rationale:
-[`.scratch/flock-parody/issues/09-capture-refresh-runbook.md`](../.scratch/flock-parody/issues/09-capture-refresh-runbook.md)
-(wayfinding). The policy below is the one the spec ratified (spec, Quality
+Source of the method and the policy's rationale: the flock-parody effort's
+ticket 09 `capture-refresh-runbook.md` (wayfinding) — it lived at
+`.scratch/flock-parody/issues/09-capture-refresh-runbook.md` and is in git
+history. The policy below is the one the spec ratified (spec, Quality
 bar 35 / "The capture refresh runbook governs drift").
+
+> **The tree this file's paths used to name is gone.** The initial effort's
+> `.scratch/` was scrapped when the effort closed (2026-09-13), captures
+> included, so the ops tools below now root their output at `research/` in the
+> repo root and the procedure here is for a *future* run — see README's
+> [The scratch tree](../README.md#the-scratch-tree). The tickets and spec the
+> citations name are in git history.
 
 ## Invariants — never violate
 
@@ -60,7 +68,7 @@ last page) → one verification pass over the union. Output: a dated CSV in the
 established column format (`path,title,nav,type,status,redirect_target,url`) at:
 
 ```
-.scratch/flock-parody/research/inventory/<run-date>-full-site-inventory.csv
+research/inventory/<run-date>-full-site-inventory.csv
 ```
 
 ```bash
@@ -78,8 +86,8 @@ Diffs the fresh inventory against the previous one, keyed on `path`:
 
 ```bash
 node pipeline/inventory-diff.mjs \
-  --old .scratch/flock-parody/research/01-full-site-inventory.csv \
-  --new .scratch/flock-parody/research/inventory/2026-09-12-full-site-inventory.csv \
+  --old research/01-full-site-inventory.csv \
+  --new research/inventory/2026-09-12-full-site-inventory.csv \
   --date 2026-09-12 --old-label 2026-09-09
 ```
 
@@ -134,9 +142,9 @@ in `research/flocksafety/<run-date>/`: `capture-list.txt`, per-page captures,
 ```bash
 # scoped refresh (the diff's re-capture list)
 node pipeline/recapture.mjs \
-  --inventory .scratch/flock-parody/research/inventory/2026-09-12-full-site-inventory.csv \
-  --scope .scratch/flock-parody/research/inventory/2026-09-12-recapture.txt \
-  --fallback-inventory .scratch/flock-parody/research/01-full-site-inventory.csv \
+  --inventory research/inventory/2026-09-12-full-site-inventory.csv \
+  --scope research/inventory/2026-09-12-recapture.txt \
+  --fallback-inventory research/01-full-site-inventory.csv \
   --date 2026-09-12 --parallel 4
 
 # full re-capture at a gate: omit --scope

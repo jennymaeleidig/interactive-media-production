@@ -3,8 +3,8 @@
 // build (pipeline/build.mjs, ticket 03). Dormant in the Recreation: the
 // runtime ships, nothing calls it; the Parody layer's dialogue events will
 // drive it (spec, Implementation Decisions → Story-hook seam; contract
-// ratified in .scratch/flock-parody/issues/05, proven in that effort's
-// snapshot-serving prototype).
+// ratified in ticket 05 of the flock-parody effort, proven in that effort's
+// snapshot-serving prototype — both in git history).
 //
 // Contract:
 //   window.flockParody.apply(patches)
