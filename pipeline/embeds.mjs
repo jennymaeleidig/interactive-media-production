@@ -57,6 +57,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { wistiaFromPage } from './video-inventory.mjs';
+import { attrOf, openTags, srcdocSpans } from './html.mjs';
 
 /** Hosts a served page may fetch from — the ADR 0002 allow-list. */
 export const MEDIA_HOSTS = ['fast.wistia.net', 'www.youtube.com', 'www.youtube-nocookie.com'];
@@ -98,46 +99,6 @@ export function wistiaIframe(id, title) {
   return `<iframe src="${wistiaEmbedUrl(id)}"${label} allow="autoplay; fullscreen" allowfullscreen frameborder=0 scrolling=no style="width:100%;height:100%"></iframe>`;
 }
 
-/**
- * Iterate the open tags of an HTML string: the tag name and the raw attribute
- * text up to the first `>` outside a quoted value. A scanner, not a regex,
- * because the equivalent alternation (`(?:[^<>"']|"[^"]*"|'[^']*')*`)
- * overflows the regex engine's stack on a multi-megabyte *unquoted* attribute
- * value: SingleFile writes a video's `src=data:video/mp4;base64,…` unquoted,
- * and the engine recurses once per scanned unit of the value (ticket 12).
- * @param {string} html
- * @returns {Generator<{name: string, attrs: string, index: number, tag: string}>}
- */
-export function* openTags(html) {
-  const start = /<([a-z][a-z0-9-]*)/gi;
-  let m;
-  while ((m = start.exec(html)) !== null) {
-    const name = m[1];
-    let i = m.index + m[0].length;
-    while (i < html.length) {
-      const c = html[i];
-      if (c === '"' || c === "'") {
-        const close = html.indexOf(c, i + 1);
-        if (close === -1) {
-          i = html.length;
-          break;
-        }
-        i = close + 1;
-      } else if (c === '>' || c === '<') {
-        break;
-      } else {
-        i += 1;
-      }
-    }
-    if (html[i] === '>') {
-      yield { name, attrs: html.slice(m.index + m[0].length, i), index: m.index, tag: html.slice(m.index, i + 1) };
-      start.lastIndex = i + 1;
-    } else {
-      start.lastIndex = m.index + 1;
-    }
-  }
-}
-
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
 // A YouTube player URL safe to serve as-is: the canonical embed path, an
 // optional query of plain parameters (`start`, `controls`, `si`).
@@ -145,18 +106,6 @@ const CLEAN_YOUTUBE_EMBED = /^https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/
 const YOUTUBE_EMBED_ID = /(?:youtube(?:-nocookie)?\.com\/(?:embed|v|shorts)\/|youtu\.be\/)([A-Za-z0-9_-]{11})/;
 const FRAME_ORIGINAL_SRC = /\s+data-sf-original-src\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i;
 const ORIGINAL_URL_ATTR = /\s+data-sf-original-[a-z0-9-]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
-
-/**
- * Read an attribute's value out of an open tag's attribute string, honoring
- * quoting. The `(?<![\w-])` guard keeps `data-src` from reading as `src`.
- * @param {string} attrs
- * @param {string} name
- * @returns {string|null} the value, or null when absent
- */
-function attrOf(attrs, name) {
-  const m = new RegExp(`(?<![\\w-])${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(attrs);
-  return m ? (m[2] ?? m[3] ?? m[4] ?? '') : null;
-}
 
 /**
  * Every YouTube slot on the page: a `src`-less frame whose `data-video-id` is
@@ -401,29 +350,6 @@ export function unclassifiedRemoteRefs(html) {
     if (ABSOLUTE_URL.test(url)) refs.push(url);
   }
   return refs;
-}
-
-/**
- * Every `srcdoc` attribute span in the page: the tag that carries it, the
- * attribute value, and where the tag ends. `srcdoc` values are HTML-escaped, so
- * a raw `"` cannot appear inside one and the first quote ends the value.
- * @param {string} html
- * @returns {Array<{tagStart: number, tagEnd: number, tag: string, value: string}>}
- */
-export function srcdocSpans(html) {
-  const spans = [];
-  const re = /\bsrcdoc\s*=\s*"/gi;
-  let m;
-  while ((m = re.exec(html)) !== null) {
-    const valueStart = m.index + m[0].length;
-    const valueEnd = html.indexOf('"', valueStart);
-    if (valueEnd === -1) continue;
-    const tagStart = html.lastIndexOf('<', m.index);
-    const tagEnd = html.indexOf('>', valueEnd);
-    if (tagStart === -1 || tagEnd === -1) continue;
-    spans.push({ tagStart, tagEnd: tagEnd + 1, tag: html.slice(tagStart, tagEnd + 1), value: html.slice(valueStart, valueEnd) });
-  }
-  return spans;
 }
 
 /**

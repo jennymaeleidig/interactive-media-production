@@ -89,6 +89,12 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'html',
+          include: ['test/html.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'dedupe',
           include: ['test/dedupe.test.ts'],
         },

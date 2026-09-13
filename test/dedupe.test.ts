@@ -5,7 +5,8 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { BODY_MIME, KEEP_INLINE_BYTES, dedupeBodies, scanBodies } from '../pipeline/dedupe.mjs';
+import { BODY_MIME, KEEP_INLINE_BYTES, dedupeBodies } from '../pipeline/dedupe.mjs';
+import { bodySlots } from '../pipeline/html.mjs';
 
 const CSP = "default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:; connect-src 'self';";
 const PAGE = (body: string) =>
@@ -14,10 +15,10 @@ const PAGE = (body: string) =>
 /** A style body of exactly `n` characters (the pass keys on body size). */
 const styleOf = (n: number) => `.c{${'a'.repeat(n - 4)}}`;
 
-describe('scanBodies', () => {
+describe('bodySlots', () => {
   it('finds style and script elements in document order, with their spans', () => {
     const html = `<style>a</style><p>x</p><script>b</script>`;
-    expect(scanBodies(html)).toEqual([
+    expect(bodySlots(html)).toEqual([
       { kind: 'style', start: 0, end: 16, openTag: '<style>', body: 'a' },
       { kind: 'script', start: 24, end: 42, openTag: '<script>', body: 'b' },
     ]);
@@ -28,7 +29,7 @@ describe('scanBodies', () => {
     // `srcdoc="..."` value — text, not elements (they are a nested document
     // with its own CSP, and rewriting them is what a naive scan gets wrong).
     const html = `<div><iframe srcdoc="<style>nested</style><p>y</p>"></iframe><style>outer</style></div>`;
-    const slots = scanBodies(html);
+    const slots = bodySlots(html);
     expect(slots.map((s) => s.body)).toEqual(['outer']);
   });
 
@@ -38,17 +39,17 @@ describe('scanBodies', () => {
     // page's iframe — srcdoc payload included — and rewrote the nested
     // document's stylesheets.
     const html = `<div class=grecaptcha-badge style=background-image:url("/assets/x.png")><style>after</style></div>`;
-    expect(scanBodies(html).map((s) => s.body)).toEqual(['after']);
+    expect(bodySlots(html).map((s) => s.body)).toEqual(['after']);
   });
 
   it('skips markup inside a comment and inside an SVG subtree', () => {
     const html = `<!--<style>commented</style>--><svg><style>svg css</style></svg><style>real</style>`;
-    expect(scanBodies(html).map((s) => s.body)).toEqual(['real']);
+    expect(bodySlots(html).map((s) => s.body)).toEqual(['real']);
   });
 
   it('does not read a style in a script body, or a script in a style body', () => {
     const html = `<script>var t="<style>inside</style>";</script><style>/* <script>x</script> */</style>`;
-    expect(scanBodies(html).map((s) => s.kind)).toEqual(['script', 'style']);
+    expect(bodySlots(html).map((s) => s.kind)).toEqual(['script', 'style']);
   });
 });
 

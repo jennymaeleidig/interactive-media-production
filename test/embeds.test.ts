@@ -12,7 +12,6 @@ import {
   iframeSources,
   offAllowlistFrames,
   srcdocScripts,
-  srcdocSpans,
   stripHiddenVidzflow,
   stripOriginalUrls,
   unclassifiedRemoteRefs,
@@ -21,6 +20,7 @@ import {
   youtubeSlots,
   MEDIA_HOSTS,
 } from '../pipeline/embeds.mjs';
+import { srcdocSpans } from '../pipeline/html.mjs';
 
 // A real `srcdoc` value is HTML-escaped — the player document's own quotes are
 // `&quot;` — which is why the span cannot contain a raw quote and why the first

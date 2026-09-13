@@ -39,6 +39,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { createHash } from 'node:crypto';
+import { bodySlots, rawAttr, unquote } from './html.mjs';
 
 /** Bodies smaller than this stay inline: a request costs more than the bytes. */
 export const KEEP_INLINE_BYTES = 1024;
@@ -61,147 +62,14 @@ const DATA_TYPES = new Set([
   'text/x-jquery-tmpl',
 ]);
 
-const TAG_NAME = /[a-z][a-z0-9-]*/iy;
 const CSP_META_RE = /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?content-security-policy["']?[^>]*>/i;
 const CONTENT_ATTR_RE = /(\bcontent\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)/i;
-const CLOSE_TAG = { style: /<\/style\s*>/gi, script: /<\/script\s*>/gi };
 
 /** The `http-equiv`/`content` pair of the first CSP meta, or null. */
 function cspMeta(html) {
   const meta = CSP_META_RE.exec(html);
   if (!meta) return null;
   return { tag: meta[0], index: meta.index };
-}
-
-/** The raw value of one attribute of an open tag (quotes kept), or null. */
-function rawAttr(openTag, name) {
-  const m = new RegExp(`(?:^|\\s)${name}\\s*=\\s*("[^"]*"|'[^']*'|[^\\s>]+)`, 'i').exec(openTag);
-  return m === null ? null : m[1];
-}
-
-/** An attribute value with its delimiters stripped, or null. */
-function attrValue(value) {
-  if (value === undefined || value === null) return null;
-  if (value.length >= 2 && (value[0] === '"' || value[0] === "'") && value[value.length - 1] === value[0]) {
-    return value.slice(1, -1);
-  }
-  return value;
-}
-
-/** The end of the open tag that starts at `lt`: the `>` that closes it, found by
- * tokenizing its attributes the way the HTML parser does.
- *
- * A tag with no quote in it ends at its first `>` (`indexOf`), which is the
- * overwhelming majority — the captures leave most attributes unquoted. When a
- * quote *is* in the tag, the tag is walked attribute by attribute: a quoted
- * value runs to its closing quote, an unquoted one to the next space or `>`.
- * That distinction matters: `style=background-image:url(&quot;/assets/x.png&quot;)`
- * is an UNQUOTED value whose text happens to contain quotes (the captures are
- * full of them), and a scanner that let any `"` open a quoted section swallowed
- * 83KB of one page — the `<iframe srcdoc=…>` inside it included — and rewrote
- * the stylesheets of the *nested* document as if they were the page's, which
- * also made the pass disagree with itself on a second run.
- *
- * @param {string} html
- * @param {number} lt
- * @returns {number} index of the `>`, or `html.length` when unterminated
- */
-function tagEnd(html, lt) {
-  const gt = html.indexOf('>', lt);
-  if (gt < 0) return html.length;
-  const dq = html.indexOf('"', lt);
-  const sq = html.indexOf("'", lt);
-  if (!((dq >= 0 && dq < gt) || (sq >= 0 && sq < gt))) return gt;
-  const isSpace = (c) => c === ' ' || c === '\n' || c === '\t' || c === '\r' || c === '\f';
-  let i = lt + 1;
-  while (i < html.length) {
-    while (i < html.length && isSpace(html[i])) i += 1;
-    if (i >= html.length) return html.length;
-    const c = html[i];
-    if (c === '>') return i;
-    if (c === '/') {
-      i += 1;
-      continue;
-    }
-    while (i < html.length) {
-      const ch = html[i];
-      if (isSpace(ch) || ch === '=' || ch === '>' || ch === '/') break;
-      i += 1;
-    }
-    while (i < html.length && isSpace(html[i])) i += 1;
-    if (html[i] === '=') {
-      i += 1;
-      while (i < html.length && isSpace(html[i])) i += 1;
-      const quote = html[i];
-      if (quote === '"' || quote === "'") {
-        const close = html.indexOf(quote, i + 1);
-        if (close < 0) return html.length;
-        i = close + 1;
-      } else {
-        while (i < html.length && !isSpace(html[i]) && html[i] !== '>') i += 1;
-      }
-    }
-  }
-  return html.length;
-}
-
-/**
- * Every `<style>`/`<script>` element the HTML really has, in document order.
- *
- * Each slot is `{kind, start, end, openTag, body}` where `start…end` covers the
- * whole element (open tag through close tag) so the caller can replace it
- * wholesale. Only elements with a close tag are returned: an unterminated body
- * would have to be rewritten to the end of the document, and a Capture never
- * leaves one (the build's write pass restores truncated closing tags first).
- *
- * @param {string} html
- * @returns {{kind: 'style'|'script', start: number, end: number, openTag: string, body: string}[]}
- */
-export function scanBodies(html) {
-  /** @type {{kind: 'style'|'script', start: number, end: number, openTag: string, body: string}[]} */
-  const slots = [];
-  let i = 0;
-  while (i < html.length) {
-    const lt = html.indexOf('<', i);
-    if (lt < 0) break;
-    // Comments (and `<!doctype`, CDATA, bogus markup) hold no elements.
-    if (html.startsWith('<!--', lt)) {
-      const end = html.indexOf('-->', lt + 4);
-      i = end < 0 ? html.length : end + 3;
-      continue;
-    }
-    if (html[lt + 1] === '!' || html[lt + 1] === '?') {
-      const end = html.indexOf('>', lt);
-      i = end < 0 ? html.length : end + 1;
-      continue;
-    }
-    TAG_NAME.lastIndex = lt + 1;
-    const name = TAG_NAME.exec(html)?.[0]?.toLowerCase();
-    if (name === undefined) {
-      i = lt + 1;
-      continue;
-    }
-    const gt = tagEnd(html, lt);
-    if (gt >= html.length) break;
-    if (name === 'svg') {
-      // An SVG subtree holds SVG CSS (`<style>`) and no valid `<link>` — leave
-      // the whole region alone rather than rewrite the inside of an icon.
-      const end = html.indexOf('</svg', gt + 1);
-      i = end < 0 ? gt + 1 : end;
-      continue;
-    }
-    if (name === 'style' || name === 'script') {
-      const close = CLOSE_TAG[name];
-      close.lastIndex = gt + 1;
-      const m = close.exec(html);
-      if (m === null) break;
-      slots.push({ kind: name, start: lt, end: m.index + m[0].length, openTag: html.slice(lt, gt + 1), body: html.slice(gt + 1, m.index) });
-      i = m.index + m[0].length;
-      continue;
-    }
-    i = gt + 1;
-  }
-  return slots;
 }
 
 /**
@@ -214,8 +82,8 @@ export function scanBodies(html) {
 function isExternalizable(slot, minBytes) {
   if (slot.body.length < minBytes) return false;
   if (slot.kind === 'style') return true;
-  if (attrValue(rawAttr(slot.openTag, 'src')) !== null) return false;
-  const type = (attrValue(rawAttr(slot.openTag, 'type')) ?? '').trim().toLowerCase().split(';')[0].trim();
+  if (unquote(rawAttr(slot.openTag, 'src')) !== null) return false;
+  const type = (unquote(rawAttr(slot.openTag, 'type')) ?? '').trim().toLowerCase().split(';')[0].trim();
   return !DATA_TYPES.has(type);
 }
 
@@ -265,7 +133,7 @@ export function dedupeBodies(html, { minBytes = KEEP_INLINE_BYTES } = {}) {
   const blocked = [];
   const files = new Map();
 
-  const slots = scanBodies(html);
+  const slots = bodySlots(html);
   const chosen = [];
   for (const slot of slots) {
     if (isExternalizable(slot, minBytes)) chosen.push(slot);
@@ -286,7 +154,7 @@ export function dedupeBodies(html, { minBytes = KEEP_INLINE_BYTES } = {}) {
     blocked.push('no CSP meta — bodies left inline');
   } else {
     const raw = (CONTENT_ATTR_RE.exec(meta.tag) ?? [])[2];
-    const value = attrValue(raw);
+    const value = unquote(raw);
     if (value === null) {
       blocked.push('CSP meta has no content attribute — bodies left inline');
     } else {

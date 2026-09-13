@@ -134,6 +134,7 @@ import { extractDataUris } from './assets.mjs';
 import { dedupeBodies } from './dedupe.mjs';
 import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, stripOriginalUrls, unclassifiedRemoteRefs } from './embeds.mjs';
 import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
+import { addAttr, attrValue, contentSegments, editAttr, hasAttr, openTags, replaceTags } from './html.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -451,63 +452,10 @@ function formsPass(html, entry, pagePath, manifest) {
 
 // ---- pass 5: motion reveal layer (ticket 04) ----------------------------------
 
-// Open-tag pattern that honors quoted attribute values (SingleFile emits
-// quoted and unquoted attrs side by side). Fresh regex per pass — these
-// functions combine exec loops and String.replace, which fight over lastIndex.
-function openTagRe() {
-  return /<([a-z][a-z0-9]*)((?:[^<>"]|"[^"]*"|'[^']*')*)>/gi;
-}
-
-// Zones whose contents are never page DOM: <style>/<script> bodies (the
-// inlined site CSS is full of `opacity:0` declarations — corpus scan: 15 on
-// one post), comments, and srcdoc-embedded documents (the frozen scheduler
-// iframe). Mutations apply to content segments only.
-const SKIP_ZONE = /(<style[^>]*>[\s\S]*?<\/style\s*>|<script\b[^>]*>[\s\S]*?<\/script\s*>|<!--[\s\S]*?-->|\bsrcdoc\s*=\s*"[^"]*")/gi;
-
-/** Apply `map` to the content segments of `html` (odd split indexes are skip zones). */
-function mapContentSegments(html, map) {
-  const parts = html.split(SKIP_ZONE);
-  for (let i = 0; i < parts.length; i += 2) parts[i] = map(parts[i]);
-  return parts.join('');
-}
-
-/** Raw attribute value in an open tag's attr string, honoring quoting; null when absent. */
-function attrValue(attrs, name) {
-  const m = new RegExp(`\\b${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(attrs);
-  return m ? (m[2] ?? m[3] ?? m[4] ?? '') : null;
-}
-
-/** Presence of an attribute, bare (`data-split-title`) or valued (`data-x=v`). */
-function hasAttr(attrs, name) {
-  return new RegExp(`\\b${name}(?=\\s*=|[\\s/>]|$)`, 'i').test(attrs);
-}
-
-/**
- * Rewrite attribute `name` of an open `tag` through `edit(value) → value`.
- * An empty result drops the attribute whole; an unchanged result returns the
- * tag untouched; a missing attribute returns null.
- */
-function editAttr(tag, name, edit) {
-  const m = new RegExp(`(\\b${name}\\s*=\\s*)("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(tag);
-  if (!m) return null;
-  const quote = m[2][0] === '"' || m[2][0] === "'" ? m[2][0] : '';
-  const raw = quote ? m[2].slice(1, -1) : m[2];
-  const next = edit(raw);
-  if (next === raw) return tag;
-  if (next === '') {
-    let start = m.index;
-    while (start > 0 && /\s/.test(tag[start - 1])) start -= 1;
-    return tag.slice(0, start) + tag.slice(m.index + m[0].length);
-  }
-  const value = quote ? quote + next + quote : next;
-  return tag.slice(0, m.index) + m[1] + value + tag.slice(m.index + m[0].length);
-}
-
-/** Append an attribute (full `name` or `name=value` text) before an open tag's closing `>` (slash-aware). */
-function withAddedAttr(tag, attr) {
-  const m = /\s*\/?>$/.exec(tag);
-  return tag.slice(0, m.index) + ` ${attr}` + m[0];
-}
+// `openTagRe`/`SKIP_ZONE`/`mapContentSegments`/`attrValue`/`hasAttr`/`editAttr`/
+// `withAddedAttr` live in html.mjs now (ticket: one home for the capture-HTML
+// rules). This pass reads through `contentSegments`/`replaceTags`/`openTags`
+// and edits through `editAttr`/`addAttr`.
 
 /** Remove a bare `opacity:0` declaration (never `opacity:0.45`); null when absent. */
 function stripBareOpacity(v) {
@@ -538,20 +486,18 @@ const WORD_FROM_TOKENS = [
 function annotateSplitWords(seg, counts, warnings) {
   let out = '';
   let pos = 0;
-  const re = openTagRe();
-  let m;
-  while ((m = re.exec(seg))) {
-    if (m.index < pos) continue; // inside a container already processed
-    const marker = attrValue(m[2], 'data-split-gsap') ?? attrValue(m[2], 'data-animation-gsap');
+  for (const open of openTags(seg, 'backtracking')) {
+    if (open.index < pos) continue; // inside a container already processed
+    const marker = attrValue(open.attrs, 'data-split-gsap') ?? attrValue(open.attrs, 'data-animation-gsap');
     if (marker !== 'words' && marker !== 'lines') continue;
-    const end = balanceEnd(seg, m.index, m[1]);
+    const end = balanceEnd(seg, open.index, open.name);
     if (end < 0) {
-      warnings.push(`motion: split container (${m[1]}) unbalanced — left as captured`);
+      warnings.push(`motion: split container (${open.name}) unbalanced — left as captured`);
       continue;
     }
-    let block = seg.slice(m.index, end);
+    let block = seg.slice(open.index, end);
     let i = 0;
-    block = block.replace(openTagRe(), (tag, _name, attrs) => {
+    block = replaceTags(block, (tag, _name, attrs) => {
       const cls = attrValue(attrs, 'class');
       if (!cls || !cls.split(/\s+/).some((c) => c === 'word' || c === 'split-word')) return tag;
       const edited = editAttr(tag, 'style', (v) => {
@@ -559,10 +505,10 @@ function annotateSplitWords(seg, counts, warnings) {
         for (const token of WORD_FROM_TOKENS) cleaned = cleaned.replace(token.re, token.sub);
         return `--fpm-i:${i++};` + cleaned;
       });
-      return edited ?? withAddedAttr(tag, `style=--fpm-i:${i++}`);
+      return edited ?? addAttr(tag, `style=--fpm-i:${i++}`);
     });
     if (i > 0) counts['split words normalized+annotated'] = (counts['split words normalized+annotated'] ?? 0) + i;
-    out += seg.slice(pos, m.index) + block;
+    out += seg.slice(pos, open.index) + block;
     pos = end;
   }
   return out + seg.slice(pos);
@@ -585,7 +531,7 @@ const KNOWN_GSAP_MARKERS = new Set(['fade-in', 'fade-in-2', 'image-clip', 'clip-
  */
 function normalizeExplicitReveals(seg, counts, warnings) {
   const bump = (key) => (counts[key] = (counts[key] ?? 0) + 1);
-  return seg.replace(openTagRe(), (tag, _name, attrs) => {
+  return replaceTags(seg, (tag, _name, attrs) => {
     const marker = attrValue(attrs, 'data-animation-gsap');
     if (marker == null) return tag;
     if (!KNOWN_GSAP_MARKERS.has(marker)) {
@@ -612,7 +558,7 @@ function normalizeExplicitReveals(seg, counts, warnings) {
         // motion.css replays it as a pure fade, without the rise
         if (afterBare !== next && !rose) {
           bump('fade-in bare opacity');
-          afterBare = withAddedAttr(afterBare, 'data-fpm-fade');
+          afterBare = addAttr(afterBare, 'data-fpm-fade');
         }
       }
       // a captured shape variant the tokens didn't fully consume would leave
@@ -657,7 +603,7 @@ const NOT_A_REVEAL = /pointer-events:none|transition:|position:fixed|position:ab
  * per page for human review.
  */
 function normalizeGenericZeroOpacity(seg, counts) {
-  return seg.replace(openTagRe(), (tag, _name, attrs) => {
+  return replaceTags(seg, (tag, _name, attrs) => {
     if (attrValue(attrs, 'data-animation-gsap') != null) return tag;
     if (attrValue(attrs, 'data-split-gsap') != null) return tag;
     if (attrValue(attrs, 'data-split-title') != null) return tag;
@@ -667,7 +613,7 @@ function normalizeGenericZeroOpacity(seg, counts) {
     });
     if (edited == null || edited === tag) return tag;
     counts['generic zero-opacity normalized+tagged'] = (counts['generic zero-opacity normalized+tagged'] ?? 0) + 1;
-    return withAddedAttr(edited, 'data-fpm-reveal');
+    return addAttr(edited, 'data-fpm-reveal');
   });
 }
 
@@ -704,17 +650,16 @@ function layerTag(name, css, runtime) {
 function motionPass(html, entry, css, runtime) {
   const counts = {};
   let heroes = 0;
-  html = mapContentSegments(html, (seg) => {
+  html = contentSegments(html, (seg) => {
     seg = annotateSplitWords(seg, counts, entry.warnings);
     seg = normalizeExplicitReveals(seg, counts, entry.warnings);
     seg = normalizeGenericZeroOpacity(seg, counts);
     // hero split-title detection rides the same content-only scan: captured
     // ON (end-state); the runtime re-fires its visibility class — logged so
     // review sees the page shape
-    seg.replace(openTagRe(), (tag, _name, attrs) => {
-      if (hasAttr(attrs, 'data-split-title')) heroes += 1;
-      return tag;
-    });
+    for (const open of openTags(seg, 'backtracking')) {
+      if (hasAttr(open.attrs, 'data-split-title')) heroes += 1;
+    }
     return seg;
   });
   if (heroes > 0) counts['hero split-title re-fire targets'] = heroes;
@@ -893,7 +838,7 @@ const SCROLL_INJECTED = 'scroll layer (style+script, inline)';
 function scrollPass(html, entry, css, runtime) {
   const counts = {};
   const bump = (k) => { counts[k] = (counts[k] ?? 0) + 1; };
-  html = mapContentSegments(html, (seg) => seg.replace(openTagRe(), (tag, _name, attrs) => {
+  html = contentSegments(html, (seg) => replaceTags(seg, (tag, _name, attrs) => {
     const cls = (attrValue(attrs, 'class') ?? '').split(/\s+/);
     // .line-label wrapper: the captured scale(0,0) is its reveal's from-state.
     if (cls.includes('line-label')) {

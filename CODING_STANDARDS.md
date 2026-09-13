@@ -76,6 +76,12 @@ video.js documents are stripped, not played (ticket 19).
   browser runtimes it inlines (e.g. `pipeline/story-hook.js`, ticket 03) are
   the documented exception: plain browser JavaScript, kept ES5-safe, read as
   text and inlined verbatim — no `.mjs`/JSDoc requirement, no bundling.
+- The passes that read the capture HTML's **source text** share one core
+  (`pipeline/html.mjs`) instead of deriving their own scanning rules: the tag
+  and slot views (`openTags`, `replaceTags`, `contentSegments`, `bodySlots`,
+  `srcdocSpans`) and the attribute readers. It **keeps** the dialects the
+  frozen tree's bytes were built under (ADR 0004) rather than merging them;
+  each one is named in the module and pinned at `test/html.test.ts`.
 - The serving check (`regression/routes.mjs`, one command `npm run routes`) is
   plain Node ESM + JSDoc and **environmental**: it starts the production
   server and measures it over HTTP. Its pure cores — `routeExpectations`,
@@ -208,9 +214,17 @@ video.js documents are stripped, not played (ticket 19).
   Vidzflow strip, the `data-sf-original-*` bookkeeping sweep and its linear-time
   bound, the skip rules, idempotence, and the
   frame/srcdoc/remote-reference audits) and the body-deduplication pass
-  (`test/dedupe.test.ts` — `pipeline/dedupe.mjs`: the tokenizer that refuses to
-  read a `srcdoc` payload as markup, the keep-inline rules, the carried
-  attributes, the `'self'` grant, the blocked reasons, and idempotence). All are
+  (`test/dedupe.test.ts` — `pipeline/dedupe.mjs`: the body-slot scan it shares
+  with `pipeline/html.mjs` — which refuses to read a `srcdoc` payload as markup
+  — the keep-inline rules, the carried attributes, the `'self'` grant, the
+  blocked reasons, and idempotence) and the capture-HTML source-text core
+  (`test/html.test.ts` — `pipeline/html.mjs`: the open-tag scan and its two
+  name/tag-end dialects, the three attribute-name rules that must not be merged
+  (a real page carries `data-style=bottomright` before its `style=`, so the loose
+  rule is the one the frozen bytes were built with), the slot scan that steps
+  over comments and SVG subtrees, and the two ticket-12 regressions — a
+  multi-megabyte unquoted attribute value, and a nested `srcdoc` document whose
+  stylesheets must not be rewritten). All are
   pure HTML-in/HTML-out cores the build calls; none reaches over HTTP, and
   the built result of both is covered end-to-end by the serving seam and its
   asset-identity check. **Extended by ticket 17**: the video-inventory detection
