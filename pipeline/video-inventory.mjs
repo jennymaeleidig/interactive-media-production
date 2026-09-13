@@ -2,27 +2,26 @@
 //
 // The embed pass (`pipeline/embeds.mjs`) imports `wistiaFromPage` to find every
 // Wistia media a page references before it rewrites the captured player slots,
-// and the seam test (`test/video-inventory.test.ts`) pins both sweeps' boundary
-// rules. The stakes: an id the inventory cannot see is an id the build cannot
-// act on. On 2026-09-11 a slot that named its media as an *attribute* rather
-// than a URL was invisible, and the build shipped a live frame to a dead Wistia
-// player.
+// and the seam test (`test/video-inventory.test.ts`) pins its boundary rules.
+// The stakes: an id the inventory cannot see is an id the build cannot act on.
+// On 2026-09-11 a slot that named its media as an *attribute* rather than a URL
+// was invisible, and the build shipped a live frame to a dead Wistia player.
 //
-// Two providers are modelled, because they are the ones whose slots survive the
-// build:
+// This module is the Wistia sweep alone (10-char hashed ID): the captured
+// `w-json-ld` VideoObject blocks (which also carry title, duration, and the
+// direct delivery `contentUrl`), embed / media-link URLs, `wistia_async_*`, and
+// the attribute form `<wistia-player media-id=…>`, including a media named only
+// in a captured CSS attribute selector.
 //
-//   - Wistia media (10-char hashed ID) — the captured `w-json-ld` VideoObject
-//     blocks (which also carry title, duration, and the direct delivery
-//     `contentUrl`), embed / media-link URLs, `wistia_async_*`, and the
-//     attribute form `<wistia-player media-id=…>`, including a media named only
-//     in a captured CSS attribute selector.
-//   - YouTube videos (11-char ID) — embed / shorts / live / `watch?v=` / youtu.be
-//     URLs and the `data-video-id` attribute on the click-to-arm panels.
+// YouTube's click-to-arm panels (`data-video-id`, 11-char ID) are the embed
+// pass's own detection (`pipeline/embeds.mjs`'s `youtubeSlots`), pinned beside
+// it in the ticket-17 describe at `test/embeds.test.ts` — not here, so that
+// boundary rule has one home.
 //
-// Vidzflow, the fourth provider, is deliberately not modelled: the build strips
-// its hidden video.js documents (ticket 19), so no Vidzflow slot survives. A
-// *new* provider is caught at build time by the embeds summary plus the
-// `unclassified remote refs` audit, not here.
+// Vidzflow is deliberately not modelled: the build strips its hidden video.js
+// documents (ticket 19), so no Vidzflow slot survives. A *new* provider is
+// caught at build time by the embeds summary plus the `unclassified remote
+// refs` audit, not here.
 //
 // Pure string-in/IDs-out, **with no network and no upstream**: it describes the
 // frozen snapshot (ADR 0004). Player liveness on the live site is not a
