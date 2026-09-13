@@ -215,7 +215,7 @@ describe('the committed baseline', () => {
   });
 
   it('carries redirect targets and the auth-gated class as measured', () => {
-    expect(committed.rows.find((r) => r.path === '/')).toMatchObject(row('/', 200));
+    expect(committed.rows.find((r) => r.path === '/')).toEqual({ ...row('/', 200), copy: expect.stringMatching(/^[0-9a-f]{16}$/) });
     expect(committed.rows.find((r) => r.path === '/webinar/you-asked-we-listened-q3-public-safety-product-updates')).toEqual(
       row('/webinar/you-asked-we-listened-q3-public-safety-product-updates', 301, true, '/resources'),
     );
@@ -259,7 +259,7 @@ describe('the copy tier — baseline row and run report', () => {
   });
 
   it('records the live projection’s digest on the run’s baseline and reports the counts', () => {
-    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>New</p>') });
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copyPages: pages('<p>New</p>') });
     expect(result.report.copy).toEqual({
       compared: 2,
       differed: 1,
@@ -270,7 +270,7 @@ describe('the copy tier — baseline row and run report', () => {
   });
 
   it('reports a copy difference as drift: exit 1, and the path and runs in human output', () => {
-    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>New</p>') });
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copyPages: pages('<p>New</p>') });
     expect(exitCode(result.report)).toBe(1);
     const human = formatWatchReport(result.report);
     for (const finding of result.report.copy?.findings ?? []) {
@@ -280,14 +280,14 @@ describe('the copy tier — baseline row and run report', () => {
   });
 
   it('exits 0 when every served page’s prose matches live', () => {
-    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>Old</p>') });
+    const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copyPages: pages('<p>Old</p>') });
     expect(result.report.copy?.differed).toBe(0);
     expect(exitCode(result.report)).toBe(0);
   });
 
   it('reports a live copy move since the last run as a baseline field move', () => {
-    const first = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copy: pages('<p>Old</p>') });
-    const second = runWatch({ ...steady(), previous: first.baseline, accept: false, verified: '2026-09-14', copy: pages('<p>New</p>') });
+    const first = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, copyPages: pages('<p>Old</p>') });
+    const second = runWatch({ ...steady(), previous: first.baseline, accept: false, verified: '2026-09-14', copyPages: pages('<p>New</p>') });
     expect(second.report.since?.changed).toEqual([
       { path: '/a', fields: [{ field: 'copy', from: copyDigest(copyRuns('<p>Old</p>')), to: copyDigest(copyRuns('<p>New</p>')) }] },
     ]);

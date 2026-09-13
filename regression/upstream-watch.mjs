@@ -98,9 +98,9 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
- * One page whose prose differs from the live page it reproduces, as ticket 03
- * reports it: the path and the differing runs, never a page-level boolean.
- * @typedef {import('./upstream-copy.mjs').CopyFinding} CopyFinding
+ * Ticket 03's copy tier as the report carries it: the compared/differed counts
+ * and the per-page findings, no digest state.
+ * @typedef {import('./upstream-copy.mjs').CopyTier} CopyTier
  */
 
 /**
@@ -118,7 +118,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {InventoryRow[]} inventory
  * @property {string} [verified]  the date this run verified upstream; set by `runWatch`
  * @property {BaselineDelta} [since]  what moved since the previous run; set by `runWatch`
- * @property {{compared: number, differed: number, findings: CopyFinding[]}} [copy]  the served-versus-live prose comparison; set by `runWatch`
+ * @property {CopyTier} [copy]  the served-versus-live prose comparison; set by `runWatch`
  */
 
 /**
@@ -325,23 +325,19 @@ export function buildWatchReport(inputs) {
 }
 
 /**
- * Whether a baseline delta carries anything. The exit code and the printed
- * summary both ask this, so a clean print can never disagree with a nonzero
- * exit.
- * @param {BaselineDelta|undefined} since
+ * Whether anything in the report is drift: an index finding, a moved baseline,
+ * or a copy difference. The exit code and the printed summary both ask this one
+ * function, so a clean print can never disagree with a nonzero exit.
+ * @param {WatchReport} report
  * @returns {boolean}
  */
-function baselineMoved(since) {
-  return since ? since.added.length + since.removed.length + since.changed.length > 0 : false;
-}
-
-/**
- * Whether the copy comparison carries anything.
- * @param {WatchReport['copy']} copy
- * @returns {boolean}
- */
-function copyMoved(copy) {
-  return copy !== undefined && copy.differed > 0;
+function reportMoved(report) {
+  const indexDrift = report.findings.added.length > 0 || report.findings.removed.length > 0;
+  const baselineDrift = report.since
+    ? report.since.added.length + report.since.removed.length + report.since.changed.length > 0
+    : false;
+  const copyDrift = report.copy !== undefined && report.copy.differed > 0;
+  return indexDrift || baselineDrift || copyDrift;
 }
 
 /** One run's text for the human view, bounded so a whole-page rewrite cannot
@@ -412,13 +408,11 @@ export function formatWatchReport(report) {
       }
     }
   }
-  const indexDrift = findings.added.length > 0 || findings.removed.length > 0;
-  const baselineDrift = baselineMoved(report.since);
-  const copyDrift = copyMoved(report.copy);
+  const moved = reportMoved(report);
   if (report.since) {
-    lines.push(indexDrift || baselineDrift || copyDrift ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
+    lines.push(moved ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
   } else {
-    lines.push(indexDrift || copyDrift ? '✗ Drift — see findings above.' : '✓ Index in sync with the Capture list.');
+    lines.push(moved ? '✗ Drift — see findings above.' : '✓ Index in sync with the Capture list.');
   }
   return lines.join('\n');
 }
@@ -432,6 +426,5 @@ export function formatWatchReport(report) {
  * @returns {0|1}
  */
 export function exitCode(report) {
-  const indexDrift = report.findings.added.length > 0 || report.findings.removed.length > 0;
-  return indexDrift || baselineMoved(report.since) || copyMoved(report.copy) ? 1 : 0;
+  return reportMoved(report) ? 1 : 0;
 }

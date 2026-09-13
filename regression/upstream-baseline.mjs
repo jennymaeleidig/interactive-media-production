@@ -53,7 +53,7 @@ export const BASELINE_VERSION = 1;
 /**
  * Ticket 01's report inputs plus ticket 02's baseline state and ticket 03's
  * copy pages.
- * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copy?: import('./upstream-copy.mjs').CopyPage[]}} RunInputs
+ * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[]}} RunInputs
  */
 
 /**
@@ -146,14 +146,14 @@ export function serializeBaseline(baseline) {
  * a baseline recorded before ticket 03 still reads.
  * @param {import('./upstream-watch.mjs').WatchReport} report
  * @param {string} verified
- * @param {Record<string, string>} [copy]  path → live copy-projection digest
+ * @param {Record<string, string>} [copyDigests]  path → live copy-projection digest
  * @returns {Baseline}
  */
-export function baselineFromReport(report, verified, copy = {}) {
+export function baselineFromReport(report, verified, copyDigests = {}) {
   const rows = report.inventory
     .map((row) => {
       const carried = { path: row.path, inSitemap: row.inSitemap, status: row.status, location: row.location ?? null };
-      const digest = copy[row.path];
+      const digest = copyDigests[row.path];
       return digest === undefined ? carried : { ...carried, copy: digest };
     })
     .sort(byPath);
@@ -208,8 +208,8 @@ export function diffBaseline(previous, current) {
 
 /**
  * One run of the watch, as a value. Builds ticket 01's index report, compares
- * the copy projection live versus served when the edge hands it pages (ticket
- * 03), derives this run's baseline — carrying the copy digests — and diffs it
+ * the copy projection live versus served when the edge hands it `copyPages`
+ * (ticket 03), derives this run's baseline — carrying the copy digests — and diffs it
  * against the previous one. `write` is true only for the silent first run (no
  * previous baseline) or an explicit accept; a plain run with a previous
  * baseline never moves the reference point.
@@ -217,9 +217,9 @@ export function diffBaseline(previous, current) {
  * @returns {WatchRun}
  */
 export function runWatch(inputs) {
-  const { previous = null, accept = false, verified, copy: pages, ...rest } = inputs;
+  const { previous = null, accept = false, verified, copyPages, ...rest } = inputs;
   const report = buildWatchReport(rest);
-  const copy = pages === undefined ? null : copyReport(pages);
+  const copy = copyPages === undefined ? null : copyReport(copyPages);
   const baseline = baselineFromReport(report, verified, copy?.digests ?? {});
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);

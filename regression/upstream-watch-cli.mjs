@@ -167,18 +167,18 @@ async function main() {
   /** @type {Record<string, import('./upstream-watch.mjs').Probe>} */
   const probes = {};
   /** @type {import('./upstream-copy.mjs').CopyPage[]} */
-  const copy = [];
+  const copyPages = [];
   for (const result of results) {
     probes[result.path] = { status: result.probe.status, location: result.probe.location };
     const body = result.probe.body;
     const file = servedFiles.get(result.path);
     if (body === undefined || file === undefined) continue;
-    copy.push({ path: result.path, served: readFileSync(file, 'utf8'), live: body });
+    copyPages.push({ path: result.path, served: readFileSync(file, 'utf8'), live: body });
   }
 
   let run;
   try {
-    run = runWatch({ ...inputs, probes, previous, accept, verified, copy });
+    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }

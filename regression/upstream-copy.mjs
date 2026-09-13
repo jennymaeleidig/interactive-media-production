@@ -43,14 +43,16 @@
 // The fix, and the measurement that proves it (the hand-run measurement of
 // 2026-09-13, recorded on ticket 03): the first run compared 1,181 served pages
 // and reported 541 differing. The tree was not 541 pages stale — the projection
-// was wrong. 436 of those were runtime-filled regions the Capture froze
-// populated and a raw live fetch carries as a template (Webflow's table of
-// contents, above all; see `isGenerated`). Excluding those regions leaves
-// exactly 2 findings on 2 pages, and both are real upstream copy edits:
-// `/careers` ("We Aspire Fearlessly…" became "We Work Hard…") and
-// `/products/license-plate-readers` (a paragraph added). That is the steady
-// state the projection promises: an empty report means nothing moved, and a
-// non-empty one is a page a human should read.
+// was wrong: 539 of those 541 were runtime-filled regions the Capture froze
+// populated and a raw live fetch carries as a template. The exclusions below
+// remove them in three measured steps — excluding Webflow's table of contents
+// left 11 findings, adding Finsweet's filter empty state left 5, and excluding
+// the ATS-backed jobs list, the event speaker popup and the Wistia player left
+// exactly 2. Both are real upstream copy edits: `/careers` ("We Aspire
+// Fearlessly…" became "We Work Hard…") and `/products/license-plate-readers` (a
+// paragraph added). That is the steady state the projection promises: an empty
+// report means nothing moved, and a non-empty one is a page a human should
+// read.
 //
 // What the copy projection is blind to, by design: chrome (nav/footer) text
 // that lives in non-prose containers, which ticket 04's chrome projection and
@@ -115,6 +117,15 @@ const BLOCK = new Set([
  * @typedef {Object} CopyFinding
  * @property {string} path
  * @property {CopyHunk[]} hunks
+ */
+
+/**
+ * The copy tier as the run report carries it: the counts and the findings, with
+ * no digests — those are baseline state, not report state.
+ * @typedef {Object} CopyTier
+ * @property {number} compared
+ * @property {number} differed
+ * @property {CopyFinding[]} findings
  */
 
 /**
@@ -377,7 +388,7 @@ function coarseHunk(servedRuns, liveRuns) {
  * projection digest. Pure: every finding is a function of the pages handed in,
  * and each side is projected exactly once.
  * @param {CopyPage[]} pages
- * @returns {{compared: number, differed: number, findings: CopyFinding[], digests: Record<string, string>}}
+ * @returns {CopyTier & {digests: Record<string, string>}}
  */
 export function copyReport(pages) {
   /** @type {CopyFinding[]} */

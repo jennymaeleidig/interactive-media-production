@@ -11,7 +11,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { copyDiff, copyDigest, copyFinding, copyReport, copyRuns } from '../regression/upstream-copy.mjs';
+import { copyDiff, copyDigest, copyFinding, copyReport, copyRuns, PROSE_ELEMENTS } from '../regression/upstream-copy.mjs';
 
 const SERVED_DIR = new URL('../served/', import.meta.url);
 
@@ -23,6 +23,12 @@ const servedPages = readdirSync(SERVED_DIR, { recursive: true })
   .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
 describe('copyRuns — the projection is a pure function of HTML', () => {
+  it('declares the element set it treats as prose, and applies it', () => {
+    for (const name of PROSE_ELEMENTS) expect(copyRuns(`<${name}>text</${name}>`)).toEqual(['text']);
+    // A bare div or span is layout, not prose.
+    expect(copyRuns('<div>layout</div><span>inline</span>')).toEqual([]);
+  });
+
   it('reads headings, paragraphs, list items and blockquotes in document order', () => {
     const html = `
       <h1>Hello &amp; welcome</h1>
