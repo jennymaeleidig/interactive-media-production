@@ -151,8 +151,10 @@ video.js documents are stripped, not played (ticket 19).
   **Extended by ticket 21**: the scroll DOM seam (`test/scroll.seam.test.ts` —
   the scroll choreography + modal runtime's contract: the `[animate=scrub-word]`
   color sequence plays on scroll-in and reverses, the `.line-label` reveal
-  lands, `[data-scroll-video]` plays in view and pauses out, `#stickme`
-  toggles, `dialog.c-modal` opens/closes and arms its route draw with markers
+  lands, `[data-scroll-video]` plays in view and pauses out, `#stickme` pins to
+  the viewport bottom for the rest of the page (and is re-placed by hand when a
+  containing-block ancestor captures `position: fixed`),
+  `dialog.c-modal` opens/closes and arms its route draw with markers
   placed opposite their events, and reduced motion keeps the function while
   leaving the decoration at the build end-state — in jsdom against the exact
   injected bytes `pipeline/scroll-runtime.js`).

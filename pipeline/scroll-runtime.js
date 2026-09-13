@@ -12,8 +12,8 @@
 //   .line-label             pill scale(0) -> scale(1); its marker slides from
 //                           translateY(170%) (IX2 t-4e5bbe4b)
 //   [data-scroll-video]     play at 'top 45%', pause at 'bottom 20%'
-//   #stickme                sticky to the viewport bottom, released at its
-//                           parent's end (.stick / .stick--is-stuck)
+//   #stickme                pinned to the viewport bottom from the moment its
+//                           section is on screen for the rest of the page
 //   #main-progress          route draw scrubbed by page scroll (.main-line)
 //   dialog.c-modal          open/close via [data-c-modal-open] / [c-modal-close]
 //                           / Escape; opening runs the modal's own route draw
@@ -25,7 +25,8 @@
 // FUNCTION (the modal still opens, the sticky button still sticks, the markers
 // are placed) but skips the animation: the decoration stays at the build's
 // end-state. `fpm-scroll` is always added — scroll.css only carries structure
-// (SVG marker transform-box, the modal scroll lock), never a from-state.
+// (SVG marker transform-box, the modal scroll lock, the pinned sticky state),
+// never a from-state.
 (function () {
   'use strict';
 
@@ -190,30 +191,55 @@
   }
 
   // ---- 4. #stickme sticky button (function; runs under reduced motion too) ---
-  // Every measurement is taken from the PARENT, never from the button. `.stick`
+  // The decision comes from the PARENT alone, never from the button: `.stick`
   // makes the button fixed, which moves its own rect into viewport coordinates,
-  // so an element-based test flips the class on every scroll event — the button
-  // flickers between pinned and in-flow. The parent does not move when the
-  // button does. The button's only contribution is its offset inside the parent,
-  // read once while it is still unstuck.
+  // so an element-based test flips the class on every scroll event and the
+  // button flickers between pinned and in-flow. The parent does not move when
+  // the button does, which makes `parentRect.top < vh()` monotone in scroll
+  // position — the class cannot oscillate.
+  //
+  // The control stays at the viewport bottom from the moment its parent is on
+  // screen until the page scrolls back above it: it is that section's call to
+  // action for the whole page, and a control that detaches at its parent's end
+  // and rides the content away reads as broken.
+  //
+  // The class is not trusted to have worked. `position: fixed` is relative to
+  // the viewport only when no ancestor is a containing block for fixed boxes
+  // (a transform, filter, `will-change` or `contain` anywhere up the tree
+  // captures it), and the captured stylesheet's own rule can be overridden by
+  // another captured rule. So every tick re-measures where the button landed,
+  // and a pin that did not reach the viewport bottom is redone here, in
+  // document coordinates.
   var stick = doc.getElementById('stickme');
   if (stick && stick.parentNode) {
     (function () {
       var parent = stick.parentNode;
-      var parentTop = parent.getBoundingClientRect().top;
-      var naturalOffset = stick.getBoundingClientRect().top - parentTop;
-      var naturalHeight = stick.offsetHeight;
-      function check() {
+      var pinned = false;
+      var manual = false; // set once `position: fixed` is found wanting
+      function unplace() {
+        manual = false;
+        stick.style.position = '';
+        stick.style.top = '';
+        stick.style.bottom = '';
+      }
+      function place() {
         var h = vh();
-        var parentRect = parent.getBoundingClientRect();
-        // In flow the control scrolls normally; once its natural place passes
-        // the fold it pins to the viewport bottom, and at the parent's end it
-        // hands back to the parent's own bottom. `.stick--is-stuck` keeps
-        // `.stick` applied too — the captured CSS relies on its `top: auto`.
-        var pinned = parentRect.top + naturalOffset + naturalHeight < h;
-        var atEnd = parentRect.bottom < h;
-        setClass(stick, 'stick', pinned || atEnd);
-        setClass(stick, 'stick--is-stuck', atEnd);
+        if (!manual && Math.abs(stick.getBoundingClientRect().bottom - h) <= 2) return;
+        manual = true;
+        var holder = stick.offsetParent || parent;
+        stick.style.position = 'absolute';
+        stick.style.bottom = 'auto';
+        stick.style.top =
+          h - stick.offsetHeight - holder.getBoundingClientRect().top - (holder.clientTop || 0) + 'px';
+      }
+      function check() {
+        var on = parent.getBoundingClientRect().top < vh();
+        if (on !== pinned) {
+          pinned = on;
+          setClass(stick, 'stick', on);
+          if (!on) unplace();
+        }
+        if (on) place(); // the fallback placement is scroll-dependent
       }
       onScroll(check);
       check();

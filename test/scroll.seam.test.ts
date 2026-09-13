@@ -168,46 +168,99 @@ describe('[data-scroll-video]', () => {
 });
 
 describe('#stickme sticky button', () => {
+  // jsdom reports `documentElement.clientHeight` as 0, so `vh()` falls back to
+  // `window.innerHeight` (768) — mirror the runtime's own read here.
+  const viewport = (win: { document: Document; innerHeight: number }): number =>
+    win.document.documentElement.clientHeight || win.innerHeight;
+
   // The button's own rect must never drive the decision: `.stick` makes it
   // fixed, which moves that rect into viewport coordinates — measuring it makes
-  // the class flip on every scroll event (the button flickers).
-  it('pins once, stays pinned while its parent spans the viewport, and hands off at the parent end', async () => {
+  // the class flip on every scroll event (the button flickers). Here the rect
+  // follows the class, the way a browser that honours `position: fixed` reports
+  // a pinned button at the viewport bottom.
+  const pinnedRects = (doc: Document): void => {
+    const stick = doc.getElementById('stickme')!;
+    const win = doc.defaultView!;
+    Object.defineProperty(stick, 'offsetHeight', { value: 40, configurable: true });
+    Object.defineProperty(stick, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => (stick.classList.contains('stick') ? rect(viewport(win) - 40, 40) : rect(10_000)),
+    });
+    setRect(doc.getElementById('stickme-parent'), rect(9_000, 5_000));
+  };
+
+  it('pins once its parent is on screen and stays pinned for the rest of the page', async () => {
+    const dom = domOf(PAGE, { prep: pinnedRects });
+    const win = dom.window as Win;
+    const stick = win.document.getElementById('stickme')!;
+    const parent = win.document.getElementById('stickme-parent')!;
+    // at load the parent is far below the fold, so the control is in flow
+    expect(stick.classList.contains('stick')).toBe(false);
+
+    // the parent's top crosses the viewport bottom → pinned
+    setRect(parent, rect(viewport(win) - 1, 5_000));
+    fire(dom.window, 'scroll');
+    await sleep(50);
+    expect(stick.classList.contains('stick')).toBe(true);
+
+    // and it stays pinned as the parent crosses the viewport and leaves it
+    for (const top of [-1_000, -4_800, -9_000, -20_000]) {
+      setRect(parent, rect(top, 5_000));
+      fire(dom.window, 'scroll');
+      await sleep(50);
+      expect(stick.classList.contains('stick')).toBe(true);
+    }
+
+    // there is no hand-off state any more, and the browser's own fixed
+    // positioning was enough — nothing was placed by hand
+    expect(stick.classList.contains('stick--is-stuck')).toBe(false);
+    expect(stick.style.position).toBe('');
+    expect(stick.style.top).toBe('');
+
+    // scrolling back above the parent returns the control to the flow
+    setRect(parent, rect(9_000, 5_000));
+    fire(dom.window, 'scroll');
+    await sleep(50);
+    expect(stick.classList.contains('stick')).toBe(false);
+  });
+
+  // A transformed (or filtered, `will-change`d, `contain`ed) ancestor is the
+  // containing block for fixed boxes, so `.stick` lands somewhere inside the
+  // document instead of on the viewport — the failure the user hit. The runtime
+  // has to notice and place the control itself.
+  it('places the button itself when `position: fixed` does not reach the viewport', async () => {
+    const holderTop = -600;
     const dom = domOf(PAGE, {
       prep: (doc) => {
         const stick = doc.getElementById('stickme')!;
         Object.defineProperty(stick, 'offsetHeight', { value: 40, configurable: true });
-        setRect(stick, rect(10_000));
-        setRect(doc.getElementById('stickme-parent'), rect(9_000, 5_000));
+        Object.defineProperty(stick, 'offsetParent', { value: doc.getElementById('stickme-parent'), configurable: true });
+        setRect(stick, rect(2_000, 40)); // fixed never lands on the viewport bottom
+        setRect(doc.getElementById('stickme-parent'), rect(holderTop, 5_000));
       },
     });
     const win = dom.window as Win;
     const stick = win.document.getElementById('stickme')!;
     const parent = win.document.getElementById('stickme-parent')!;
-    // at load its natural place is far below the fold
+    const vh = viewport(win);
+    expect(stick.classList.contains('stick')).toBe(true);
+    expect(stick.style.position).toBe('absolute');
+    expect(stick.style.bottom).toBe('auto');
+    expect(stick.style.top).toBe(`${vh - 40 - holderTop}px`);
+
+    // the placement is scroll-dependent, so every tick refreshes it
+    setRect(parent, rect(holderTop - 100, 5_000));
+    fire(dom.window, 'scroll');
+    await sleep(50);
+    expect(stick.style.top).toBe(`${vh - 40 - (holderTop - 100)}px`);
+
+    // unpinning drops the inline placement again
+    setRect(parent, rect(9_000, 5_000));
+    fire(dom.window, 'scroll');
+    await sleep(50);
     expect(stick.classList.contains('stick')).toBe(false);
-
-    // the section reaches the fold → pinned to the viewport bottom
-    setRect(parent, rect(-1_000, 5_000));
-    fire(dom.window, 'scroll');
-    await sleep(50);
-    expect(stick.classList.contains('stick')).toBe(true);
-    expect(stick.classList.contains('stick--is-stuck')).toBe(false);
-
-    // now the button really is fixed at the viewport bottom: that new rect must
-    // not un-pin it on the next tick
-    setRect(stick, rect(win.innerHeight - 40));
-    fire(dom.window, 'scroll');
-    await sleep(50);
-    expect(stick.classList.contains('stick')).toBe(true);
-
-    // the parent's end passes the fold → hand back to the parent's own bottom
-    setRect(parent, rect(-4_800, 5_000));
-    fire(dom.window, 'scroll');
-    await sleep(50);
-    expect(stick.classList.contains('stick--is-stuck')).toBe(true);
-    // `.stick` stays on: the captured CSS's `.stick{top:auto}` is what keeps
-    // `.stick--is-stuck`'s `top:0` from stretching the wrapper
-    expect(stick.classList.contains('stick')).toBe(true);
+    expect(stick.style.position).toBe('');
+    expect(stick.style.top).toBe('');
   });
 });
 

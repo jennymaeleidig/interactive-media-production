@@ -15,3 +15,13 @@ html.fpm-scroll .marker {
 html.fpm-scroll body.fps-modal-open {
   overflow: hidden;
 }
+
+/* The sticky control's pinned state is owned here rather than left to the
+   captured stylesheet, so no later captured rule can un-pin it. No
+   `!important`: an inline placement written by the runtime (its fallback for a
+   page where `position: fixed` does not reach the viewport) has to win. */
+html.fpm-scroll #stickme.stick {
+  position: fixed;
+  top: auto;
+  bottom: 0;
+}

@@ -12,7 +12,8 @@ runtime — no GSAP, no CDN, so the zero-outbound invariant holds — restores:
   marker slides up `170% → 0` on scroll-in.
 - `[data-scroll-video]`: play at `top 45%`, pause at `bottom 20%`.
 - `#stickme`: the sticky "see it in action" button pins to the viewport bottom
-  and releases at its parent's end (`.stick` / `.stick--is-stuck`).
+  from the moment its section is on screen until the page scrolls back above
+  it — a page-wide control, not one bounded by its parent's box.
 - `#main-progress` / `.main-line`: the page's SVG route draws as it scrolls.
 - `.c-modal` dialogs: `data-c-modal-open="<id>"` opens
   `dialog[data-c-modal="<id>"]`; `[c-modal-close]`, backdrop, and Escape close
@@ -34,7 +35,7 @@ dark-subhead contrast fix stays).
 - [x] `[animate="scrub-word"]` words animate dark → green → light on scroll-in and reverse on scroll-back.
 - [x] `.line-label` and its marker reveal on scroll-in; they are visible (end-state) with JavaScript disabled.
 - [x] `[data-scroll-video]` videos play while in view and pause out of view.
-- [x] `#stickme` sticks to the viewport bottom and releases at its parent's end.
+- [x] `#stickme` pins to the viewport bottom from the moment its section is on screen until the page scrolls back above it.
 - [x] `#main-progress` draws with page scroll.
 - [x] `data-c-modal-open` opens its `<dialog>`; close/backdrop/Escape close it; focus and body scroll are restored.
 - [x] The modal's `#route-progress` draws with the modal's own scroll, and `.marker[data-stop]` markers are placed and pop in.
@@ -97,4 +98,43 @@ Verified with real wheel input on the served page: in flow at the top, pinned
 `stick--is-stuck` at the section's end with the button riding the parent's
 bottom, then back to pinned on scroll-up — with no class churn in between; plus
 a `test/scroll.seam.test.ts` regression that re-stubs the button's own rect
-while pinned.
+while pinned. (The hand-off described in this paragraph was removed again after
+the second human review — see the addendum below.)
+
+### Addendum 2 (human review): the button "scrolled with the page"
+
+The human review came back on the fixed build with "the button scrolls with the
+page? its supposed to remain in place", and chose the page-wide option when
+asked which behavior was wanted. Two things changed, both in the runtime:
+
+- **The decision is now `parentRect.top < vh()`** — no button geometry at all
+  (the natural offset/height reads are gone), so it stays monotone in scroll
+  position and cannot oscillate, and the control pins the moment its section
+  reaches the fold rather than when its own place crosses it. Pinning is
+  deliberately one-way for the rest of the page: a control that hands back at
+  its parent's end and rides the content away is what read as broken. The
+  `.stick--is-stuck` hand-off state is gone.
+- **The pin no longer trusts `position: fixed` to have worked.** Any ancestor
+  that is a containing block for fixed boxes — a captured `transform`, a
+  `filter`, a `will-change`, a `contain` — captures the button, and the
+  captured stylesheet's own `#stickme.stick` rule can be overridden. Every tick
+  re-measures where the button actually landed, and a pin that is not within
+  2px of the viewport bottom is redone by the runtime in document coordinates
+  (`position: absolute` + a `top` recomputed from the offset parent), cleared
+  again when the control returns to the flow. `scroll.css` also carries the
+  pinned state itself (`html.fpm-scroll #stickme.stick`), without
+  `!important`, so that placement can win.
+
+Verified with real wheel input on the served page with motion **on** (a
+throwaway server that forces `prefers-reduced-motion: no-preference`, because
+this session's headless Chrome otherwise takes the reduced path): `y=0` in flow
+at `988` (its parent's top), `y=600` pinned (`574..760`, the viewport bottom,
+before its own place had reached the fold), `y=2100` pinned, and `y=5200` —
+1,619px past the parent's end and 2,615px past the section's end, with the page
+ending at `6,097` — still pinned at `574..760` with no `stick--is-stuck` and no
+inline fallback needed, then back to the flow at `y=0` on scroll-up. Zero
+uncaught errors throughout; the same `y=5200` pin holds on the server with
+reduced motion. `test/scroll.seam.test.ts` carries both cases: the page-wide
+pin (its stubbed rect follows the class the way a browser honoring `fixed`
+reports it) and the fallback (a rect that never reaches the viewport bottom →
+the runtime places the button itself and refreshes `top` every tick).
