@@ -89,7 +89,46 @@ export function wistiaIframe(id, title) {
   return `<iframe src="${wistiaEmbedUrl(id)}"${label} allow="autoplay; fullscreen" allowfullscreen frameborder=0 scrolling=no style="width:100%;height:100%"></iframe>`;
 }
 
-const OPEN_TAG = /<([a-z][a-z0-9-]*)((?:[^<>"']|"[^"]*"|'[^']*')*)>/gi;
+/**
+ * Iterate the open tags of an HTML string: the tag name and the raw attribute
+ * text up to the first `>` outside a quoted value. A scanner, not a regex,
+ * because the equivalent alternation (`(?:[^<>"']|"[^"]*"|'[^']*')*`)
+ * overflows the regex engine's stack on a multi-megabyte *unquoted* attribute
+ * value: SingleFile writes a video's `src=data:video/mp4;base64,…` unquoted,
+ * and the engine recurses once per scanned unit of the value (ticket 12).
+ * @param {string} html
+ * @returns {Generator<{name: string, attrs: string, index: number, tag: string}>}
+ */
+export function* openTags(html) {
+  const start = /<([a-z][a-z0-9-]*)/gi;
+  let m;
+  while ((m = start.exec(html)) !== null) {
+    const name = m[1];
+    let i = m.index + m[0].length;
+    while (i < html.length) {
+      const c = html[i];
+      if (c === '"' || c === "'") {
+        const close = html.indexOf(c, i + 1);
+        if (close === -1) {
+          i = html.length;
+          break;
+        }
+        i = close + 1;
+      } else if (c === '>' || c === '<') {
+        break;
+      } else {
+        i += 1;
+      }
+    }
+    if (html[i] === '>') {
+      yield { name, attrs: html.slice(m.index + m[0].length, i), index: m.index, tag: html.slice(m.index, i + 1) };
+      start.lastIndex = i + 1;
+    } else {
+      start.lastIndex = m.index + 1;
+    }
+  }
+}
+
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
 
 /**
@@ -114,10 +153,10 @@ function attrOf(attrs, name) {
  */
 export function youtubeSlots(html) {
   const ids = [];
-  for (const m of html.matchAll(OPEN_TAG)) {
-    if (m[1].toLowerCase() !== 'iframe') continue;
-    if (/\ssrc\s*=/i.test(m[2])) continue; // already live — not a slot the runtime arms
-    const id = attrOf(m[2], 'data-video-id');
+  for (const tag of openTags(html)) {
+    if (tag.name.toLowerCase() !== 'iframe') continue;
+    if (/\ssrc\s*=/i.test(tag.attrs)) continue; // already live — not a slot the runtime arms
+    const id = attrOf(tag.attrs, 'data-video-id');
     if (id !== null && YOUTUBE_ID.test(id)) ids.push(id);
   }
   return ids;
@@ -239,9 +278,9 @@ export function unclassifiedRemoteRefs(html) {
     .replace(/(<script\b[^>]*>)[\s\S]*?(<\/script\s*>)/gi, '$1$2')
     .replace(/(<style\b[^>]*>)[\s\S]*?(<\/style\s*>)/gi, '$1$2');
   const refs = [];
-  for (const m of markup.matchAll(OPEN_TAG)) {
-    const name = m[1].toLowerCase();
-    const attrs = m[2];
+  for (const tag of openTags(markup)) {
+    const name = tag.name.toLowerCase();
+    const attrs = tag.attrs;
     if (name === 'meta') continue; // metadata — a crawler may read it, a browser never fetches it
     const rel = attrOf(attrs, 'rel') ?? '';
     for (const attr of FETCHERS[name] ?? []) {

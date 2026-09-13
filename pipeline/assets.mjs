@@ -148,8 +148,14 @@ export function assetPath(sha, ext) {
 // `>` is ordinary payload there — an inlined raw SVG carries `<svg …><path …>`
 // unescaped, and treating `>` as a terminator silently skips 244 references.
 const ESCAPES = String.raw`\\(?:[0-9a-fA-F]{1,6}[ \t]?|[\s\S])`;
-const BARE_ATTR = String.raw`(?:${ESCAPES}|[^\s"'>)])*`;
-const BARE_URL = String.raw`(?:${ESCAPES}|[^\s"')])*`;
+// A bare value, with its CSS escapes factored out of the repeated group:
+// `[^\\…]*(?:ESCAPES[^\\…]*)*` instead of `(?:ESCAPES|[^\\…])*`. The
+// alternation form makes the regex engine recurse once per scanned character,
+// so SingleFile's unquoted `src=data:video/mp4;base64,…` (tens of MB) overflows
+// the stack; the factored form swallows the run in one step and only enters the
+// loop at an actual backslash (ticket 12).
+const BARE_ATTR = String.raw`[^\\\s"'>)]*(?:${ESCAPES}[^\\\s"'>)]*)*`;
+const BARE_URL = String.raw`[^\\\s"')]*(?:${ESCAPES}[^\\\s"')]*)*`;
 const quoted = String.raw`&amp;quot;[\s\S]*?&amp;quot;|&amp;#39;[\s\S]*?&amp;#39;|&quot;[\s\S]*?&quot;|&#39;[\s\S]*?&#39;|"[^"]*"|'[^']*'`;
 const VALUE_ATTR = `(${quoted}|${BARE_ATTR})`;
 const VALUE_URL = `(${quoted}|${BARE_URL})`;

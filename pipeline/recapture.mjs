@@ -298,7 +298,8 @@ const IMAGE = 'capsulecode/singlefile:latest';
 /**
  * SingleFile's arguments, with the corrected flags ticket 15 requires: keep
  * hidden subtrees (`--remove-hidden-elements=false`) and state CSS
- * (`--remove-unused-styles=false`). The defaults strip both site-wide.
+ * (`--remove-unused-styles=false`). The defaults strip both site-wide. Videos
+ * are embedded rather than blocked (see `--block-videos=false` below).
  */
 export function singleFileArgs(url, rel) {
   return [
@@ -309,6 +310,21 @@ export function singleFileArgs(url, rel) {
     '--browser-capture-max-time', '45000',
     '--remove-hidden-elements=false',
     '--remove-unused-styles=false',
+    // Videos load and embed. SingleFile's default (true) blocks them: the page
+    // keeps a source-less <video> plus a SingleFile-injected link to the CDN
+    // file, so a served page shows a dead box that only works in a new tab
+    // (ticket 12 found it on /safe-cities' three hover videos). With videos
+    // enabled the transfer encodes each source as a `data:video/...` URI, which
+    // the assets pass content-addresses under /assets and `media-src 'self'`
+    // plays — no CDN fetch at serve time.
+    '--block-videos=false',
+    // ...except the hidden Vidzflow player documents. Their video.js tech
+    // streams from r2.vidzflow.com, which never reaches network idle: the
+    // capture bloated to ~130 MB (36 inline copies) and stalled past the
+    // timeouts. Ticket 19 strips those documents anyway (their visible content
+    // is a sibling still image), so blocking the media host costs nothing and
+    // keeps the capture bounded.
+    '--blocked-url-pattern', 'r2\\.vidzflow\\.com',
     url, `/data/${rel}`,
   ];
 }

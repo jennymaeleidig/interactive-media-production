@@ -21,9 +21,16 @@ bar 35 / "The capture refresh runbook governs drift").
   `research/flocksafety/**/*.html` and `walk.log`; inventories, diff reports,
   capture lists, status CSV, and manifests stay tracked.
 - **Corrected SingleFile flags are the default** — every run, scoped or full,
-  passes `--remove-hidden-elements=false --remove-unused-styles=false`
-  (ticket 15). The defaults drop every hidden subtree and every state CSS rule,
-  site-wide; a run without them is not usable ground truth.
+  passes `--remove-hidden-elements=false --remove-unused-styles=false
+  --block-videos=false --blocked-url-pattern 'r2\.vidzflow\.com'` (tickets 15,
+  12). The hidden/unused defaults drop every hidden subtree and every state CSS
+  rule, site-wide; a run without them is not usable ground truth. Blocking
+  videos (SingleFile's default) leaves a source-less `<video>` plus a link to
+  the CDN file, so the page cannot play inline; unblocking them embeds the mp4
+  as a `data:` URI for the assets pass to serve from `/assets`. The Vidzflow
+  media host is re-blocked because its video.js tech streams and never reaches
+  network idle — the capture bloats to ~130 MB and stalls — and ticket 19 strips
+  those hidden player documents anyway.
 
 ## The tools
 

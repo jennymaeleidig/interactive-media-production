@@ -74,6 +74,14 @@ describe('SingleFile flags', () => {
     expect(args.at(-2)).toBe('https://www.flocksafety.com/a');
     expect(args.at(-1)).toBe('/data/a.html');
   });
+
+  it('embeds videos instead of blocking them (ticket 12)', () => {
+    const args = singleFileArgs('https://www.flocksafety.com/a', 'a.html');
+    expect(args).toContain('--block-videos=false');
+    const i = args.indexOf('--blocked-url-pattern');
+    expect(i).toBeGreaterThan(-1);
+    expect(args[i + 1]).toBe('r2\\.vidzflow\\.com');
+  });
 });
 
 describe('capture list', () => {

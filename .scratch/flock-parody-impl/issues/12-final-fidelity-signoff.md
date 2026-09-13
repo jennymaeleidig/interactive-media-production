@@ -46,7 +46,7 @@ failed** (one transient-outage pass cleared by `--resume`). Inventory diff
 **Gates.** `npm run pipeline` (1,181 served + 19 dropped = 1,200, every page
 `audit: clean`, 0 executable capture scripts, chat census 1,181/0); `npm run
 build` succeeds; `npm run routes` **green** (1,290 routes, 1,181 byte-identical
-pages, 2,955 assets, count identity). A new `title-check.mjs` proves every
+pages, 2,960 assets, count identity). A new `title-check.mjs` proves every
 captured page carries its intended title.
 
 **Four driver defects found at scale, fixed and tested** (`pipeline/recapture.mjs`
@@ -61,3 +61,18 @@ census now 1,181/0.
 **Open:** the two human checks (§5 of the signoff record; review pack at
 `evidence/12-final-signoff/review-checklist.md`). Ticket stays `claimed` until a
 human runs the side-by-side and the strip confirmation.
+
+### Addendum (2026-09-12): the human review's first finding
+
+The human review began with "looks mostly good"; its first concrete finding was
+that the `/safe-cities` hover videos did not play inline (the CDN URL worked only
+in a new tab). Root cause: SingleFile's default `--block-videos=true` kept a
+source-less `<video>` plus an injected link to the CDN mp4, which the captured
+`media-src 'self' data:` refused. Fixed by capturing with
+`--block-videos=false --blocked-url-pattern 'r2\.vidzflow\.com'`, re-capturing
+the five visible-HTML5 pages (scoped `--resume`, 5 saved / 0 failed), and
+building the two latent regex stack overflows the larger values exposed
+(`OPEN_TAG` in `pipeline/embeds.mjs`; the bare-value pattern in
+`pipeline/assets.mjs`) with regression tests. Served pages now play
+`/assets/*.mp4|webm`; assets are 2,960 files / 508 MB and `npm run routes` stays
+green. Full record: `evidence/12-final-signoff/README.md` §3a.

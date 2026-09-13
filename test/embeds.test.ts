@@ -167,6 +167,16 @@ describe('every YouTube slot on the page (ticket 17)', () => {
   it('ignores a frame that already carries a src', () => {
     expect(youtubeSlots(`<iframe src="https://www.youtube.com/embed/lV1WCvNGnmM" data-video-id=lV1WCvNGnmM></iframe>`)).toEqual([]);
   });
+
+  it('reads a tag carrying a multi-megabyte unquoted data URI without overflowing (ticket 12)', () => {
+    // SingleFile writes an inlined video source unquoted: `src=data:video/mp4;base64,…`.
+    // The retired alternation regex recursed once per scanned unit and blew the
+    // engine's stack above ~10 MB of value.
+    const big = 'A'.repeat(12_000_000);
+    const html = `<source data-wf-ignore=true src=data:video/mp4;base64,${big}><iframe data-video-id=lV1WCvNGnmM></iframe>`;
+    expect(youtubeSlots(html)).toEqual(['lV1WCvNGnmM']);
+    expect(unclassifiedRemoteRefs(html)).toEqual([]);
+  });
 });
 
 describe('the hidden Vidzflow player documents (ticket 19)', () => {

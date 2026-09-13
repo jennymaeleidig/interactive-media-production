@@ -12,7 +12,7 @@ side-by-side / strip-visual checks are handed over as a review pack.
 | Inventory diff | 1,279 → 1,290 rows; added 22 · removed 11 · retitled 60 · **route actions: none** |
 | `npm run pipeline` | 1,181 served + 19 dropped = 1,200; every page `audit: clean`; 0 executable capture scripts |
 | `npm run build` | succeeds |
-| `npm run routes` | **green** — 1,290 routes, 1,181 byte-identical served pages, 2,955 assets, count identity 1,181 + 19 = 1,200 |
+| `npm run routes` | **green** — 1,290 routes, 1,181 byte-identical served pages, 2,960 assets, count identity 1,181 + 19 = 1,200 |
 | Title check | **clean** — 1,200/1,200 pages carry their intended title |
 | Capture pointer | `CAPTURE_RUN` → `research/flocksafety/2026-09-12` |
 | Human side-by-side | **pending** — pack at [`review-checklist.md`](review-checklist.md) |
@@ -21,8 +21,9 @@ side-by-side / strip-visual checks are handed over as a review pack.
 ## 1. The full re-capture
 
 `.scratch/flock-parody/research/flocksafety/2026-09-12/` — 13 GB, 1,200 pages,
-the ticket-15 corrected flags
-(`--remove-hidden-elements=false --remove-unused-styles=false`).
+the corrected flags
+(`--remove-hidden-elements=false --remove-unused-styles=false --block-videos=false
+--blocked-url-pattern 'r2\.vidzflow\.com'`; the video flags are §3a).
 
 ```
 node pipeline/recapture.mjs \
@@ -76,7 +77,7 @@ removed rows are crawl-only paths that answered 404 in both inventories, so they
   component, 11 popover) · 5 dead-upstream medias kept as captured · 19 YouTube
   panels armed on click · 120 hidden Vidzflow documents stripped · 2 medias
   named in JSON-LD with no slot to rewrite.
-- Assets: 142,634 inlined references → 2,955 content-addressed files, 408 MB
+- Assets: 142,631 inlined references → 2,960 content-addressed files, 508 MB
   decoded.
 - Strip audit keys — `qualified`, `onetrust`, `account`, `known trackers`,
   `externalFormActions`, `off-allowlist frames`, `srcdoc scripts`,
@@ -88,7 +89,7 @@ server):
 ```
 1290 route(s): 1181 served 200 · 67 stub 301 · 19 dropped/test 404 · 13 dead 404 · 10 auth-gated 404
 byte-identity: 1181 served page(s) returned bytes identical to the built file
-asset-identity: 2955 extracted asset(s) returned their declared content type and identical bytes
+asset-identity: 2960 extracted asset(s) returned their declared content type and identical bytes
 count identity: served + dropped = 1181 + 19 = 1200, against 1200 inventory page(s)
 ✓ Serving layer green.
 ```
@@ -164,6 +165,40 @@ All 12 were re-captured (`recapture-2026-09-12-chat-census-retry.log`, 12 saved,
 cannot see (both sides would simply lack the launcher), and why the capture
 census is checked against the previous run.
 
+## 3a. The CDN-video fix (human review, 2026-09-12)
+
+The human review's first finding was that `/safe-cities`' three hover videos did
+not play inline — the CDN URL worked only when opened in a new tab. Root cause:
+SingleFile blocks videos by default, so the capture kept a source-less `<video>`
+plus an injected link to the `cdn.prod.website-files.com` mp4, and the captured
+CSP (`media-src 'self' data:`) refused the remote file. Five pages carry a real
+HTML5 `<video>` (`/safe-cities`, `/gsx`, `/products/flock-dfr`,
+`/products/mobile-security-trailer`, `/upcoming-events`); the other video-bearing
+pages are Wistia internals (81 pages) or the hidden Vidzflow documents ticket 19
+strips (10 pages).
+
+The fix:
+
+- `pipeline/recapture.mjs` now passes `--block-videos=false`, so each of the five
+  pages' sources is embedded as a `data:video/…` URI and the assets pass extracts
+  it to `/assets/*.mp4|webm`. It also passes
+  `--blocked-url-pattern 'r2\.vidzflow\.com'`: the Vidzflow video.js streams
+  never reach network idle, so an unblocked capture of those 10 pages bloated to
+  ~130 MB and stalled past the timeouts (the probe is
+  [`video-probe/`](video-probe/)). Ticket 19 strips those documents anyway.
+- The five pages were re-captured into the run by a scoped `--resume`
+  ([`recapture-2026-09-12-video.log`](recapture-2026-09-12-video.log): 5 saved /
+  0 failed / 3 title repairs); the run is back to 1,200 `saved`.
+- Running the build at that size exposed two latent regex stack overflows on the
+  multi-megabyte values: `OPEN_TAG` in `pipeline/embeds.mjs` (now a quote-aware
+  `openTags` scanner) and the bare-value pattern in `pipeline/assets.mjs` (its
+  CSS escapes factored out of the repeated group). Both have regression tests in
+  `test/embeds.test.ts` and `test/assets.test.ts`.
+
+Result: the served pages reference `/assets/*.mp4|webm` under `media-src 'self'
+data:`, the SingleFile CDN links are gone, and `unclassified remote refs` is
+still 0 on every page. Assets rose from 2,955 files / 408 MB to 2,960 / 508 MB.
+
 ## 4. Accepted dead paths and deliberate divergences
 
 Route-level, all asserted by `npm run routes`:
@@ -227,6 +262,10 @@ What only the human eye can confirm:
   revealing and playing.
 - **Divergences seen match §4** — the dead Wistia facades and the frozen tier-3
   labels, nothing else.
+- **CDN videos play.** The `/safe-cities` hover videos and the `/gsx`,
+  `/upcoming-events`, `/products/flock-dfr`, `/products/mobile-security-trailer`
+  HTML5 videos now play from same-origin `/assets` files (§3a); no CDN link
+  remains.
 
 ## Reproduce
 

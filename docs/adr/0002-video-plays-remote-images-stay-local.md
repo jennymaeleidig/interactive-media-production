@@ -1,7 +1,8 @@
 # Video plays from the original hosts; captured images are extracted locally
 
 The Recreation cannot host the media it reproduces — the Wistia masters alone are
-~47.7 GB — so the video slots play from the original hosts as plain remote embeds
+~47.7 GB — so the Wistia and YouTube video slots play from the original hosts as
+plain remote embeds
 (`https://fast.wistia.net/embed/iframe/<id>`), the one deliberate exception to
 "served pages make zero outbound requests". Page images could not take that route:
 SingleFile inlines every asset and drops its origin URL — the captures hold `0`
@@ -12,6 +13,23 @@ therefore extracts each inlined `data:` URI into one content-addressed file
 and rewrites the reference, which is also what collapses the served tree from
 10 GB to 2.1 GB (142,481 inline references → 2,953 files: the same logo was
 re-encoded on all 1,180 pages).
+
+**Amended 2026-09-12 (ticket 12).** That reasoning is about the ~47.7 GB of
+Wistia masters. The site's small **HTML5 `<video>` sources** are a different
+class: five pages paint a real `<video>`/`<source>` from
+`cdn.prod.website-files.com` (the `/safe-cities` hover videos, `/gsx` and
+`/upcoming-events` background videos, `/products/flock-dfr`, and
+`/products/mobile-security-trailer`; tens of MB in total). SingleFile blocks
+videos by default, which left a source-less `<video>` plus a SingleFile-injected
+link to the CDN file — a dead box that only worked in a new tab. The capture now
+runs `--block-videos=false`, embeds each source as a `data:video/…` URI, and the
+assets pass extracts it to `/assets/<sha16>.mp4|webm`, which the captured
+`media-src 'self' data:` plays same-origin. The hidden Vidzflow media host is
+re-blocked with `--blocked-url-pattern 'r2\.vidzflow\.com'`: its video.js tech
+streams and never reaches network idle, so an unblocked capture bloated to
+~130 MB and stalled past the timeouts, and ticket 19 strips those documents
+anyway. So the only videos still fetched from an origin host are the
+allow-listed Wistia and YouTube frames.
 
 **Status.** Accepted 2026-09-11; **built** the same day for all four providers:
 

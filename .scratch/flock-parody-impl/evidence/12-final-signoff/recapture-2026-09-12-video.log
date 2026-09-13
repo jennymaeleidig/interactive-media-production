@@ -1,0 +1,23 @@
+# Ticket 12 / §3a — scoped re-capture of the five visible-HTML5-video pages.
+#
+# The run was produced with the corrected flags (ticket 12):
+#   --block-videos=false --blocked-url-pattern 'r2\.vidzflow\.com'
+# and the five pages were deleted from the run first so `--resume` would
+# re-capture them (dockerCapture skips an existing file > 1000 bytes).
+#
+# Scope (--scope):
+#   /safe-cities
+#   /gsx
+#   /products/flock-dfr
+#   /products/mobile-security-trailer
+#   /upcoming-events
+#
+# Command:
+#   node pipeline/recapture.mjs \
+#     --inventory .scratch/flock-parody/research/inventory/2026-09-12-full-site-inventory.csv \
+#     --fallback-inventory .scratch/flock-parody/research/01-full-site-inventory.csv \
+#     --scope /tmp/video-recapture.txt --date 2026-09-12 --parallel 3 --resume
+#
+# Output:
+[5/5] 0.06 pages/s, ~0 min left
+2026-09-12: 5 saved, 0 failed, 0 empty, 0 skipped · 3 title repair(s) → .scratch/flock-parody/research/flocksafety/2026-09-12

@@ -23,12 +23,12 @@ read as the same page.
 - [ ] `/resources` — [served](http://localhost:3000/resources) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/resources.html) · 29.8 MB
 - [ ] `/trust` — [served](http://localhost:3000/trust) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/trust.html) · 11.1 MB
 - [ ] `/press-center` — [served](http://localhost:3000/press-center) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/press-center.html) · 11.4 MB
-- [ ] `/upcoming-events` — [served](http://localhost:3000/upcoming-events) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/upcoming-events.html) · 66.5 MB
+- [ ] `/upcoming-events` — [served](http://localhost:3000/upcoming-events) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/upcoming-events.html) · 117.5 MB
 
 ## marketing
 
 - [ ] `/industries/retail` — [served](http://localhost:3000/industries/retail) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/industries/retail.html) · 17.4 MB
-- [ ] `/gsx` — [served](http://localhost:3000/gsx) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/gsx.html) · 16.3 MB
+- [ ] `/gsx` — [served](http://localhost:3000/gsx) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/gsx.html) · 69.8 MB
 - [ ] `/flock-ecosystem` — [served](http://localhost:3000/flock-ecosystem) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/flock-ecosystem.html) · 14.3 MB
 - [ ] `/what-is-flock` — [served](http://localhost:3000/what-is-flock) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/what-is-flock.html) · 12.9 MB
 
@@ -38,9 +38,9 @@ read as the same page.
 - [ ] `/products/video-cameras` — [served](http://localhost:3000/products/video-cameras) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/video-cameras.html) · 27.3 MB
 - [ ] `/products/flock-os` — [served](http://localhost:3000/products/flock-os) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/flock-os.html) · 16.6 MB
 - [ ] `/products/gunshot-detection` — [served](http://localhost:3000/products/gunshot-detection) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/gunshot-detection.html) · 31.8 MB
-- [ ] `/products/mobile-security-trailer` — [served](http://localhost:3000/products/mobile-security-trailer) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/mobile-security-trailer.html) · 10.9 MB
-- [ ] `/products/flock-dfr` — [served](http://localhost:3000/products/flock-dfr) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/flock-dfr.html) · 11.5 MB
-- [ ] `/safe-cities` — [served](http://localhost:3000/safe-cities) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/safe-cities.html) · 12.1 MB
+- [ ] `/products/mobile-security-trailer` — [served](http://localhost:3000/products/mobile-security-trailer) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/mobile-security-trailer.html) · 12.4 MB
+- [ ] `/products/flock-dfr` — [served](http://localhost:3000/products/flock-dfr) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/products/flock-dfr.html) · 37.4 MB
+- [ ] `/safe-cities` — [served](http://localhost:3000/safe-cities) · [capture](file:///Users/jennyleidig/Documents/projects/interactive-media/interactive-media-production/.scratch/flock-parody/research/flocksafety/2026-09-12/safe-cities.html) · 13.5 MB
 
 ## post
 

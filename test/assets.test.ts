@@ -162,6 +162,18 @@ describe('extractDataUris', () => {
     expect(out.html).toBe(`<img src=/assets/${shaOf(PNG)}.png><img src=/assets/${shaOf(gif)}.gif>`);
   });
 
+  it('extracts an unquoted multi-megabyte video source without overflowing (ticket 12)', () => {
+    // SingleFile writes an inlined video source unquoted; the retired
+    // alternation pattern recursed once per scanned character and blew the
+    // regex engine's stack above ~9 MB of value.
+    const payload = 'A'.repeat(12_000_000);
+    const out = extractDataUris(`<video><source data-wf-ignore=true src=data:video/mp4;base64,${payload}></video>`);
+    expect(out.references).toBe(1);
+    const sha = [...out.assets.keys()][0];
+    expect(out.html).toBe(`<video><source data-wf-ignore=true src=/assets/${sha}.mp4></video>`);
+    expect(out.assets.get(sha)?.mime).toBe('video/mp4');
+  });
+
   it('rewrites an asset inside a srcdoc payload, where the quotes are escaped twice', () => {
     // a player document inlined as `srcdoc` is escaped once for the inlining and
     // again as the attribute value, so its quotes read `&amp;quot;`
