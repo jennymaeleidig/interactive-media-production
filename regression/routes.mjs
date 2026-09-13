@@ -18,7 +18,7 @@
 // tracker residue, no capture-derived executable script) holds on every page,
 // and every extracted asset in the build's manifest answers at its
 // content-addressed path with the content type its extension declares and a
-// byte-identical body (ADR 0002) — a page's images can silently 404 while its
+// byte-identical body — a page's images can silently 404 while its
 // page bytes stay identical, so assets need the same guarantee the pages get.
 //
 // The pure cores — `routeExpectations`, `countFailures`, `auditFailures`,
@@ -249,7 +249,7 @@ export async function checkRoutes(base, { servedDir, listingFile }) {
     }
   }
 
-  // Extracted assets (ADR 0002): the same byte-identity guarantee the served
+  // Extracted assets: the same byte-identity guarantee the served
   // pages get, over the build's manifest. Without it a missing or renamed
   // asset is invisible — the page's own bytes stay identical either way.
   let assetChecked = 0;
@@ -330,7 +330,7 @@ async function main() {
     const r = await checkRoutes(server.base, { servedDir, listingFile });
     console.log('Serving check (tickets 06–07) — every route class + byte-identity over HTTP');
     console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
-    console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the built file`);
+    console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the file in the tree`);
     console.log(`  asset-identity: ${r.assetChecked} extracted asset(s) returned their declared content type and identical bytes`);
     console.log(`  count identity: served + dropped = ${r.counts.served} + ${r.counts.droppedRequested} = ${r.counts.served + r.counts.droppedRequested}, against ${r.counts.inventory} inventory page(s)`);
     if (r.failures.length > 0) {

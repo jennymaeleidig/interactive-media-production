@@ -12,4 +12,4 @@ Issues and specs live as markdown files under `.scratch/<effort>/` in this repo.
 
 ### Domain docs
 
-Single-context: root `CONTEXT.md` and `docs/adr/` cover the whole repo. See `docs/agents/domain.md`.
+Single-context: root `CONTEXT.md` covers the whole repo. See `docs/agents/domain.md`.

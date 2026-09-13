@@ -1,7 +1,0 @@
-# No account features — strip, never mock
-
-The Recreation reproduces flocksafety.com's public pages only: it has no backend, no session store, and no account model, so nothing account-shaped can actually work. Account surfaces are therefore removed rather than imitated — the header and footer Sign In chrome (`users.flocksafety.com`) is deleted wholesale, inline auth links (`login.flocksafety.com`) are unwrapped so their words survive, and no login page, account route, or mock is built. Mocking was right for lead forms (identical markup, local POST, captured thank-you page) because a form's visible end-state is the point; an account affordance's only meaning is the authenticated session behind it, so a mock would promise functionality the piece must never have — and leaving the links live would send a visitor to Flock's real account systems.
-
-**Considered options.** Mock a local login — rejected: it implies account functionality the Recreation does not have and must not operate. Leave the Sign In links live under the external-link policy — rejected: it is account functionality, and it points off the machine.
-
-**Consequences.** Account copy that merely uses the word ("Account Executive", "account representative") stays: the strip keys on the account/auth **hosts**, never the word. The site-wide strip audit asserts zero account/auth host references on every served page, so the decision is enforced, not just recorded.
