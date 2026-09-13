@@ -237,6 +237,15 @@ as defects):
   CSS-reproducible; accepted.
 - **54 pages with a blank live `<title>`** (a Webflow republish regression) took
   the prior inventory's title; `title-check.mjs` verifies the result.
+- **`/safe-cities` legibility CSS** — the build injects a page-scoped `<style>`
+  (pass 12, `config.LEGIBILITY_PATCHES`) that paints the frozen GSAP scrub
+  labels (`Detect` / `Investigate` / `Respond`) and the dark-on-dark
+  `.t-subhead-1` copy white inside the `.bg-screen.scroller` sections. The
+  Capture — and the live page — leave them dark: the scrub timeline froze at its
+  start colour, and the page's own `.t-subhead-1{color:#304833}` rule fights the
+  `#061602` background. Scoped so the FAQ subheads on white stay dark. Ticket
+  12's human review asked for this; the markers stay clear of the rest of the
+  page.
 
 ## 5. Human review (the remaining signoff step)
 
@@ -266,6 +275,8 @@ What only the human eye can confirm:
   `/upcoming-events`, `/products/flock-dfr`, `/products/mobile-security-trailer`
   HTML5 videos now play from same-origin `/assets` files (§3a); no CDN link
   remains.
+- **`/safe-cities` text is legible.** The frozen scrub labels and the dark
+  screen-section subheads render white (§4).
 
 ## Reproduce
 

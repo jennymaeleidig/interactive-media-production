@@ -83,6 +83,11 @@
 //                references for ~3,000 distinct files, a 14.9x tax — so the
 //                pass turns 7.8 GB of base64 text back into ~370 MB of files.
 //                Same-origin, so it adds no network the CSP has to allow.
+//  12. legibility — inject page-scoped CSS overrides that make text the Capture
+//                left unreadable legible (config.LEGIBILITY_PATCHES; ticket
+//                12's human review found /safe-cities' frozen scrub labels and
+//                dark-on-dark subheads). Inert style only: no script, no
+//                network, and no captured byte touched.
 //   W. write   — mirrored tree under the output dir; captures are truncated
 //                before </body></html> (SingleFile CLI never emits them), so
 //                the pass restores the closing tags; every mutation lands in
@@ -110,7 +115,7 @@ import { fileURLToPath } from 'node:url';
 import { parseUncapturedManifest } from './run-manifest.mjs';
 import { extractDataUris } from './assets.mjs';
 import { embedPass, offAllowlistFrames, srcdocScripts, stripHiddenVidzflow, unclassifiedRemoteRefs } from './embeds.mjs';
-import { DEAD_VIDEO_IDS } from './config.mjs';
+import { DEAD_VIDEO_IDS, LEGIBILITY_PATCHES } from './config.mjs';
 import { makeArg, invokedDirectly } from './cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -831,6 +836,26 @@ function storyHookPass(html, entry, source) {
   return injectBeforeClose(html, entry, 'story-hook seam (inline, dormant)', tag);
 }
 
+/**
+ * Page-scoped legibility CSS (ticket 12): the Capture froze some scroll-driven
+ * text at its dark start state, and the live page's own low-contrast rules
+ * sometimes leave dark text on a dark screen — neither is readable in a static
+ * page. Data-driven from `config.LEGIBILITY_PATCHES`, keyed by page path, and
+ * injected as one marked, inert `<style>` before `</body>`. No script, no
+ * network, no captured byte touched.
+ * @param {string} html
+ * @param {LogEntry} entry
+ * @param {string} page
+ * @param {Record<string, string>} patches
+ * @returns {string}
+ */
+function legibilityPass(html, entry, page, patches) {
+  const css = patches[page];
+  if (!css) return html;
+  const tag = `<style data-flock-parody="legibility">\n${css.trim()}\n</style>`;
+  return injectBeforeClose(html, entry, 'legibility CSS (inline)', tag);
+}
+
 // ---- pass 10: live media embeds (ADR 0002) ----------------------------------
 
 /**
@@ -964,11 +989,11 @@ function assetsPass(html, entry, assetDir, written) {
  * when the caller listed them — "dropped from serving entirely" (spec, Serving
  * and links). The CLI passes pipeline/config.mjs DROPPED_PAGES.
  *
- * @param {{runDir: string, pages: string[], outDir: string, dropPages?: string[], deadVideoIds?: string[]}} opts
+ * @param {{runDir: string, pages: string[], outDir: string, dropPages?: string[], deadVideoIds?: string[], legibilityPatches?: Record<string, string>}} opts
  * @returns {Promise<{ log: LogEntry[], summary: BuildSummary }>}
  */
 export async function runPipeline(opts) {
-  const { runDir, pages, outDir, dropPages = [], deadVideoIds = DEAD_VIDEO_IDS } = opts;
+  const { runDir, pages, outDir, dropPages = [], deadVideoIds = DEAD_VIDEO_IDS, legibilityPatches = LEGIBILITY_PATCHES } = opts;
   const dropSet = new Set(dropPages);
   // A dropped page must not be reachable, even if an earlier build wrote its
   // served file: remove it before building, and never write it.
@@ -1027,6 +1052,8 @@ export async function runPipeline(opts) {
     html = chatPass(html, entry, chatCss, chatRuntime);
 
     html = storyHookPass(html, entry, storyHookSource);
+
+    html = legibilityPass(html, entry, page, legibilityPatches);
 
     // Write pass: captures are truncated before </body></html> (SingleFile CLI
     // never emits them) — restore whichever closing tags the capture lacks.

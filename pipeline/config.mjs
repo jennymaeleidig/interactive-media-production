@@ -29,6 +29,24 @@ export const CAPTURE_RUN = '.scratch/flock-parody/research/flocksafety/2026-09-1
 // root fix (detect the attribute forms the inventory cannot see).
 export const DEAD_VIDEO_IDS = ['77o31nkq0o', 'gayegdwaii', 'imr6vzeawt', 'ueo7k59ryn', 'tthkbjay3c'];
 
+// Legibility patches: page-scoped CSS the Recreation injects inline as a marked
+// `<style>` (build pass 12) to make text the Capture left unreadable legible.
+// On `/safe-cities` two things clash with the dark `#061602` screen sections:
+// the Capture froze the GSAP scrub labels (`Detect` / `Investigate` / `Respond`)
+// at their dark start colour — the live page paints them the section's light
+// content colour — and the page's own `.t-subhead-1{color:#304833}` rule puts
+// dark body copy on that dark background. The override is scoped to those
+// sections, so the same classes on the white FAQ accordion stay dark. Keyed by
+// page path; a page with no entry is simply not patched. This is a deliberate
+// divergence from the live bytes (ticket 12 human review) and is recorded in the
+// signoff.
+export const LEGIBILITY_PATCHES = {
+  '/safe-cities': `
+.l-section--full.bg-screen.scroller [animate=scrub-word] span { color: #fff !important; }
+.l-section--full.bg-screen.scroller .t-subhead-1 { color: #fff; }
+`,
+};
+
 // Scaffold/test pages: captured 200 pages that are internal Webflow test
 // scaffolding, not site content, and are dropped from serving entirely
 // (spec, "Serving and links"). The Recreation serves the live inventory minus

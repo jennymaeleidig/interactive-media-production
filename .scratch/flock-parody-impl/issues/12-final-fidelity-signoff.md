@@ -76,3 +76,13 @@ building the two latent regex stack overflows the larger values exposed
 `pipeline/assets.mjs`) with regression tests. Served pages now play
 `/assets/*.mp4|webm`; assets are 2,960 files / 508 MB and `npm run routes` stays
 green. Full record: `evidence/12-final-signoff/README.md` §3a.
+
+The same review asked for the `/safe-cities` text to be legible. Two things left
+it unreadable on the dark `#061602` screen sections: the Capture froze the GSAP
+scrub labels (`Detect` / `Investigate` / `Respond`) at their dark start colour
+(the live page paints them the section's light content colour), and the page's
+own `.t-subhead-1{color:#304833}` rule puts dark body copy on that background.
+Build pass 12 (`config.LEGIBILITY_PATCHES`) injects a page-scoped, inert
+`<style>` that paints both white inside `.bg-screen.scroller`, leaving the same
+classes on the white FAQ accordion dark. `npm run routes` stays green and the
+override is recorded as a deliberate divergence (§4).

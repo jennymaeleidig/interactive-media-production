@@ -297,6 +297,32 @@ describe('story-hook pass (ticket 03)', () => {
   });
 });
 
+describe('legibility pass (ticket 12)', () => {
+  const LEG_OUT = path.join(HERE, '.tmp/pipeline/legibility');
+  let legRun: { log: LogEntry[] };
+
+  beforeAll(async () => {
+    legRun = await runPipeline({
+      runDir: FIXTURES,
+      pages: ['/', '/products/gun-detection'],
+      outDir: LEG_OUT,
+      legibilityPatches: { '/products/gun-detection': '.l-section--full.bg-screen.scroller .t-subhead-1 { color: #fff; }' },
+    });
+  });
+
+  it('injects the page CSS inline as one marked, inert style tag', async () => {
+    const html = await readFile(path.join(LEG_OUT, 'products/gun-detection.html'), 'utf8');
+    expect(html).toContain('<style data-flock-parody="legibility">');
+    expect(html).toContain('.l-section--full.bg-screen.scroller .t-subhead-1 { color: #fff; }');
+    expect(legRun.log.find((e) => e.page === '/products/gun-detection')?.injected).toContain('legibility CSS (inline)');
+  });
+
+  it('leaves an unpatched page without the style', async () => {
+    const html = await readFile(path.join(LEG_OUT, 'index.html'), 'utf8');
+    expect(html).not.toContain('data-flock-parody="legibility"');
+  });
+});
+
 describe('motion pass (ticket 04)', () => {
   it('normalizes captured split-word from-states to the static end-state and annotates per-word stagger indices', async () => {
     const html = await readFile(path.join(OUT, 'index.html'), 'utf8');
