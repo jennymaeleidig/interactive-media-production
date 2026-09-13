@@ -12,8 +12,6 @@
 //   .line-label             pill scale(0) -> scale(1); its marker slides from
 //                           translateY(170%) (IX2 t-4e5bbe4b)
 //   [data-scroll-video]     play at 'top 45%', pause at 'bottom 20%'
-//   #stickme                pinned to the viewport bottom from the moment its
-//                           section is on screen for the rest of the page
 //   #main-progress          route draw scrubbed by page scroll (.main-line)
 //   dialog.c-modal          open/close via [data-c-modal-open] / [c-modal-close]
 //                           / Escape; opening runs the modal's own route draw
@@ -22,11 +20,10 @@
 //
 // The build normalizes every captured from-state to its end-state, so with
 // JavaScript disabled the page is the settled layout. Reduced motion keeps the
-// FUNCTION (the modal still opens, the sticky button still sticks, the markers
-// are placed) but skips the animation: the decoration stays at the build's
-// end-state. `fpm-scroll` is always added — scroll.css only carries structure
-// (SVG marker transform-box, the modal scroll lock, the pinned sticky state),
-// never a from-state.
+// FUNCTION (the modal still opens, the markers are placed) but skips the
+// animation: the decoration stays at the build's end-state. `fpm-scroll` is
+// always added — scroll.css only carries structure (SVG marker transform-box,
+// the modal scroll lock), never a from-state.
 (function () {
   'use strict';
 
@@ -42,7 +39,6 @@
     : function (f) { return setTimeout(f, 16); };
 
   function vh() { return root.clientHeight || window.innerHeight; }
-  function setClass(el, name, on) { if (on) el.classList.add(name); else el.classList.remove(name); }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
@@ -190,63 +186,7 @@
     }
   }
 
-  // ---- 4. #stickme sticky button (function; runs under reduced motion too) ---
-  // The decision comes from the PARENT alone, never from the button: `.stick`
-  // makes the button fixed, which moves its own rect into viewport coordinates,
-  // so an element-based test flips the class on every scroll event and the
-  // button flickers between pinned and in-flow. The parent does not move when
-  // the button does, which makes `parentRect.top < vh()` monotone in scroll
-  // position — the class cannot oscillate.
-  //
-  // The control stays at the viewport bottom from the moment its parent is on
-  // screen until the page scrolls back above it: it is that section's call to
-  // action for the whole page, and a control that detaches at its parent's end
-  // and rides the content away reads as broken.
-  //
-  // The class is not trusted to have worked. `position: fixed` is relative to
-  // the viewport only when no ancestor is a containing block for fixed boxes
-  // (a transform, filter, `will-change` or `contain` anywhere up the tree
-  // captures it), and the captured stylesheet's own rule can be overridden by
-  // another captured rule. So every tick re-measures where the button landed,
-  // and a pin that did not reach the viewport bottom is redone here, in
-  // document coordinates.
-  var stick = doc.getElementById('stickme');
-  if (stick && stick.parentNode) {
-    (function () {
-      var parent = stick.parentNode;
-      var pinned = false;
-      var manual = false; // set once `position: fixed` is found wanting
-      function unplace() {
-        manual = false;
-        stick.style.position = '';
-        stick.style.top = '';
-        stick.style.bottom = '';
-      }
-      function place() {
-        var h = vh();
-        if (!manual && Math.abs(stick.getBoundingClientRect().bottom - h) <= 2) return;
-        manual = true;
-        var holder = stick.offsetParent || parent;
-        stick.style.position = 'absolute';
-        stick.style.bottom = 'auto';
-        stick.style.top =
-          h - stick.offsetHeight - holder.getBoundingClientRect().top - (holder.clientTop || 0) + 'px';
-      }
-      function check() {
-        var on = parent.getBoundingClientRect().top < vh();
-        if (on !== pinned) {
-          pinned = on;
-          setClass(stick, 'stick', on);
-          if (!on) unplace();
-        }
-        if (on) place(); // the fallback placement is scroll-dependent
-      }
-      onScroll(check);
-      check();
-    })();
-  }
-
-  // ---- 6. modal system: open / close (function; runs under reduced motion) ---
+  // ---- modal system: open / close (function; runs under reduced motion) -----
   doc.querySelectorAll('dialog.c-modal').forEach(function (dialog) {
     if (dialog.dataset.fpsModal) return;
     dialog.dataset.fpsModal = 'true';
@@ -322,7 +262,7 @@
     } catch (e) {}
   });
 
-  // ---- 7. modal route draw + markers (live inline #25) ----------------------
+  // ---- modal route draw + markers (live inline #25) -------------------------
   function initModalRoute(dialog, scroller) {
     var trigger = dialog.querySelector('.sub-line');
     var path = dialog.querySelector('#route-progress');

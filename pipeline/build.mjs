@@ -911,9 +911,8 @@ function scrollPass(html, entry, css, runtime) {
       if (next && next !== tag) { bump('modal panel slide'); return next; }
     }
     // `.bg-screen.scroller` sections: the captured inline `scale(0.9)` is the
-    // from-state of the site's scroll zoom (live settles at scale 1). Dropping it
-    // also stops the section being a containing block for `position: fixed`,
-    // which would hijack #stickme's pinned state.
+    // from-state of the site's scroll zoom (live settles at scale 1). Dropping
+    // it keeps the settled geometry from depending on a stale transform.
     if (cls.includes('bg-screen') && cls.includes('scroller')) {
       const next = editAttr(tag, 'style', (v) => v.replace(/;?transform:\s*scale\(0\.9(?:,\s*0\.9)?\)/i, ''));
       if (next && next !== tag) { bump('section zoom settle (0.9→1)'); return next; }

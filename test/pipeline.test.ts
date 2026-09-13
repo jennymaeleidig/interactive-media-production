@@ -730,8 +730,9 @@ describe('scroll pass (ticket 21)', () => {
     expect(html).not.toContain('color:rgb(34,40,31)');
     expect(html).toContain('stroke-dashoffset:0');
     expect(html).toContain('translate(0px,0px)');
-    // the frozen zoom from-state is dropped entirely — a leftover transform is
-    // a containing block for `position: fixed` (it hijacks #stickme)
+    // the frozen zoom from-state is dropped entirely — the live page settles at
+    // scale 1, and a leftover transform would be a containing block for any
+    // `position: fixed` element inside the section
     expect(html).toContain('class="l-section--full bg-screen scroller" style=translate:none;rotate:none;scale:none>');
     expect(html).not.toContain('scale(0.9,0.9)');
   });
