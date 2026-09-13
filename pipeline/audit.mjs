@@ -41,7 +41,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { attrOf, openTags, srcdocSpans } from './html.mjs';
-import { MARKER_RE } from './layers.mjs';
+import { MARKER_RE } from './marker.mjs';
 
 /**
  * The hosts a served page may reach: the live media players the embed pass

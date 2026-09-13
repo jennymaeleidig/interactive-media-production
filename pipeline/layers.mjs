@@ -24,14 +24,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyGrant } from './csp.mjs';
+import { MARKER_ATTR, MARKER_RE } from './marker.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
-/** The attribute every Recreation-injected style/script carries. */
-export const MARKER_ATTR = 'data-flock-parody';
-
-/** Matches any marked element — the script census's "injected" rule. */
-export const MARKER_RE = new RegExp(`${MARKER_ATTR}=`, 'i');
+// The marker is the audit's too, so it lives in ./marker.mjs and is re-exported
+// here for the call sites that stamp it.
+export { MARKER_ATTR, MARKER_RE };
 
 /**
  * @typedef {object} LayerGrant
