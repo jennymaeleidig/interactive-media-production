@@ -9,6 +9,9 @@
 // the tree cannot carry. They are pinned by their own DOM seams instead. What is
 // here is the modules this effort introduced or depends on, every one of which is
 // fixable by annotation alone (comments do not change the code a page ships).
+// A listed module's own imports (`served-tree.mjs`, `cli.mjs`, `run-manifest.mjs`)
+// are pulled into the program too; the ones that are fixable by annotation are
+// listed outright so the checked set is what this file says it is.
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -21,6 +24,10 @@
     "pipeline/chat-widget.js",
     "pipeline/injected-layers.mjs",
     "pipeline/injected-source.mjs",
+    "pipeline/not-found.mjs",
+    "pipeline/publish-artifact.mjs",
+    "pipeline/cli.mjs",
+    "pipeline/served-tree.mjs",
     "regression/upstream-watch.mjs",
     "regression/upstream-baseline.mjs",
     "regression/upstream-accept.mjs",

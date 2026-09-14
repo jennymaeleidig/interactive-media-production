@@ -20,7 +20,10 @@
 // SPDX-License-Identifier: CC0-1.0
 import path from 'node:path';
 
-/** Extension → MIME, the served tree's content-type table. */
+/**
+ * Extension → MIME, the served tree's content-type table.
+ * @type {Record<string, string>}
+ */
 const MIME_BY_EXT = {
   svg: 'image/svg+xml',
   jpg: 'image/jpeg',
@@ -54,6 +57,34 @@ export function mimeForExt(ext) {
 }
 
 /**
+ * The served-relative directory index a route is answered from: `index.html`
+ * for `/`, `<rel>/index.html` otherwise. The second candidate `pageCandidates`
+ * tries — named once so the publish artifact's route copy is this rule, not a
+ * second derivation of it.
+ * @param {string} page  a route path, e.g. '/' or '/a/b'
+ * @returns {string}
+ */
+export function routeIndexFile(page) {
+  const rel = page.replace(/^\/+/, '');
+  return rel === '' ? 'index.html' : `${rel}/index.html`;
+}
+
+/**
+ * The route a served page file answers, or null for a file that is not a page:
+ * `index.html` is `/`, and `foo.html` and `foo/index.html` are both `/foo`. The
+ * inverse of `pageCandidates`, so a plan that copies pages to their routes reads
+ * the same rule the server answers them with.
+ * @param {string} rel  a served-tree-relative POSIX path
+ * @returns {string | null}
+ */
+export function routeOfPage(rel) {
+  if (rel === 'index.html') return '/';
+  if (rel.endsWith('/index.html')) return '/' + rel.slice(0, -'/index.html'.length);
+  if (rel.endsWith('.html')) return '/' + rel.slice(0, -'.html'.length);
+  return null;
+}
+
+/**
  * The files a route path may be answered from, in the order the route tries
  * them: `<rel>.html`, then `<rel>/index.html` (the root resolves to
  * `index.html`). The one copy of a rule the server and the check both need.
@@ -64,7 +95,7 @@ export function mimeForExt(ext) {
 export function pageCandidates(servedDir, page) {
   const rel = page.replace(/^\/+/, '');
   if (rel === '') return [path.join(servedDir, 'index.html')];
-  return [path.join(servedDir, `${rel}.html`), path.join(servedDir, rel, 'index.html')];
+  return [path.join(servedDir, `${rel}.html`), path.join(servedDir, routeIndexFile(page))];
 }
 
 /**

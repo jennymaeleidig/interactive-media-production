@@ -7,6 +7,7 @@
 // mock) and redirects.json (the route classes), both written by the build.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { NOT_FOUND_BODY } from '../pipeline/not-found.mjs';
 import { isLocalTarget } from '../pipeline/run-manifest.mjs';
 import { insideTree, mimeForExt } from '../pipeline/served-tree.mjs';
 
@@ -45,7 +46,7 @@ export async function readAsset(name: string): Promise<{ body: Uint8Array<ArrayB
 }
 
 export function notFound(): Response {
-  return new Response('Not found', {
+  return new Response(NOT_FOUND_BODY, {
     status: 404,
     headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
   });

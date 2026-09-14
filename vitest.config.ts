@@ -32,6 +32,7 @@ export default defineConfig({
       project('injected-layers', ['test/injected-layers.test.ts']),
       project('injected-source', ['test/injected-source.test.ts']),
       project('served-tree', ['test/served-tree.test.ts']),
+      project('publish-artifact', ['test/publish-artifact.test.ts']),
       project('routes', ['test/routes.test.ts']),
       project('upstream-watch', ['test/upstream-watch.test.ts']),
       project('upstream-baseline', ['test/upstream-baseline.test.ts']),

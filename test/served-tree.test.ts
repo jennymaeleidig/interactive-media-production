@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import path from 'node:path';
-import { insideTree, mimeForExt, pageCandidates } from '../pipeline/served-tree.mjs';
+import { insideTree, mimeForExt, pageCandidates, routeIndexFile, routeOfPage } from '../pipeline/served-tree.mjs';
 
 describe('pageCandidates', () => {
   it('resolves a route path in the order the route tries it', () => {
@@ -24,6 +24,35 @@ describe('pageCandidates', () => {
 
   it('keeps the directory-style candidate for a path that reads as a directory', () => {
     expect(pageCandidates('served', '/legal/privacy-policy')).toContain(path.join('served', 'legal/privacy-policy', 'index.html'));
+  });
+});
+
+describe('routeIndexFile', () => {
+  it('names the directory index a route is served from', () => {
+    expect(routeIndexFile('/')).toBe('index.html');
+    expect(routeIndexFile('/a/b')).toBe('a/b/index.html');
+    expect(routeIndexFile('a/b')).toBe('a/b/index.html');
+  });
+
+  it('is the second candidate pageCandidates tries', () => {
+    expect(pageCandidates('served', '/a/b')[1]).toBe(path.join('served', routeIndexFile('/a/b')));
+  });
+});
+
+describe('routeOfPage', () => {
+  it('maps a page file back to the route it answers', () => {
+    expect(routeOfPage('index.html')).toBe('/');
+    expect(routeOfPage('a/b.html')).toBe('/a/b');
+    expect(routeOfPage('a/b/index.html')).toBe('/a/b');
+  });
+
+  it('is null for a file that is not a page', () => {
+    expect(routeOfPage('assets/x.svg')).toBeNull();
+    expect(routeOfPage('redirects.json')).toBeNull();
+  });
+
+  it('round-trips a route through its index file', () => {
+    expect(routeOfPage(routeIndexFile('/a/b'))).toBe('/a/b');
   });
 });
 
