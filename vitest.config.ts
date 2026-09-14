@@ -12,10 +12,12 @@ const project = (name: string, include: string[], extra: Record<string, unknown>
 
 /**
  * Scanning the committed tree — reading and parsing every served page, twice —
- * takes ~20 s on a developer machine and ~48 s on a two-core Actions runner.
- * The two tree-scanning projects carry this instead of the default: the 30 s
- * they used to hold was below the runner's real time, so the publish gate
- * failed on the clock rather than on a finding.
+ * costs about twice as much on a two-core Actions runner as on a developer
+ * machine: `upstream-copy` 15 s to 25.6 s (its slowest test 10.6 s to 18.5 s)
+ * and `upstream-chrome` 24 s to 47.9 s. The 30 s those two projects held was
+ * below the chrome scan's real time, so the publish gate failed on the clock
+ * rather than on a finding. They carry this budget instead; the tests are
+ * unchanged and still have to pass.
  */
 const TREE_SCAN_TIMEOUT = 120_000;
 
