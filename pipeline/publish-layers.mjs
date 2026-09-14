@@ -125,8 +125,9 @@ const HASH_CHARS = 16;
  * }} LayerPlan
  */
 
-/** The 16-hex content address of a member's bytes, the name's only variable half. */
 /**
+ * The 16-hex content address of a member's bytes — the name's only variable half,
+ * and the one the served asset name must equal.
  * @param {string | Buffer} bytes
  * @returns {string}
  */
