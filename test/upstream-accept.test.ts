@@ -130,6 +130,12 @@ describe('runWatch — accepting the current run’s differences', () => {
     expect(quiet.report.copy?.differed).toBe(0);
     expect(quiet.report.accepted).toMatchObject({ count: 1, entries: [{ tier: 'copy', path: '/a' }] });
     expect(exitCode(quiet.report)).toBe(0);
+
+    // The human view must not claim plain sync while it is showing accepted drift.
+    const human = formatWatchReport(quiet.report);
+    expect(human).toContain('accepted (known drift, not findings): 1');
+    expect(human).toContain('No new drift');
+    expect(human).not.toContain('In sync with the Capture list');
   });
 
   it('a difference matching no recorded entry is a finding and exits 1', () => {

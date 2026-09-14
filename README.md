@@ -103,14 +103,19 @@ removed — the page set and statuses still match. The committed baseline
 (`regression/upstream-baseline.json`) records 2026-09-14 as the date it was last
 accepted, once the per-page chrome digests joined it, and the watch diffs against
 it from then on. The watch also compares a page's prose and chrome live-versus-
-served, and those are **not** in step: as of 2026-09-14 it reports the pages
-below. The tree stays frozen exactly as dated, and its copy is known to have
-moved on since. Run it before a milestone or a publish; it is deliberate and
-hand-run — there is no schedule, no CI job, and no notification channel. That is
-a check, not a refresh — the watch reports staleness and never moves the
-snapshot.
+served, and those are **not** in step. The tree stays frozen exactly as dated and
+its copy is known to have moved on since; those differences are recorded as
+**accepted drift** in the committed baseline, so a plain run shows them as
+accepted and exits 0, while any new or changed difference is a finding and exits
+1. `npm run upstream -- --accept-drift` re-records the accepted set when that
+judgement changes, and the report names the pages a future re-capture would need
+under "refresh candidates". Run it before a milestone or a publish; it is
+deliberate and hand-run — there is no schedule, no CI job, and no notification
+channel. That is a check, not a refresh — the watch reports staleness and never
+moves the snapshot.
 
-Known upstream drift since the freeze (reported 2026-09-14):
+Accepted known drift, recorded 2026-09-14 (the watch shows these as accepted,
+not as findings):
 
 - `/careers` — the hero reads “We Work Hard” upstream; the tree holds “We Aspire
   Fearlessly”.

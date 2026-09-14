@@ -501,8 +501,18 @@ export function formatWatchReport(report) {
     }
   }
   const moved = reportMoved(report);
+  const accepted = report.accepted?.count ?? 0;
+  // With accepted drift present, "in sync" would overstate: the run matches the
+  // Capture list and the baseline, but the served tree is known stale. Say what
+  // the exit code means instead.
   if (report.since) {
-    lines.push(moved ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
+    lines.push(
+      moved
+        ? '✗ Drift — see findings above.'
+        : accepted > 0
+          ? `✓ No new drift — ${accepted} known difference(s) accepted.`
+          : '✓ In sync with the Capture list and the baseline.'
+    );
   } else {
     lines.push(moved ? '✗ Drift — see findings above.' : '✓ Index in sync with the Capture list.');
   }
