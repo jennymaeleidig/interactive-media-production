@@ -119,9 +119,6 @@ Known upstream drift since the freeze (reported 2026-09-14):
 - `/resources` — the “Industry” filter is now “Audiences”.
 - `/upcoming-events` — “Industry” → “Event Type” and “Resource Type” →
   “Audience”.
-- `/products/license-plate-readers` — a sentence moved between the page body and
-  the chrome region, so the copy and chrome tiers each report one direction of
-  the same move.
 
 ## Publishing
 
