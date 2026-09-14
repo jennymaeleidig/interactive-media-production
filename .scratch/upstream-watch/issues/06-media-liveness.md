@@ -1,7 +1,7 @@
 # 06 — Media liveness
 
 Status: open
-Blocked by: 04
+Blocked by: 04, 04b
 
 ## What to build
 
