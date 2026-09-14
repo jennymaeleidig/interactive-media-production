@@ -147,9 +147,14 @@ style — 04b's header does the same).
 (above); the real-page pin asserts all 22 fragment words, not two; the inline
 case the axis demonstrated moved from "general rule" to covered by a copy test
 and a `collectText` fix; the masked-hit collector no longer skips fragments, so
-allow-list `chars` still measures the whole region. **Rejected:** running the
-live watch to evidence box 4 — the suite and this session stay offline, the
-offline all-pages measurement plus the added-skip proof is the available
-evidence, and the hand-run command is recorded above. **Noted:** the `Status:
-claimed` line shipping in the implementation commit is the tracker's normal
-claim-then-resolve split, not a deviation.
+allow-list `chars` still measures the whole region; the `What to build` evidence
+is corrected (above). **Rejected:** running the live watch to evidence box 4 —
+the suite and this session stay offline, the offline all-pages measurement plus
+the added-skip proof is the available evidence, and the hand-run command is
+recorded above. **Rejected:** dropping the `CONTEXT.md` correction of the
+2026-09-13 measurement as "retroactive reinterpretation" — the measurement in
+this ticket is a new, direct observation: the served page's fragments join to
+exactly the live sentence, so the entry 04b counted as a second real copy edit
+is the same reveal artifact, and recording one real edit is a correction of
+a fact. **Noted:** the `Status: claimed` line shipping in the implementation
+commit is the tracker's normal claim-then-resolve split, not a deviation.
