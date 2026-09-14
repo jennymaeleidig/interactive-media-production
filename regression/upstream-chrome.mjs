@@ -28,6 +28,12 @@
 //     measurement against `served/build-log.json` so the literal cannot drift
 //     from the log it came from.
 //
+// Ticket 04b adds a second, chrome-only list beside the allow-list: the
+// **runtime-fill exclusions**, the regions a rendered capture fills and a raw
+// fetch does not. Those are stripped from *both* sides and are silent (no
+// count), because they are not strip-pass targets and the removal fixtures are
+// their record; the allow-list's counted rule above stays the allow-list's own.
+//
 // SPDX-License-Identifier: CC0-1.0
 import { parse } from 'parse5';
 import { BLOCK, isGenerated, normalize, PROSE_ELEMENTS, SKIPPED, VOID } from './upstream-copy.mjs';
@@ -47,11 +53,13 @@ const SITE_ORIGIN = 'https://www.flocksafety.com';
  * targets were; `hrefHost` resolves the anchor's href against the site origin
  * so protocol-relative and absolute references match alike.
  * @typedef {Object} ChromeMatch
- * @property {string} tag
+ * @property {string} [tag]  when absent, any element tag matches
  * @property {string} [id]
  * @property {string} [idPrefix]
  * @property {string[]} [classAny]  matches when the element carries any one
  * @property {string[]} [hrefHost]
+ * @property {Record<string, string>} [attrs]  every named attribute must equal its value
+ * @property {ChromeMatch} [within]  an ancestor element must match this match
  * @property {RegExp} [contentRe]
  */
 
@@ -65,6 +73,19 @@ const SITE_ORIGIN = 'https://www.flocksafety.com';
  * @property {{pages: number, bytes: number}} measured
  * @property {ChromeMatch} match
  */
+
+/**
+ * One runtime-fill entry: a region a page's own scripts populate at render time,
+ * present in our rendered capture and absent (or in a different order) in the
+ * raw fetch. It has a name and a matcher only — there is no `served/build-log.json`
+ * measurement behind it, because the strip pass never removed it.
+ * @typedef {Object} ChromeRuntimeFillEntry
+ * @property {string} name
+ * @property {ChromeMatch} match
+ */
+
+/** Either kind of entry: the allow-list and the runtime-fill list share matching. */
+/** @typedef {ChromeAllowEntry | ChromeRuntimeFillEntry} ChromeEntry */
 
 /** One entry's masked regions in a run: how many, and how many chrome-text
  * characters they carried. @typedef {Object} ChromeHit @property {number} regions @property {number} chars */
@@ -168,6 +189,64 @@ export const CHROME_ALLOW_LIST = [
   },
 ];
 
+/**
+ * Ticket 04b: the **runtime-fill exclusions** — the regions our rendered capture
+ * fills and a raw live fetch does not. They are stripped from *both* sides of
+ * the chrome comparison, because the served side is exactly where the runtime
+ * fill lives; the allow-list above is live-only by contrast, because the strip
+ * pass explains the live extras, not the served ones.
+ *
+ * Chrome-only by design, never folded into the copy tier's `isGenerated`: the
+ * Finsweet CMS list carries the blog and FAQ prose the copy projection must keep
+ * reading, so a shared exclusion would drop real prose from the copy tier. The
+ * other markers carry no prose, but one chrome-only list keeps the boundary
+ * legible and leaves ticket 03's copy digests untouched.
+ *
+ * The Finsweet entry is deliberately narrow. The artifact is the hidden
+ * `div.hide` category-tag container *inside* the CMS list — Finsweet reorders
+ * and re-templates it at runtime, so the capture and the raw fetch disagree on
+ * its order while the visible card content is identical. Excluding the whole
+ * `fs-cmsfilter-element="list"` region would also drop the cards' own chrome
+ * (FAQ questions, event dates, CTA labels, press outlet names), none of which
+ * the copy projection reads, so a real change to them would vanish from both
+ * tiers. The `within` matcher confines the strip to `.hide` under the list,
+ * which removes the reordered tags and keeps the visible card chrome in the
+ * comparison. The Finsweet filters form is not here at all: `/press-center`,
+ * `/resources` and `/upcoming-events` renamed their dropdown labels upstream
+ * (a live `Location` where the capture holds `Region`), and the form wraps those
+ * toggles; excluding it wholesale would mask real drift the strip does not
+ * explain. `=clear` produces no unexplained difference either, and `=empty` is
+ * already a shared `isGenerated` exclusion that the copy tier carries too.
+ *
+ * What each entry still cannot see, the deliberate blind spot: a chrome change
+ * *inside* the region. A Marketo label, a pagination link, a job tag, a
+ * calculator output, a player control, a podcast duration or a hidden Finsweet
+ * category tag that moved upstream is not reported while its region stays
+ * excluded. Visible card chrome and the list's prose stay in the comparison.
+ * The removal fixtures in `test/upstream-chrome.test.ts` pin that an excluded
+ * region re-reports the moment its entry leaves the list.
+ *
+ * The measured classes (2026-09-13 live run, 170 chrome findings, re-measured
+ * 2026-09-14): Marketo form labels over the `/book-a-demo*` and `/webinar/*`
+ * families, Finsweet's reordered hidden category tags (`/blog`, `/customers`,
+ * `/faq`), Webflow pagination (`/partner-program`, `/resources`,
+ * `/press-center`), the Ashby-backed jobs widget (`/careers/positions`), the
+ * reduce-guard-cost calculator's computed outputs
+ * (`/reduce-guard-cost-calculator`), Wistia player chrome (`/webinar/*`), and
+ * the Tmplayer podcast controls (`/podcast`, discovered beyond the ticket's
+ * evidence).
+ * @type {ChromeRuntimeFillEntry[]}
+ */
+export const CHROME_RUNTIME_FILL = [
+  { name: 'marketo-form', match: { classAny: ['mktoForm'] } },
+  { name: 'finsweet-cms-hidden-tags', match: { classAny: ['hide'], within: { attrs: { 'fs-cmsfilter-element': 'list' } } } },
+  { name: 'webflow-pagination', match: { classAny: ['w-pagination-wrapper'] } },
+  { name: 'ashby-jobs', match: { classAny: ['careers_filter', 'careers__listing'] } },
+  { name: 'calculator-output', match: { classAny: ['rc-output', 'rc-result'] } },
+  { name: 'wistia-player-chrome', match: { classAny: ['wistia_popover_embed', 'wistia_embed'] } },
+  { name: 'podcast-player', match: { classAny: ['ep-player'] } },
+];
+
 /** @param {HtmlNode} node @param {string} name @returns {string|undefined} */
 function attr(node, name) {
   if (!('attrs' in node)) return undefined;
@@ -185,7 +264,14 @@ function textContent(node) {
 
 /** @param {HtmlNode} node @param {ChromeMatch} match @returns {boolean} */
 function matches(node, match) {
-  if (!('tagName' in node) || node.tagName !== match.tag) return false;
+  if (!('tagName' in node)) return false;
+  if (match.tag !== undefined && node.tagName !== match.tag) return false;
+  if (match.attrs !== undefined) {
+    for (const [name, value] of Object.entries(match.attrs)) {
+      if (attr(node, name) !== value) return false;
+    }
+  }
+  if (match.within !== undefined && !hasAncestorMatching(node, match.within)) return false;
   if (match.id !== undefined && attr(node, 'id') !== match.id) return false;
   if (match.idPrefix !== undefined && !(attr(node, 'id') ?? '').startsWith(match.idPrefix)) return false;
   if (match.classAny !== undefined) {
@@ -207,10 +293,22 @@ function matches(node, match) {
   return true;
 }
 
+/** Whether an ancestor element of `node` matches `match`, so a rule can be
+ * scoped to a region (the hidden category tags live only under the Finsweet
+ * list). @param {HtmlNode} node @param {ChromeMatch} match @returns {boolean} */
+function hasAncestorMatching(node, match) {
+  let parent = 'parentNode' in node ? node.parentNode : null;
+  while (parent !== undefined && parent !== null) {
+    if ('tagName' in parent && matches(parent, match)) return true;
+    parent = 'parentNode' in parent ? parent.parentNode : null;
+  }
+  return false;
+}
+
 /** The first entry that matches, so entry order is the tie-break.
- * @param {HtmlNode} node @param {ChromeAllowEntry[]} allowList @returns {ChromeAllowEntry|undefined} */
-function entryFor(node, allowList) {
-  return allowList.find((entry) => matches(node, entry.match));
+ * @param {HtmlNode} node @param {ChromeEntry[]} entries @returns {ChromeEntry|undefined} */
+function entryFor(node, entries) {
+  return entries.find((entry) => matches(node, entry.match));
 }
 
 /**
@@ -255,29 +353,32 @@ function collectText(node, parts, intoBlocks) {
 }
 
 /**
- * Remove every allow-listed subtree, outermost match first and no descent into
- * a match, recording one hit per entry. Mutates the parsed document in place:
- * the projection runs on what is left, which is exactly the page a reader sees
- * once the strip pass has been accounted for.
- * @param {HtmlNode} node @param {ChromeAllowEntry[]} allowList @param {Record<string, ChromeHit>} hits @returns {void}
+ * Remove every matching subtree, outermost match first and no descent into a
+ * match. With `hits` the removal is a counted allow-list mask; without it, a
+ * silent runtime-fill strip (still named in the list, and pinned by the removal
+ * fixtures). Mutates the parsed document in place: the projection runs on what
+ * is left.
+ * @param {HtmlNode} node @param {ChromeEntry[]} entries @param {Record<string, ChromeHit>} [hits] @returns {void}
  */
-function maskSubtree(node, allowList, hits) {
+function stripRegions(node, entries, hits) {
   if (!('childNodes' in node)) return;
   for (let i = node.childNodes.length - 1; i >= 0; i -= 1) {
     const child = node.childNodes[i];
     if ('tagName' in child) {
-      const entry = entryFor(child, allowList);
+      const entry = entryFor(child, entries);
       if (entry !== undefined) {
-        const chars = regionText(child).length;
-        const hit = hits[entry.name] ?? { regions: 0, chars: 0 };
-        hit.regions += 1;
-        hit.chars += chars;
-        hits[entry.name] = hit;
+        if (hits !== undefined) {
+          const chars = regionText(child).length;
+          const hit = hits[entry.name] ?? { regions: 0, chars: 0 };
+          hit.regions += 1;
+          hit.chars += chars;
+          hits[entry.name] = hit;
+        }
         node.childNodes.splice(i, 1);
         continue;
       }
     }
-    maskSubtree(child, allowList, hits);
+    stripRegions(child, entries, hits);
   }
 }
 
@@ -286,15 +387,27 @@ function maskSubtree(node, allowList, hits) {
  * element, in document order. A block's own run stops at a nested block (which
  * becomes its own run), at a prose element (the copy projection owns it), and
  * at a skipped or generated region; text directly under a wrapper with no block
- * around it is not chrome and is dropped. Pure — same HTML in, same runs out.
+ * around it is not chrome and is dropped. The runtime-fill regions are stripped
+ * first, from the same side, because a rendered capture carries them and a raw
+ * fetch does not. Pure — same HTML in, same runs out.
  * @param {string} html
+ * @param {ChromeRuntimeFillEntry[]} [runtimeFill]
  * @returns {string[]}
  */
-export function chromeRuns(html) {
+export function chromeRuns(html, runtimeFill = CHROME_RUNTIME_FILL) {
+  const root = strippedRoot(html, runtimeFill);
   /** @type {string[]} */
   const runs = [];
-  walkChrome(parse(String(html)), runs);
+  walkChrome(root, runs);
   return runs;
+}
+
+/** Parse `html` and strip the runtime-fill regions — the shared first step of
+ * both the served and the live projection. @param {string} html @param {ChromeRuntimeFillEntry[]} runtimeFill @returns {HtmlNode} */
+function strippedRoot(html, runtimeFill) {
+  const root = parse(String(html));
+  stripRegions(root, runtimeFill);
+  return root;
 }
 
 /** @param {HtmlNode} node @param {string[]} runs @returns {void} */
@@ -321,18 +434,20 @@ function blockText(node) {
 }
 
 /**
- * Project one page's chrome, masking the live side's allow-listed regions and
- * counting them. The served side is deliberately not projected here — a caller
- * with a served page projects it with the plain `chromeRuns`.
+ * Project one page's chrome, stripping the runtime-fill regions from the same
+ * side and masking the allow-listed regions, counting the latter. The served
+ * side is deliberately not projected here — a caller with a served page
+ * projects it with the plain `chromeRuns`.
  * @param {string} html
  * @param {ChromeAllowEntry[]} [allowList]
+ * @param {ChromeRuntimeFillEntry[]} [runtimeFill]
  * @returns {{runs: string[], hits: Record<string, ChromeHit>}}
  */
-export function chromeMaskedRuns(html, allowList = CHROME_ALLOW_LIST) {
-  const root = parse(String(html));
+export function chromeMaskedRuns(html, allowList = CHROME_ALLOW_LIST, runtimeFill = CHROME_RUNTIME_FILL) {
+  const root = strippedRoot(html, runtimeFill);
   /** @type {Record<string, ChromeHit>} */
   const hits = {};
-  maskSubtree(root, allowList, hits);
+  stripRegions(root, allowList, hits);
   /** @type {string[]} */
   const runs = [];
   walkChrome(root, runs);
@@ -340,23 +455,26 @@ export function chromeMaskedRuns(html, allowList = CHROME_ALLOW_LIST) {
 }
 
 /**
- * One page's chrome finding, or null when the allow-list accounts for every
- * difference. The served page is projected unmasked, so a strip target retained
- * in our tree surfaces rather than being explained away.
+ * One page's chrome finding, or null when the runtime-fill strip and the
+ * allow-list account for every difference. The served page is projected with the
+ * same runtime-fill strip (the fill is on the served side), but is never
+ * allow-list masked, so a strip target retained in our tree surfaces rather than
+ * being explained away.
  * @param {string} path
  * @param {string} servedHtml
  * @param {string} liveHtml
  * @param {ChromeAllowEntry[]} [allowList]
+ * @param {ChromeRuntimeFillEntry[]} [runtimeFill]
  * @returns {ChromeFinding|null}
  */
-export function chromeFinding(path, servedHtml, liveHtml, allowList = CHROME_ALLOW_LIST) {
-  return compare(path, servedHtml, liveHtml, allowList).finding;
+export function chromeFinding(path, servedHtml, liveHtml, allowList = CHROME_ALLOW_LIST, runtimeFill = CHROME_RUNTIME_FILL) {
+  return compare(path, servedHtml, liveHtml, allowList, runtimeFill).finding;
 }
 
-/** @param {string} path @param {string} servedHtml @param {string} liveHtml @param {ChromeAllowEntry[]} allowList @returns {{finding: ChromeFinding|null, hits: Record<string, ChromeHit>, liveRuns: string[]}} */
-function compare(path, servedHtml, liveHtml, allowList) {
-  const servedRuns = chromeRuns(servedHtml);
-  const { runs: liveRuns, hits } = chromeMaskedRuns(liveHtml, allowList);
+/** @param {string} path @param {string} servedHtml @param {string} liveHtml @param {ChromeAllowEntry[]} allowList @param {ChromeRuntimeFillEntry[]} runtimeFill @returns {{finding: ChromeFinding|null, hits: Record<string, ChromeHit>, liveRuns: string[]}} */
+function compare(path, servedHtml, liveHtml, allowList, runtimeFill) {
+  const servedRuns = chromeRuns(servedHtml, runtimeFill);
+  const { runs: liveRuns, hits } = chromeMaskedRuns(liveHtml, allowList, runtimeFill);
   const hunks = copyDiff(servedRuns, liveRuns);
   return { finding: hunks.length === 0 ? null : { path, hunks }, hits, liveRuns };
 }
@@ -369,9 +487,10 @@ function compare(path, servedHtml, liveHtml, allowList) {
  * once.
  * @param {import('./upstream-copy.mjs').CopyPage[]} pages
  * @param {ChromeAllowEntry[]} [allowList]
+ * @param {ChromeRuntimeFillEntry[]} [runtimeFill]
  * @returns {ChromeTier & {digests: Record<string, string>}}
  */
-export function chromeReport(pages, allowList = CHROME_ALLOW_LIST) {
+export function chromeReport(pages, allowList = CHROME_ALLOW_LIST, runtimeFill = CHROME_RUNTIME_FILL) {
   /** @type {ChromeFinding[]} */
   const findings = [];
   /** @type {Record<string, ChromeHit>} */
@@ -379,7 +498,7 @@ export function chromeReport(pages, allowList = CHROME_ALLOW_LIST) {
   /** @type {Record<string, string>} */
   const digests = {};
   for (const page of pages) {
-    const { finding, hits, liveRuns } = compare(page.path, page.served, page.live, allowList);
+    const { finding, hits, liveRuns } = compare(page.path, page.served, page.live, allowList, runtimeFill);
     if (finding !== null) findings.push(finding);
     digests[page.path] = chromeDigest(liveRuns);
     for (const [name, hit] of Object.entries(hits)) {

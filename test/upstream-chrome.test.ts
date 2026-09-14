@@ -19,6 +19,7 @@ import { runWatch } from '../regression/upstream-baseline.mjs';
 import { copyRuns } from '../regression/upstream-copy.mjs';
 import {
   CHROME_ALLOW_LIST,
+  CHROME_RUNTIME_FILL,
   chromeDigest,
   chromeFinding,
   chromeMaskedRuns,
@@ -293,6 +294,74 @@ describe('the chrome tier — run report and exit code', () => {
   it('leaves a run with no chrome input without a chrome tier', () => {
     const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED });
     expect(result.report.chrome).toBeUndefined();
+  });
+});
+
+// Ticket 04b: the runtime-fill exclusions. The chrome projection is the only
+// tier these apply to — the copy projection still reads the prose inside the
+// CMS list — so the whole set is a second, chrome-only list of named matchers,
+// injectable exactly like the allow-list so a removal fixture can prove a
+// stripped region re-reports.
+describe('CHROME_RUNTIME_FILL — the regions a rendered capture fills and a raw fetch does not', () => {
+  /** The live markup each runtime-fill class is recognized by. */
+  const regions: Record<string, string> = {
+    'marketo-form': '<form class="mktoForm mktoHasWidth mktoLayoutLeft"><label>First Name</label><button>Submit</button></form>',
+    'finsweet-cms-hidden-tags': '<div fs-cmsfilter-element="list"><div class="hide"><div fs-cmsfilter-field="audiences">Transportation</div></div></div>',
+    'webflow-pagination': '<div class="w-pagination-wrapper cs_pagination"><a>Previous</a><a class="w-pagination-current">1</a></div>',
+    'ashby-jobs': '<div class="careers_filter">All Departments</div><div class="careers__listing"><div class="jobs-card_tag">Full Time</div></div>',
+    'calculator-output': '<div><output class="rc-output bold">$780,000</output><span class="rc-result">$351,000</span></div>',
+    'wistia-player-chrome': '<div class="wistia_popover_embed"><span>Press O for more options</span><button>Click for sound</button></div>',
+    'podcast-player': '<div class="ep-player"><div class="tmplayer-element duration">62:54</div></div>',
+  };
+
+  it('names one entry per runtime-fill class it excludes', () => {
+    expect(CHROME_RUNTIME_FILL.map((e) => e.name)).toEqual(Object.keys(regions));
+  });
+
+  it('strips every runtime-fill region from the projection', () => {
+    for (const entry of CHROME_RUNTIME_FILL) {
+      expect(chromeRuns(regions[entry.name]), entry.name).toEqual([]);
+    }
+  });
+
+  it('makes an excluded region re-report when its exclusion is removed', () => {
+    for (const entry of CHROME_RUNTIME_FILL) {
+      const without = CHROME_RUNTIME_FILL.filter((e) => e.name !== entry.name);
+      const finding = chromeFinding('/x', regions[entry.name], '', CHROME_ALLOW_LIST, without);
+      expect(finding, entry.name).not.toBeNull();
+      expect(finding?.hunks.length, entry.name).toBeGreaterThan(0);
+    }
+  });
+
+  it('is chrome-only: the copy projection still reads the prose inside the CMS list', () => {
+    // The whole point of a chrome-only list: the Finsweet list carries the
+    // blog/FAQ prose the copy tier must keep reading, so it may not move into
+    // the shared `isGenerated`.
+    const html = '<div fs-cmsfilter-element="list"><h3>Card title</h3><div class="hide"><div fs-cmsfilter-field="audiences">Transportation</div></div></div>';
+    expect(copyRuns(html)).toEqual(['Card title']);
+    expect(chromeRuns(html)).toEqual([]);
+  });
+
+  it('keeps visible card chrome inside the list, stripping only the hidden tags', () => {
+    // The FAQ question lives in `faq_trigger_text`, not `.hide`, so a real change
+    // to it stays in the chrome comparison instead of vanishing from both tiers.
+    const html = '<div fs-cmsfilter-element="list"><div class="faq_trigger_text" itemprop="name">What is Flock?</div><div class="hide"><div fs-cmsfilter-field="faq-category">General</div></div></div>';
+    expect(chromeRuns(html)).toEqual(['What is Flock?']);
+  });
+
+  it('scopes the Finsweet strip to the list, leaving an unrelated .hide alone', () => {
+    // The nav's own hidden template shares the `hide` class; the `within`
+    // matcher must not swallow it.
+    const html = '<div class="hide"><div>Nav template</div></div>';
+    expect(chromeRuns(html)).toEqual(['Nav template']);
+  });
+
+  it('does not exclude the Finsweet filters form, so a renamed filter control still reports', () => {
+    // /press-center, /resources and /upcoming-events renamed their dropdown
+    // labels upstream and the filters form wraps those toggles; excluding it
+    // would mask real drift the strip does not explain.
+    const toggle = (label: string) => `<div fs-cmsfilter-element="filters"><div data-text="Region" class="filter_dropdown-toggle-text">${label}</div></div>`;
+    expect(chromeFinding('/press-center', toggle('Region'), toggle('Location'))).not.toBeNull();
   });
 });
 
