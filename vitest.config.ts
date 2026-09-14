@@ -10,6 +10,15 @@ const project = (name: string, include: string[], extra: Record<string, unknown>
   test: { name, include, ...extra },
 });
 
+/**
+ * Scanning the committed tree — reading and parsing every served page, twice —
+ * takes ~20 s on a developer machine and ~48 s on a two-core Actions runner.
+ * The two tree-scanning projects carry this instead of the default: the 30 s
+ * they used to hold was below the runner's real time, so the publish gate
+ * failed on the clock rather than on a finding.
+ */
+const TREE_SCAN_TIMEOUT = 120_000;
+
 export default defineConfig({
   test: {
     projects: [
@@ -37,8 +46,8 @@ export default defineConfig({
       project('upstream-watch', ['test/upstream-watch.test.ts']),
       project('upstream-baseline', ['test/upstream-baseline.test.ts']),
       project('upstream-accept', ['test/upstream-accept.test.ts']),
-      project('upstream-copy', ['test/upstream-copy.test.ts'], { testTimeout: 30_000 }),
-      project('upstream-chrome', ['test/upstream-chrome.test.ts'], { testTimeout: 30_000 }),
+      project('upstream-copy', ['test/upstream-copy.test.ts'], { testTimeout: TREE_SCAN_TIMEOUT }),
+      project('upstream-chrome', ['test/upstream-chrome.test.ts'], { testTimeout: TREE_SCAN_TIMEOUT }),
       project('upstream-assets', ['test/upstream-assets.test.ts']),
       project('upstream-media', ['test/upstream-media.test.ts']),
       project('cli', ['test/cli.test.ts']),
