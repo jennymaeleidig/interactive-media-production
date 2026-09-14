@@ -104,11 +104,19 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
+ * Ticket 04's chrome tier as the report carries it: the compared/differed
+ * counts, the per-page findings, and the allow-list hits that were counted
+ * rather than reported. It carries no digest state.
+ * @typedef {import('./upstream-chrome.mjs').ChromeTier} ChromeTier
+ */
+
+/**
  * The comparison a run produces. `inventory` is the whole measurement;
  * `findings` are the drift against the frozen Capture list, which ticket 01
  * alone can see. Ticket 02's `since` is the drift against the moving baseline;
- * ticket 03's `copy` is the live-versus-served prose comparison. Together they
- * are the only things that make the run exit 1.
+ * ticket 03's `copy` is the live-versus-served prose comparison; ticket 04's
+ * `chrome` is the live-versus-served chrome comparison against the strip
+ * allow-list. Together they are the only things that make the run exit 1.
  * @typedef {Object} WatchReport
  * @property {string} origin
  * @property {{sitemap: number, homepage: number, capture: number, universe: number}} counts
@@ -119,6 +127,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {string} [verified]  the date this run verified upstream; set by `runWatch`
  * @property {BaselineDelta} [since]  what moved since the previous run; set by `runWatch`
  * @property {CopyTier} [copy]  the served-versus-live prose comparison; set by `runWatch`
+ * @property {ChromeTier} [chrome]  the served-versus-live chrome comparison; set by `runWatch`
  */
 
 /**
@@ -326,8 +335,9 @@ export function buildWatchReport(inputs) {
 
 /**
  * Whether anything in the report is drift: an index finding, a moved baseline,
- * or a copy difference. The exit code and the printed summary both ask this one
- * function, so a clean print can never disagree with a nonzero exit.
+ * a copy difference, or a chrome difference no allow-list entry explains. The
+ * exit code and the printed summary both ask this one function, so a clean
+ * print can never disagree with a nonzero exit.
  * @param {WatchReport} report
  * @returns {boolean}
  */
@@ -337,7 +347,8 @@ function reportMoved(report) {
     ? report.since.added.length + report.since.removed.length + report.since.changed.length > 0
     : false;
   const copyDrift = report.copy !== undefined && report.copy.differed > 0;
-  return indexDrift || baselineDrift || copyDrift;
+  const chromeDrift = report.chrome !== undefined && report.chrome.differed > 0;
+  return indexDrift || baselineDrift || copyDrift || chromeDrift;
 }
 
 /** One run's text for the human view, bounded so a whole-page rewrite cannot
@@ -370,6 +381,12 @@ export function formatWatchReport(report) {
   if (report.copy) {
     const { compared, differed } = report.copy;
     lines.push(`  copy: ${compared} page(s) compared · ${differed} differed`);
+  }
+  if (report.chrome) {
+    const { compared, differed, hits } = report.chrome;
+    const masked = hits.reduce((count, hit) => count + hit.regions, 0);
+    lines.push(`  chrome: ${compared} page(s) compared · ${differed} differed · ${masked} allow-listed region(s)`);
+    for (const hit of hits) lines.push(`    · ${hit.name}: ${hit.regions} region(s), ${hit.chars} char(s)`);
   }
   if (demotions.length > 0) {
     lines.push(`  demotions (context, not findings): ${demotions.length}`);
@@ -408,6 +425,16 @@ export function formatWatchReport(report) {
       }
     }
   }
+  if (report.chrome && report.chrome.findings.length > 0) {
+    lines.push('  chrome findings — served chrome no strip target explains:');
+    for (const finding of report.chrome.findings) {
+      lines.push(`    ~ ${finding.path} (${finding.hunks.length} differing run group(s))`);
+      for (const hunk of finding.hunks) {
+        if (hunk.served.length > 0) lines.push(`      served: ${summarizeRuns(hunk.served)}`);
+        if (hunk.live.length > 0) lines.push(`      live:   ${summarizeRuns(hunk.live)}`);
+      }
+    }
+  }
   const moved = reportMoved(report);
   if (report.since) {
     lines.push(moved ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
@@ -419,7 +446,8 @@ export function formatWatchReport(report) {
 
 /**
  * The command's exit code: 1 when the index drifted (ticket 01), the baseline
- * moved (ticket 02), or the served prose no longer matches live (ticket 03), 0
+ * moved (ticket 02), the served prose no longer matches live (ticket 03), or
+ * the served chrome no longer matches live beyond the allow-list (ticket 04), 0
  * otherwise. An operational failure (2) is the driver's, not the report's — an
  * incomplete measurement must never masquerade as a clean one.
  * @param {WatchReport} report

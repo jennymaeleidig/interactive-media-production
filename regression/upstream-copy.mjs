@@ -81,10 +81,10 @@ const PROSE = new Set(PROSE_ELEMENTS);
  * `<template>` markup.
  * @type {Set<string>}
  */
-const SKIPPED = new Set(['script', 'style', 'noscript', 'svg', 'template', 'title', 'math']);
+export const SKIPPED = new Set(['script', 'style', 'noscript', 'svg', 'template', 'title', 'math']);
 
 /** Void elements: no close tag exists, so their text is a separator. */
-const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+export const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 
 /**
  * Block-level elements. A reader sees their text on separate lines, so they
@@ -92,7 +92,7 @@ const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input'
  * whitespace between the tags (`<div>Products</div><div>Back</div>`), which
  * would otherwise glue two words into one.
  */
-const BLOCK = new Set([
+export const BLOCK = new Set([
   'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'details', 'div', 'dl', 'dt',
   'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'header', 'hgroup', 'hr', 'li', 'main', 'menu', 'nav', 'ol', 'p', 'pre', 'section', 'summary',
@@ -147,7 +147,7 @@ const BLOCK = new Set([
  * @param {string} text
  * @returns {string}
  */
-function normalize(text) {
+export function normalize(text) {
   return text.replace(/[\s\u200b\u200c\u200d\ufeff]+/g, ' ').trim();
 }
 
@@ -185,7 +185,7 @@ function normalize(text) {
 const RUNTIME_FILLED_ATTRS = new Set(['data-toc', 'data-user', 'data-job-name']);
 
 /** @param {HtmlNode} node @returns {boolean} */
-function isGenerated(node) {
+export function isGenerated(node) {
   if ('tagName' in node && node.tagName === 'wistia-player') return true;
   if (!('attrs' in node)) return false;
   return node.attrs.some((attr) => RUNTIME_FILLED_ATTRS.has(attr.name) || (attr.name === 'fs-cmsfilter-element' && attr.value === 'empty'));

@@ -1,4 +1,4 @@
-// The upstream watch's network edge (tickets 01–03): fetch the sitemap and
+// The upstream watch's network edge (tickets 01–04): fetch the sitemap and
 // homepage, probe every path in the watched universe once, fetch the body of
 // every watched page the tree serves, hand the bytes and the previous baseline
 // to the pure cores, print what they decide, and record the baseline when the
@@ -58,8 +58,8 @@ async function fetchText(url) {
 
 /** Probe one URL without following redirects, so the raw 3xx and Location show.
  * When the tree serves this path and upstream answers 200, read the body too —
- * it is the live side of the copy comparison. A 3xx or 401 has no page copy to
- * compare, so its body is cancelled unread. */
+ * it is the live side of the copy and chrome comparisons. A 3xx or 401 has no
+ * page copy to compare, so its body is cancelled unread. */
 async function probe(url, wantBody) {
   const res = await fetch(url, { redirect: 'manual' });
   const location = res.headers.get('location');
@@ -178,7 +178,7 @@ async function main() {
 
   let run;
   try {
-    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages });
+    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages, chromePages: copyPages });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }

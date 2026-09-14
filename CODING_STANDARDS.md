@@ -260,8 +260,11 @@ like any other asset.
   invariant, its fold — which for these data modules *is* the behavior they
   own: the strip audit (`test/audit.test.ts`), the served-tree rules
   (`test/served-tree.test.ts`), the check's pure cores (`test/routes.test.ts`),
-  the capture-HTML readers (`test/html.test.ts`), and the CLI locals
-  (`test/cli.test.ts`). They are the one exception to "no tests against
+  the capture-HTML readers (`test/html.test.ts`), the CLI locals
+  (`test/cli.test.ts`), and the upstream watch's pure modules
+  (`test/upstream-watch.test.ts`, `test/upstream-baseline.test.ts`,
+  `test/upstream-copy.test.ts`, `test/upstream-chrome.test.ts`). They are the
+  one exception to "no tests against
   internals": apart from them, no test targets incidental pipeline internals or
   module structure, and a test that breaks in a behavior-preserving refactor is
   wrong.
@@ -331,18 +334,20 @@ dev/build for everyone:
   (re-inventory → diff → scoped re-capture, and the video liveness probe) is in
   git history only. **One deliberate exception**: the **upstream watch**
   (`npm run upstream`, `regression/upstream-watch.mjs`,
-  `regression/upstream-baseline.mjs` and `regression/upstream-copy.mjs` plus
+  `regression/upstream-baseline.mjs`, `regression/upstream-copy.mjs` and
+  `regression/upstream-chrome.mjs` plus
   their thin network edge) is a hand-run
   tool that reads upstream's sitemap and homepage, probes every watched URL, and
-  compares each served page's **copy projection** to the live page's as well as
-  reporting index drift and what has moved since its last run; it never writes
+  compares each served page's **copy projection** and **chrome projection**
+  (the latter against the strip table's allow-list) to the live page's, and
+  reports index drift and what has moved since its last run; it never writes
   `served/` or any tree record — its only writes are its committed baseline
   (`regression/upstream-baseline.json`) and `--out` evidence, and it refuses a
   target inside `served/` — and it is not the refresh workflow — it exists so
   the "should the snapshot move?" decision can be made on evidence. Its own doc
   lives in the ticket and the module header; see `CONTEXT.md` for **upstream
   watch**, **watched universe**, **upstream baseline**, **silent baseline**,
-  **copy projection**, and **demotion**.
+  **copy projection**, **chrome projection**, and **demotion**.
 - **No ADR record**: decisions live inline — in `CONTEXT.md` terms, in this
   file, and in the comments beside the code they constrain. Don't cite a
   retired decision document; say what the rule is and why.

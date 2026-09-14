@@ -21,6 +21,7 @@
 import path from 'node:path';
 import { buildWatchReport } from './upstream-watch.mjs';
 import { copyReport } from './upstream-copy.mjs';
+import { chromeReport } from './upstream-chrome.mjs';
 
 /**
  * The schema of the committed baseline. Later tickets add per-row projection
@@ -52,8 +53,8 @@ export const BASELINE_VERSION = 1;
 
 /**
  * Ticket 01's report inputs plus ticket 02's baseline state and ticket 03's
- * copy pages.
- * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[]}} RunInputs
+ * copy pages and ticket 04's chrome pages.
+ * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[]}} RunInputs
  */
 
 /**
@@ -209,7 +210,8 @@ export function diffBaseline(previous, current) {
 /**
  * One run of the watch, as a value. Builds ticket 01's index report, compares
  * the copy projection live versus served when the edge hands it `copyPages`
- * (ticket 03), derives this run's baseline — carrying the copy digests — and diffs it
+ * (ticket 03) and the chrome projection when it hands it `chromePages` (ticket
+ * 04), derives this run's baseline — carrying the copy digests — and diffs it
  * against the previous one. `write` is true only for the silent first run (no
  * previous baseline) or an explicit accept; a plain run with a previous
  * baseline never moves the reference point.
@@ -217,9 +219,10 @@ export function diffBaseline(previous, current) {
  * @returns {WatchRun}
  */
 export function runWatch(inputs) {
-  const { previous = null, accept = false, verified, copyPages, ...rest } = inputs;
+  const { previous = null, accept = false, verified, copyPages, chromePages, ...rest } = inputs;
   const report = buildWatchReport(rest);
   const copy = copyPages === undefined ? null : copyReport(copyPages);
+  const chrome = chromePages === undefined ? null : chromeReport(chromePages);
   const baseline = baselineFromReport(report, verified, copy?.digests ?? {});
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);
@@ -235,6 +238,9 @@ export function runWatch(inputs) {
       verified: recorded,
       since,
       ...(copy === null ? {} : { copy: { compared: copy.compared, differed: copy.differed, findings: copy.findings } }),
+      ...(chrome === null
+        ? {}
+        : { chrome: { compared: chrome.compared, differed: chrome.differed, findings: chrome.findings, hits: chrome.hits } }),
     },
     baseline,
     write,
