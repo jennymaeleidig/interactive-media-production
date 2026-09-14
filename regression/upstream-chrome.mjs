@@ -29,10 +29,9 @@
 //     from the log it came from.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { createHash } from 'node:crypto';
 import { parse } from 'parse5';
 import { BLOCK, isGenerated, normalize, PROSE_ELEMENTS, SKIPPED, VOID } from './upstream-copy.mjs';
-import { copyDiff } from './upstream-copy.mjs';
+import { copyDiff, projectionDigest } from './upstream-copy.mjs';
 
 /** @typedef {import('parse5').DefaultTreeAdapterTypes.Node} HtmlNode */
 
@@ -91,14 +90,14 @@ const SITE_ORIGIN = 'https://www.flocksafety.com';
 /**
  * The digest of one page's **live** chrome, over the allow-list-masked runs —
  * the projection the chrome comparison actually compares. Recorded on the
- * baseline row so a later run can report that upstream's chrome moved even
- * before the per-page comparison says so. Sixteen hex characters, matching the
- * copy and asset digests.
+ * baseline row so `since.changed` can report that the live page's chrome moved
+ * since the last accepted baseline, independently of whether the frozen tree
+ * still matches. Sixteen hex characters, matching the copy and asset digests.
  * @param {string[]} runs
  * @returns {string}
  */
 export function chromeDigest(runs) {
-  return createHash('sha256').update(JSON.stringify(runs)).digest('hex').slice(0, 16);
+  return projectionDigest(runs);
 }
 
 /**

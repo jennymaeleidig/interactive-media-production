@@ -255,15 +255,25 @@ export function copyRuns(html) {
 }
 
 /**
+ * The digest of a text projection's runs, truncated to 16 hex characters. Shared
+ * by the copy and chrome projections so their digests cannot drift; it detects
+ * change, it does not secure anything.
+ * @param {string[]} runs
+ * @returns {string}
+ */
+export function projectionDigest(runs) {
+  return createHash('sha256').update(JSON.stringify(runs)).digest('hex').slice(0, 16);
+}
+
+/**
  * A stable digest of one page's copy projection, for the baseline row. Over the
  * normalized runs — the projection, not the bytes — so a link rewrite or an
- * injected layer cannot move it, and truncated to 16 hex characters because it
- * detects change, it does not secure anything.
+ * injected layer cannot move it.
  * @param {string[]} runs
  * @returns {string}
  */
 export function copyDigest(runs) {
-  return createHash('sha256').update(JSON.stringify(runs)).digest('hex').slice(0, 16);
+  return projectionDigest(runs);
 }
 
 /**

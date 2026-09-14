@@ -273,7 +273,7 @@ describe('the copy tier — baseline row and run report', () => {
 
   it('places each run’s live copy digest in the baseline row, and round-trips it', () => {
     const report = buildWatchReport(run(['/a', '/b'], ['/a', '/b'], { '/a': { status: 200 }, '/b': { status: 200 } }));
-    const baseline = baselineFromReport(report, VERIFIED, { '/a': 'digest-a' });
+    const baseline = baselineFromReport(report, VERIFIED, { copyDigests: { '/a': 'digest-a' } });
     expect(baseline.rows.find((r) => r.path === '/a')).toEqual({ path: '/a', inSitemap: true, status: 200, location: null, copy: 'digest-a' });
     // a path the run did not project keeps the plain v1 row
     expect(baseline.rows.find((r) => r.path === '/b')).toEqual(row('/b', 200));
@@ -330,7 +330,7 @@ describe('the shared asset set and the chrome digest in the baseline', () => {
 
   it('records the run’s asset set and round-trips it through the committed text', () => {
     const report = buildWatchReport(run(['/a'], ['/a'], { '/a': { status: 200 } }));
-    const baseline = baselineFromReport(report, VERIFIED, {}, {}, [assetRecord]);
+    const baseline = baselineFromReport(report, VERIFIED, { assets: [assetRecord] });
     expect(baseline.assets).toEqual([assetRecord]);
     expect(readBaseline(serializeBaseline(baseline)).assets).toEqual([assetRecord]);
   });

@@ -141,11 +141,16 @@ async function main() {
 
   // Ticket 05: the site's shared asset set, discovered from the live homepage's
   // own references. Fetched before the probe pass so a failure is an operational
-  // error rather than a clean run with a partial asset set.
+  // error rather than a clean run with a partial asset set — and an empty
+  // discovery is itself a failure, never a clean zero-asset measurement.
   /** @type {import('./upstream-assets.mjs').FetchedAsset[]} */
   let assets;
   try {
-    assets = await mapLimit(assetRefs(homepageHtml, ORIGIN), CONCURRENCY, fetchAsset);
+    const refs = assetRefs(homepageHtml, ORIGIN);
+    if (refs.length === 0) {
+      return fail('upstream watch discovered no shared assets on the live homepage — an empty asset set is a failed measurement, not a clean one');
+    }
+    assets = await mapLimit(refs, CONCURRENCY, fetchAsset);
   } catch (err) {
     return fail(`upstream watch could not fetch the shared asset set: ${message(err)}`);
   }

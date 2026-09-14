@@ -13,12 +13,14 @@
 //
 // Discovery is a pure function of one live page's HTML. The page advertises its
 // Webflow site id on `<html data-wf-site>`, and the site's own published assets
-// are exactly the stylesheet `<link>` and script `<script src>` references
-// whose resolved path lies under `/<site-id>/`. That keeps the set small (the
-// 2026-09-14 homepage had 27 references, 4 of them the site's own) and
-// deliberately excludes third-party CDNs (Google Fonts, cdnjs, jsDelivr,
-// Marketo, the Webflow-served jQuery and GSAP) whose changes are not our
-// presentation moving.
+// are the stylesheet `<link>` and script `<script src>` references whose
+// resolved path lies under `/<site-id>/`. In this site's output that directory
+// is the Webflow CDN, so the set stays small (the 2026-09-14 homepage had 27
+// references, 4 of them under the site id) and third-party CDNs (Google Fonts,
+// cdnjs, jsDelivr, Marketo, the Webflow-served jQuery and GSAP) fall out because
+// the site id does not appear in their paths. The rule checks the path only; a
+// reference on another host that happened to carry the site id in its path
+// would also be kept.
 //
 // What discovery cannot see: it reads a single page, so a shared asset that
 // page does not reference is invisible; it needs the `data-wf-site` attribute,
@@ -96,8 +98,14 @@ import { parse } from 'parse5';
 /** The attribute that names the page's own Webflow site. @type {string} */
 const SITE_ATTR = 'data-wf-site';
 
-/** @param {{url: string}} a @param {{url: string}} b @returns {number} */
-const byUrl = (a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0);
+/**
+ * Asset order, code-unit by URL, shared by the discovery, the run's records and
+ * the baseline's serialization so asset ordering cannot drift between them.
+ * @param {{url: string}} a
+ * @param {{url: string}} b
+ * @returns {number}
+ */
+export const byAssetUrl = (a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0);
 
 /** @param {HtmlNode} node @param {string} name @returns {string|undefined} */
 function attr(node, name) {
@@ -141,7 +149,7 @@ export function assetRefs(html, pageUrl) {
   if (id === undefined) return [];
   const prefix = `/${id}/`;
   /** @type {Map<string, AssetRef>} */
-  const byUrlMap = new Map();
+  const refsByUrl = new Map();
   const visit = (/** @type {HtmlNode} */ node) => {
     if ('tagName' in node) {
       const reference =
@@ -159,14 +167,14 @@ export function assetRefs(html, pageUrl) {
         }
         if (resolved !== null && resolved.pathname.startsWith(prefix)) {
           const name = resolved.pathname.slice(resolved.pathname.lastIndexOf('/') + 1);
-          byUrlMap.set(resolved.href, { name, url: resolved.href });
+          refsByUrl.set(resolved.href, { name, url: resolved.href });
         }
       }
     }
     if ('childNodes' in node) for (const child of node.childNodes) visit(child);
   };
   visit(root);
-  return [...byUrlMap.values()].sort(byUrl);
+  return [...refsByUrl.values()].sort(byAssetUrl);
 }
 
 /**
@@ -202,6 +210,6 @@ export function assetReport(assets, previousAssets = []) {
     records.push({ name: asset.name, url: asset.url, digest, bytes: byteLength });
     if (!known.has(digest)) findings.push({ name: asset.name, url: asset.url, bytes: byteLength });
   }
-  records.sort(byUrl);
+  records.sort(byAssetUrl);
   return { compared: assets.length, differed: findings.length, findings, records };
 }

@@ -22,7 +22,7 @@ import path from 'node:path';
 import { buildWatchReport } from './upstream-watch.mjs';
 import { copyReport } from './upstream-copy.mjs';
 import { chromeReport } from './upstream-chrome.mjs';
-import { assetReport } from './upstream-assets.mjs';
+import { assetReport, byAssetUrl } from './upstream-assets.mjs';
 
 /**
  * The schema of the committed baseline. Later tickets add per-row projection
@@ -82,14 +82,6 @@ const VERIFIED_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
  * @returns {number}
  */
 const byPath = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
-
-/**
- * Asset order, code-unit by URL, so the committed file is machine-stable.
- * @param {{url: string}} a
- * @param {{url: string}} b
- * @returns {number}
- */
-const byAssetUrl = (a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0);
 
 /** @param {string} why @returns {never} */
 function bad(why) {
@@ -187,12 +179,12 @@ export function serializeBaseline(baseline) {
  * a baseline recorded before ticket 03 still reads.
  * @param {import('./upstream-watch.mjs').WatchReport} report
  * @param {string} verified
- * @param {Record<string, string>} [copyDigests]  path → live copy-projection digest
- * @param {Record<string, string>} [chromeDigests]  path → live masked chrome digest
- * @param {import('./upstream-assets.mjs').AssetRecord[]} [assetRecords]  the run's shared asset set
+ * @param {{copyDigests?: Record<string, string>, chromeDigests?: Record<string, string>, assets?: import('./upstream-assets.mjs').AssetRecord[]}} [digests]
+ *   the run's projection digests and shared asset set; bundled so the two
+ *   same-shaped digest maps cannot be transposed at the call site
  * @returns {Baseline}
  */
-export function baselineFromReport(report, verified, copyDigests = {}, chromeDigests = {}, assetRecords) {
+export function baselineFromReport(report, verified, { copyDigests = {}, chromeDigests = {}, assets } = {}) {
   const rows = report.inventory
     .map((row) => {
       const carried = /** @type {BaselineRow} */ ({
@@ -210,7 +202,7 @@ export function baselineFromReport(report, verified, copyDigests = {}, chromeDig
     .sort(byPath);
   /** @type {Baseline} */
   const baseline = { version: BASELINE_VERSION, verified, rows };
-  if (assetRecords !== undefined) baseline.assets = [...assetRecords].sort(byAssetUrl);
+  if (assets !== undefined) baseline.assets = [...assets].sort(byAssetUrl);
   return baseline;
 }
 
@@ -280,7 +272,11 @@ export function runWatch(inputs) {
   // the silent first run has none, so its findings are suppressed below but the
   // run's own asset set is still recorded.
   const restyle = assets === undefined ? null : assetReport(assets, previous?.assets ?? []);
-  const baseline = baselineFromReport(report, verified, copy?.digests ?? {}, chrome?.digests ?? {}, restyle?.records);
+  const baseline = baselineFromReport(report, verified, {
+    copyDigests: copy?.digests,
+    chromeDigests: chrome?.digests,
+    assets: restyle?.records,
+  });
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);
   const write = previous === null || accept;
