@@ -55,6 +55,15 @@ Resolved 2026-09-14. Commit `699e220` carries the projections, the tests and the
 glossary change; the review fixes and this close are the commit that carries
 this note.
 
+### Evidence correction
+
+The ticket's `What to build` names the enclosing region as `section.lpr4_wrap >
+… > div.lpr4_item_desc`. The promoted shape in the committed bytes is actually
+`section.lpr7_wrap > div.lpr7_contain > div.lpr7_layout > p.lp7_paragraph` — the
+`lpr4` block's `lpr4_item_desc` divs are plain prose. The finding is unchanged
+(the same `split-word` fragment run, same empty-p + aria-label shape), but the
+fix does not depend on either path, which is the point of acceptance box 3.
+
 ### What changed
 
 - `regression/upstream-copy.mjs`: new exported `isSplitFragment`, matching the
@@ -82,8 +91,8 @@ this note.
   exactly one copy hunk and no chrome hunk.
 - the committed page (`served/products/license-plate-readers.html`): the
   sentence is one copy run and none of its 22 fragment words is a chrome run.
-- the two commits' tree-fed steady-state tests (every served page as both
-  sides) still diff to nothing, unchanged and passing.
+- the two committed tree-fed steady-state tests (copy and chrome, every served
+  page as both sides) still diff to nothing, unchanged and passing.
 
 ### Measurement (offline, all 1,181 served pages)
 
