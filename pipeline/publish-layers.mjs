@@ -32,7 +32,19 @@ import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { invokedDirectly, makeArg } from './cli.mjs';
-import { maintainedSource, markedMembers, markedTags, mirrorFindings, partOf, sameCode, shippedSource } from './injected-layers.mjs';
+import {
+  elementEnd,
+  expectedParts,
+  maintainedSource,
+  markedMembers,
+  markedTags,
+  markedTagText,
+  mirrorFindings,
+  missingMember,
+  partOf,
+  sameCode,
+  shippedSource,
+} from './injected-layers.mjs';
 import { routeOfPage } from './served-tree.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -54,6 +66,12 @@ const HASH_CHARS = 16;
  */
 
 /**
+ * A roster part as the owner flattens it for one page — what `expectedParts`
+ * returns, and what says whether the write may create the member.
+ * @typedef {{ name: string } & import('./injected-layers.mjs').Part} ExpectedPart
+ */
+
+/**
  * One served page and the marked members it carries, in the order it carries
  * them.
  * @typedef {{ file: string, rel: string, page: string, html: string, members: Marked[] }} PageEntry
@@ -72,7 +90,19 @@ const HASH_CHARS = 16;
  * @typedef {{ type: 'inline', name: string, kind: 'css'|'js', origin: string, reason: string, targets: { file: string, page: string, to: string }[] }} InlineChange
  */
 
-/** @typedef {AssetChange | InlineChange} Change */
+/**
+ * One declared member a carrying page does not have and the plan would create:
+ * the tag the roster says the page owes (`to`), spliced in at `at` — the end of
+ * the last expected member before it that the page does carry, which is exactly
+ * the position the tree's hand-written Lottie tags sit in. Only parts declared
+ * `insert: true` reach here; any other absent member stays the blocker it has
+ * always been. `ref`/`bytes` are the asset an asset-delivery insertion names, and
+ * `to` is the exact text spliced at `at` — the tag plus the newline that puts it
+ * on its own line, which is how every marked tag in the tree is laid out.
+ * @typedef {{ type: 'insert', name: string, kind: 'css'|'js', ref: string|null, bytes: string|null, origin: string, reason: string, targets: { file: string, page: string, to: string, at: number }[] }} InsertChange
+ */
+
+/** @typedef {AssetChange | InlineChange | InsertChange} Change */
 
 /**
  * A failure or note plus the page it happened on, kept structured until the
@@ -205,6 +235,46 @@ function stripPage(text, page) {
 }
 
 /**
+ * The parts a page owes through `insert: true` and does not carry, in roster
+ * order — the members the write may create. Everything else a page is missing is
+ * a failure the plan refuses on.
+ * @param {PageEntry} entry
+ * @returns {ExpectedPart[]}
+ */
+function insertableAbsent(entry) {
+  return expectedParts(entry.page).filter(
+    (part) => part.insert && !entry.members.some((member) => member.name === part.name && member.kind === part.kind),
+  );
+}
+
+/**
+ * Where a missing member goes: just past the *element* of the last member the
+ * page carries that the roster ships before it. That is the position the tree
+ * itself used for the Lottie tags — each sits immediately after the last
+ * site-wide script's closing tag — so a recreated tag lands exactly on the line
+ * the written-by-hand one occupies. `null` when the page carries none of them,
+ * which is a broken page rather than a pending tag.
+ *
+ * Exported because it is the one place a page's insert position is decided, and
+ * the position it picks for the six Lottie heroes is a fact about the real tree —
+ * the tests pin it against the pages rather than a fixture.
+ * @param {PageEntry} entry
+ * @param {string} name
+ * @param {string} kind
+ * @returns {number|null}
+ */
+export function insertAt(entry, name, kind) {
+  const order = expectedParts(entry.page).map((part) => `${part.name}/${part.kind}`);
+  const index = order.indexOf(`${name}/${kind}`);
+  let at = null;
+  for (const tag of markedTags(entry.html)) {
+    const position = order.indexOf(`${tag.name}/${tag.kind}`);
+    if (position !== -1 && position < index) at = elementEnd(entry.html, tag);
+  }
+  return at;
+}
+
+/**
  * Plan the publish: every page, every marked member, the changes the maintained
  * sources demand, and the check's failures and notes. Read-only.
  * @param {{ servedDir: string, root?: string }} input
@@ -220,29 +290,77 @@ export function planLayers({ servedDir, root = '.' }) {
   const rawFailures = [];
   /** @type {Finding[]} */
   const rawNotes = [];
+  /**
+   * The members the write may create, grouped by member: one tag recreated on
+   * each page in the layer's scope that does not carry it, at the position the
+   * roster's own order puts it.
+   * @type {Map<string, InsertChange>}
+   */
+  const insertGroups = new Map();
 
   for (const file of htmlFiles(served)) {
     const html = readFileSync(file, 'utf8');
     const rel = path.relative(served, file).split(path.sep).join('/');
     const page = routeOfPage(rel) ?? `/${rel}`;
     const members = markedMembers(html);
-    pages.push({ file, rel, page, html, members });
+    const entry = { file, rel, page, html, members };
+    pages.push(entry);
+    // the parts this page owes through `insert: true` and does not carry — read
+    // once, because the check below and the plan itself both ask
+    const absent = insertableAbsent(entry);
     const findings = mirrorFindings({
       page,
       members,
       shipped: (member) => (member.ref ? shipped(member.ref) : member.body ?? null),
       maintained: (name, kind, pg) => maintained(name, kind, pg),
     });
+    const inserting = new Set(absent.map((part) => missingMember(page, part.name, part.kind)));
     for (const text of findings.failures) {
       // a missing asset is re-reported below by name and reference; the roster's
       // own 'unreadable' line would say the same thing less precisely
       if (text.startsWith('unreadable:')) continue;
-      // a byte-level code difference is exactly what this module rewrites; every
-      // other failure (a missing member, an undeclared one, a wrong delivery
+      // a byte-level code difference is exactly what this module rewrites, and a
+      // missing `insert` member is a tag this module can create; every other
+      // failure (a missing site-wide member, an undeclared one, a wrong delivery
       // form, no source at all) is a blocker the write must refuse on
-      rawFailures.push({ text, page, fixable: text.startsWith('code drift:') });
+      rawFailures.push({ text, page, fixable: text.startsWith('code drift:') || inserting.has(text) });
     }
     for (const text of findings.notes) rawNotes.push({ text, page, fixable: false });
+
+    for (const part of absent) {
+      const key = `${part.name}/${part.kind}`;
+      const source = maintained(part.name, part.kind, page);
+      // 'no source' is already a failure this page carries; a member whose bytes
+      // cannot be read is not one the write may invent
+      if (!source) continue;
+      const at = insertAt(entry, part.name, part.kind);
+      if (at === null) {
+        rawFailures.push({
+          text: `no anchor: ${page} carries none of the members ${key} ships after, so its position in the roster is unknown`,
+          page,
+          fixable: false,
+        });
+        continue;
+      }
+      const ref = part.delivery === 'asset' ? `${hash16(source.bytes)}.${part.kind}` : null;
+      const group = insertGroups.get(key) ?? {
+        type: 'insert',
+        name: part.name,
+        kind: part.kind,
+        ref,
+        bytes: part.delivery === 'asset' ? source.bytes : null,
+        origin: source.origin,
+        reason: 'missing',
+        targets: [],
+      };
+      group.targets.push({
+        file,
+        page,
+        to: `\n${markedTagText({ name: part.name, kind: part.kind, ref, body: part.delivery === 'inline' ? source.bytes : null })}`,
+        at,
+      });
+      insertGroups.set(key, group);
+    }
   }
 
   /** @type {Map<string, { name: string, kind: 'css'|'js', refs: Set<string>, reasons: Set<string>, bytes: string, origin: string, pages: Set<string>, missing: boolean }>} */
@@ -333,6 +451,7 @@ export function planLayers({ servedDir, root = '.' }) {
   for (const group of inlineGroups.values()) {
     changes.push({ type: 'inline', name: group.name, kind: group.kind, origin: group.origin, reason: 'code drift', targets: group.targets });
   }
+  for (const group of insertGroups.values()) changes.push(group);
   changes.sort((a, b) => (a.name === b.name ? a.kind.localeCompare(b.kind) : a.name.localeCompare(b.name)));
 
   const members = pages.reduce((total, entry) => total + entry.members.length, 0);
@@ -454,6 +573,12 @@ export function applyPlan(plan) {
   const removed = new Set();
   const added = new Set();
   for (const change of plan.changes) {
+    if (change.type === 'insert') {
+      // an inserted tag normally names an asset the tree already carries; if the
+      // name is not in the list yet, the count check below refuses the run
+      if (change.ref) added.add(change.ref);
+      continue;
+    }
     if (change.type !== 'asset' || change.from === change.to) continue;
     removed.add(change.from);
     added.add(change.to);
@@ -474,6 +599,15 @@ export function applyPlan(plan) {
         if (!entry) throw new PublishLayersError([`planned page served/${rel} is not in the tree`]);
         pageEdits.set(entry.file, rewriteAssetRef(pageEdits.get(entry.file) ?? entry.html, change));
       }
+    } else if (change.type === 'insert') {
+      // latest position first: splicing an earlier one in would move every offset
+      // after it, and the spans were read from the untouched page
+      for (const target of [...change.targets].sort((a, b) => b.at - a.at)) {
+        const entry = plan.pages.find((page) => page.file === target.file);
+        if (!entry) throw new PublishLayersError([`planned page ${target.page} is not in the tree`]);
+        const html = pageEdits.get(target.file) ?? entry.html;
+        pageEdits.set(target.file, `${html.slice(0, target.at)}${target.to}${html.slice(target.at)}`);
+      }
     } else {
       for (const target of change.targets) {
         const entry = plan.pages.find((page) => page.file === target.file);
@@ -490,12 +624,18 @@ export function applyPlan(plan) {
       const html = pageEdits.get(file ?? '');
       if (html === undefined) continue;
       const member = markedMembers(html).find((m) => m.name === change.name && m.kind === change.kind);
-      const landed = member && (change.type === 'asset' ? member.ref === change.to : change.targets.some((target) => target.file === file && member.body === target.to));
+      const landed = member && landedIn(member, change, file);
       if (!landed) throw new PublishLayersError([`the ${change.name}/${change.kind} rewrite did not land in ${path.relative(servedDir, file ?? '')}`]);
     }
   }
 
   for (const change of plan.changes) {
+    if (change.type === 'insert') {
+      // idempotent: the name is the hash of these bytes, so this is the same file
+      // the tree would carry, or the one it already carries
+      if (change.ref && change.bytes !== null) writeFileSync(path.join(servedDir, 'assets', change.ref), change.bytes, 'utf8');
+      continue;
+    }
     if (change.type !== 'asset') continue;
     writeFileSync(path.join(servedDir, 'assets', change.to), change.bytes, 'utf8');
   }
@@ -515,6 +655,20 @@ export function applyPlan(plan) {
 }
 
 /**
+ * Whether a page now carries a change as the plan intended — the proof that the
+ * rewrite or the insertion landed there before anything is written.
+ * @param {Marked} member
+ * @param {Change} change
+ * @param {string} file
+ * @returns {boolean}
+ */
+function landedIn(member, change, file) {
+  if (change.type === 'asset') return member.ref === change.to;
+  if (change.type === 'insert') return change.ref === null ? member.delivery === 'inline' : member.ref === change.ref;
+  return change.targets.some((target) => target.file === file && member.body === target.to);
+}
+
+/**
  * One change as a log line. Inline bodies are not printed — the interesting fact
  * is which member moved and how far, not the kilobytes it moved.
  * @param {Change} change
@@ -523,6 +677,9 @@ export function applyPlan(plan) {
 function changeLine(change) {
   if (change.type === 'asset') {
     return `${change.name}/${change.kind}: served/assets/${change.from} → served/assets/${change.to} (${change.reason}) — ${change.pages.length} page(s)`;
+  }
+  if (change.type === 'insert') {
+    return `${change.name}/${change.kind}: created (${change.reason}) — ${change.targets.length} page(s)`;
   }
   return `${change.name}/${change.kind}: inline body from ${change.origin} (${change.reason}) — ${change.targets.length} page(s)`;
 }
