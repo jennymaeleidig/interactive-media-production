@@ -18,7 +18,6 @@ import { fileURLToPath } from 'node:url';
 import { isLocalTarget } from '../pipeline/run-manifest.mjs';
 import { isInertSource } from '../pipeline/injected-source.mjs';
 import { markedMembers } from '../pipeline/injected-layers.mjs';
-import type { ChatResponse } from '../lib/chat-engine';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -254,50 +253,5 @@ describe('path resolution', () => {
       expect(res.status, p).toBe(404);
       expect(await res.text()).not.toContain('"name"');
     }
-  });
-});
-
-// The chat message API seam over real HTTP:
-// the same assertions as test/chat.seam.test.ts but through the built route,
-// proving the POST shell (JSON in, JSON out, 400 on malformed) as well as the
-// engine. Conversation shape and pinned copy are locked in the chat-seam
-// project; this block covers the transport.
-describe('chat message API over HTTP', () => {
-  // The turn shape is declared once (`pipeline/chat-turn.mjs`, re-exported by the
-  // engine): this seam asserts the transport carries that shape, not a copy of it.
-  async function post(body: unknown): Promise<{ status: number; json: ChatResponse }> {
-    const res = await fetch(base + '/api/chat', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    return { status: res.status, json: (await res.json()) as ChatResponse };
-  }
-
-  const optionTexts = (json: ChatResponse) => json.turn.options?.map((o) => o.text);
-
-  it('answers start with a turn batch, the choice set, and the session variables', async () => {
-    const { status, json } = await post({ type: 'start' });
-    expect(status).toBe(200);
-    expect(json.turn.lines).toHaveLength(1);
-    expect(optionTexts(json)).toEqual(['What can you help me with?', 'Get a Demo', 'Support']);
-    expect(json.state.vars).toHaveProperty('demoRequested', false);
-  });
-
-  it('persists a live session across a resume and returns the email gate to the hub', async () => {
-    const started = await post({ type: 'start' });
-    const { sessionId } = started.json;
-    const demo = await post({ type: 'option', sessionId, optionIndex: 1 });
-    expect(optionTexts(demo.json)).toEqual(['Maybe later']);
-    const gate = await post({ type: 'option', sessionId, optionIndex: 0 });
-    expect(optionTexts(gate.json)).toEqual(['What can you help me with?', 'Get a Demo', 'Support']);
-    expect(gate.json.turn.complete).toBe(false);
-    const reloaded = await post({ type: 'resume', sessionId });
-    expect(reloaded.json.replay).toHaveLength(4);
-  });
-
-  it('rejects a malformed request with 400', async () => {
-    expect((await post({ type: 'nope' })).status).toBe(400);
-    expect((await post({ type: 'option', sessionId: 'x' })).status).toBe(400);
   });
 });

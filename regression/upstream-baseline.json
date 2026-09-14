@@ -34,6 +34,11 @@
       "fingerprint": "c8aac51cdc60762a"
     },
     {
+      "tier": "copy",
+      "path": "/partner-program",
+      "fingerprint": "4cae8e1841b21629"
+    },
+    {
       "tier": "chrome",
       "path": "/faq",
       "fingerprint": "ff07ed92007a3fda"

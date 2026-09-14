@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
-// The Chat mimic's dialogue engine, client-side: the browser twin of
-// `lib/chat-engine.ts`, with the same turn contract (`pipeline/chat-turn.mjs`)
-// and the same semantics.
+// The Chat mimic's dialogue engine, client-side: the engine the tree ships,
+// speaking the same turn contract (`pipeline/chat-turn.mjs`) the widget reads.
 //
 // Why it exists: the Recreation ships as a static tree (GitHub Pages has no
 // server), so the message API's `POST /api/chat` cannot answer and the widget
@@ -101,9 +100,8 @@ function newId() {
 }
 
 /**
- * A fresh `Dialogue` over a storage seeded with `vars` — the same construction
- * `lib/chat-engine.ts` performs (declare defaults seed around restored values,
- * so restored ones survive).
+ * A fresh `Dialogue` over a storage seeded with `vars` — declare defaults seed
+ * around restored values, so restored ones survive.
  * @param {Record<string, unknown>} [vars]
  */
 function open(vars) {
@@ -119,8 +117,8 @@ function open(vars) {
 }
 
 /**
- * Pull a dialogue to its next rest state (an option set or completion), the same
- * sweep `lib/chat-engine.ts` performs past line and command stops.
+ * Pull a dialogue to its next rest state (an option set or completion), sweeping
+ * past line and command stops.
  * @param {Dialogue} dialogue
  */
 function sweep(dialogue) {

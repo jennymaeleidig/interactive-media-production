@@ -1,13 +1,12 @@
 // The shape of one turn of the message API, declared once.
 //
-// Four readers need it and none of them can see the others: the engine that
-// builds it (`lib/chat-engine.ts`), the route that serializes it, the widget
-// that parses it (`pipeline/chat-widget.js` — the one reader whose drift ships
-// to a browser), and the seams that assert it. It is declared here, in JSDoc,
-// because this is the only language both sides read: TypeScript imports the
-// types, and `checkJs` (`tsconfig.checkjs.json`) resolves them for the widget
-// where it lies. There is no build step and no runtime code — this module
-// exports types and nothing else.
+// Three readers need it and none of them can see the others: the engine that
+// builds it (`pipeline/chat-engine.mjs`), the widget that parses it
+// (`pipeline/chat-widget.js` — the one reader whose drift ships to a browser),
+// and the seams that assert it. It is declared here, in JSDoc, because this is
+// the only language both sides read: TypeScript imports the types, and `checkJs`
+// (`tsconfig.checkjs.json`) resolves them for the widget where it lies. There is
+// no build step and no runtime code — this module exports types and nothing else.
 //
 // SPDX-License-Identifier: CC0-1.0
 
@@ -34,7 +33,7 @@
  * One request: the conversation step the widget sends and the engine answers.
  * `start` mints or resumes, `resume` replays a saved thread, `option` selects a
  * pending choice by its engine index. The widget sends one per turn; the client
- * engine and the server route read the same shape.
+ * engine reads the same shape.
  * @typedef {{ type: 'start', sessionId?: string }
  *   | { type: 'resume', sessionId: string }
  *   | { type: 'option', sessionId: string, optionIndex: number }} ChatRequest

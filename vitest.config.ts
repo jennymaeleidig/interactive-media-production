@@ -36,10 +36,13 @@ export default defineConfig({
       project('lottie-seam', ['test/lottie.seam.test.ts']),
       project('nav-seam', ['test/nav.seam.test.ts']),
       project('composition-seam', ['test/composition.seam.test.ts']),
-      project('chat-seam', ['test/chat.seam.test.ts']),
+      // the shipped engine keeps its one session in `localStorage`, so the
+      // engine seam runs in jsdom — the same DOM the widget seam mounts
+      project('chat-seam', ['test/chat.seam.test.ts'], { environment: 'jsdom' }),
       // the runtime is evaluated into a fresh JSDOM window per test (as the
-      // motion/interactions seams do), so the project needs no jsdom
-      // environment of its own and no JSX transform
+      // motion/interactions seams do) and the file carries its own
+      // `@vitest-environment jsdom` for the source-engine oracle, so the
+      // project needs no jsdom environment of its own and no JSX transform
       project('chat-widget-seam', ['test/chat-widget.seam.test.ts']),
       project('injected-layers', ['test/injected-layers.test.ts']),
       project('injected-source', ['test/injected-source.test.ts']),

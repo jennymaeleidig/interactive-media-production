@@ -1,13 +1,15 @@
+// @vitest-environment jsdom
 // Chat widget DOM seam (re-pointed at the injected runtime by the site-wide
 // mount): the widget's external behavior, evaluated in a real DOM (jsdom)
 // against the exact bytes the build inlines on every launcher page
 // (`pipeline/chat-runtime.js` — the generated asset that carries the client-side
 // dialogue engine ahead of the widget, built by
 // `pipeline/build-chat-runtime.mjs`) — the same bytes every mounted served page
-// carries. The message-API seam covers the server engine; this one covers the
-// surface the visitor sees, which no engine seam can reach: the three captured
-// surfaces, the inert composer, the choice chips in the composer slot,
-// complete-bubble replies, and the absence of typing indicators and sounds.
+// carries. The engine seam (`test/chat.seam.test.ts`) drives the source module
+// (`pipeline/chat-engine.mjs`); this one covers the surface the visitor sees,
+// which no engine seam can reach: the three captured surfaces, the inert
+// composer, the choice chips in the composer slot, complete-bubble replies, and
+// the absence of typing indicators and sounds.
 //
 // There is no fetch stub: the engine runs the real `dialogue/flock.yarn`
 // program in the page, so these assertions are the deployed conversation, and
@@ -16,10 +18,17 @@
 // SPDX-License-Identifier: CC0-1.0
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DOMWindow } from 'jsdom';
-import { handleChat } from '../lib/chat-engine';
 import type { ChatLine } from '../pipeline/chat-turn.mjs';
+// Side-effect import: the shipped source engine installs `window.__flockChatEngine`
+// on the jsdom global. The parity block below drives it as the oracle the widget
+// bundle must agree with, so the committed `chat-runtime.js` cannot go stale
+// against the module `pipeline/build-chat-runtime.mjs` bundles.
+import '../pipeline/chat-engine.mjs';
 import { isInertSource } from '../pipeline/injected-source.mjs';
 import { layerSource, seamWindow } from './seam-harness';
+
+/** The source engine every turn below is compared against. */
+const shippedEngine = window.__flockChatEngine!;
 
 const CHAT_CSS = layerSource('chat', 'css');
 /** The shipped asset: the engine bundle plus the widget, concatenated. */
@@ -207,25 +216,27 @@ describe('session persistence', () => {
   });
 });
 
-describe('the client engine and the message API agree', () => {
-  /** Drive the server engine down the same choice script and collect its turns. */
-  function serverConversation(script: string[]): { lines: ChatLine[]; options: string[] | null; vars: Record<string, unknown> }[] {
+describe('the widget renders exactly what the shipped engine returns', () => {
+  /** Drive the shipped source engine down the same choice script and collect its turns. */
+  async function engineConversation(
+    script: string[],
+  ): Promise<{ lines: ChatLine[]; options: string[] | null; vars: Record<string, unknown> }[]> {
     const steps: { lines: ChatLine[]; options: string[] | null; vars: Record<string, unknown> }[] = [];
-    let res = handleChat({ type: 'start' });
+    let res = await shippedEngine.turn({ type: 'start' });
     steps.push({ lines: res.turn.lines, options: res.turn.options?.map((o) => o.text) ?? null, vars: res.state.vars });
     for (const pick of script) {
-      const live = handleChat({ type: 'resume', sessionId: res.sessionId });
+      const live = await shippedEngine.turn({ type: 'resume', sessionId: res.sessionId });
       const index = live.turn.options?.find((o) => o.text === pick)?.index;
-      if (index === undefined) throw new Error(`no server option ${JSON.stringify(pick)}`);
-      res = handleChat({ type: 'option', sessionId: res.sessionId, optionIndex: index });
+      if (index === undefined) throw new Error(`no engine option ${JSON.stringify(pick)}`);
+      res = await shippedEngine.turn({ type: 'option', sessionId: res.sessionId, optionIndex: index });
       steps.push({ lines: res.turn.lines, options: res.turn.options?.map((o) => o.text) ?? null, vars: res.state.vars });
     }
     return steps;
   }
 
-  it('renders the same lines, choice sets and variables the server engine would', async () => {
+  it('renders the same lines, choice sets and variables the engine returns', async () => {
     const script = ['What can you help me with?', "That's all for now"];
-    const steps = serverConversation(script);
+    const steps = await engineConversation(script);
     const expectedLines = steps.flatMap((step) => step.lines.map((line) => line.text));
     /** The variables the client engine persisted for the live session. */
     const clientVars = () => JSON.parse(win.localStorage.getItem('flock-chat-state') as string).vars as Record<string, unknown>;

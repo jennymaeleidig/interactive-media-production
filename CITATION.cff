@@ -26,4 +26,4 @@ references:
     url: 'https://github.com/airbnb/lottie-web'
     license: MIT
     version: 5.13.0
-    note: 'The full player is vendored unmodified at pipeline/vendor/lottie.min.js (date: 2026-09-14); pipeline/build-lottie-layers.mjs embeds a neutered copy in the generated pipeline/lottie/<name>.runtime.js layers. See pipeline/vendor/LOTTIE-CITATION.md.'
+    note: 'The full player is vendored unmodified at pipeline/vendor/lottie.min.js (date: 2026-09-14); pipeline/build-lottie-layers.mjs writes a neutered copy to the shared pipeline/lottie/player.runtime.js asset, which the generated pipeline/lottie/<name>.runtime.js data layers use. See pipeline/vendor/LOTTIE-CITATION.md.'
