@@ -293,7 +293,7 @@ export function runWatch(inputs) {
   // the new date when this run records one, the previous baseline's when a plain
   // run leaves the reference point alone — never today's date for a run that
   // recorded nothing.
-  const recorded = previous === null || accept ? verified : previous.verified;
+  const recorded = write ? verified : previous.verified;
   // The chrome tier carries two distinguishable things: the per-page chrome
   // findings and, nested under `restyle`, the shared-asset findings. The silent
   // first run reports the asset count but no findings.

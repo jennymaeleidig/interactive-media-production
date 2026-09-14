@@ -127,3 +127,21 @@ play case, and that is the decision this note records.
 **Verification.** `npm run typecheck` clean; `npm test` 22 files / 395 tests green
 and offline; `npm run build` succeeds. The CLI edge stays outside the suite and
 is hand-run (`npm run upstream`).
+
+**Whole-effort review (the effort's final pass).** After all six tickets and 04b
+landed, a two-axis review ran over `fd6e678..HEAD` (the effort's own base),
+reading every ticket; reports at `/tmp/final-standards.md` and
+`/tmp/final-spec.md`. Fixed: the README stated 2026-09-13 as the
+verified-in-sync date while the committed baseline records 2026-09-14;
+`CONTEXT.md` named only two of the six watch cores and called media liveness
+"the second check"; `CODING_STANDARDS.md` said the `checkJs` project covered
+only `pipeline/`; `livenessClass` folded 201/204/206 into `4xx`, so a live
+non-200 2xx page would have read as a removal; three stale docblocks/headers.
+Resolved by clarifying the spec, not the code: decision 10's "reports nothing"
+now states precisely that the silent first run suppresses the baseline-dependent
+tiers (`since` and restyle) while the baseline-independent ones (index, copy,
+chrome, media) still report — the reading tickets 02–06 converged on. Recorded,
+not changed: the media census rides the watched universe's served pages rather
+than a tree walk (identical today; noted in the CLI), and the standards axis's
+per-file judgement calls (duplicated fan-out guards, sibling digest wrappers)
+are left as the repo's existing shape.

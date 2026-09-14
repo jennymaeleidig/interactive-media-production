@@ -191,7 +191,10 @@ async function main() {
 
   // Read every served page the watched universe answers once. The copy
   // comparison needs the served bytes only where upstream answers 200, but the
-  // media census needs every served page regardless of upstream status.
+  // media census needs every served page regardless of upstream status. The
+  // census rides this map, so it is the whole tree only as long as every served
+  // `.html` is reachable from the universe — true today (a served page outside
+  // the universe would need its own tree walk; recorded in ticket 06).
   /** @type {Map<string, string>} */
   const servedHtml = new Map();
   for (const [watched, file] of servedFiles) servedHtml.set(watched, readFileSync(file, 'utf8'));
