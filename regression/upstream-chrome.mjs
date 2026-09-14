@@ -34,9 +34,15 @@
 // count), because they are not strip-pass targets and the removal fixtures are
 // their record; the allow-list's counted rule above stays the allow-list's own.
 //
+// Ticket 07 adds one more shared rule, and it is not a list: a word/line reveal
+// fragment is prose the copy projection reads, so chrome must never read it
+// back. The fragments sit beside the paragraph they were split from when a
+// re-serialization promotes them out of an invalid `<p>`, so the skip lives in
+// the walker and the text collector, keyed on the animation's own class.
+//
 // SPDX-License-Identifier: CC0-1.0
 import { parse } from 'parse5';
-import { BLOCK, isGenerated, normalize, PROSE_ELEMENTS, SKIPPED, VOID } from './upstream-copy.mjs';
+import { BLOCK, isGenerated, isSplitFragment, normalize, PROSE_ELEMENTS, SKIPPED, VOID } from './upstream-copy.mjs';
 import { copyDiff, projectionDigest } from './upstream-copy.mjs';
 
 /** @typedef {import('parse5').DefaultTreeAdapterTypes.Node} HtmlNode */
@@ -328,10 +334,10 @@ function regionText(node) {
   return normalize(parts.join(''));
 }
 
-/** Collect text, stopping at prose, skipped, generated and void regions. The
- * two callers differ in one rule: a masked hit descends into nested blocks (the
- * whole subtree counts as chrome), while a block run stops at them (each nested
- * block becomes its own run). One walker, one flag.
+/** Collect text, stopping at prose, skipped, generated, split-fragment and void
+ * regions. The two callers differ in one rule: a masked hit descends into nested
+ * blocks (the whole subtree counts as chrome), while a block run stops at them
+ * (each nested block becomes its own run). One walker, one flag.
  * @param {HtmlNode} node @param {string[]} parts @param {boolean} intoBlocks @returns {void} */
 function collectText(node, parts, intoBlocks) {
   if (!('childNodes' in node)) return;
@@ -341,7 +347,7 @@ function collectText(node, parts, intoBlocks) {
       continue;
     }
     if (!('tagName' in child)) continue;
-    if (SKIPPED.has(child.tagName) || isGenerated(child) || PROSE.has(child.tagName) || VOID.has(child.tagName)) {
+    if (SKIPPED.has(child.tagName) || isGenerated(child) || isSplitFragment(child) || PROSE.has(child.tagName) || VOID.has(child.tagName)) {
       parts.push(' ');
       continue;
     }
@@ -386,11 +392,12 @@ function stripRegions(node, entries, hits) {
 /**
  * The chrome projection of one page: the inline text of every non-prose block
  * element, in document order. A block's own run stops at a nested block (which
- * becomes its own run), at a prose element (the copy projection owns it), and
- * at a skipped or generated region; text directly under a wrapper with no block
- * around it is not chrome and is dropped. The runtime-fill regions are stripped
- * first, from the same side, because a rendered capture carries them and a raw
- * fetch does not. Pure — same HTML in, same runs out.
+ * becomes its own run), at a prose element or a word/line reveal fragment (the
+ * copy projection owns both), and at a skipped or generated region; text
+ * directly under a wrapper with no block around it is not chrome and is
+ * dropped. The runtime-fill regions are stripped first, from the same side,
+ * because a rendered capture carries them and a raw fetch does not. Pure — same
+ * HTML in, same runs out.
  * @param {string} html
  * @param {ChromeRuntimeFillEntry[]} [runtimeFill]
  * @returns {string[]}
@@ -416,7 +423,7 @@ function walkChrome(node, runs) {
   if (!('childNodes' in node)) return;
   for (const child of node.childNodes) {
     if (!('tagName' in child)) continue;
-    if (SKIPPED.has(child.tagName) || isGenerated(child) || PROSE.has(child.tagName)) continue;
+    if (SKIPPED.has(child.tagName) || isGenerated(child) || isSplitFragment(child) || PROSE.has(child.tagName)) continue;
     if (BLOCK.has(child.tagName)) {
       const text = blockText(child);
       if (text !== '') runs.push(text);

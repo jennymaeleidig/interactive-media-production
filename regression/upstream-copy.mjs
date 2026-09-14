@@ -48,11 +48,31 @@
 // remove them in three measured steps — excluding Webflow's table of contents
 // left 11 findings, adding Finsweet's filter empty state left 5, and excluding
 // the ATS-backed jobs list, the event speaker popup and the Wistia player left
-// exactly 2. Both are real upstream copy edits: `/careers` ("We Aspire
-// Fearlessly…" became "We Work Hard…") and `/products/license-plate-readers` (a
-// paragraph added). That is the steady state the projection promises: an empty
-// report means nothing moved, and a non-empty one is a page a human should
-// read.
+// exactly 2. One of those 2 was real — `/careers` ("We Aspire Fearlessly…"
+// became "We Work Hard…") — and the other, `/products/license-plate-readers`,
+// was the split-word false positive ticket 07 fixed (below): the served page's
+// line was a word-reveal run and the raw live page's was plain prose, so the
+// projection missed it on one side and chrome read it on the other. With both
+// renderings projected alike, the steady state the projection promises is
+// `/careers` and nothing else: an empty report means nothing moved, and a
+// non-empty one is a page a human should read.
+//
+// The word/line reveal (ticket 07). The animation rewrites one prose line as one
+// element per word (or per line). The Capture froze the rendered result, and
+// SingleFile's re-serialization can leave the fragments *beside* the paragraph
+// they came from — a `<div>` inside a `<p>` is invalid, so the tree constructor
+// applies the paragraph's implied end tag — while a raw live fetch is pre-script
+// and carries the plain line. The fragments are prose: `collectRuns` joins an
+// adjacent run of them into one run, and the chrome projection skips them. The
+// rule is the animation's own class (`split-word`/`split-line`, and the `-mask`
+// wrappers), so it holds for any page and heading rather than one path.
+//
+// What the split reconstruction cannot see: a reveal whose fragments carry a
+// different class marker still reads as chrome and is still missed by copy; a
+// fragment split mid-punctuation would be joined with a space the plain live
+// line does not have; and the animated element's own `aria-label` — the
+// browser's record of the line — is deliberately not consulted, so a line
+// rendered only through that attribute projects to nothing on the served side.
 //
 // What the copy projection is blind to, by design: chrome (nav/footer) text
 // that lives in non-prose containers, which ticket 04's chrome projection and
@@ -197,6 +217,30 @@ export function isGenerated(node) {
 }
 
 /**
+ * The animation's own marker on a text fragment. The word/line reveal rewrites
+ * a prose line as one element per word (or per line), and the `-mask` wrapper
+ * carries the prefix. SingleFile re-serialized the Capture's post-script DOM,
+ * so the tree carries the fragments where a raw live fetch carries the plain
+ * line; matching the animation's class is what makes the two renderings one
+ * projection instead of one page's path.
+ * @type {RegExp}
+ */
+const SPLIT_TEXT_CLASS = /(?:^|\s)split-(?:word|line)/;
+
+/**
+ * Whether a node is one fragment of the word/line reveal: a piece of a prose
+ * line the animation rewrote as its own element. Such a fragment is prose the
+ * copy projection must read and chrome the chrome projection must not, wherever
+ * the re-serialization left it.
+ * @param {HtmlNode} node
+ * @returns {boolean}
+ */
+export function isSplitFragment(node) {
+  if (!('tagName' in node) || !('attrs' in node)) return false;
+  return node.attrs.some((attr) => attr.name === 'class' && SPLIT_TEXT_CLASS.test(attr.value));
+}
+
+/**
  * Accumulate the text a prose run renders, skipping the subtrees whose text is
  * not prose. `<br>` splits words the reader sees apart, so void elements
  * contribute a space.
@@ -222,22 +266,55 @@ function collectText(node, parts) {
 }
 
 /**
- * The outermost prose elements in document order. A prose element's own run is
- * taken whole and its descendants are not descended into, so nested prose is
- * part of its parent's run rather than a second one.
+ * The rendered text of one word/line reveal fragment. The re-serialization
+ * writes adjacent fragments with no whitespace between them (SingleFile drops
+ * the text nodes), so the fragments' texts are the words; the caller joins them
+ * with a space.
+ * @param {HtmlNode} node
+ * @returns {string}
+ */
+function fragmentText(node) {
+  /** @type {string[]} */
+  const parts = [];
+  collectText(node, parts);
+  return normalize(parts.join(''));
+}
+
+/**
+ * The outermost prose elements in document order, plus the word/line reveal's
+ * fragment runs. A prose element's own run is taken whole and its descendants
+ * are not descended into, so nested prose is part of its parent's run rather
+ * than a second one. A run of adjacent split fragments is the same line written
+ * the way the Capture's serializer left it — with a `<div>` inside a `<p>` the
+ * tree constructor applies the paragraph's implied end tag, so the fragments
+ * land beside the empty paragraph instead of inside it — and joins to one run.
  * @param {HtmlNode} node
  * @param {string[]} runs
  * @returns {void}
  */
 function collectRuns(node, runs) {
   if (!('childNodes' in node)) return;
-  for (const child of node.childNodes) {
-    if ('tagName' in child && isGenerated(child)) continue;
-    if ('tagName' in child && PROSE.has(child.tagName)) {
+  const children = node.childNodes;
+  for (let i = 0; i < children.length; i += 1) {
+    const child = children[i];
+    if (!('tagName' in child) || isGenerated(child)) continue;
+    if (PROSE.has(child.tagName)) {
       /** @type {string[]} */
       const parts = [];
       collectText(child, parts);
       const text = normalize(parts.join(''));
+      if (text !== '') runs.push(text);
+      continue;
+    }
+    if (isSplitFragment(child)) {
+      /** @type {string[]} */
+      const parts = [];
+      while (i < children.length && 'tagName' in children[i] && isSplitFragment(children[i])) {
+        parts.push(fragmentText(children[i]));
+        i += 1;
+      }
+      i -= 1;
+      const text = normalize(parts.join(' '));
       if (text !== '') runs.push(text);
       continue;
     }

@@ -12,6 +12,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { copyDiff, copyDigest, copyFinding, copyReport, copyRuns, PROSE_ELEMENTS } from '../regression/upstream-copy.mjs';
+import { chromeFinding, chromeRuns } from '../regression/upstream-chrome.mjs';
 
 const SERVED_DIR = new URL('../served/', import.meta.url);
 
@@ -82,6 +83,27 @@ describe('copyRuns — the projection is a pure function of HTML', () => {
     const plain = '<h2>Public safety works better together</h2>';
     expect(copyRuns(split)).toEqual(copyRuns(plain));
     expect(copyRuns(split)).toEqual(['Public safety works better together']);
+  });
+
+  it('reassembles the word-reveal fragments the re-serialization promoted out of their paragraph', () => {
+    // Ticket 07. The Capture's serializer keeps the animation's fragments as
+    // block elements. A `<div>` inside a `<p>` is invalid, so the tree
+    // constructor applies the paragraph's implied end tag and the fragments
+    // land *beside* an empty paragraph rather than inside it. A raw live fetch
+    // is pre-script and carries the sentence as ordinary prose, so the same
+    // heading is one line written two ways; both must project alike.
+    const sentence = 'Community safety works better together.';
+    const served = `<p class=lp7_paragraph aria-label="${sentence}" data-animation-gsap=words><div class=split-word>Community</div><div class=split-word>safety</div><div class=split-word>works</div><div class=split-word>better</div><div class=split-word>together.</div></p>`;
+    const live = `<p class=lp7_paragraph data-animation-gsap=words>${sentence}</p>`;
+    expect(copyRuns(served)).toEqual(copyRuns(live));
+    expect(copyRuns(served)).toEqual([sentence]);
+  });
+
+  it('reassembles a line-reveal run too, and keeps the fragments in document order', () => {
+    // The same animation splits long headings by line. The rule is the split
+    // rendering, not one page or one heading level.
+    const served = '<div class=lpr7_layout><div class=split-line>How Flock LPR Helps Move</div><div class=split-line>Investigations Forward</div><p>Body copy</p></div>';
+    expect(copyRuns(served)).toEqual(['How Flock LPR Helps Move Investigations Forward', 'Body copy']);
   });
 
   it('does not read a script-generated region, whose capture-time fill a raw fetch cannot reproduce', () => {
@@ -199,5 +221,42 @@ describe('the committed tree fed in as both sides', () => {
     for (const page of servedPages) {
       expect(copyRuns(readFileSync(page.file, 'utf8')).length, page.name).toBeGreaterThan(0);
     }
+  });
+});
+
+// Ticket 07's seam: the split-word and split-line reveal rewrites one prose line
+// as one element per word (or per line), and a re-serialization can leave those
+// fragments beside the paragraph they came from instead of inside it. The
+// fragments are prose, not chrome, so the two projections land on the same line
+// and an unchanged heading is silent on both tiers — while a genuine edit still
+// reports once.
+describe('ticket 07 — a word-reveal run and its plain-prose twin differ by no finding', () => {
+  const SENTENCE = 'Community safety works better together.';
+  const CHANGED = 'Community safety works better together, always.';
+  const fragment = (word: string) => `<div class=split-word>${word}</div>`;
+  const served = `<p class=lp7_paragraph aria-label="${SENTENCE}" data-animation-gsap=words>${fragment('Community')}${fragment('safety')}${fragment('works')}${fragment('better')}${fragment('together.')}</p>`;
+  const live = `<p class=lp7_paragraph data-animation-gsap=words>${SENTENCE}</p>`;
+
+  it('reports no copy finding and no chrome finding for the same heading', () => {
+    expect(copyFinding('/products/license-plate-readers', served, live)).toBeNull();
+    expect(chromeFinding('/products/license-plate-readers', served, live)).toBeNull();
+  });
+
+  it('reports exactly one finding when that heading genuinely changes', () => {
+    const changed = `<p class=lp7_paragraph data-animation-gsap=words>${CHANGED}</p>`;
+    expect(copyFinding('/products/license-plate-readers', served, changed)).toEqual({
+      path: '/products/license-plate-readers',
+      hunks: [{ served: [SENTENCE], live: [CHANGED] }],
+    });
+    expect(chromeFinding('/products/license-plate-readers', served, changed)).toBeNull();
+  });
+
+  it('pins the committed page that carries the split-word run', () => {
+    // The only page in the tree with the reveal markup, kept from drifting: its
+    // sentence is one copy run, and its fragments are not chrome.
+    const html = readFileSync(new URL('../served/products/license-plate-readers.html', import.meta.url), 'utf8');
+    expect(copyRuns(html)).toContain('From recovering stolen vehicles to locating missing people and supporting investigations, learn how communities are using Flock LPR to improve public safety.');
+    expect(chromeRuns(html)).not.toContain('recovering');
+    expect(chromeRuns(html)).not.toContain('safety.');
   });
 });

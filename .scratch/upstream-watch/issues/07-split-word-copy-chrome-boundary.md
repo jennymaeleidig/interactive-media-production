@@ -1,6 +1,6 @@
 # 07 — Split-word heading double-report (copy/chrome boundary)
 
-Status: open
+Status: claimed
 Blocked by: 06
 
 ## What to build
