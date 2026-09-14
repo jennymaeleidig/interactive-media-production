@@ -33,6 +33,7 @@ export default defineConfig({
       project('motion-seam', ['test/motion.seam.test.ts']),
       project('interactions-seam', ['test/interactions.seam.test.ts']),
       project('scroll-seam', ['test/scroll.seam.test.ts']),
+      project('lottie-seam', ['test/lottie.seam.test.ts']),
       project('nav-seam', ['test/nav.seam.test.ts']),
       project('composition-seam', ['test/composition.seam.test.ts']),
       project('chat-seam', ['test/chat.seam.test.ts']),

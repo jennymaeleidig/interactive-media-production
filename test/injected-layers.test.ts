@@ -7,12 +7,13 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
   LAYERS,
   maintainedSource,
   markedMembers,
+  markedTags,
   mirrorFindings,
   shippedSource,
 } from '../pipeline/injected-layers.mjs';
@@ -72,7 +73,11 @@ describe('the declared roster', () => {
       expect(layer.pages?.[0]).toMatch(/^\/products\//);
       expect(layer.parts).toHaveLength(1);
       expect(layer.parts[0]).toMatchObject({ kind: 'js', delivery: 'asset' });
-      expect(layer.parts[0].source).toBe(`pipeline/lottie/${layer.name.slice('lottie-'.length)}.runtime.js`);
+      // the roster owns the path, and the build script reads it from here rather
+      // than restating it, so what has to hold is that the file it names is there
+      const source = layer.parts[0].source!;
+      expect(source.startsWith('pipeline/lottie/')).toBe(true);
+      expect(existsSync(source), source).toBe(true);
     }
   });
 
@@ -130,6 +135,19 @@ describe('markedMembers', () => {
       'scroll/css',
       'scroll/js',
     ]);
+  });
+
+  it('reports the tag span each member was read from, and reads the same tags as markedMembers', () => {
+    const tags = markedTags(PAGE);
+    expect(tags.map((t: { name: string; kind: string }) => `${t.name}/${t.kind}`)).toEqual(
+      markedMembers(PAGE).map((m: { name: string; kind: string }) => `${m.name}/${m.kind}`),
+    );
+    const motion = tags[0];
+    // the span slices back to the exact tag the page wrote — what a rewrite needs
+    expect(PAGE.slice(motion.start, motion.end)).toBe(
+      '<link rel=stylesheet href=/assets/aaaaaaaaaaaaaaaa.css data-flock-parody="motion">',
+    );
+    expect(motion).toMatchObject({ element: 'link', kind: 'css', delivery: 'asset', ref: 'aaaaaaaaaaaaaaaa.css' });
   });
 
   it('resolves an asset reference to the name under /assets', () => {

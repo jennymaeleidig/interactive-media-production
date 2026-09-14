@@ -215,6 +215,44 @@ const inlineBody = (html, from, element) => {
 };
 
 /**
+ * One marked tag as the tree writes it: the member name it carries, the element
+ * that carries it, the delivery form the tag itself implies, the `/assets/<name>`
+ * reference it points at (`null` when its bytes are inline), and the half-open
+ * `[start, end)` span of the open tag.
+ * @typedef {{ name: string, element: string, kind: 'css'|'js', delivery: 'asset'|'inline', ref: string|null, start: number, end: number }} MarkedTag
+ */
+
+/**
+ * Every marked tag in a page, in document order, with the offsets a rewrite
+ * needs. This is the one scan for `data-flock-parody` tags: `markedMembers` is it
+ * read as members, and the publisher is it read as spans. A second locator would
+ * be a second definition of which tag a member is, free to disagree with this
+ * one about the element or the marker.
+ * @param {string} html
+ * @returns {MarkedTag[]}
+ */
+export function markedTags(html) {
+  /** @type {MarkedTag[]} */
+  const tags = [];
+  MARKED.lastIndex = 0;
+  let m;
+  while ((m = MARKED.exec(html))) {
+    const [tag, element, name] = m;
+    const ref = assetRef(attribute(tag, 'src') ?? attribute(tag, 'href'));
+    tags.push({
+      name,
+      element,
+      kind: element === 'script' ? 'js' : 'css',
+      delivery: ref ? 'asset' : 'inline',
+      ref,
+      start: m.index,
+      end: m.index + tag.length,
+    });
+  }
+  return tags;
+}
+
+/**
  * A page's marked members, in document order — the roster as this page actually
  * carries it. Reads both delivery forms: an `/assets/<name>` reference becomes
  * `{ ref }`, anything written into the tag becomes `{ body }`.
@@ -222,18 +260,11 @@ const inlineBody = (html, from, element) => {
  * @returns {MarkedMember[]}
  */
 export function markedMembers(html) {
-  /** @type {MarkedMember[]} */
-  const members = [];
-  MARKED.lastIndex = 0;
-  let m;
-  while ((m = MARKED.exec(html))) {
-    const [tag, element, name] = m;
-    const kind = element === 'script' ? 'js' : 'css';
-    const ref = assetRef(attribute(tag, 'src') ?? attribute(tag, 'href'));
-    if (ref) members.push({ name, kind, delivery: 'asset', ref });
-    else members.push({ name, kind, delivery: 'inline', body: inlineBody(html, m.index + tag.length, element) });
-  }
-  return members;
+  return markedTags(html).map((tag) =>
+    tag.ref
+      ? { name: tag.name, kind: tag.kind, delivery: 'asset', ref: tag.ref }
+      : { name: tag.name, kind: tag.kind, delivery: 'inline', body: inlineBody(html, tag.end, tag.element) },
+  );
 }
 
 /**
@@ -259,14 +290,27 @@ const expectedParts = (page) =>
  * tree cannot be rebuilt from `pipeline/`, so comment-only differences between
  * a maintained source and the shipped bytes are expected and are reported, never
  * fatal.
+ *
+ * Exported because the publisher asks the same question when it decides *which*
+ * member to rewrite: a second copy of this fold would be a second definition of
+ * "the same code", and the two would be free to disagree (`publish-layers.mjs`).
  * @param {string} source
+ * @returns {string}
  */
-const codeOf = (source) =>
+export const codeOf = (source) =>
   source
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^[ \t]*\/\/.*$/gm, '')
     .replace(/\s+/g, ' ')
     .trim();
+
+/**
+ * Whether two byte strings are the same code. Prose-only differences are `true`.
+ * @param {string} a
+ * @param {string} b
+ * @returns {boolean}
+ */
+export const sameCode = (a, b) => codeOf(a) === codeOf(b);
 
 /**
  * Compare one page's marked members against the roster and their maintained

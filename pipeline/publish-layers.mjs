@@ -32,8 +32,7 @@ import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { invokedDirectly, makeArg } from './cli.mjs';
-import { maintainedSource, markedMembers, mirrorFindings, partOf, shippedSource } from './injected-layers.mjs';
-import { MARKER_ATTR } from './marker.mjs';
+import { maintainedSource, markedMembers, markedTags, mirrorFindings, partOf, sameCode, shippedSource } from './injected-layers.mjs';
 import { routeOfPage } from './served-tree.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -46,6 +45,12 @@ const HASH_CHARS = 16;
  * A marked member as `markedMembers` reports it: `ref` for an `/assets/<name>`
  * reference, `body` for bytes written into the tag.
  * @typedef {{ name: string, kind: 'css'|'js', delivery: 'asset'|'inline', ref?: string, body?: string }} Marked
+ */
+
+/**
+ * A marked tag as the owner's scan reports it — the same tag `markedMembers`
+ * read, plus the offsets a rewrite needs.
+ * @typedef {import('./injected-layers.mjs').MarkedTag} MarkedTag
  */
 
 /**
@@ -132,29 +137,6 @@ export function htmlFiles(servedDir) {
   walk(path.resolve(servedDir));
   return out;
 }
-
-/**
- * Comment-and-whitespace-folded source — the same comparator the roster's
- * comparison uses (it arrived with the DOM seams). It is restated here, once,
- * because the publisher must *name* the member it will rewrite, not merely learn
- * from `mirrorFindings` that some page drifts.
- * @param {string} source
- * @returns {string}
- */
-const codeOf = (source) =>
-  source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/.*$/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-/**
- * Whether two byte strings are the same code. Prose-only differences are `true`.
- * @param {string} a
- * @param {string} b
- * @returns {boolean}
- */
-const sameCode = (a, b) => codeOf(a) === codeOf(b);
 
 /**
  * The maintained source reader, memoized by member and page — the plan asks the
@@ -414,30 +396,17 @@ function readDistinct(servedDir) {
 }
 
 /**
- * The `<link>`, `<script>` or `<style>` tag a page carries for one member, as a
- * half-open `[start, end)` span. Located by the roster's marker and the element
- * the delivery form implies, which is the same tag `markedMembers` read. `null`
- * when the page does not carry it.
+ * The marked tag a page carries for one member — the owner's own scan, read as
+ * the one tag this name and kind name. The delivery form is not passed because
+ * the tag itself says which form it is, the same thing `markedMembers` read.
+ * `null` when the page does not carry it.
  * @param {string} html
  * @param {string} name
- * @param {string} kind
- * @param {'asset'|'inline'} delivery
- * @returns {{ start: number, end: number } | null}
+ * @param {'css'|'js'} kind
+ * @returns {MarkedTag | null}
  */
-function tagSpan(html, name, kind, delivery) {
-  const element = kind === 'js' ? 'script' : delivery === 'inline' ? 'style' : 'link';
-  const marker = `${MARKER_ATTR}="${name}"`;
-  let from = 0;
-  for (;;) {
-    const at = html.indexOf(marker, from);
-    if (at === -1) return null;
-    const start = html.lastIndexOf('<', at);
-    const end = html.indexOf('>', at);
-    if (start === -1 || end === -1) return null;
-    const word = /^<\s*([a-z0-9]+)/i.exec(html.slice(start, at));
-    if (word && word[1].toLowerCase() === element) return { start, end: end + 1 };
-    from = at + marker.length;
-  }
+function markedTagOf(html, name, kind) {
+  return markedTags(html).find((tag) => tag.name === name && tag.kind === kind) ?? null;
 }
 
 /**
@@ -447,10 +416,10 @@ function tagSpan(html, name, kind, delivery) {
  * @returns {string}
  */
 function rewriteAssetRef(html, change) {
-  const span = tagSpan(html, change.name, change.kind, 'asset');
-  if (!span) throw new PublishLayersError([`cannot find the marked ${change.name}/${change.kind} tag to rewrite`]);
-  const tag = html.slice(span.start, span.end).split(change.from).join(change.to);
-  return `${html.slice(0, span.start)}${tag}${html.slice(span.end)}`;
+  const tag = markedTagOf(html, change.name, change.kind);
+  if (!tag) throw new PublishLayersError([`cannot find the marked ${change.name}/${change.kind} tag to rewrite`]);
+  const open = html.slice(tag.start, tag.end).split(change.from).join(change.to);
+  return `${html.slice(0, tag.start)}${open}${html.slice(tag.end)}`;
 }
 
 /**
@@ -461,12 +430,11 @@ function rewriteAssetRef(html, change) {
  * @returns {string}
  */
 function rewriteInlineBody(html, change, to) {
-  const span = tagSpan(html, change.name, change.kind, 'inline');
-  if (!span) throw new PublishLayersError([`cannot find the marked ${change.name}/${change.kind} tag to rewrite`]);
-  const close = `</${change.kind === 'js' ? 'script' : 'style'}>`;
-  const bodyEnd = html.indexOf(close, span.end);
+  const tag = markedTagOf(html, change.name, change.kind);
+  if (!tag) throw new PublishLayersError([`cannot find the marked ${change.name}/${change.kind} tag to rewrite`]);
+  const bodyEnd = html.indexOf(`</${tag.element}>`, tag.end);
   if (bodyEnd === -1) throw new PublishLayersError([`cannot find the closing tag of ${change.name}/${change.kind}`]);
-  return `${html.slice(0, span.end)}${to}${html.slice(bodyEnd)}`;
+  return `${html.slice(0, tag.end)}${to}${html.slice(bodyEnd)}`;
 }
 
 /**
