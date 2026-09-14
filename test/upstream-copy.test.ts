@@ -77,8 +77,10 @@ describe('copyRuns — the projection is a pure function of HTML', () => {
     expect(copyRuns(unclosed)).toEqual(['Audio Detection', 'Cameras']);
   });
 
-  it('projects the same run from a split-word heading and a plain one', () => {
-    // The Capture froze GSAP's split words as child divs; live ships the text.
+  it('projects a heading whose animated fragments are child elements', () => {
+    // Fragments nested inside a prose element are read by descending into it,
+    // whichever marker class they carry; this is prose containment, not the
+    // promoted-sibling rule ticket 07 added below.
     const split = '<h2 aria-label="Public safety works better together"><div class=word>Public</div><div class=word>safety</div><div class=word>works better together</div></h2>';
     const plain = '<h2>Public safety works better together</h2>';
     expect(copyRuns(split)).toEqual(copyRuns(plain));

@@ -131,12 +131,14 @@ sub-agents.
 **Standards — fixed:** the prose branch now calls the shared `renderedText`
 helper instead of duplicating `fragmentText`; `isSplitFragment`'s guard is
 narrowed to `'attrs' in node`, matching `isGenerated`'s shape; the vocabulary is
-standardised on *reveal* rather than *word-reveal*, and the over-constraining
-`_Avoid_: split heading` line is dropped (a pre-existing test still uses the
-phrase); the **Word/line reveal** glossary entry no longer names the CSS classes
-or the walker's branches, per `CONTEXT.md`'s "no implementation detail here"
-rule. **Rejected:** splitting off the shared test fixture/`fragment` helper into
-a module (the repo's tests pin inputs explicitly and locally, and a helper for
+standardised on *reveal* rather than *word-reveal*; the pre-existing
+`class=word` heading test is renamed to say what it pins (fragments nested
+*inside* a prose element) rather than claiming the reveal rule it never reaches;
+and the over-constraining `_Avoid_: split heading` line is dropped; the
+**Word/line reveal** glossary entry no longer names the CSS classes or the
+walker's branches, per `CONTEXT.md`'s "no implementation detail here" rule.
+**Rejected:** splitting off the shared test fixture/`fragment` helper into a
+module (the repo's tests pin inputs explicitly and locally, and a helper for
 two files is more indirection than it removes); treating the six explanatory
 docblocks as duplication (the module headers are this repo's rule-of-record
 style — 04b's header does the same).
