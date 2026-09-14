@@ -71,11 +71,11 @@ the fetched body — a prose projection that must match our bytes exactly, and a
 chrome projection that is expected to differ by exactly the regions we stripped.
 
 The first run is a **silent baseline**: it records what upstream looks like and
-reports nothing, so 1,209 URLs never register as 1,209 changes. Every run after
-it diffs against that committed baseline, and the baseline carries the date we
-last verified, so the repo can state when the copy was last known to be in
-step — which today it can honestly say is 2026-09-13, the day the index was
-measured identical to the frozen list.
+reports no baseline delta, so 1,209 URLs never register as 1,209 changes. Every
+run after it diffs against that committed baseline, and the baseline carries the
+date we last verified, so the repo can state when the copy was last known to be
+in step — which today it can honestly say is 2026-09-14, the day the projection
+digests were last accepted against live.
 
 ## User Stories
 
@@ -152,8 +152,14 @@ measured identical to the frozen list.
    reference point. Run output goes to stdout and is optionally saved with
    `--out`.
 10. **The first run is a silent baseline.** With no baseline present, the run
-    records and reports nothing but the count. This mirrors the prior art and is
-    the whole reason the tool's opening report is readable.
+    records the reference and reports no baseline delta: the `since` section and
+    the restyle comparison — the tiers that need prior state — are empty, so
+    1,209 URLs never register as 1,209 changes. The baseline-independent tiers
+    (index, **copy projection**, **chrome projection**, **media liveness**) still
+    report, because a tree-versus-live difference is a fact about the reference
+    rather than a change against an empty one, and hiding it would blind the
+    tool's first honest look at live. This mirrors the prior art and is the whole
+    reason the tool's opening report is readable.
 11. **Exit codes are the interface for a hand-run tool.** Zero means no
     findings, one means findings, two means the run failed operationally (a
     fetch error, an unparsable sitemap). Human output by default, `--json` for a

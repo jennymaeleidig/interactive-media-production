@@ -96,10 +96,11 @@ HTML is unrecoverable, and the tools that produced it are in git history only.
 `served/` is therefore the artifact, committed — and the build that produced it
 retired with the captures it read.
 
-**Verified in sync as of 2026-09-13.** The upstream watch (`npm run upstream`)
-measured the live site against the frozen Capture list that day: 1,220 watched
-URLs, 1,200 live 200s identical to the list, zero added and zero removed. The
-committed baseline (`regression/upstream-baseline.json`) records the date, and
+**Verified in sync as of 2026-09-14.** The upstream watch (`npm run upstream`)
+measured the live site against the frozen Capture list on 2026-09-13: 1,220
+watched URLs, 1,200 live 200s identical to the list, zero added and zero removed.
+The committed baseline (`regression/upstream-baseline.json`) records 2026-09-14
+as the date it was last accepted, once the per-page chrome digests joined it, and
 the watch diffs against it from then on. Run it before a milestone or a publish;
 it is deliberate and hand-run — there is no schedule, no CI job, and no
 notification channel. That is a check, not a refresh — the watch reports

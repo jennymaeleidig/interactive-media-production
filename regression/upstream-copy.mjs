@@ -179,12 +179,17 @@ export function normalize(text) {
  * inside a runtime-filled region, because the live side it can fetch never
  * carries one. Rendering live pages to compare them is out of scope (it needs a
  * browser, and the retired refresh workflow's Docker half is the reason).
- * @param {HtmlNode} node
- * @returns {boolean}
+ * @type {Set<string>}
  */
 const RUNTIME_FILLED_ATTRS = new Set(['data-toc', 'data-user', 'data-job-name']);
 
-/** @param {HtmlNode} node @returns {boolean} */
+/**
+ * Whether a node is a region the live page fills at runtime, or a third-party
+ * widget's own text — the measured cases above plus the Wistia player tag — so
+ * the prose projection skips it.
+ * @param {HtmlNode} node
+ * @returns {boolean}
+ */
 export function isGenerated(node) {
   if ('tagName' in node && node.tagName === 'wistia-player') return true;
   if (!('attrs' in node)) return false;

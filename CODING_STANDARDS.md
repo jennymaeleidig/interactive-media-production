@@ -365,7 +365,8 @@ dev/build for everyone:
 ## Before finishing
 
 1. `npm run typecheck` — `tsc --noEmit` clean plus `tsc -p tsconfig.checkjs.json`
-   (the `checkJs` project over the owned `pipeline/` modules).
+   (the `checkJs` project over the owned `pipeline/` modules and the upstream
+   watch's pure `regression/` modules).
 2. `npm test` — full suite green (not just the files you touched).
 3. `npm run build` — production build succeeds.
 4. If anything under `served/` changed: `npm run routes` for the full-scale

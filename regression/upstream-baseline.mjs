@@ -259,8 +259,9 @@ export function diffBaseline(previous, current) {
  * the copy projection live versus served when the edge hands it `copyPages`
  * (ticket 03) and the chrome projection when it hands it `chromePages` (ticket
  * 04), classifies every media slot when the edge hands it `mediaPages` and
- * `mediaProbes` (ticket 06), derives this run's baseline — carrying the copy
- * digests — and diffs it against the previous one. `write` is true only for the
+ * `mediaProbes` (ticket 06), derives this run's baseline (carrying the copy and
+ * chrome digests and the shared asset set) and diffs it against the previous
+ * one. `write` is true only for the
  * silent first run (no previous baseline) or an explicit accept; a plain run
  * with a previous baseline never moves the reference point.
  * @param {RunInputs} inputs

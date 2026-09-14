@@ -248,10 +248,10 @@ describe('the committed tree fed in as both sides — the steady state', () => {
   });
 });
 
-// Ticket 04: the chrome tier joins the run report. It is report-only — it
-// carries no baseline digest, because the offline sandbox cannot run the live
-// `--accept` a chrome digest would require — but a chrome difference is drift:
-// it sets exit 1 and names the path and the runs in the human output.
+// Ticket 04: the chrome tier joins the run report. It is report-only in the
+// sense that a soft finding never by itself moves the reference point, but the
+// live chrome digest joins the baseline row (ticket 05), so a chrome difference
+// is drift: it sets exit 1 and names the path and the runs in the human output.
 describe('the chrome tier — run report and exit code', () => {
   it('records the chrome tier on the run report and the live chrome digest on the baseline row', () => {
     const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, chromePages: fixturePages('<div class="nav">New label</div>') });

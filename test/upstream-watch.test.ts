@@ -2,8 +2,8 @@
 // classes, index findings, demotions, and the inventory — all a function of
 // fetched bytes, so they are pinned here with fixtures and no network. The
 // network driver (`regression/upstream-watch-cli.mjs`) is deliberately outside
-// the suite; it is a hand-run edge whose only filesystem import is
-// `readFileSync`, so it has no write function in scope.
+// the suite; it is a hand-run edge that owns the network and filesystem, and
+// the pure core it feeds never reaches either.
 //
 // The measured fixture is built from the committed Capture list plus the
 // shapes measured on 2026-09-13 (research lane A): 1,209 sitemap locs of which
@@ -132,6 +132,12 @@ describe('livenessClass', () => {
     expect(livenessClass(308)).toBe('3xx');
     expect(livenessClass(401)).toBe('401');
     expect(livenessClass(404)).toBe('4xx');
+  });
+
+  it('treats every other 2xx as live, never as a removal', () => {
+    expect(livenessClass(201)).toBe('200');
+    expect(livenessClass(204)).toBe('200');
+    expect(livenessClass(206)).toBe('200');
   });
 
   it('gives a server error its own class, never the client-error bucket', () => {

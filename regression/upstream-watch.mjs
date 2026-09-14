@@ -167,12 +167,13 @@ export function pathOf(url, origin) {
 
 /**
  * The coarse liveness class the ticket asks for: 200, 3xx, 4xx (and 5xx), with
- * 401 pulled out as its own class.
+ * 401 pulled out as its own class. Every other 2xx (201, 204, 206) is '200' —
+ * the page answered, so it must never read as a removal.
  * @param {number} status
  * @returns {'200'|'3xx'|'401'|'4xx'|'5xx'}
  */
 export function livenessClass(status) {
-  if (status === 200) return '200';
+  if (status >= 200 && status < 300) return '200';
   if (status === 401) return '401';
   if (status >= 300 && status < 400) return '3xx';
   if (status >= 500) return '5xx';
