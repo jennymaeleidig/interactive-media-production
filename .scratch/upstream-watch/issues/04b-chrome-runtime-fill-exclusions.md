@@ -188,7 +188,10 @@ as divergent (it is the chrome tier's single owner).
 
 **Spec — fixed:** this section records the acceptance evidence, names the
 remaining differences, discloses `podcast-player` beyond the ticket's evidence,
-and narrows the Finsweet exclusion so visible card chrome is no longer masked
-(the axis's C1 finding). **Rejected:** counting the runtime-fill strips in the
-report (not asked for; it would change the report and baseline shape, and the
-removal fixtures already prove each exclusion is named and removable).
+narrows the Finsweet exclusion so visible card chrome is no longer masked (the
+axis's C1 finding), and corrects the two docblock claims the axis flagged (that
+`=empty` was "left alone" when it is already a shared `isGenerated` exclusion,
+and that the Marketo/Finsweet page families were narrower than the measured
+set). **Rejected:** counting the runtime-fill strips in the report (not asked
+for; it would change the report and baseline shape, and the removal fixtures
+already prove each exclusion is named and removable).

@@ -227,14 +227,15 @@ export const CHROME_ALLOW_LIST = [
  * region re-reports the moment its entry leaves the list.
  *
  * The measured classes (2026-09-13 live run, 170 chrome findings, re-measured
- * 2026-09-14): Marketo form labels over the `/book-a-demo*` and `/webinar/*`
- * families, Finsweet's reordered hidden category tags (`/blog`, `/customers`,
- * `/faq`), Webflow pagination (`/partner-program`, `/resources`,
- * `/press-center`), the Ashby-backed jobs widget (`/careers/positions`), the
- * reduce-guard-cost calculator's computed outputs
- * (`/reduce-guard-cost-calculator`), Wistia player chrome (`/webinar/*`), and
- * the Tmplayer podcast controls (`/podcast`, discovered beyond the ticket's
- * evidence).
+ * 2026-09-14 with 5 remaining): Marketo form labels, the largest class, across
+ * the `/book-a-demo*`, `/webinar/*`, `/ebooks/*` and `/resources/*` families;
+ * Finsweet's reordered hidden category tags on the CMS-listing pages (`/blog`,
+ * `/customers`, `/faq`, `/press-center`, `/upcoming-events`, the story pages);
+ * Webflow pagination (`/partner-program`, `/resources`, `/press-center`); the
+ * Ashby-backed jobs widget (`/careers/positions`); the reduce-guard-cost
+ * calculator's computed outputs (`/reduce-guard-cost-calculator`); Wistia player
+ * chrome (`/webinar/*`); and the Tmplayer podcast controls (`/podcast`,
+ * discovered beyond the ticket's evidence).
  * @type {ChromeRuntimeFillEntry[]}
  */
 export const CHROME_RUNTIME_FILL = [
