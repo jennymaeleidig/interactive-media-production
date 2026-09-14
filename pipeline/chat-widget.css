@@ -203,11 +203,7 @@
   width: 54px;
   height: 54px;
   padding: 0;
-  /* The captured mark's own circular edge sits on the square's boundary, so at
-     cover it is clipped by border-radius:50% into a hairline, uneven rim. An
-     explicit border in the launcher's own captured color insets the mark to
-     the padding box and gives the circle a clean, deliberate ring. */
-  border: 2px solid var(--LAUNCHER_BACKGROUND_COLOR);
+  border: 0;
   border-radius: 50%;
   cursor: pointer;
   background-color: var(--LAUNCHER_BACKGROUND_COLOR);
