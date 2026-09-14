@@ -41,13 +41,8 @@ const readers = (shipped: Record<string, string>, maintained: Record<string, { b
   maintained: (name: string, kind: string) => maintained[`${name}/${kind}`] ?? null,
 });
 
-/** The six pages that carry a hero, in the order the roster ships them. */
-const HERO_ROUTES = ['flock-dfr', 'flock-freeform', 'flock-os', 'flock-safety-platform', 'gunshot-detection', 'video-cameras'].map(
-  (name) => `/products/${name}`,
-);
-
 describe('the declared roster', () => {
-  it('names fourteen marked members: six site-wide and eight page-scoped', () => {
+  it('names thirteen marked members: six site-wide and seven page-scoped', () => {
     expect(LAYERS.map((l: { name: string }) => l.name)).toEqual([
       'motion',
       'interactions',
@@ -56,7 +51,6 @@ describe('the declared roster', () => {
       'story-hook',
       'legibility',
       'scroll',
-      'lottie-player',
       'lottie-flock-dfr',
       'lottie-flock-freeform',
       'lottie-flock-os',
@@ -70,18 +64,13 @@ describe('the declared roster', () => {
     expect(legibility.pages).toEqual(['/safe-cities']);
   });
 
-  it('scopes the shared player and each Lottie hero to the same six product pages', () => {
+  it('scopes each Lottie hero to its own product page, one route each', () => {
     const lottie = LAYERS.filter((l: { name: string }) => l.name.startsWith('lottie-'));
-    expect(lottie).toHaveLength(7);
-    // the player is the one Lottie layer that is not a single page's: it is one
-    // asset the six data runtimes share, and it has to ship ahead of them
-    const player = lottie.find((l: { name: string }) => l.name === 'lottie-player')!;
-    expect(player.pages).toEqual(HERO_ROUTES);
-    expect(lottie.indexOf(player)).toBe(0);
-
+    expect(lottie).toHaveLength(6);
     for (const layer of lottie) {
       expect(layer.scope).toBe('page');
-      for (const page of layer.pages ?? []) expect(page).toMatch(/^\/products\//);
+      expect(layer.pages ?? []).toHaveLength(1);
+      expect(layer.pages?.[0]).toMatch(/^\/products\//);
       expect(layer.parts).toHaveLength(1);
       expect(layer.parts[0]).toMatchObject({ kind: 'js', delivery: 'asset' });
       // the roster owns the path, and the build script reads it from here rather
@@ -90,10 +79,6 @@ describe('the declared roster', () => {
       expect(source.startsWith('pipeline/lottie/')).toBe(true);
       expect(existsSync(source), source).toBe(true);
     }
-
-    // and each hero but the player is one page's own animation, in roster order
-    const heroes = lottie.filter((l: { name: string }) => l.name !== 'lottie-player');
-    expect(heroes.map((l: { pages?: string[] }) => l.pages)).toEqual(HERO_ROUTES.map((route) => [route]));
   });
 
   it('gives every member a delivery form, and a source except the page patch', () => {
@@ -125,7 +110,6 @@ describe('the declared roster', () => {
       'legibility/css',
       'scroll/css',
       'scroll/js',
-      'lottie-player/js',
       'lottie-flock-dfr/js',
       'lottie-flock-freeform/js',
       'lottie-flock-os/js',
@@ -293,10 +277,10 @@ describe('against the committed tree', () => {
     expect(failures).toEqual([]);
   });
 
-  it('finds a product page carrying the shared player and its own hero after the site-wide members', () => {
+  it('finds a product page carrying its Lottie hero after the site-wide members', () => {
     const { failures, notes } = real('/products/flock-dfr');
     expect(failures).toEqual([]);
-    // the two Lottie members add no note of their own — only the six site-wide prose drifts
+    // the Lottie hero adds no note of its own — only the six site-wide prose drifts
     expect(notes).toHaveLength(6);
     expect(notes.some((n: string) => n.includes('lottie'))).toBe(false);
   });

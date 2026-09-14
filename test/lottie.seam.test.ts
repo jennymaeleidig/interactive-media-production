@@ -1,34 +1,29 @@
-// Lottie hero runtime DOM seam: the six product pages carry the shared player and
-// one data runtime, and between them they mount every container the page has —
-// each into the box its captured `data-src` names — and drop that attribute.
+// Lottie hero runtime DOM seam: each page-scoped Lottie runtime mounts its own
+// container with the neutered player and the vendored animation data, and drops
+// the captured `data-src` the player would otherwise fetch.
 //
-// The runtimes under test are the exact sources the publisher ships
-// (`pipeline/lottie/player.runtime.js` and `pipeline/lottie/<name>.runtime.js`),
-// evaluated in a real DOM (jsdom). `flock-dfr` stands in for the six because it is
-// the hardest case: it is the one page with more than one animation, so it is the
-// only one that exercises the per-stamp search rather than the single-box fallback.
+// The runtime under test is the exact source the publisher ships
+// (`pipeline/lottie/<name>.runtime.js`), evaluated in a real DOM (jsdom). The
+// smallest hero stands in for all six: they share one neuter and one mount
+// policy and differ only in the JSON they inline.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, it, expect } from 'vitest';
 import type { DOMWindow } from 'jsdom';
-import { installRuntime, layerSource, releaseDomReady, seamWindow } from './seam-harness';
-import { codeOf } from '../pipeline/injected-layers.mjs';
+import { layerSource, releaseDomReady, seamWindow } from './seam-harness';
 import { isInertSource } from '../pipeline/injected-source.mjs';
 
 const LAYER = 'lottie-flock-dfr';
-const PLAYER = 'lottie-player';
 const SOURCE = layerSource(LAYER);
-const PLAYER_SOURCE = layerSource(PLAYER);
 
-/** The asset-id stamps of the page's first two animations, as captured. */
-const STAMP_1 = '697aa404c8693265548d6485_';
-const STAMP_2 = '697aab5445107d5470444391_';
-
-/** One captured container: unquoted attributes, a remote `data-src`, the stamp inside it. */
-const container = (stamp: string, loop = '1') =>
-  `<div class=cc-dfr data-animation-type=lottie data-src=https://cdn.prod.website-files.com/6821cc9ecc966b7f252b372e/${stamp}46eaf6ace16345d0a3c77a77b862a440.json data-loop=${loop} data-autoplay=1></div>`;
-
-const page = (...boxes: string[]) => `<!DOCTYPE html><html><body>${boxes.join('')}</body></html>`;
+/** The captured container: unquoted attributes, the stamp inside a remote `data-src`. */
+const PAGE = [
+  '<!DOCTYPE html><html><body>',
+  '<div class=l-img><div class=cc-dfr data-animation-type=lottie',
+  ' data-src=https://cdn.prod.website-files.com/6821cc9ecc966b7f252b372e/697aa404c8693265548d6485_46eaf6ace16345d0a3c77a77b862a440.json',
+  ' data-loop=1 data-autoplay=0 data-renderer=svg data-loading=eager></div></div>',
+  '</body></html>',
+].join('');
 
 /**
  * jsdom answers no layout and has no 2D canvas; lottie's svg renderer measures
@@ -61,47 +56,29 @@ function shimRendering(window: DOMWindow): void {
   }
 }
 
-/** Mount as a served page does: the player first, then the page's data runtime. */
+/** Mount the runtime into `html`, as a served page does. */
 function mount(html: string, reduced = true) {
-  const seam = seamWindow(LAYER, html, { reduced, captureConsole: true, prep: shimRendering, install: false });
-  installRuntime(seam.window, PLAYER_SOURCE);
-  installRuntime(seam.window, SOURCE);
+  const seam = seamWindow(LAYER, html, { reduced, captureConsole: true, prep: shimRendering });
   releaseDomReady(seam.window);
   return seam;
 }
 
-const shapes = (root: Element) => root.querySelectorAll('path, rect, circle, g').length;
-
-describe('the Lottie runtimes mount the page containers', () => {
-  it('plays the animation into an svg and drops the network-bearing data-src', () => {
-    const seam = mount(page(container(STAMP_1)));
-    const box = seam.document.querySelector('[data-animation-type=lottie]')!;
+describe('the Lottie runtime mounts its own container', () => {
+  it('plays the vendored animation into an svg and drops the network-bearing data-src', () => {
+    const seam = mount(PAGE);
+    const container = seam.document.querySelector('[data-animation-type=lottie]')!;
     // the captured attribute is the address the player would fetch from; it must go
-    expect(box.getAttribute('data-src')).toBe(null);
-    expect(box.querySelector('svg')).not.toBeNull();
-    expect(shapes(box)).toBeGreaterThan(0);
+    expect(container.getAttribute('data-src')).toBe(null);
+    // the player is the runtime's own copy, not a captured global
+    expect(typeof (seam.window as unknown as { lottie?: unknown }).lottie).toBe('object');
+    // the mount rendered the animation: the svg renderer's tree is in the container
+    expect(container.querySelector('svg')).not.toBeNull();
+    expect(container.querySelectorAll('path, rect, circle, g').length).toBeGreaterThan(0);
   });
 
-  it('mounts every animation the page carries, each into its own stamped container', () => {
-    // the flock-dfr case: the player is shared, but each animation finds its own box
-    const seam = mount(page(container(STAMP_1, '0'), container(STAMP_2, '1')));
-    const boxes = [...seam.document.querySelectorAll('[data-animation-type=lottie]')];
-    expect(boxes).toHaveLength(2);
-    for (const box of boxes) {
-      expect(box.getAttribute('data-src')).toBe(null);
-      expect(box.querySelector('svg')).not.toBeNull();
-      expect(shapes(box)).toBeGreaterThan(0);
-    }
-  });
-
-  it('mounts nothing without the shared player', () => {
-    // the data runtime needs the player's `window.lottie`; a page that lost its
-    // player tag renders nothing rather than throwing
-    const seam = seamWindow(LAYER, page(container(STAMP_1)), { reduced: true, prep: shimRendering, install: false });
-    installRuntime(seam.window, SOURCE);
-    releaseDomReady(seam.window);
-    expect((seam.window as unknown as { lottie?: unknown }).lottie).toBeUndefined();
-    expect(seam.document.querySelector('svg')).toBeNull();
+  it('takes the only container when the page carries exactly one, stamp or not', () => {
+    const seam = mount('<!DOCTYPE html><html><body><div data-animation-type=lottie data-src=/other.json></div></body></html>');
+    expect(seam.document.querySelector('[data-animation-type=lottie] svg')).not.toBeNull();
   });
 
   it('touches a page with no lottie container not at all', () => {
@@ -109,8 +86,8 @@ describe('the Lottie runtimes mount the page containers', () => {
     expect(seam.document.querySelector('svg')).toBeNull();
   });
 
-  it('reads the reduced-motion query once for the page, however many animations it mounts', () => {
-    const seam = mount(page(container(STAMP_1), container(STAMP_2)));
+  it('reads the reduced-motion query once, at boot, and never watches it', () => {
+    const seam = mount(PAGE);
     expect(seam.reducedMotion.reads()).toBe(1);
     expect(seam.reducedMotion.listeners()).toBe(0);
     seam.reducedMotion.set(false);
@@ -118,22 +95,11 @@ describe('the Lottie runtimes mount the page containers', () => {
   });
 });
 
-describe('the Lottie runtimes keep the zero-outbound invariant', () => {
-  it('ships no network primitive, and keeps the CDN address to the citation comment', () => {
-    for (const source of [SOURCE, PLAYER_SOURCE]) expect(isInertSource(source)).toBe(true);
-
-    const host = 'cdn.prod.website-files.com';
-    // the citation records where the animation came from, and nothing else names it
-    expect(SOURCE).toContain(host);
-    expect(codeOf(SOURCE)).not.toContain(host);
-
-    // the animation is inlined with the stamp that finds its container, so the
-    // mount never needs to resolve the captured address
-    expect(SOURCE).toContain(STAMP_1);
+describe('the Lottie runtime keeps the zero-outbound invariant', () => {
+  it('ships no network primitive, and inlines the animation instead of fetching it', () => {
+    expect(isInertSource(SOURCE)).toBe(true);
+    // the served bytes must not carry the CDN address the capture pointed at
+    expect(SOURCE).not.toContain('cdn.prod.website-files.com');
     expect(SOURCE).toContain('data-animation-type=lottie');
-    expect(SOURCE).toContain('animationData');
-    // and the player is shipped once, apart from the data
-    expect(PLAYER_SOURCE).toContain('lottie');
-    expect(SOURCE).not.toContain(PLAYER_SOURCE);
   });
 });

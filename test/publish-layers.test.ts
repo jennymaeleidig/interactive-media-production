@@ -100,20 +100,15 @@ function makeTree(options: { codeDrift?: boolean; nameDrift?: boolean; insertabl
   // behind, which is the state an insertion has to repair from.
   let productHtml: string | undefined;
   if (options.insertable) {
-    const assetFor = (name: string) => {
-      const source = LAYERS.find((candidate) => candidate.name === name)?.parts[0].source;
-      if (!source) throw new Error(`the roster no longer declares ${name}`);
-      const bytes = fs.readFileSync(path.join(ROOT, source), 'utf8');
-      const ref = `${hash16(bytes)}.js`;
-      fs.writeFileSync(path.join(assetsDir, ref), bytes);
-      assets.push(ref);
-      return `<script data-flock-parody="${name}" src=/assets/${ref}></script>`;
-    };
-    // the shared player and the page's own hero, in roster order. Both assets are
-    // written and listed: a tag lost on its own leaves its asset behind, which is
-    // the state an insertion repairs from.
-    const members = ['lottie-player', 'lottie-flock-dfr'].map(assetFor);
-    const carried = options.insertable === 'present' ? `\n${members.join('\n')}` : '';
+    const layer = LAYERS.find((candidate) => candidate.name === 'lottie-flock-dfr');
+    const source = layer?.parts[0].source;
+    if (!source) throw new Error('the roster no longer declares the lottie-flock-dfr hero');
+    const bytes = fs.readFileSync(path.join(ROOT, source), 'utf8');
+    const ref = `${hash16(bytes)}.js`;
+    fs.writeFileSync(path.join(assetsDir, ref), bytes);
+    assets.push(ref);
+    const tag = `<script data-flock-parody="lottie-flock-dfr" src=/assets/${ref}></script>`;
+    const carried = options.insertable === 'present' ? `\n${tag}` : '';
     productHtml = path.join(servedDir, 'products/flock-dfr.html');
     fs.mkdirSync(path.dirname(productHtml), { recursive: true });
     fs.writeFileSync(productHtml, `<!doctype html>\n<html><head>\n${tags.join('\n')}${carried}\n</head><body><p>product</p></body></html>\n`);
@@ -242,34 +237,24 @@ describe('a missing member the roster may create', () => {
     expect(plan.failures.some((failure) => failure.includes('missing member') && failure.includes('lottie-flock-dfr/js'))).toBe(true);
     expect(plan.blockers).toEqual([]);
 
-    const inserts = plan.changes.filter((candidate) => candidate.type === 'insert');
-    const player = inserts.find((candidate) => candidate.name === 'lottie-player');
-    const hero = inserts.find((candidate) => candidate.name === 'lottie-flock-dfr');
-    if (!player || player.type !== 'insert' || !hero || hero.type !== 'insert') {
-      throw new Error(`expected an insert for the player and one for the hero, got ${inserts.map((c) => c.name).join(', ')}`);
-    }
-    expect(hero.ref).toBe(`${hash16(read(path.join(ROOT, 'pipeline/lottie/flock-dfr.runtime.js')))}.js`);
-
+    const change = plan.changes.find((candidate) => candidate.type === 'insert');
+    if (!change || change.type !== 'insert') throw new Error('expected an insert change');
     const before = read(tree.productHtml!);
     const carried = markedTags(before);
     const anchor = elementEnd(before, carried[carried.length - 1]);
-    // both members go after the last member the page carries, so they share one
-    // anchor — which is why the plan orders them rather than trusting luck
-    expect(player.targets[0].at).toBe(anchor);
-    expect(hero.targets[0].at).toBe(anchor);
-    expect(hero.targets[0].order).toBeGreaterThan(player.targets[0].order);
-
-    // each tag goes on a line of its own, the way every marked member is laid out
-    const playerTag = `\n<script data-flock-parody="lottie-player" src=/assets/${player.ref}></script>`;
-    const heroTag = `\n<script data-flock-parody="lottie-flock-dfr" src=/assets/${hero.ref}></script>`;
+    // the tag goes on a line of its own, the way every marked member is laid out
+    const tag = `\n<script data-flock-parody="lottie-flock-dfr" src=/assets/${change.ref}></script>`;
+    expect(change.ref).toBe(`${hash16(read(path.join(ROOT, 'pipeline/lottie/flock-dfr.runtime.js')))}.js`);
+    expect(change.targets).toEqual([{ file: tree.productHtml, page: '/products/flock-dfr', to: tag, at: anchor }]);
 
     applyPlan(plan);
 
-    // one splice at one anchor, in roster order: the player's line, then the hero's
-    expect(read(tree.productHtml!)).toBe(`${before.slice(0, anchor)}${playerTag}${heroTag}${before.slice(anchor)}`);
+    // the page is the original with exactly one tag spliced in after the last
+    // member it carried that ships before this one
+    expect(read(tree.productHtml!)).toBe(`${before.slice(0, anchor)}${tag}${before.slice(anchor)}`);
 
-    // and the tree is green afterwards: both tags address their own bytes and the
-    // assets they name were already there, so no record moved
+    // and the tree is green afterwards: the tag addresses its own bytes and the
+    // asset it names was already there, so no record moved
     const after = planLayers({ servedDir: tree.servedDir, root: ROOT });
     expect(after.failures).toEqual([]);
     expect(after.changes).toEqual([]);

@@ -98,11 +98,8 @@ const HASH_CHARS = 16;
  * `insert: true` reach here; any other absent member stays the blocker it has
  * always been. `ref`/`bytes` are the asset an asset-delivery insertion names, and
  * `to` is the exact text spliced at `at` — the tag plus the newline that puts it
- * on its own line, which is how every marked tag in the tree is laid out. `order`
- * is the member's position in the page's roster: two members can share an anchor
- * (both go after the last member the page already carries), and `order` is what
- * puts them in the roster's order rather than the plan's.
- * @typedef {{ type: 'insert', name: string, kind: 'css'|'js', ref: string|null, bytes: string|null, origin: string, reason: string, targets: { file: string, page: string, to: string, at: number, order: number }[] }} InsertChange
+ * on its own line, which is how every marked tag in the tree is laid out.
+ * @typedef {{ type: 'insert', name: string, kind: 'css'|'js', ref: string|null, bytes: string|null, origin: string, reason: string, targets: { file: string, page: string, to: string, at: number }[] }} InsertChange
  */
 
 /** @typedef {AssetChange | InlineChange | InsertChange} Change */
@@ -362,9 +359,6 @@ export function planLayers({ servedDir, root = '.' }) {
         page,
         to: `\n${markedTagText({ name: part.name, kind: part.kind, ref, body: part.delivery === 'inline' ? source.bytes : null })}`,
         at,
-        // the member's position in the page's own roster, so two members sharing
-        // an anchor still land in the order the roster ships them
-        order: expectedParts(page).findIndex((candidate) => candidate.name === part.name && candidate.kind === part.kind),
       });
       insertGroups.set(key, group);
     }
@@ -606,38 +600,22 @@ export function applyPlan(plan) {
         if (!entry) throw new PublishLayersError([`planned page served/${rel} is not in the tree`]);
         pageEdits.set(entry.file, rewriteAssetRef(pageEdits.get(entry.file) ?? entry.html, change));
       }
-    } else if (change.type === 'inline') {
+    } else if (change.type === 'insert') {
+      // latest position first: splicing an earlier one in would move every offset
+      // after it, and the spans were read from the untouched page
+      for (const target of [...change.targets].sort((a, b) => b.at - a.at)) {
+        const entry = plan.pages.find((page) => page.file === target.file);
+        if (!entry) throw new PublishLayersError([`planned page ${target.page} is not in the tree`]);
+        const html = pageEdits.get(target.file) ?? entry.html;
+        pageEdits.set(target.file, `${html.slice(0, target.at)}${target.to}${html.slice(target.at)}`);
+      }
+    } else {
       for (const target of change.targets) {
         const entry = plan.pages.find((page) => page.file === target.file);
         if (!entry) throw new PublishLayersError([`planned page ${target.page} is not in the tree`]);
         pageEdits.set(target.file, rewriteInlineBody(pageEdits.get(target.file) ?? entry.html, change, target.to));
       }
     }
-  }
-
-  // Inserts are spliced as one pass per page rather than one change at a time:
-  // several members can share an anchor — the position after the last member the
-  // page already carries — and splicing them change by change would make the
-  // page's own order depend on which change this loop happened to reach first.
-  /** @type {Map<string, { file: string, page: string, to: string, at: number, order: number }[]>} */
-  const insertTargets = new Map();
-  for (const change of plan.changes) {
-    if (change.type !== 'insert') continue;
-    for (const target of change.targets) {
-      insertTargets.set(target.file, [...(insertTargets.get(target.file) ?? []), target]);
-    }
-  }
-  for (const [file, targets] of insertTargets) {
-    const entry = plan.pages.find((page) => page.file === file);
-    if (!entry) throw new PublishLayersError([`planned page ${file} is not in the tree`]);
-    let html = pageEdits.get(file) ?? entry.html;
-    // latest position first, so every splice keeps the offsets the plan read from
-    // the untouched page; for one shared anchor, the later roster member first, so
-    // the earlier one is pushed ahead of it and the roster's order survives
-    for (const target of [...targets].sort((a, b) => b.at - a.at || b.order - a.order)) {
-      html = `${html.slice(0, target.at)}${target.to}${html.slice(target.at)}`;
-    }
-    pageEdits.set(file, html);
   }
 
   // prove the rewrite landed before anything is written

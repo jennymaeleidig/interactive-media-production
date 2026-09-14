@@ -47,9 +47,6 @@ const REDUCED: Record<string, ReducedPolicy> = {
   chat: 'none',
   'story-hook': 'none',
   scroll: 'read-once',
-  // the shared player reads no media query at all — it is the data runtime's mount
-  // that asks, once per page, however many animations it then mounts
-  'lottie-player': 'none',
   // the six Lottie mounts: each reads the query once and jumps to the final
   // frame instead of observing for scroll-into-view
   'lottie-flock-dfr': 'read-once',

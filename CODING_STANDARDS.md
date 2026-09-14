@@ -17,8 +17,8 @@ build stripped any executable `<script>` that survived, and the served bytes
 keep only `application/ld+json` data blocks. Any code that adds network
 behavior to a served page (fetch, XHR, WebSocket, remote `src`, beacon)
 violates the piece. The injected layers (motion, interactions, nav, chat,
-story-hook, scroll, the page-scoped legibility patch, the shared Lottie player,
-and the six page-scoped Lottie data runtimes) are inline, DOM-only,
+story-hook, scroll, the page-scoped legibility patch, and the six page-scoped
+Lottie heroes) are inline, DOM-only,
 and must degrade to the captured end-state with JavaScript disabled. `pipeline/audit.mjs` is the invariant's single home —
 `audit(pageHtml) → findings`, with the media allow-list as its only
 configuration. It owns the residue classes, the executable-script census (the
@@ -90,27 +90,22 @@ like any other asset.
   esbuild because a browser cannot compile Yarn or resolve a module graph. It
   holds the **injected browser runtimes**
   (`motion-runtime.js`, `interactions-runtime.js`, `nav-runtime.js`,
-  `chat-runtime.js` (generated), `story-hook.js`, `scroll-runtime.js`, the
-  generated `lottie/player.runtime.js` and the six `lottie/<name>.runtime.js` data
-  runtimes that use it, and their
+  `chat-runtime.js` (generated), `story-hook.js`, `scroll-runtime.js`, the six
+  generated `lottie/<name>.runtime.js` heroes, and their
   CSS) — plain
   browser JavaScript, kept ES5-safe, delivered into the tree as
   content-addressed assets — and the **serving-time rules and checks** below.
   `pipeline/build-lottie-layers.mjs` reads the vendored lottie-web player
   (`pipeline/vendor/lottie.min.js`, MIT — `pipeline/vendor/LOTTIE-CITATION.md`)
-  and each hero's animation JSON, neuters the player for `isInertSource`, and
-  writes the player **once** (`lottie/player.runtime.js`) alongside one data
-  runtime per hero that uses its `window.lottie` — the player is ~300 KB of
-  identical bytes, and inlining it per page committed six near-identical copies.
-  The player is never hand-edited.
+  and each page's animation JSON, neuters the player for `isInertSource`, and
+  emits one self-contained runtime per hero; the player is never hand-edited.
   The build that turned captures into the tree was retired with the captures it
   read (2026-09-13); [README.md](README.md) and [CONTEXT.md](CONTEXT.md) say
   why, and there is no rebuild path.
 - **The marked bytes have one owner** (`pipeline/injected-layers.mjs`): the
-  fourteen-member roster — six site-wide (`motion`, `interactions`, `nav`,
-  `chat`, `story-hook`, `scroll`) and eight page-scoped (`legibility` on
-  `/safe-cities`, plus the shared `lottie-player` and the six `lottie-<name>`
-  heroes it feeds — the player and each hero cover the same six product pages) —
+  thirteen-member roster — six site-wide (`motion`, `interactions`, `nav`,
+  `chat`, `story-hook`, `scroll`) and seven page-scoped (`legibility` on
+  `/safe-cities`, and the six `lottie-<name>` heroes, one product page each) —
   each member's delivery form
   (asset-backed CSS/JS, inline CSS, or no style), the order the members appear
   in a page, and each member's maintained source. `markedMembers(pageHtml)`
@@ -267,10 +262,8 @@ like any other asset.
     layer owns a modal's open state. `test/seam-harness.ts` carries one
     reduced-motion policy per layer (`read-once`, `read-fresh`, or `none`), so a
     layer cannot be added without declaring the policy its seam pins — the six
-    Lottie data runtimes declare `read-once` (their mount reads the query once,
-    however many animations it then mounts) and the shared `lottie-player`
-    declares `none` (it reads no query at all; `test/lottie.seam.test.ts` is
-    their DOM seam).
+    Lottie heroes declare `read-once` (their mount reads the query once and jumps
+    to the final frame) although they have no DOM seam of their own yet.
   - **The chat dialogue seam** (`test/chat.seam.test.ts`) — the conversation the
     engine that ships runs (`pipeline/chat-engine.mjs`, the module
     `pipeline/build-chat-runtime.mjs` bundles into the committed asset), in the
