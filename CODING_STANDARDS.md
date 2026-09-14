@@ -272,8 +272,7 @@ like any other asset.
   wrong.
 - **The suite runs against the committed tree.** There are no fixtures: the real
   `served/` tree is the artifact, so `npm test` is green on a fresh clone by
-  construction (Environment constraints lists the one dependency caveat), and a
-  DOM seam evaluates the same bytes the tree ships.
+  construction, and a DOM seam evaluates the same bytes the tree ships.
 - Red → green, one slice at a time. New behavior starts as a failing test at
   an agreed seam.
 - The serving check's pure cores — expectation builder, count and audit
@@ -316,14 +315,6 @@ dev/build for everyone:
   serving check does not render.
 - Servers started inside a sandboxed command must die with the command
   (self-alarm or child lifecycle) — no orphaned port squatters.
-- **The chat runtime depends on the sibling `yarnspinner-ts` checkout** —
-  `package.json` points `yarnspinner-typescript` at it by **absolute** `file:`
-  path (relative specifiers do not survive npm's workspace-root inference
-  here; the package is not on npm yet — see **Chat mimic** in `CONTEXT.md`). A
-  clone without
-  that sibling cannot `npm install`. Repoint the path (or move to the published
-  package) when it ships; until then this is the one documented exception to
-  "green on a fresh clone".
 
 ## Repo hygiene
 

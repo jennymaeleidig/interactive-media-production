@@ -26,7 +26,7 @@
     "next": "^15.5.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "yarnspinner-typescript": "file:/Users/jennyleidig/Documents/projects/interactive-media/yarnspinner-ts"
+    "yarnspinner-typescript": "^1.0.0"
   },
   "devDependencies": {
     "@types/jsdom": "^30.0.0",
