@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { buildWatchReport, exitCode, formatWatchReport, livenessClass } from '../regression/upstream-watch.mjs';
 import { BASELINE_VERSION, baselineFromReport, diffBaseline, outsideServedTree, readBaseline, runWatch, serializeBaseline } from '../regression/upstream-baseline.mjs';
 import { copyDigest, copyRuns } from '../regression/upstream-copy.mjs';
+import { chromeDigest } from '../regression/upstream-chrome.mjs';
 
 const ORIGIN = 'https://www.flocksafety.com';
 const VERIFIED = '2026-09-13';
@@ -195,9 +196,9 @@ describe('the served-tree write guard', () => {
 describe('the committed baseline', () => {
   const committed = readBaseline(readFileSync(new URL('../regression/upstream-baseline.json', import.meta.url), 'utf8'));
 
-  it('is the measured 2026-09-13 state of the watched universe', () => {
+  it('is the measured state of the watched universe', () => {
     expect(committed.version).toBe(BASELINE_VERSION);
-    expect(committed.verified).toBe('2026-09-13');
+    expect(committed.verified).toBe('2026-09-14');
     expect(committed.rows).toHaveLength(1220);
     expect(committed.rows.filter((r) => r.inSitemap)).toHaveLength(1209);
     const tally = (name: string) => committed.rows.filter((r) => livenessClass(r.status) === name).length;
@@ -215,7 +216,11 @@ describe('the committed baseline', () => {
   });
 
   it('carries redirect targets and the auth-gated class as measured', () => {
-    expect(committed.rows.find((r) => r.path === '/')).toEqual({ ...row('/', 200), copy: expect.stringMatching(/^[0-9a-f]{16}$/) });
+    expect(committed.rows.find((r) => r.path === '/')).toEqual({
+      ...row('/', 200),
+      copy: expect.stringMatching(/^[0-9a-f]{16}$/),
+      chrome: expect.stringMatching(/^[0-9a-f]{16}$/),
+    });
     expect(committed.rows.find((r) => r.path === '/webinar/you-asked-we-listened-q3-public-safety-product-updates')).toEqual(
       row('/webinar/you-asked-we-listened-q3-public-safety-product-updates', 301, true, '/resources'),
     );
@@ -234,8 +239,25 @@ describe('the committed baseline', () => {
     }
   });
 
+  it('carries the live chrome digest ticket 05 measured, on every page the tree serves', () => {
+    const projected = committed.rows.filter((r) => 'chrome' in r);
+    expect(projected).toHaveLength(1181);
+    for (const r of projected) expect(r.chrome).toMatch(/^[0-9a-f]{16}$/);
+  });
+
+  it('carries the shared asset set ticket 05 measured: name, URL, digest and size', () => {
+    expect(committed.assets).toHaveLength(4);
+    const urls = (committed.assets ?? []).map((a) => a.url);
+    expect(urls).toEqual([...urls].sort());
+    for (const a of committed.assets ?? []) {
+      expect(a.name).toMatch(/\.(css|js)$/);
+      expect(a.digest).toMatch(/^[0-9a-f]{16}$/);
+      expect(a.bytes).toBeGreaterThan(0);
+    }
+  });
+
   it('diffs against itself to nothing: the steady state', () => {
-    expect(diffBaseline(committed, committed)).toEqual({ from: '2026-09-13', added: [], removed: [], changed: [] });
+    expect(diffBaseline(committed, committed)).toEqual({ from: '2026-09-14', added: [], removed: [], changed: [] });
   });
 });
 
@@ -297,5 +319,42 @@ describe('the copy tier — baseline row and run report', () => {
     const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED });
     expect(result.report.copy).toBeUndefined();
     expect(result.report.inventory.every((r) => !('copy' in r))).toBe(true);
+  });
+});
+
+// Ticket 05: the shared asset set joins the baseline as a top-level `assets`
+// section — it is shared across every page, so it is not a per-row field — and
+// the live chrome digest joins the row ticket 04 left plain.
+describe('the shared asset set and the chrome digest in the baseline', () => {
+  const assetRecord = { name: 'shared.css', url: 'https://cdn.example/shared.css', digest: 'a'.repeat(16), bytes: 12 };
+
+  it('records the run’s asset set and round-trips it through the committed text', () => {
+    const report = buildWatchReport(run(['/a'], ['/a'], { '/a': { status: 200 } }));
+    const baseline = baselineFromReport(report, VERIFIED, {}, {}, [assetRecord]);
+    expect(baseline.assets).toEqual([assetRecord]);
+    expect(readBaseline(serializeBaseline(baseline)).assets).toEqual([assetRecord]);
+  });
+
+  it('leaves assets absent when the run fetched none', () => {
+    const report = buildWatchReport(run(['/a'], ['/a'], { '/a': { status: 200 } }));
+    expect(baselineFromReport(report, VERIFIED)).not.toHaveProperty('assets');
+  });
+
+  it('throws on a malformed asset section, so a run exits 2 rather than shriking the set', () => {
+    expect(() => readBaseline(JSON.stringify({ version: BASELINE_VERSION, verified: VERIFIED, assets: 'none', rows: [] }))).toThrow(/baseline/);
+    expect(() => readBaseline(JSON.stringify({ version: BASELINE_VERSION, verified: VERIFIED, assets: [{ name: 'x' }], rows: [] }))).toThrow(/baseline/);
+  });
+
+  it('records the live chrome digest on the row and diffs it like any other field', () => {
+    const pages = (label: string) => [
+      { path: '/a', served: '<div class="nav">Old</div>', live: `<div class="nav">${label}</div>` },
+      { path: '/b', served: '<div class="nav">Same</div>', live: '<div class="nav">Same</div>' },
+    ];
+    const first = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, chromePages: pages('Old') });
+    expect(first.baseline.rows.find((r) => r.path === '/a')?.chrome).toBe(chromeDigest(['Old']));
+    const second = runWatch({ ...steady(), previous: first.baseline, accept: false, verified: '2026-09-14', chromePages: pages('New') });
+    expect(second.report.since?.changed).toEqual([
+      { path: '/a', fields: [{ field: 'chrome', from: chromeDigest(['Old']), to: chromeDigest(['New']) }] },
+    ]);
   });
 });

@@ -22,6 +22,7 @@ import path from 'node:path';
 import { buildWatchReport } from './upstream-watch.mjs';
 import { copyReport } from './upstream-copy.mjs';
 import { chromeReport } from './upstream-chrome.mjs';
+import { assetReport } from './upstream-assets.mjs';
 
 /**
  * The schema of the committed baseline. Later tickets add per-row projection
@@ -41,20 +42,24 @@ export const BASELINE_VERSION = 1;
  * @property {number} status
  * @property {string|null} location
  * @property {string} [copy]  the **copy projection** digest ticket 03 records
+ * @property {string} [chrome]  the live **chrome projection** digest ticket 05 records
  */
 
 /**
- * The committed state: one row per watched URL, plus the date the run verified.
+ * The committed state: one row per watched URL, the shared asset set's digests
+ * (ticket 05), and the date the run verified. `assets` is absent on a baseline
+ * recorded before ticket 05; a v1 reader preserves it when present.
  * @typedef {Object} Baseline
  * @property {number} version
  * @property {string} verified  the **verified-in-sync date**, `YYYY-MM-DD`
+ * @property {import('./upstream-assets.mjs').AssetRecord[]} [assets]
  * @property {BaselineRow[]} rows
  */
 
 /**
- * Ticket 01's report inputs plus ticket 02's baseline state and ticket 03's
- * copy pages and ticket 04's chrome pages.
- * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[]}} RunInputs
+ * Ticket 01's report inputs plus ticket 02's baseline state, ticket 03's copy
+ * pages, ticket 04's chrome pages and ticket 05's shared asset bytes.
+ * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[], assets?: import('./upstream-assets.mjs').FetchedAsset[]}} RunInputs
  */
 
 /**
@@ -77,6 +82,14 @@ const VERIFIED_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
  * @returns {number}
  */
 const byPath = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
+
+/**
+ * Asset order, code-unit by URL, so the committed file is machine-stable.
+ * @param {{url: string}} a
+ * @param {{url: string}} b
+ * @returns {number}
+ */
+const byAssetUrl = (a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0);
 
 /** @param {string} why @returns {never} */
 function bad(why) {
@@ -102,6 +115,26 @@ function readRow(value, index) {
 }
 
 /**
+ * Read the ticket 05 shared-asset section. Each record is checked so a
+ * malformed baseline is an error (exit 2), never a silently shrunken asset set
+ * that would report the whole set as newly changed.
+ * @param {unknown} value
+ * @returns {import('./upstream-assets.mjs').AssetRecord[]}
+ */
+function readAssets(value) {
+  if (!Array.isArray(value)) return bad('assets is not an array');
+  return value.map((asset, index) => {
+    if (asset === null || typeof asset !== 'object') return bad(`asset ${index} is not an object`);
+    const { name, url, digest, bytes } = /** @type {Record<string, unknown>} */ (asset);
+    if (typeof name !== 'string') return bad(`asset ${index} has no name`);
+    if (typeof url !== 'string') return bad(`asset ${index} has no url`);
+    if (typeof digest !== 'string') return bad(`asset ${index} has no digest`);
+    if (typeof bytes !== 'number') return bad(`asset ${index} has no byte size`);
+    return { name, url, digest, bytes };
+  });
+}
+
+/**
  * Parse a committed baseline from its text. Everything wrong with the text is
  * an error the edge turns into exit 2: a malformed or future-schema baseline
  * must never be read as an empty one, which would report the whole universe as
@@ -120,11 +153,14 @@ export function readBaseline(text) {
     return bad('not JSON');
   }
   if (parsed === null || typeof parsed !== 'object') return bad('not an object');
-  const { version, verified, rows } = /** @type {Record<string, unknown>} */ (parsed);
+  const { version, verified, rows, assets } = /** @type {Record<string, unknown>} */ (parsed);
   if (version !== BASELINE_VERSION) return bad(`unknown version ${String(version)}`);
   if (typeof verified !== 'string' || !VERIFIED_DATE_PATTERN.test(verified)) return bad('missing or malformed verified date');
   if (!Array.isArray(rows)) return bad('rows is not an array');
-  return { version, verified, rows: rows.map(readRow) };
+  /** @type {Baseline} */
+  const baseline = { version, verified, rows: rows.map(readRow) };
+  if (assets !== undefined) baseline.assets = readAssets(assets);
+  return baseline;
 }
 
 /**
@@ -135,7 +171,11 @@ export function readBaseline(text) {
  */
 export function serializeBaseline(baseline) {
   const rows = [...baseline.rows].sort(byPath);
-  return `${JSON.stringify({ version: baseline.version, verified: baseline.verified, rows }, null, 2)}\n`;
+  /** @type {{version: number, verified: string, assets?: import('./upstream-assets.mjs').AssetRecord[], rows?: BaselineRow[]}} */
+  const out = { version: baseline.version, verified: baseline.verified };
+  if (baseline.assets !== undefined) out.assets = [...baseline.assets].sort(byAssetUrl);
+  out.rows = rows;
+  return `${JSON.stringify(out, null, 2)}\n`;
 }
 
 /**
@@ -148,17 +188,30 @@ export function serializeBaseline(baseline) {
  * @param {import('./upstream-watch.mjs').WatchReport} report
  * @param {string} verified
  * @param {Record<string, string>} [copyDigests]  path → live copy-projection digest
+ * @param {Record<string, string>} [chromeDigests]  path → live masked chrome digest
+ * @param {import('./upstream-assets.mjs').AssetRecord[]} [assetRecords]  the run's shared asset set
  * @returns {Baseline}
  */
-export function baselineFromReport(report, verified, copyDigests = {}) {
+export function baselineFromReport(report, verified, copyDigests = {}, chromeDigests = {}, assetRecords) {
   const rows = report.inventory
     .map((row) => {
-      const carried = { path: row.path, inSitemap: row.inSitemap, status: row.status, location: row.location ?? null };
-      const digest = copyDigests[row.path];
-      return digest === undefined ? carried : { ...carried, copy: digest };
+      const carried = /** @type {BaselineRow} */ ({
+        path: row.path,
+        inSitemap: row.inSitemap,
+        status: row.status,
+        location: row.location ?? null,
+      });
+      const copy = copyDigests[row.path];
+      if (copy !== undefined) carried.copy = copy;
+      const chrome = chromeDigests[row.path];
+      if (chrome !== undefined) carried.chrome = chrome;
+      return carried;
     })
     .sort(byPath);
-  return { version: BASELINE_VERSION, verified, rows };
+  /** @type {Baseline} */
+  const baseline = { version: BASELINE_VERSION, verified, rows };
+  if (assetRecords !== undefined) baseline.assets = [...assetRecords].sort(byAssetUrl);
+  return baseline;
 }
 
 /**
@@ -219,11 +272,15 @@ export function diffBaseline(previous, current) {
  * @returns {WatchRun}
  */
 export function runWatch(inputs) {
-  const { previous = null, accept = false, verified, copyPages, chromePages, ...rest } = inputs;
+  const { previous = null, accept = false, verified, copyPages, chromePages, assets, ...rest } = inputs;
   const report = buildWatchReport(rest);
   const copy = copyPages === undefined ? null : copyReport(copyPages);
   const chrome = chromePages === undefined ? null : chromeReport(chromePages);
-  const baseline = baselineFromReport(report, verified, copy?.digests ?? {});
+  // The restyle tier is a comparison against the previous baseline's asset set;
+  // the silent first run has none, so its findings are suppressed below but the
+  // run's own asset set is still recorded.
+  const restyle = assets === undefined ? null : assetReport(assets, previous?.assets ?? []);
+  const baseline = baselineFromReport(report, verified, copy?.digests ?? {}, chrome?.digests ?? {}, restyle?.records);
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);
   const write = previous === null || accept;
@@ -232,15 +289,34 @@ export function runWatch(inputs) {
   // run leaves the reference point alone — never today's date for a run that
   // recorded nothing.
   const recorded = previous === null || accept ? verified : previous.verified;
+  // The chrome tier carries two distinguishable things: the per-page chrome
+  // findings and, nested under `restyle`, the shared-asset findings. The silent
+  // first run reports the asset count but no findings.
+  const chromeTier =
+    chrome === null && restyle === null
+      ? null
+      : {
+          compared: chrome?.compared ?? 0,
+          differed: chrome?.differed ?? 0,
+          findings: chrome?.findings ?? [],
+          hits: chrome?.hits ?? [],
+          ...(restyle === null
+            ? {}
+            : {
+                restyle: {
+                  compared: restyle.compared,
+                  differed: previous === null ? 0 : restyle.differed,
+                  findings: previous === null ? [] : restyle.findings,
+                },
+              }),
+        };
   return {
     report: {
       ...report,
       verified: recorded,
       since,
       ...(copy === null ? {} : { copy: { compared: copy.compared, differed: copy.differed, findings: copy.findings } }),
-      ...(chrome === null
-        ? {}
-        : { chrome: { compared: chrome.compared, differed: chrome.differed, findings: chrome.findings, hits: chrome.hits } }),
+      ...(chromeTier === null ? {} : { chrome: chromeTier }),
     },
     baseline,
     write,

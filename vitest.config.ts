@@ -37,6 +37,7 @@ export default defineConfig({
       project('upstream-baseline', ['test/upstream-baseline.test.ts']),
       project('upstream-copy', ['test/upstream-copy.test.ts'], { testTimeout: 30_000 }),
       project('upstream-chrome', ['test/upstream-chrome.test.ts'], { testTimeout: 30_000 }),
+      project('upstream-assets', ['test/upstream-assets.test.ts']),
       project('cli', ['test/cli.test.ts']),
       project('audit', ['test/audit.test.ts']),
       project('html', ['test/html.test.ts']),

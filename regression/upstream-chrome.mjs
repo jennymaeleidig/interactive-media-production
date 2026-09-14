@@ -29,6 +29,7 @@
 //     from the log it came from.
 //
 // SPDX-License-Identifier: CC0-1.0
+import { createHash } from 'node:crypto';
 import { parse } from 'parse5';
 import { BLOCK, isGenerated, normalize, PROSE_ELEMENTS, SKIPPED, VOID } from './upstream-copy.mjs';
 import { copyDiff } from './upstream-copy.mjs';
@@ -78,14 +79,27 @@ const SITE_ORIGIN = 'https://www.flocksafety.com';
 
 /**
  * The chrome tier as the run report carries it: the counts, the findings and
- * the allow-list hits. It carries no digest state — chrome digests are a later
- * ticket's baseline concern, not report state.
+ * the allow-list hits. The per-page digest state lives on the baseline row
+ * (ticket 05); `chromeReport` also returns it so the run can record it.
  * @typedef {Object} ChromeTier
  * @property {number} compared
  * @property {number} differed
  * @property {ChromeFinding[]} findings
  * @property {Array<{name: string} & ChromeHit>} hits
  */
+
+/**
+ * The digest of one page's **live** chrome, over the allow-list-masked runs —
+ * the projection the chrome comparison actually compares. Recorded on the
+ * baseline row so a later run can report that upstream's chrome moved even
+ * before the per-page comparison says so. Sixteen hex characters, matching the
+ * copy and asset digests.
+ * @param {string[]} runs
+ * @returns {string}
+ */
+export function chromeDigest(runs) {
+  return createHash('sha256').update(JSON.stringify(runs)).digest('hex').slice(0, 16);
+}
 
 /**
  * The allow-list, in the strip table's order. Nine of the eleven targets are the
@@ -340,31 +354,35 @@ export function chromeFinding(path, servedHtml, liveHtml, allowList = CHROME_ALL
   return compare(path, servedHtml, liveHtml, allowList).finding;
 }
 
-/** @param {string} path @param {string} servedHtml @param {string} liveHtml @param {ChromeAllowEntry[]} allowList @returns {{finding: ChromeFinding|null, hits: Record<string, ChromeHit>}} */
+/** @param {string} path @param {string} servedHtml @param {string} liveHtml @param {ChromeAllowEntry[]} allowList @returns {{finding: ChromeFinding|null, hits: Record<string, ChromeHit>, liveRuns: string[]}} */
 function compare(path, servedHtml, liveHtml, allowList) {
   const servedRuns = chromeRuns(servedHtml);
   const { runs: liveRuns, hits } = chromeMaskedRuns(liveHtml, allowList);
   const hunks = copyDiff(servedRuns, liveRuns);
-  return { finding: hunks.length === 0 ? null : { path, hunks }, hits };
+  return { finding: hunks.length === 0 ? null : { path, hunks }, hits, liveRuns };
 }
 
 /**
  * The whole run's chrome comparison: how many pages were compared, how many
- * differed, the findings, and the allow-list hits totalled per entry. Pure:
- * every finding is a function of the pages handed in, and the served side is
- * projected exactly once.
+ * differed, the findings, the allow-list hits totalled per entry, and each live
+ * page's masked chrome digest for the baseline row. Pure: every finding is a
+ * function of the pages handed in, and the served side is projected exactly
+ * once.
  * @param {import('./upstream-copy.mjs').CopyPage[]} pages
  * @param {ChromeAllowEntry[]} [allowList]
- * @returns {ChromeTier}
+ * @returns {ChromeTier & {digests: Record<string, string>}}
  */
 export function chromeReport(pages, allowList = CHROME_ALLOW_LIST) {
   /** @type {ChromeFinding[]} */
   const findings = [];
   /** @type {Record<string, ChromeHit>} */
   const totals = {};
+  /** @type {Record<string, string>} */
+  const digests = {};
   for (const page of pages) {
-    const { finding, hits } = compare(page.path, page.served, page.live, allowList);
+    const { finding, hits, liveRuns } = compare(page.path, page.served, page.live, allowList);
     if (finding !== null) findings.push(finding);
+    digests[page.path] = chromeDigest(liveRuns);
     for (const [name, hit] of Object.entries(hits)) {
       const total = totals[name] ?? { regions: 0, chars: 0 };
       total.regions += hit.regions;
@@ -375,5 +393,5 @@ export function chromeReport(pages, allowList = CHROME_ALLOW_LIST) {
   const hits = Object.entries(totals)
     .map(([name, hit]) => ({ name, regions: hit.regions, chars: hit.chars }))
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-  return { compared: pages.length, differed: findings.length, findings, hits };
+  return { compared: pages.length, differed: findings.length, findings, hits, digests };
 }

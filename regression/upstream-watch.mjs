@@ -104,9 +104,10 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
- * Ticket 04's chrome tier as the report carries it: the compared/differed
- * counts, the per-page findings, and the allow-list hits that were counted
- * rather than reported. It carries no digest state.
+ * Ticket 04's chrome tier as the report carries it, plus ticket 05's nested
+ * restyle tier: the compared/differed counts, the per-page findings, and the
+ * allow-list hits that were counted rather than reported. The per-page digest
+ * state lives on the baseline row.
  * @typedef {import('./upstream-chrome.mjs').ChromeTier} ChromeTier
  */
 
@@ -116,7 +117,8 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * alone can see. Ticket 02's `since` is the drift against the moving baseline;
  * ticket 03's `copy` is the live-versus-served prose comparison; ticket 04's
  * `chrome` is the live-versus-served chrome comparison against the strip
- * allow-list. Together they are the only things that make the run exit 1.
+ * allow-list; ticket 05's `chrome.restyle` is the shared-asset byte-digest
+ * comparison. Together they are the only things that make the run exit 1.
  * @typedef {Object} WatchReport
  * @property {string} origin
  * @property {{sitemap: number, homepage: number, capture: number, universe: number}} counts
@@ -127,7 +129,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {string} [verified]  the date this run verified upstream; set by `runWatch`
  * @property {BaselineDelta} [since]  what moved since the previous run; set by `runWatch`
  * @property {CopyTier} [copy]  the served-versus-live prose comparison; set by `runWatch`
- * @property {ChromeTier} [chrome]  the served-versus-live chrome comparison; set by `runWatch`
+ * @property {ChromeTier & {restyle?: import('./upstream-assets.mjs').RestyleTier}} [chrome]  the served-versus-live chrome comparison and, nested, the shared-asset restyle comparison; set by `runWatch`
  */
 
 /**
@@ -348,7 +350,8 @@ function reportMoved(report) {
     : false;
   const copyDrift = report.copy !== undefined && report.copy.differed > 0;
   const chromeDrift = report.chrome !== undefined && report.chrome.differed > 0;
-  return indexDrift || baselineDrift || copyDrift || chromeDrift;
+  const restyleDrift = (report.chrome?.restyle?.differed ?? 0) > 0;
+  return indexDrift || baselineDrift || copyDrift || chromeDrift || restyleDrift;
 }
 
 /** One run's text for the human view, bounded so a whole-page rewrite cannot
@@ -387,6 +390,10 @@ export function formatWatchReport(report) {
     const masked = hits.reduce((count, hit) => count + hit.regions, 0);
     lines.push(`  chrome: ${compared} page(s) compared · ${differed} differed · ${masked} allow-listed region(s)`);
     for (const hit of hits) lines.push(`    · ${hit.name}: ${hit.regions} region(s), ${hit.chars} char(s)`);
+    if (report.chrome.restyle) {
+      const { compared: assetsCompared, differed: assetsDiffered } = report.chrome.restyle;
+      lines.push(`  restyle (chrome tier, shared assets): ${assetsCompared} compared · ${assetsDiffered} changed`);
+    }
   }
   if (demotions.length > 0) {
     lines.push(`  demotions (context, not findings): ${demotions.length}`);
@@ -435,6 +442,15 @@ export function formatWatchReport(report) {
       }
     }
   }
+  // Deliberately a separate block from the per-page chrome findings above: a
+  // restyle is chrome-tier but names an asset and its size, not a page and its
+  // run hunks.
+  if (report.chrome?.restyle && report.chrome.restyle.findings.length > 0) {
+    lines.push('  restyle findings (chrome tier, not per-page) — shared asset bytes that moved:');
+    for (const finding of report.chrome.restyle.findings) {
+      lines.push(`    ~ ${finding.name} (${finding.bytes} bytes)`);
+    }
+  }
   const moved = reportMoved(report);
   if (report.since) {
     lines.push(moved ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
@@ -446,10 +462,11 @@ export function formatWatchReport(report) {
 
 /**
  * The command's exit code: 1 when the index drifted (ticket 01), the baseline
- * moved (ticket 02), the served prose no longer matches live (ticket 03), or
- * the served chrome no longer matches live beyond the allow-list (ticket 04), 0
- * otherwise. An operational failure (2) is the driver's, not the report's — an
- * incomplete measurement must never masquerade as a clean one.
+ * moved (ticket 02), the served prose no longer matches live (ticket 03), the
+ * served chrome no longer matches live beyond the allow-list (ticket 04), or a
+ * shared asset's bytes moved (ticket 05), 0 otherwise. An operational failure
+ * (2) is the driver's, not the report's — an incomplete measurement must never
+ * masquerade as a clean one.
  * @param {WatchReport} report
  * @returns {0|1}
  */

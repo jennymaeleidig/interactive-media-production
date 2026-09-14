@@ -1,9 +1,10 @@
-// The upstream watch's network edge (tickets 01–04): fetch the sitemap and
-// homepage, probe every path in the watched universe once, fetch the body of
-// every watched page the tree serves, hand the bytes and the previous baseline
-// to the pure cores, print what they decide, and record the baseline when the
-// run is allowed to. This file decides nothing itself — it adds only the
-// network, the filesystem, and the process exit code.
+// The upstream watch's network edge (tickets 01–05): fetch the sitemap and
+// homepage, discover and fetch the site's shared asset set, probe every path in
+// the watched universe once, fetch the body of every watched page the tree
+// serves, hand the bytes and the previous baseline to the pure cores, print what
+// they decide, and record the baseline when the run is allowed to. This file
+// decides nothing itself — it adds only the network, the filesystem, and the
+// process exit code.
 //
 // It is deliberately outside the test suite: the suite must stay green on a
 // fresh clone with no network, so the cores are pinned by fixtures and this edge
@@ -31,6 +32,7 @@ import { invokedDirectly, makeArg, mapLimit } from '../pipeline/cli.mjs';
 import { pageCandidates } from '../pipeline/served-tree.mjs';
 import { exitCode, formatWatchReport, watchedUniverse } from './upstream-watch.mjs';
 import { outsideServedTree, readBaseline, runWatch, serializeBaseline } from './upstream-baseline.mjs';
+import { assetRefs } from './upstream-assets.mjs';
 
 const ORIGIN = 'https://www.flocksafety.com';
 const CONCURRENCY = 8;
@@ -54,6 +56,15 @@ async function fetchText(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return res.text();
+}
+
+/** Fetch one discovered shared asset's raw bytes; any non-2xx is an operational
+ * failure, so an incomplete asset set can never be digested as a clean one.
+ * @param {import('./upstream-assets.mjs').AssetRef} ref */
+async function fetchAsset(ref) {
+  const res = await fetch(ref.url);
+  if (!res.ok) throw new Error(`${ref.url}: HTTP ${res.status}`);
+  return { name: ref.name, url: ref.url, bytes: new Uint8Array(await res.arrayBuffer()) };
 }
 
 /** Probe one URL without following redirects, so the raw 3xx and Location show.
@@ -128,6 +139,17 @@ async function main() {
 
   const inputs = { origin: ORIGIN, sitemapXml, homepageHtml, captureList };
 
+  // Ticket 05: the site's shared asset set, discovered from the live homepage's
+  // own references. Fetched before the probe pass so a failure is an operational
+  // error rather than a clean run with a partial asset set.
+  /** @type {import('./upstream-assets.mjs').FetchedAsset[]} */
+  let assets;
+  try {
+    assets = await mapLimit(assetRefs(homepageHtml, ORIGIN), CONCURRENCY, fetchAsset);
+  } catch (err) {
+    return fail(`upstream watch could not fetch the shared asset set: ${message(err)}`);
+  }
+
   let universe;
   try {
     universe = watchedUniverse(inputs);
@@ -178,7 +200,7 @@ async function main() {
 
   let run;
   try {
-    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages, chromePages: copyPages });
+    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages, chromePages: copyPages, assets });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }

@@ -19,6 +19,7 @@ import { runWatch } from '../regression/upstream-baseline.mjs';
 import { copyRuns } from '../regression/upstream-copy.mjs';
 import {
   CHROME_ALLOW_LIST,
+  chromeDigest,
   chromeFinding,
   chromeMaskedRuns,
   chromeReport,
@@ -251,7 +252,7 @@ describe('the committed tree fed in as both sides — the steady state', () => {
 // `--accept` a chrome digest would require — but a chrome difference is drift:
 // it sets exit 1 and names the path and the runs in the human output.
 describe('the chrome tier — run report and exit code', () => {
-  it('records the chrome tier on the run report, with no baseline digest', () => {
+  it('records the chrome tier on the run report and the live chrome digest on the baseline row', () => {
     const result = runWatch({ ...steady(), previous: null, accept: false, verified: VERIFIED, chromePages: fixturePages('<div class="nav">New label</div>') });
     expect(result.report.chrome).toEqual({
       compared: 2,
@@ -259,7 +260,11 @@ describe('the chrome tier — run report and exit code', () => {
       findings: [{ path: '/a', hunks: [{ served: ['Old label'], live: ['New label'] }] }],
       hits: [],
     });
-    expect(result.baseline.rows.every((r) => !('chrome' in r))).toBe(true);
+    // Ticket 05: the live masked chrome digest joins the baseline row, so a
+    // later run can see upstream's chrome move even before the per-page
+    // comparison says so.
+    expect(result.baseline.rows.find((r) => r.path === '/a')?.chrome).toBe(chromeDigest(['New label']));
+    expect(result.baseline.rows.find((r) => r.path === '/b')?.chrome).toBe(chromeDigest(['Same']));
   });
 
   it('reports a chrome difference as drift: exit 1, and the path and runs in human output', () => {
