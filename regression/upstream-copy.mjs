@@ -51,7 +51,7 @@
 // exactly 2. One of those 2 was real — `/careers` ("We Aspire Fearlessly…"
 // became "We Work Hard…") — and the other, `/products/license-plate-readers`,
 // was the split-word false positive ticket 07 fixed (below): the served page's
-// line was a word-reveal run and the raw live page's was plain prose, so the
+// line was a word/line reveal run and the raw live page's was plain prose, so the
 // projection missed it on one side and chrome read it on the other. With both
 // renderings projected alike, the steady state the projection promises is
 // `/careers` and nothing else: an empty report means nothing moved, and a
@@ -236,14 +236,16 @@ const SPLIT_TEXT_CLASS = /(?:^|\s)split-(?:word|line)/;
  * @returns {boolean}
  */
 export function isSplitFragment(node) {
-  if (!('tagName' in node) || !('attrs' in node)) return false;
+  if (!('attrs' in node)) return false;
   return node.attrs.some((attr) => attr.name === 'class' && SPLIT_TEXT_CLASS.test(attr.value));
 }
 
 /**
  * Accumulate the text a prose run renders, skipping the subtrees whose text is
  * not prose. `<br>` splits words the reader sees apart, so void elements
- * contribute a space.
+ * contribute a space, and so does a word/line reveal fragment: the reveal writes
+ * its fragments with no whitespace between them (the text nodes are gone), so
+ * an inline fragment must not glue itself to its neighbour.
  * @param {HtmlNode} node
  * @param {string[]} parts
  * @returns {void}
@@ -259,21 +261,21 @@ function collectText(node, parts) {
     parts.push(' ');
     return;
   }
-  const block = BLOCK.has(node.tagName);
-  if (block) parts.push(' ');
+  const spaced = BLOCK.has(node.tagName) || isSplitFragment(node);
+  if (spaced) parts.push(' ');
   for (const child of node.childNodes) collectText(child, parts);
-  if (block) parts.push(' ');
+  if (spaced) parts.push(' ');
 }
 
 /**
- * The rendered text of one word/line reveal fragment. The re-serialization
- * writes adjacent fragments with no whitespace between them (SingleFile drops
- * the text nodes), so the fragments' texts are the words; the caller joins them
+ * One element's rendered text as a single run. The word/line reveal's
+ * re-serialization writes adjacent fragments with no whitespace between them
+ * (SingleFile drops the text nodes), so a fragment run is joined by the caller
  * with a space.
  * @param {HtmlNode} node
  * @returns {string}
  */
-function fragmentText(node) {
+function renderedText(node) {
   /** @type {string[]} */
   const parts = [];
   collectText(node, parts);
@@ -299,10 +301,7 @@ function collectRuns(node, runs) {
     const child = children[i];
     if (!('tagName' in child) || isGenerated(child)) continue;
     if (PROSE.has(child.tagName)) {
-      /** @type {string[]} */
-      const parts = [];
-      collectText(child, parts);
-      const text = normalize(parts.join(''));
+      const text = renderedText(child);
       if (text !== '') runs.push(text);
       continue;
     }
@@ -310,7 +309,7 @@ function collectRuns(node, runs) {
       /** @type {string[]} */
       const parts = [];
       while (i < children.length && 'tagName' in children[i] && isSplitFragment(children[i])) {
-        parts.push(fragmentText(children[i]));
+        parts.push(renderedText(children[i]));
         i += 1;
       }
       i -= 1;

@@ -100,7 +100,7 @@ describe('chromeRuns — chrome is the text the copy projection is blind to', ()
     expect(copyRuns(html)).toEqual(['Real prose']);
   });
 
-  it('reads a word-reveal fragment run as prose, not chrome', () => {
+  it('reads a reveal fragment run as prose, not chrome', () => {
     // Ticket 07: the Capture's split-word fragments land *beside* the paragraph
     // they were split from (a `<div>` inside a `<p>` is invalid, so the tree
     // constructor applies the paragraph's implied end tag). They are the copy
@@ -113,7 +113,7 @@ describe('chromeRuns — chrome is the text the copy projection is blind to', ()
     expect(chromeRuns('<p>Community safety works better together.</p>')).toEqual([]);
   });
 
-  it('does not absorb an inline word-reveal fragment into the block around it', () => {
+  it('does not absorb an inline reveal fragment into the block around it', () => {
     // The animation can split into inline elements too; the class is the rule,
     // not the tag, so a fragment never becomes its container's chrome text.
     expect(chromeRuns('<div class="nav"><span class=split-word>Products</span></div>')).toEqual([]);

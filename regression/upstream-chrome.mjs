@@ -334,10 +334,12 @@ function regionText(node) {
   return normalize(parts.join(''));
 }
 
-/** Collect text, stopping at prose, skipped, generated, split-fragment and void
- * regions. The two callers differ in one rule: a masked hit descends into nested
- * blocks (the whole subtree counts as chrome), while a block run stops at them
- * (each nested block becomes its own run). One walker, one flag.
+/** Collect text, stopping at prose, skipped, generated and void regions. The
+ * two callers differ in one rule: a masked hit descends into nested blocks (the
+ * whole subtree counts as chrome), while a block run stops at them (each nested
+ * block becomes its own run) — and a word/line reveal fragment is prose only the
+ * block run leaves aside; a masked hit still measures the whole region. One
+ * walker, two flags.
  * @param {HtmlNode} node @param {string[]} parts @param {boolean} intoBlocks @returns {void} */
 function collectText(node, parts, intoBlocks) {
   if (!('childNodes' in node)) return;
@@ -347,11 +349,11 @@ function collectText(node, parts, intoBlocks) {
       continue;
     }
     if (!('tagName' in child)) continue;
-    if (SKIPPED.has(child.tagName) || isGenerated(child) || isSplitFragment(child) || PROSE.has(child.tagName) || VOID.has(child.tagName)) {
+    if (SKIPPED.has(child.tagName) || isGenerated(child) || PROSE.has(child.tagName) || VOID.has(child.tagName)) {
       parts.push(' ');
       continue;
     }
-    if (BLOCK.has(child.tagName) && !intoBlocks) {
+    if ((isSplitFragment(child) || BLOCK.has(child.tagName)) && !intoBlocks) {
       parts.push(' ');
       continue;
     }

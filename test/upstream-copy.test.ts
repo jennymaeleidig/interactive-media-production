@@ -85,7 +85,7 @@ describe('copyRuns — the projection is a pure function of HTML', () => {
     expect(copyRuns(split)).toEqual(['Public safety works better together']);
   });
 
-  it('reassembles the word-reveal fragments the re-serialization promoted out of their paragraph', () => {
+  it('reassembles the reveal fragments the re-serialization promoted out of their paragraph', () => {
     // Ticket 07. The Capture's serializer keeps the animation's fragments as
     // block elements. A `<div>` inside a `<p>` is invalid, so the tree
     // constructor applies the paragraph's implied end tag and the fragments
@@ -99,8 +99,16 @@ describe('copyRuns — the projection is a pure function of HTML', () => {
     expect(copyRuns(served)).toEqual([sentence]);
   });
 
+  it('separates adjacent inline reveal fragments inside a prose element', () => {
+    // The reveal can split into inline elements, not only blocks; the text
+    // nodes between them are gone, so without a separator the words glue.
+    const served = '<h2><span class=split-word>See</span><span class=split-word>How</span></h2>';
+    expect(copyRuns(served)).toEqual(copyRuns('<h2>See How</h2>'));
+    expect(copyRuns(served)).toEqual(['See How']);
+  });
+
   it('reassembles a line-reveal run too, and keeps the fragments in document order', () => {
-    // The same animation splits long headings by line. The rule is the split
+    // The same animation splits long headings by line. The rule is the reveal
     // rendering, not one page or one heading level.
     const served = '<div class=lpr7_layout><div class=split-line>How Flock LPR Helps Move</div><div class=split-line>Investigations Forward</div><p>Body copy</p></div>';
     expect(copyRuns(served)).toEqual(['How Flock LPR Helps Move Investigations Forward', 'Body copy']);
@@ -230,7 +238,7 @@ describe('the committed tree fed in as both sides', () => {
 // fragments are prose, not chrome, so the two projections land on the same line
 // and an unchanged heading is silent on both tiers — while a genuine edit still
 // reports once.
-describe('ticket 07 — a word-reveal run and its plain-prose twin differ by no finding', () => {
+describe('ticket 07 — a reveal run and its plain-prose twin differ by no finding', () => {
   const SENTENCE = 'Community safety works better together.';
   const CHANGED = 'Community safety works better together, always.';
   const fragment = (word: string) => `<div class=split-word>${word}</div>`;
@@ -251,12 +259,13 @@ describe('ticket 07 — a word-reveal run and its plain-prose twin differ by no 
     expect(chromeFinding('/products/license-plate-readers', served, changed)).toBeNull();
   });
 
-  it('pins the committed page that carries the split-word run', () => {
+  it('pins the committed page that carries the reveal run', () => {
     // The only page in the tree with the reveal markup, kept from drifting: its
-    // sentence is one copy run, and its fragments are not chrome.
+    // sentence is one copy run, and none of its fragments is a chrome run.
     const html = readFileSync(new URL('../served/products/license-plate-readers.html', import.meta.url), 'utf8');
     expect(copyRuns(html)).toContain('From recovering stolen vehicles to locating missing people and supporting investigations, learn how communities are using Flock LPR to improve public safety.');
-    expect(chromeRuns(html)).not.toContain('recovering');
-    expect(chromeRuns(html)).not.toContain('safety.');
+    const fragments = 'From recovering stolen vehicles to locating missing people and supporting investigations, learn how communities are using Flock LPR to improve public safety.'.split(' ');
+    const chrome = chromeRuns(html);
+    for (const word of fragments) expect(chrome, word).not.toContain(word);
   });
 });
