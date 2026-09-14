@@ -1,6 +1,6 @@
-// Ticket 08's seam: known-drift acceptance. The accepted set is a pure value —
+// The known-drift acceptance seam. The accepted set is a pure value —
 // an entry's identity, whether a run's difference matches one, and the
-// partition into accepted and active — so the whole of ticket 08 is pinned here
+// partition into accepted and active — so the whole acceptance rule is pinned here
 // offline, beside the baseline and watch seams it joins. The network edge
 // (`regression/upstream-watch-cli.mjs`) stays hand-run and outside the suite.
 //

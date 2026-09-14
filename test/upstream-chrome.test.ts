@@ -1,8 +1,8 @@
-// Ticket 04's seam: the **chrome projection** — the nav, footer and global
+// The **chrome projection** seam — the nav, footer and global
 // chrome the copy projection is blind to — and the allow-list that absorbs
 // exactly the regions our strip pass removed. The projection, the allow-list
 // matchers, the masking and the run's counts are all pure functions of a page's
-// HTML, so the whole of ticket 04 is pinned here: the projection's rules, the
+// HTML, so the whole chrome projection is pinned here: the projection's rules, the
 // allow-list's provenance against `served/build-log.json`, a finding that
 // survives removing an entry, and the committed tree fed in as both sides.
 //
@@ -93,7 +93,7 @@ describe('chromeRuns — chrome is the text the copy projection is blind to', ()
   });
 
   it('is the exact complement of the copy projection: each owns its own text', () => {
-    // The spec's projection seam, both directions on one page: chrome takes the
+    // The projection seam, both directions on one page: chrome takes the
     // nav label and not the prose; copy takes the prose and not the nav label.
     const html = '<div class="nav">Products</div><p>Real prose</p>';
     expect(chromeRuns(html)).toEqual(['Products']);
@@ -101,7 +101,7 @@ describe('chromeRuns — chrome is the text the copy projection is blind to', ()
   });
 
   it('reads a reveal fragment run as prose, not chrome', () => {
-    // Ticket 07: the Capture's split-word fragments land *beside* the paragraph
+    // The split-word rule: the Capture's split-word fragments land *beside* the paragraph
     // they were split from (a `<div>` inside a `<p>` is invalid, so the tree
     // constructor applies the paragraph's implied end tag). They are the copy
     // projection's line, one word per element, never chrome.
@@ -267,9 +267,9 @@ describe('the committed tree fed in as both sides — the steady state', () => {
   });
 });
 
-// Ticket 04: the chrome tier joins the run report. It is report-only in the
+// The chrome tier joins the run report. It is report-only in the
 // sense that a soft finding never by itself moves the reference point, but the
-// live chrome digest joins the baseline row (ticket 05), so a chrome difference
+// live chrome digest joins the baseline row, so a chrome difference
 // is drift: it sets exit 1 and names the path and the runs in the human output.
 describe('the chrome tier — run report and exit code', () => {
   it('records the chrome tier on the run report and the live chrome digest on the baseline row', () => {
@@ -280,7 +280,7 @@ describe('the chrome tier — run report and exit code', () => {
       findings: [{ path: '/a', hunks: [{ served: ['Old label'], live: ['New label'] }] }],
       hits: [],
     });
-    // Ticket 05: the live masked chrome digest joins the baseline row, so a
+    // The live masked chrome digest joins the baseline row, so a
     // later run can see upstream's chrome move even before the per-page
     // comparison says so.
     expect(result.baseline.rows.find((r) => r.path === '/a')?.chrome).toBe(chromeDigest(['New label']));
@@ -316,7 +316,7 @@ describe('the chrome tier — run report and exit code', () => {
   });
 });
 
-// Ticket 04b: the runtime-fill exclusions. The chrome projection is the only
+// The runtime-fill exclusions. The chrome projection is the only
 // tier these apply to — the copy projection still reads the prose inside the
 // CMS list — so the whole set is a second, chrome-only list of named matchers,
 // injectable exactly like the allow-list so a removal fixture can prove a
@@ -385,9 +385,9 @@ describe('CHROME_RUNTIME_FILL — the regions a rendered capture fills and a raw
 });
 
 // A sanity guard for the fixture helpers above: `buildWatchReport` is the index
-// seam ticket 01 already pins; ticket 04 must not have changed what a steady run
+// seam the index tier already pins; the chrome tier must not have changed what a steady run
 // reports there.
-describe('ticket 04 leaves the index seam alone', () => {
+describe('the chrome tier leaves the index seam alone', () => {
   it('a steady run still has no index findings', () => {
     const report = buildWatchReport(steady());
     expect(report.findings).toEqual({ added: [], removed: [] });

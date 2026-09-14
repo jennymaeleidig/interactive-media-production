@@ -69,7 +69,7 @@ describe('the script census', () => {
   });
 });
 
-describe('the srcdoc script check (ticket 20)', () => {
+describe('the srcdoc script check', () => {
   it('sees a script inside a srcdoc payload — the census could only see it by luck', () => {
     expect(srcdocScripts(`<iframe srcdoc="<script>alert(1)</script>"></iframe>`).executable).toBe(1);
   });
@@ -92,7 +92,7 @@ describe('the srcdoc script check (ticket 20)', () => {
   });
 });
 
-describe('the remote-reference class check (ticket 20)', () => {
+describe('the remote-reference class check', () => {
   it('flags a remote reference in an unexpected fetcher position', () => {
     expect(unclassifiedRemoteRefs(`<img src="https://evil.example/x.jpg">`)).toEqual(['https://evil.example/x.jpg']);
     expect(unclassifiedRemoteRefs(`<link rel=stylesheet href="https://evil.example/x.css">`)).toEqual(['https://evil.example/x.css']);
@@ -117,7 +117,7 @@ describe('the remote-reference class check (ticket 20)', () => {
     expect(unclassifiedRemoteRefs(`<img data-src="https://cdn.example/a.jpg">`)).toEqual([]);
   });
 
-  it('reads a tag carrying a multi-megabyte unquoted data URI without overflowing (ticket 12)', () => {
+  it('reads a tag carrying a multi-megabyte unquoted data URI without overflowing', () => {
     // SingleFile writes an inlined video source unquoted: `src=data:video/mp4;base64,…`.
     // The retired alternation regex recursed once per scanned unit and blew the
     // engine's stack above ~10 MB of value.

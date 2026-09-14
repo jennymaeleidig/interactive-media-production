@@ -1,4 +1,4 @@
-// The upstream watch's pure core (ticket 01): the watched universe, liveness
+// The upstream watch's pure core: the watched universe, liveness
 // classes, index findings, demotions, and the inventory — all a function of
 // fetched bytes, so they are pinned here with fixtures and no network. The
 // network driver (`regression/upstream-watch-cli.mjs`) is deliberately outside

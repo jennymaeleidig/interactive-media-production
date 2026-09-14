@@ -1,4 +1,4 @@
-// HTTP serving seam (spec, Testing Decisions seam #2): request → response.
+// HTTP serving seam: request → response.
 // Everything page-shaped is assertable here without a browser: 200/404/301 per
 // route class, served bytes carrying no executable scripts and no tracker
 // residue, links rewritten, closing tags restored.
@@ -69,7 +69,7 @@ describe('serving a captured page at its original path', () => {
   });
 });
 
-describe('forms & mock routes (ticket 02)', () => {
+describe('forms & mock routes', () => {
   let demo: Response;
   let demoBody: string;
 
@@ -132,7 +132,7 @@ describe('forms & mock routes (ticket 02)', () => {
   });
 });
 
-describe('story-hook seam present & dormant on served pages (ticket 03)', () => {
+describe('story-hook seam present & dormant on served pages', () => {
   async function assertSeamAboard(body: string, label: string) {
     // the page carries the runtime as an external asset, not inline bytes;
     // marker-to-asset resolution is `injected-layers`' job (this file keeps
@@ -163,7 +163,7 @@ describe('story-hook seam present & dormant on served pages (ticket 03)', () => 
   });
 });
 
-describe('chat mount over HTTP (ticket 10)', () => {
+describe('chat mount over HTTP', () => {
   /** The marked stand-in a page ships for one chat body, fetched from its asset. */
   async function chatSource(body: string, kind: 'style' | 'script'): Promise<string> {
     const want = kind === 'style' ? 'css' : 'js';
@@ -195,7 +195,7 @@ describe('chat mount over HTTP (ticket 10)', () => {
   });
 });
 
-describe('route classes (ticket 07: redirect manifest, dead roots, dropped pages)', () => {
+describe('route classes (redirect manifest, dead roots, dropped pages)', () => {
   it('permanently redirects a legacy stub to its local target (301)', async () => {
     const res = await fetch(base + '/legal/privacy-notice', { redirect: 'manual' });
     expect(res.status).toBe(301);
@@ -256,12 +256,12 @@ describe('path resolution', () => {
   });
 });
 
-// The chat message API seam (spec, Testing Decisions seam #2) over real HTTP:
+// The chat message API seam over real HTTP:
 // the same assertions as test/chat.seam.test.ts but through the built route,
 // proving the POST shell (JSON in, JSON out, 400 on malformed) as well as the
 // engine. Conversation shape and pinned copy are locked in the chat-seam
 // project; this block covers the transport.
-describe('chat message API over HTTP (ticket 08)', () => {
+describe('chat message API over HTTP', () => {
   // The turn shape is declared once (`pipeline/chat-turn.mjs`, re-exported by the
   // engine): this seam asserts the transport carries that shape, not a copy of it.
   async function post(body: unknown): Promise<{ status: number; json: ChatResponse }> {

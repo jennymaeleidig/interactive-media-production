@@ -1,4 +1,4 @@
-// The Chat mimic's message API (ticket 08): ONE POST per turn carrying
+// The Chat mimic's message API: ONE POST per turn carrying
 // `start | resume | option` and answering with the turn's lines, the pending
 // choice set (or completion), and the session's variables. All behavior lives
 // in lib/chat-engine.ts; this route is only the HTTP shell.

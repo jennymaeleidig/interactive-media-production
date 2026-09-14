@@ -1,4 +1,4 @@
-// The extracted-asset route (ADR 0002): GET /assets/<sha>.<ext> streams a
+// The extracted-asset route: GET /assets/<sha>.<ext> streams a
 // content-addressed file the build wrote from a Capture's inlined `data:` URI.
 //
 // More specific than the `[[...path]]` page catch-all, so asset requests land

@@ -1,12 +1,12 @@
-// Ticket 03's seam: the **copy projection** — the prose the Recreation
+// The **copy projection** seam: the prose the Recreation
 // reproduces — and the live-versus-served comparison built on it. Both are pure
-// functions of a page's HTML, so the whole of ticket 03 is pinned here: the
+// functions of a page's HTML, so the whole projection is pinned here: the
 // projection's rules, the diff it feeds, the per-page findings and the run's
 // counts, and the committed tree fed in as both sides.
 //
 // The network edge (`regression/upstream-watch-cli.mjs`) is hand-run and
 // deliberately outside the suite. The measured live-versus-served delta is
-// ticket 03's evidence and lives on the ticket, not in `npm test`.
+// the projection's evidence and lives in the watch's report, not in `npm test`.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { readFileSync, readdirSync } from 'node:fs';
@@ -80,7 +80,7 @@ describe('copyRuns — the projection is a pure function of HTML', () => {
   it('projects a heading whose animated fragments are child elements', () => {
     // Fragments nested inside a prose element are read by descending into it,
     // whichever marker class they carry; this is prose containment, not the
-    // promoted-sibling rule ticket 07 added below.
+    // promoted-sibling rule the reveal handling adds below.
     const split = '<h2 aria-label="Public safety works better together"><div class=word>Public</div><div class=word>safety</div><div class=word>works better together</div></h2>';
     const plain = '<h2>Public safety works better together</h2>';
     expect(copyRuns(split)).toEqual(copyRuns(plain));
@@ -88,7 +88,7 @@ describe('copyRuns — the projection is a pure function of HTML', () => {
   });
 
   it('reassembles the reveal fragments the re-serialization promoted out of their paragraph', () => {
-    // Ticket 07. The Capture's serializer keeps the animation's fragments as
+    // The split-word reveal. The Capture's serializer keeps the animation's fragments as
     // block elements. A `<div>` inside a `<p>` is invalid, so the tree
     // constructor applies the paragraph's implied end tag and the fragments
     // land *beside* an empty paragraph rather than inside it. A raw live fetch
@@ -234,13 +234,13 @@ describe('the committed tree fed in as both sides', () => {
   });
 });
 
-// Ticket 07's seam: the split-word and split-line reveal rewrites one prose line
+// The split-word reveal seam: the split-word and split-line reveal rewrites one prose line
 // as one element per word (or per line), and a re-serialization can leave those
 // fragments beside the paragraph they came from instead of inside it. The
 // fragments are prose, not chrome, so the two projections land on the same line
 // and an unchanged heading is silent on both tiers — while a genuine edit still
 // reports once.
-describe('ticket 07 — a reveal run and its plain-prose twin differ by no finding', () => {
+describe('a reveal run and its plain-prose twin differ by no finding', () => {
   const SENTENCE = 'Community safety works better together.';
   const CHANGED = 'Community safety works better together, always.';
   const fragment = (word: string) => `<div class=split-word>${word}</div>`;

@@ -1,4 +1,4 @@
-// The composed-window seam (spec, Testing Decisions seam #7). Every served page
+// The composed-window seam. Every served page
 // carries all six site-wide injected layers, and one carries a seventh; they
 // share a single document, and until this seam nothing put two of them in one
 // window. Their overlaps are not documented anywhere else:

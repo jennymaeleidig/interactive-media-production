@@ -5,7 +5,7 @@
 // payloads — a nested document that must never be read as page markup.
 //
 // Two of these rules are regressions, not descriptions. Each is a failure mode a
-// pass hit when it owned its own scanner (ticket 12):
+// pass hit when it owned its own scanner:
 //
 //   1. A multi-megabyte *unquoted* attribute value. SingleFile writes a video's
 //      `src=data:video/mp4;base64,…` unquoted; the regex alternation for the same

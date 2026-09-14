@@ -1,4 +1,4 @@
-// Ticket 03: the **copy projection** — the prose the Recreation reproduces —
+// The **copy projection** — the prose the Recreation reproduces —
 // and the live-versus-served comparison built on it.
 //
 // The projection is a pure function of one page's HTML. Prose is the text of
@@ -41,7 +41,7 @@
 // case first.
 //
 // The fix, and the measurement that proves it (the hand-run measurement of
-// 2026-09-13, recorded on ticket 03): the first run compared 1,181 served pages
+// 2026-09-13): the first run compared 1,181 served pages
 // and reported 541 differing. The tree was not 541 pages stale — the projection
 // was wrong: 539 of those 541 were runtime-filled regions the Capture froze
 // populated and a raw live fetch carries as a template. The exclusions below
@@ -50,14 +50,14 @@
 // the ATS-backed jobs list, the event speaker popup and the Wistia player left
 // exactly 2. One of those 2 was real — `/careers` ("We Aspire Fearlessly…"
 // became "We Work Hard…") — and the other, `/products/license-plate-readers`,
-// was the split-word false positive ticket 07 fixed (below): the served page's
+// was the split-word false positive the reveal rule fixed (below): the served page's
 // line was a word/line reveal run and the raw live page's was plain prose, so the
 // projection missed it on one side and chrome read it on the other. With both
 // renderings projected alike, the steady state the projection promises is
 // `/careers` and nothing else: an empty report means nothing moved, and a
 // non-empty one is a page a human should read.
 //
-// The word/line reveal (ticket 07). The animation rewrites one prose line as one
+// The word/line reveal. The animation rewrites one prose line as one
 // element per word (or per line). The Capture froze the rendered result, and
 // SingleFile's re-serialization can leave the fragments *beside* the paragraph
 // they came from — a `<div>` inside a `<p>` is invalid, so the tree constructor
@@ -75,7 +75,7 @@
 // rendered only through that attribute projects to nothing on the served side.
 //
 // What the copy projection is blind to, by design: chrome (nav/footer) text
-// that lives in non-prose containers, which ticket 04's chrome projection and
+// that lives in non-prose containers, which the chrome projection and
 // its allow-list own, and any change inside a runtime-filled region — the live
 // side the watch can fetch never carries one. That is the price of a projection
 // that does not fire on the transform or the fetch difference.

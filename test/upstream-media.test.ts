@@ -1,4 +1,4 @@
-// Ticket 06's seam: **media liveness** — the one class of rot a page edit cannot
+// The **media liveness** seam — the one class of rot a page edit cannot
 // explain. The media allow-list is the whole of the exception to the tree's
 // zero-outbound rule, so the frames a served page carries still reach the
 // network at runtime. When a media dies upstream the served page shows a dead
@@ -9,7 +9,7 @@
 // the bytes, `mediaLiveness` classifies one probe result, and `mediaReport`
 // joins them into the run's media tier. The network edge
 // (`regression/upstream-watch-cli.mjs`) is the only place a media host is
-// reached, so the whole of ticket 06 is pinned here — offline — beside the
+// reached, so the whole media-liveness check is pinned here — offline — beside the
 // index, copy, chrome and restyle seams.
 //
 // SPDX-License-Identifier: CC0-1.0

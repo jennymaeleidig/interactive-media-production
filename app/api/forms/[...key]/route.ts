@@ -1,4 +1,4 @@
-// The form mock route (ticket 02): every captured lead form POSTs here to a
+// The form mock route: every captured lead form POSTs here to a
 // key the build chose per (page, form). The submission is swallowed — the
 // body is never read — and the visitor is 303-redirected to the captured
 // thank-you page, exactly where the live flow lands. The redirect table is

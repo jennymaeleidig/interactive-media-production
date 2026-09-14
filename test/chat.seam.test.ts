@@ -1,11 +1,11 @@
-// Chat message API seam (spec, Testing Decisions seam #2): POST
+// Chat message API seam: POST
 // start/resume/option → turn batches, choice sets, surfaced variables, session
 // persistence across calls, and the email-gate branch shape. Drives the engine
 // headlessly — no browser, no HTTP — because the conversation core is the
 // genuinely separate surface the serving seam cannot reach.
 //
 // The pinned strings are transcribed from one observed Qualified session
-// (the flock-parody effort's ticket-06 evidence — `.scratch/` at the time, in
+// (captured Qualified-conversation evidence, at the time under `.scratch/`, in
 // git history now: evidence/06-qualified-conversation-ux/); the
 // mimic fixes one canonical string per beat, so these tests lock the copy.
 //
@@ -46,7 +46,7 @@ function optionTexts(res: ChatResponse): string[] | null {
   return res.turn.options ? res.turn.options.map((o) => o.text) : null;
 }
 
-describe('starting a session (ticket 08)', () => {
+describe('starting a session', () => {
   it('yields the pinned greeting and the hub option set', () => {
     const res = start();
     expect(res.sessionId).toMatch(/^[0-9a-f-]{36}$/);

@@ -1,7 +1,7 @@
-// The shared header's nav layer seam (ticket 14): the exact source the build
+// The shared header's nav layer seam: the exact source the build
 // injects inline (pipeline/nav-runtime.js) evaluated in a real DOM (jsdom) —
 // the same bytes every served page carries. It moves the class vocabulary the
-// corrected capture's live CSS renders (ticket 15): .header-z.scroll on
+// corrected capture's live CSS renders: .header-z.scroll on
 // scroll, .nav__dd.show on desktop hover and mobile tap, .header__bg.is-open +
 // the mobile take-over on the hamburger. A desktop trigger click must still
 // navigate (no preventDefault) — the empty-cream-bar break must be impossible.
@@ -76,7 +76,7 @@ function reducedMotionCssSelectors(css: string): string[] {
   return css.slice(open + 1, end).split('{')[0].split(',').map((s) => s.trim()).filter(Boolean);
 }
 
-describe('nav layer (ticket 14)', () => {
+describe('nav layer', () => {
   it('morphs the header on scroll: .scroll past the top, off again at 0', () => {
     const win = domOf().window as Win;
     const header = win.document.getElementById('header')!;
@@ -209,7 +209,7 @@ describe('nav layer (ticket 14)', () => {
   });
 
   it('reduced motion cancels the header transitions the corrected capture carries', () => {
-    // The corrected Capture's stylesheet is injected verbatim (ticket 15) and
+    // The corrected Capture's stylesheet is injected verbatim and
     // keeps the live header transitions; the authored half has to cancel the
     // header's own ones, or the morph still animates for a reduced-motion
     // reader. jsdom does not evaluate media queries, so this checks the

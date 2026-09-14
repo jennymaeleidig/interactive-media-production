@@ -3,8 +3,8 @@
 // tree location (tests point it at a fixture build); it defaults to
 // <cwd>/served.
 //
-// The tree also carries the run's route tables: forms-manifest.json (ticket
-// 02) and redirects.json (ticket 07), both written by the build.
+// The tree also carries the run's route tables: forms-manifest.json (the form
+// mock) and redirects.json (the route classes), both written by the build.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isLocalTarget } from '../pipeline/run-manifest.mjs';
@@ -15,7 +15,7 @@ export function servedDir(): string {
 }
 
 /**
- * The build's extracted-asset directory (ADR 0002) — content-addressed copies
+ * The build's extracted-asset directory — content-addressed copies
  * of every asset the Captures had inlined as a `data:` URI.
  */
 export function assetsDir(): string {

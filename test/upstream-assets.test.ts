@@ -1,4 +1,4 @@
-// Ticket 05's seam: the **restyle signal** — the site's shared stylesheet and
+// The **restyle signal** seam: the site's shared stylesheet and
 // script set, discovered from a live page's own references, fetched in the same
 // pass, and digested over their *bytes*. A changed digest is a chrome-tier
 // finding that names the changed asset and its size; a changed filename with
@@ -7,8 +7,8 @@
 //
 // Everything the tier decides is a pure function of a live page's HTML (the
 // discovery), a list of fetched asset bytes (the digest), and the previous
-// baseline's asset set (the comparison), so the whole of ticket 05 is pinned
-// here — offline — beside ticket 01's index seam. The network edge
+// baseline's asset set (the comparison), so the whole restyle signal is pinned
+// here — offline — beside the index seam. The network edge
 // (`regression/upstream-watch-cli.mjs`) is the only place an asset is fetched.
 //
 // SPDX-License-Identifier: CC0-1.0
@@ -198,9 +198,9 @@ describe('the restyle tier — the run report, exit code and baseline', () => {
 });
 
 // A sanity guard for the fixtures above: `buildWatchReport` is the index seam
-// ticket 01 already pins; ticket 05 must not have changed what a steady run
+// the index tier already pins; the restyle tier must not have changed what a steady run
 // reports there.
-describe('ticket 05 leaves the index seam alone', () => {
+describe('the restyle tier leaves the index seam alone', () => {
   it('a steady run still has no index findings', () => {
     expect(buildWatchReport(steady()).findings).toEqual({ added: [], removed: [] });
   });

@@ -7,9 +7,8 @@ How the engineering skills should consume this repo's domain documentation when 
 - **`CONTEXT.md`** at the repo root, or
 - **`CONTEXT-MAP.md`** at the repo root if it exists: it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
 
-This repo keeps no ADR record. Decisions that would have been ADRs live inline —
-in the `CONTEXT.md` terms, in `CODING_STANDARDS.md`, and in the comments beside
-the code they constrain.
+Decisions live inline — in the `CONTEXT.md` terms, in `CODING_STANDARDS.md`, and
+in the comments beside the code they constrain.
 
 If these files don't exist, **proceed silently**. Don't flag their absence;
 don't suggest creating them upfront. The `/domain-modeling` skill (reached via

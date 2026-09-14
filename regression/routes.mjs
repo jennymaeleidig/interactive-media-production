@@ -1,4 +1,4 @@
-// The full-scale serving check (tickets 06–07): every route class the serving
+// The full-scale serving check: every route class the serving
 // layer answers, plus byte-identity of every served page, asserted over HTTP
 // against the running production server.
 //
@@ -367,7 +367,7 @@ async function main() {
   try {
     server = external ? { base: external, stop: async () => {} } : await startServer();
     const r = await checkRoutes(server.base, { servedDir, listingFile });
-    console.log('Serving check (tickets 06–07) — every route class, byte-identity, and the injected-layer roster over HTTP');
+    console.log('Serving check — every route class, byte-identity, and the injected-layer roster over HTTP');
     console.log(`  ${r.checked} route(s): ${formatRouteCounts(r.counts)}`);
     console.log(`  byte-identity: ${r.byteChecked} served page(s) returned bytes identical to the file in the tree`);
     console.log(`  asset-identity: ${r.assetChecked} extracted asset(s) returned their declared content type and identical bytes`);

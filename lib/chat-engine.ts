@@ -1,7 +1,7 @@
-// The Chat mimic's engine (ticket 08): the whole conversation behind one
+// The Chat mimic's engine: the whole conversation behind one
 // message API, with no live backend and no network.
 //
-// Design (spec, "Chat mimic"; lifted from the chat-wrapper prototype):
+// Design (the Chat mimic contract; lifted from the chat-wrapper prototype):
 // 1. The Yarn project compiles ONCE, at module-eval time, via the Node loader
 //    (`yarnspinner-typescript/node`). Zero bundler configuration is needed —
 //    this is the SSR startup-singleton shape — so the same code runs under
@@ -18,7 +18,7 @@
 // 4. ALL choices are Yarn options (`->`). The wrapper renders the pending set
 //    in the composer slot; selecting one is a message send. No free text.
 //
-// The email gate (spec, ratified): the demo branch asks for an email and then
+// The email gate (ratified): the demo branch asks for an email and then
 // offers only "Maybe later", which returns to the hub option set. The gate
 // never dead-ends, and the rendered UI carries no divergence notice — the
 // intentional stop is stated only in `dialogue/flock.yarn`.

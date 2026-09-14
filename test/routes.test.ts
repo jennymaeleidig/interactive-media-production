@@ -1,4 +1,4 @@
-// Route-check pure core (ticket 07): expectation building and the whole-site
+// Route-check pure core: expectation building and the whole-site
 // count invariant. The check itself is environmental (it needs the built app
 // and the served tree), so it is not a test-suite member — but its derivation
 // from the build's route classes is pure and locked here.

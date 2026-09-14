@@ -2,7 +2,7 @@
 // through. Pure, so it is pinned here rather than only through the served tree.
 //
 // Two of these tests are regressions, not descriptions — each is a failure mode
-// a pass hit when it owned its own scanner (ticket 12):
+// a pass hit when it owned its own scanner:
 //
 //   1. A multi-megabyte *unquoted* attribute value. SingleFile writes a video's
 //      `src=data:video/mp4;base64,…` unquoted; the regex alternation that reads
@@ -42,7 +42,7 @@ describe('openTags', () => {
   });
 
   it('walks a multi-megabyte unquoted value without overflowing the stack', () => {
-    // The ticket-12 shape: SingleFile writes this value unquoted.
+    // The observed shape: SingleFile writes this value unquoted.
     const giant = `<video src=data:video/mp4;base64,${'A'.repeat(3_000_000)} poster=/p.jpg></video>`;
     const [tag] = [...openTags(giant)];
     expect(tag.name).toBe('video');

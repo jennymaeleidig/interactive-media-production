@@ -1,10 +1,10 @@
-// Story-hook DOM seam (spec, Testing Decisions #4): the apply() contract —
+// Story-hook DOM seam: the apply() contract —
 // each op mutates as documented, array order honored, missing selectors
 // skipped without throwing, pre-DOM calls queue until DOMContentLoaded.
 // The runtime under test is the exact source the build injects inline
 // (pipeline/story-hook.js), evaluated in a real DOM (jsdom) — the same bytes
 // every served page carries. The runtime is dormant: these tests drive it the
-// way only the Parody layer ever should (ticket 03).
+// way only the Parody layer ever should.
 import { describe, it, expect } from 'vitest';
 import type { DOMWindow } from 'jsdom';
 import { installRuntime, layerSource, onceReady, seamWindow } from './seam-harness';

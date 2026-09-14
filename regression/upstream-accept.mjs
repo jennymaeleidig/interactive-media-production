@@ -1,4 +1,4 @@
-// Ticket 08: **known-drift acceptance** — the state that lets a steady-state
+// **Known-drift acceptance** — the state that lets a steady-state
 // run come back empty while the tree stays honestly stale.
 //
 // The tree is a frozen 2026-09-12 snapshot and upstream has moved on. Some of
@@ -17,7 +17,7 @@
 // matches and re-alarms. Identity is deliberately tier- and slot-specific: one
 // accepted media slot cannot vouch for another on the same page.
 //
-// The set is committed in the baseline (spec decision 9) and only
+// The set is committed in the baseline and only
 // `--accept-drift` rewrites it; it is replaced, never merged, so a stale entry
 // for a page that has since moved cannot linger.
 //

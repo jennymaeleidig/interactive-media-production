@@ -1,6 +1,6 @@
 // The catch-all serving route: the Recreation answers original site paths
 // from the build's served tree. GET /a/b → served/a/b.html, or served/a/b/
-// index.html; a miss consults the build's redirect table (ticket 07) and
+// index.html; a miss consults the build's redirect table (the route classes) and
 // answers the legacy stubs' permanent redirect; anything else is a 404 —
 // reproducing the live site's observed behavior IS the fidelity bar (dead
 // collection roots and dropped scaffold/test pages 404 here). Pages are read

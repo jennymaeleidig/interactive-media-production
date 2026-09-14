@@ -1,4 +1,4 @@
-// The one seam harness (architecture-deepening ticket 07). Every injected
+// The one seam harness. Every injected
 // runtime's DOM seam asks the same question — "do the exact bytes the build
 // inlines behave in a real DOM?" — and every copy of that question drifted:
 // six `new JSDOM` calls, two `runScripts` modes, three reduced-motion

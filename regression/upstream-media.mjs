@@ -1,4 +1,4 @@
-// Ticket 06: the **media liveness** signal — the one class of rot a page edit
+// The **media liveness** signal — the one class of rot a page edit
 // cannot explain. The media allow-list is the whole of the exception to the
 // tree's zero-outbound rule, so the frames a served page carries still reach
 // the network at runtime. When a media dies upstream the served page shows a

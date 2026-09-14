@@ -1,4 +1,4 @@
-// Ticket 05: the **restyle signal** — a global restyle is invisible to the
+// The **restyle signal** — a global restyle is invisible to the
 // index, the copy projection and the per-page chrome projection, because no
 // page's text changes and every page's HTML carries build-hashed asset names.
 // Webflow's shared stylesheet and script filenames carry a build hash that

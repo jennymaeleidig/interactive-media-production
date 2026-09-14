@@ -1,4 +1,4 @@
-// The upstream watch's pure core (ticket 01): does the live site still match the
+// The upstream watch's pure core: does the live site still match the
 // index we hold? Everything this module decides is a function of three fetched
 // bodies plus a map of probe results — the sitemap, the homepage, and the frozen
 // Capture list — so the whole comparison is pinned in `test/upstream-watch.test.ts`
@@ -23,7 +23,7 @@
 import { attrOf, openTags } from '../pipeline/html.mjs';
 
 /**
- * The liveness classes the ticket asks for, in report order. 200 is a live
+ * The liveness classes the watch reports, in report order. 200 is a live
  * page; 3xx a redirect (kept with its target); 401 its own class because the
  * tree 404s auth-gated stubs by rule; 4xx and 5xx the client/server error
  * buckets, split so a server error is never reported as a client one.
@@ -89,7 +89,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * What moved since the previous baseline: the difference between the previous
  * run's rows and this run's, by path. `from` is the previous
  * **verified-in-sync date**; it is null on the **silent baseline**, which has
- * no previous state to diff against. Ticket 02.
+ * no previous state to diff against. The moving baseline.
  * @typedef {Object} BaselineDelta
  * @property {string|null} from
  * @property {string[]} added
@@ -98,13 +98,13 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
- * Ticket 03's copy tier as the report carries it: the compared/differed counts
+ * The copy tier as the report carries it: the compared/differed counts
  * and the per-page findings, no digest state.
  * @typedef {import('./upstream-copy.mjs').CopyTier} CopyTier
  */
 
 /**
- * Ticket 04's chrome tier as the report carries it, plus ticket 05's nested
+ * The chrome tier as the report carries it, plus the nested
  * restyle tier: the compared/differed counts, the per-page findings, and the
  * allow-list hits that were counted rather than reported. The per-page digest
  * state lives on the baseline row.
@@ -112,7 +112,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
- * Ticket 06's media tier as the report carries it: the slots compared, the
+ * The media tier as the report carries it: the slots compared, the
  * per-(page, slot) findings, and the liveness tally. Unlike the other tiers it
  * is an absolute measurement rather than a diff against the baseline, so it is
  * reported on the silent first run too.
@@ -120,7 +120,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
- * Ticket 08's known-drift view as the report carries it: the differences a
+ * The known-drift view as the report carries it: the differences a
  * recorded acceptance entry vouches for, still reported as a count and a
  * page/tier but not as findings, so a steady-state run can exit 0 without
  * hiding what it accepted.
@@ -131,11 +131,11 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
 
 /**
  * The comparison a run produces. `inventory` is the whole measurement;
- * `findings` are the drift against the frozen Capture list, which ticket 01
- * alone can see. Ticket 02's `since` is the drift against the moving baseline;
- * ticket 03's `copy` is the live-versus-served prose comparison; ticket 04's
+ * `findings` are the drift against the frozen Capture list, which the index tier
+ * alone can see. `since` is the drift against the moving baseline;
+ * `copy` is the live-versus-served prose comparison; the chrome tier's
  * `chrome` is the live-versus-served chrome comparison against the strip
- * allow-list; ticket 05's `chrome.restyle` is the shared-asset byte-digest
+ * allow-list; `chrome.restyle` is the shared-asset byte-digest
  * comparison. Together they are the only things that make the run exit 1.
  * @typedef {Object} WatchReport
  * @property {string} origin
@@ -149,8 +149,8 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {CopyTier} [copy]  the served-versus-live prose comparison; set by `runWatch`
  * @property {ChromeTier & {restyle?: import('./upstream-assets.mjs').RestyleTier}} [chrome]  the served-versus-live chrome comparison and, nested, the shared-asset restyle comparison; set by `runWatch`
  * @property {MediaTier} [media]  the served media slots whose upstream media is not alive; set by `runWatch`
- * @property {AcceptedTier} [accepted]  the differences a recorded acceptance entry vouches for (ticket 08)
- * @property {string[]} [refreshCandidates]  the pages a future re-capture would need (ticket 08)
+ * @property {AcceptedTier} [accepted]  the differences a recorded acceptance entry vouches for
+ * @property {string[]} [refreshCandidates]  the pages a future re-capture would need
  */
 
 /**
@@ -178,7 +178,7 @@ export function pathOf(url, origin) {
 }
 
 /**
- * The coarse liveness class the ticket asks for: 200, 3xx, 4xx (and 5xx), with
+ * The coarse liveness class the watch reports: 200, 3xx, 4xx (and 5xx), with
  * 401 pulled out as its own class. Every other 2xx (201, 204, 206) is '200' —
  * the page answered, so it must never read as a removal.
  * @param {number} status
@@ -216,7 +216,7 @@ function decodeXml(text) {
  * The sitemap's locs, as paths, with each loc's lastmod kept only as context.
  * The body must be a flat `<urlset>`; a `<sitemapindex>`, an error page, or a
  * truncated body throws so the driver can exit 2 — an unparsable sitemap must
- * never be read as a clean, shrunken universe. Ticket 01 does not descend into
+ * never be read as a clean, shrunken universe. The index tier does not descend into
  * a sitemap index.
  * @param {string} sitemapXml
  * @param {string} origin
@@ -387,8 +387,8 @@ function summarizeRuns(runs) {
 
 /**
  * The human view of a report. It reads the same `findings`, `demotions`,
- * `liveness`, and ticket 02 `since` the `--json` form serializes, so the two
- * can never disagree. The ticket 01 lines and closing line are unchanged when
+ * `liveness`, and `since` the `--json` form serializes, so the two
+ * can never disagree. The index-tier lines and closing line are unchanged when
  * no baseline section is present.
  * @param {WatchReport} report
  * @returns {string}
@@ -520,11 +520,11 @@ export function formatWatchReport(report) {
 }
 
 /**
- * The command's exit code: 1 when the index drifted (ticket 01), the baseline
- * moved (ticket 02), the served prose no longer matches live (ticket 03), the
- * served chrome no longer matches live beyond the allow-list (ticket 04), a
- * shared asset's bytes moved (ticket 05), or a served media slot's media no
- * longer resolves (ticket 06), 0 otherwise. An operational failure (2) is the
+ * The command's exit code: 1 when the index drifted, the baseline
+ * moved, the served prose no longer matches live, the
+ * served chrome no longer matches live beyond the allow-list, a
+ * shared asset's bytes moved, or a served media slot's media no
+ * longer resolves, 0 otherwise. An operational failure (2) is the
  * driver's, not the report's — an incomplete measurement must never masquerade
  * as a clean one.
  * @param {WatchReport} report

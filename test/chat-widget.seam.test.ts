@@ -1,8 +1,8 @@
-// Chat widget DOM seam (ticket 09; re-pointed at the injected runtime by
-// ticket 10): the widget's external behavior, evaluated in a real DOM (jsdom)
+// Chat widget DOM seam (re-pointed at the injected runtime by
+// the site-wide mount): the widget's external behavior, evaluated in a real DOM (jsdom)
 // against the exact bytes the build inlines on every launcher page
 // (pipeline/chat-widget.js) — the same bytes every mounted served page
-// carries. The spec's chat seam covers the message API; this one covers the
+// carries. The message-API seam covers the message API; this one covers the
 // surface the visitor sees, which the API seam cannot reach: the three
 // captured surfaces, the scroll pounce, the inert composer, the choice chips
 // in the composer slot, complete-bubble replies, and the absence of typing
@@ -311,7 +311,7 @@ function mediaRules(css: string, condition: string): Map<string, string> {
   return rules;
 }
 
-describe('mobile layout parity (ticket 16)', () => {
+describe('mobile layout parity', () => {
   const mobile = mediaRules(CHAT_CSS, '(max-width: 767px)');
 
   it('keys the mobile variant on the live widget\u2019s own 767px breakpoint', () => {

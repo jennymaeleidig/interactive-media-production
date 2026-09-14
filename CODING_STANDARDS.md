@@ -2,7 +2,7 @@
 
 Rules for writing and editing code in this repo. Filled in by the
 `flock-parody-impl` effort (the repo's first implementation effort under the
-Next.js pivot, per `AGENTS.md`). Later efforts extend this document; they do
+Next.js pivot). Later efforts extend this document; they do
 not silently deviate from it.
 
 **Binding process rule:** follow these standards whenever writing or editing
@@ -43,11 +43,11 @@ the tree by the retired build:
   refuses them, which is why the image half needs no grant. The hidden Vidzflow
   video.js documents are stripped, not played.
 - **The chat's same-origin POST.** The captures' own CSP (`default-src 'none'`,
-  no `connect-src`) refuses even that, so the build edited the policy through
-  exactly one primitive — `grantSources`, which **replaces** a directive rather
-  than appending a second one (two directives intersect and the resource stays
-  blocked, which looks exactly like the grant never having been made). Three
-  grants are in the frozen tree, each logged per page: the chat mount appends
+  no `connect-src`) refuses even that, so the retired build edited the policy
+  one directive at a time, **replacing** a directive rather than appending a
+  second one (two directives intersect and the resource stays blocked, which
+  looks exactly like the grant never having been made). Three grants are in the
+  frozen tree, each logged per page: the chat mount appends
   exactly `connect-src 'self'` on launcher pages, the embed pass widens
   `frame-src` by the hosts it used, and the dedupe pass widens
   `style-src`/`script-src` by `'self'` for the body files it wrote. No grant
@@ -68,7 +68,7 @@ each one to a content-addressed file (`/assets/<sha16>.<ext>`, served by
 `<style>`/`<script>` body of at least 1 KB became one content-addressed
 `/assets/<sha16>.css|.js` with a marked `<link>`/`<script src>` left in the
 position the body held, because a capture inlines the same stylesheets on all
-1,181 pages (1,642 MB of CSS, 1,476 distinct bodies). Bodies under 1 KB and
+1,181 pages (1.84 GB of HTML before dedupe). Bodies under 1 KB and
 non-JavaScript scripts (`application/ld+json`, an `importmap`) stay inline: a
 `<script src>` of a data type is fetched and ignored. The body files live in
 `served/assets.json`, so the serving check's asset-identity walk covers them
@@ -143,11 +143,11 @@ like any other asset.
 - **The serving layer is verified in bytes, not pixels.** Every served page's
   HTTP body must be byte-identical to its file in the tree — same bytes ⇒ same
   pixels, so byte-identity is the strictly stronger guarantee, and it covers all
-  1,181 pages in ~10 s. There is **no pixel gate**: the retired ticket-06
-  harness compared served-over-HTTP against the *same* served bytes on disk
+  1,181 pages in ~10 s. There is **no pixel gate**: the retired pixel gate
+  compared served-over-HTTP against the *same* served bytes on disk
   (self-vs-self — it could not see a bad tree), and rendered ~1,180 pages × 3
   viewports for ~2 h to re-prove one code path. Visual fidelity and strip deltas
-  are the human side-by-side at the phase gates; the per-page strip decision is
+  are the human side-by-side at review time; the per-page strip decision is
   recorded machine-readably in `served/build-log.json`.
 - One **page list** (`pipeline/config.mjs` → `CAPTURE_LIST`) names the listing
   the 2026-09-12 capture run recorded, and the same file's `DROPPED_PAGES` lists
@@ -218,8 +218,7 @@ like any other asset.
 
 ## Testing
 
-- Tests assert **external behavior only**, at the seams pre-agreed in the
-  spec's Testing Decisions:
+- Tests assert **external behavior only**, at the seams the tests pin:
   - **The HTTP serving seam** (`test/serving.seam.test.ts`, the top seam) —
     every route class (200 / 301 / 404) against the committed tree, plus
     byte-identity of served pages and the forms mock's POST → 303.
@@ -249,12 +248,13 @@ like any other asset.
     layer cannot be added without declaring the policy its seam pins.
   - **The chat message API seam** (`test/chat.seam.test.ts`) — the dialogue
     engine behind `app/api/chat/route.ts`.
-  All six runtime DOM seams share `test/seam-harness.ts` — one window builder
+  All seven DOM seams — the six runtime seams above plus the composition
+  seam — share `test/seam-harness.ts`: one window builder
   (`runScripts: 'dangerously'`, `pretendToBeVisual`, the Recreation origin),
   one reduced-motion `matchMedia` shape (mutable, with read/listener counters,
   so a layer's reduced-motion path is comparable across layers and pinned at its
   read count), and one layer→file table, so the injected bytes are read in one
-  place rather than six. A new runtime seam adds page HTML and assertions, never
+  place rather than seven. A new runtime seam adds page HTML and assertions, never
   another jsdom setup.
 - **Pure-module seams** pin a module's declared contract — its table, its
   invariant, its fold — which for these data modules *is* the behavior they
@@ -272,7 +272,8 @@ like any other asset.
   wrong.
 - **The suite runs against the committed tree.** There are no fixtures: the real
   `served/` tree is the artifact, so `npm test` is green on a fresh clone by
-  construction, and a DOM seam evaluates the same bytes the tree ships.
+  construction (Environment constraints lists the one dependency caveat), and a
+  DOM seam evaluates the same bytes the tree ships.
 - Red → green, one slice at a time. New behavior starts as a failing test at
   an agreed seam.
 - The serving check's pure cores — expectation builder, count and audit
@@ -295,7 +296,8 @@ like any other asset.
   pipeline modules are the boundary). `npx tsc --noEmit` must be clean.
 - Named exports; ESM (`import`/`export`); `.mjs` for pipeline Node scripts.
 - Comments explain **why** (decisions, constraints, fidelity rules) — the
-  code states what. Reference tickets/spec where a rule comes from somewhere.
+  code states what. Reference the artifact that owns the rule — a module, a test,
+  or a glossary term in `CONTEXT.md` — where a rule comes from somewhere.
 - New code is CC0-1.0 (repo default, `LICENSE`); mark files with
   `// SPDX-License-Identifier: CC0-1.0` where convenient.
 
@@ -317,7 +319,8 @@ dev/build for everyone:
 - **The chat runtime depends on the sibling `yarnspinner-ts` checkout** —
   `package.json` points `yarnspinner-typescript` at it by **absolute** `file:`
   path (relative specifiers do not survive npm's workspace-root inference
-  here; the package is not on npm yet — spec, "Chat mimic"). A clone without
+  here; the package is not on npm yet — see **Chat mimic** in `CONTEXT.md`). A
+  clone without
   that sibling cannot `npm install`. Repoint the path (or move to the published
   package) when it ships; until then this is the one documented exception to
   "green on a fresh clone".
@@ -354,14 +357,21 @@ dev/build for everyone:
   (`regression/upstream-baseline.json`) and `--out` evidence, and it refuses a
   target inside `served/` — and it is not the refresh workflow — it exists so
   the "should the snapshot move?" decision can be made on evidence. Its own doc
-  lives in the ticket and the module header; see `CONTEXT.md` for **upstream
+  lives in the module header; see `CONTEXT.md` for **upstream
   watch**, **watched universe**, **upstream baseline**, **silent baseline**,
   **copy projection**, **chrome projection**, **restyle signal**, **media
   slot**, **media liveness**, **accepted drift**, and
   **demotion**.
-- **No ADR record**: decisions live inline — in `CONTEXT.md` terms, in this
-  file, and in the comments beside the code they constrain. Don't cite a
-  retired decision document; say what the rule is and why.
+- **Known follow-up — stale ticket/spec references frozen into the tree.** The
+  11 injected layer sources (`pipeline/motion.css` … `pipeline/scroll-runtime.js`)
+  are mirrored byte-for-byte into `served/`, and their comments still cite
+  resolved tickets and a retired spec — 41 references, including `scroll.css`
+  text that sits inside the frozen page bytes. Clearing them is a served-tree
+  migration, not a comment edit: republish each affected layer (new
+  content-addressed bytes, every carrying page rewritten, `served/assets.json`
+  regenerated) or `mirrorFindings` reports comment-only prose drift on every
+  serving check. The repo has no rebuild path, so this is deferred; the
+  non-shipped sources are already free of such references.
 - Domain vocabulary comes from `CONTEXT.md` (Capture, Recreation, Chat
   mimic, Link policy…). Use it in names, comments, and tickets.
 - Tickets live at `.scratch/<effort>/issues/` (see `docs/agents/issue-tracker.md`).

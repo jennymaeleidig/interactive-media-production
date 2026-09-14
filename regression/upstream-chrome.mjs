@@ -1,7 +1,7 @@
-// Ticket 04: the **chrome projection** — nav, footer and global chrome text —
+// The **chrome projection** — nav, footer and global chrome text —
 // and the allow-list that absorbs exactly the regions our strip pass removed.
 //
-// The copy projection (ticket 03) is the prose and stays a hard finding. This
+// The copy projection is the prose and stays a hard finding. This
 // projection is its complement: the text in non-prose containers — nav
 // wrappers, footer links, buttons, badges — which the copy projection is blind
 // to by design. A raw chrome diff is permanently non-empty: the strip pass
@@ -28,13 +28,13 @@
 //     measurement against `served/build-log.json` so the literal cannot drift
 //     from the log it came from.
 //
-// Ticket 04b adds a second, chrome-only list beside the allow-list: the
+// A second, chrome-only list sits beside the allow-list: the
 // **runtime-fill exclusions**, the regions a rendered capture fills and a raw
 // fetch does not. Those are stripped from *both* sides and are silent (no
 // count), because they are not strip-pass targets and the removal fixtures are
 // their record; the allow-list's counted rule above stays the allow-list's own.
 //
-// Ticket 07 adds one more shared rule, and it is not a list: a word/line reveal
+// One more shared rule, and it is not a list: a word/line reveal
 // fragment is prose the copy projection reads, so chrome must never read it
 // back. The fragments sit beside the paragraph they were split from when a
 // re-serialization promotes them out of an invalid `<p>`, so the skip lives in
@@ -106,7 +106,7 @@ const SITE_ORIGIN = 'https://www.flocksafety.com';
 /**
  * The chrome tier as the run report carries it: the counts, the findings and
  * the allow-list hits. The per-page digest state lives on the baseline row
- * (ticket 05); `chromeReport` also returns it so the run can record it.
+ * (the shared-asset set); `chromeReport` also returns it so the run can record it.
  * @typedef {Object} ChromeTier
  * @property {number} compared
  * @property {number} differed
@@ -196,7 +196,7 @@ export const CHROME_ALLOW_LIST = [
 ];
 
 /**
- * Ticket 04b: the **runtime-fill exclusions** — the regions our rendered capture
+ * The **runtime-fill exclusions** — the regions our rendered capture
  * fills and a raw live fetch does not. They are stripped from *both* sides of
  * the chrome comparison, because the served side is exactly where the runtime
  * fill lives; the allow-list above is live-only by contrast, because the strip
@@ -206,7 +206,7 @@ export const CHROME_ALLOW_LIST = [
  * Finsweet CMS list carries the blog and FAQ prose the copy projection must keep
  * reading, so a shared exclusion would drop real prose from the copy tier. The
  * other markers carry no prose, but one chrome-only list keeps the boundary
- * legible and leaves ticket 03's copy digests untouched.
+ * legible and leaves the copy digests untouched.
  *
  * The Finsweet entry is deliberately narrow. The artifact is the hidden
  * `div.hide` category-tag container *inside* the CMS list — Finsweet reorders
@@ -241,7 +241,7 @@ export const CHROME_ALLOW_LIST = [
  * Ashby-backed jobs widget (`/careers/positions`); the reduce-guard-cost
  * calculator's computed outputs (`/reduce-guard-cost-calculator`); Wistia player
  * chrome (`/webinar/*`); and the Tmplayer podcast controls (`/podcast`,
- * discovered beyond the ticket's evidence).
+ * discovered beyond the allow-list's recorded evidence).
  * @type {ChromeRuntimeFillEntry[]}
  */
 export const CHROME_RUNTIME_FILL = [

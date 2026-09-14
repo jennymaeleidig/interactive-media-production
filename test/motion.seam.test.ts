@@ -1,12 +1,12 @@
-// Motion runtime DOM seam (the motion DOM seam, added to the spec's Testing
-// Decisions at ticket 04): the reveal contract — the runtime adds
+// Motion runtime DOM seam (added to the seam harness's Testing
+// roster): the reveal contract — the runtime adds
 // html.fpm-motion only when reduced motion allows, re-fires the hero split's
 // captured visibility class, and one-shot-reveals the annotated patterns.
 // Reduced motion (and, by construction, no-JS) leaves the page at the
 // captured static end-state.
 // The runtime under test is the exact source the build injects inline
 // (pipeline/motion-runtime.js), evaluated in a real DOM (jsdom) — the same
-// bytes every served page carries. Ticket 04.
+// bytes every served page carries. The motion layer.
 import { describe, it, expect } from 'vitest';
 import type { DOMWindow } from 'jsdom';
 import { layerSource, seamWindow } from './seam-harness';

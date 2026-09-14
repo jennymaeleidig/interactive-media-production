@@ -61,8 +61,8 @@ There is no pipeline step and no build input: `served/` — 660 MB, 4,466 files,
    server and asserts, over HTTP, every route class at full scale plus
    **byte-identity**: every served page's body must equal the file in the tree
    (same bytes ⇒ same pixels, so this is the serving layer's whole guarantee).
-   Visual fidelity and strip deltas are the human side-by-side at the phase
-   gates; the per-page strip decision is recorded in the build log. There is no
+   Visual fidelity and strip deltas are the human side-by-side at review time;
+   the per-page strip decision is recorded in the build log. There is no
    pixel gate — see [CODING_STANDARDS.md](CODING_STANDARDS.md) for why it was
    retired. The suite's serving seam serves the same committed tree, so what it
    asserts is what ships.
@@ -88,7 +88,7 @@ embeds each `<video>` source as a `data:` URI for the assets pass to serve
 locally, the Vidzflow block keeps a never-idle video.js host out of the capture,
 and `--save-original-urls` is what leaves a **frame's** URL in the capture at all
 — SingleFile empties every `iframe src`, and a cross-origin player cannot be
-inlined, so 91 frames across 74 pages would otherwise be gone.
+inlined, so 87 frames across 71 pages would otherwise be gone.
 
 The snapshot is not refreshed: re-inventorying the live site, diffing drift, and
 scoped re-captures were retired with the refresh workflow. The gitignored capture
@@ -135,11 +135,11 @@ but two constraints come from its own shape:
   project-page URL (`https://<owner>.github.io/<repo>/`) 404s every asset
   unless a publish step rewrites the prefix.
 - **Size is the binding limit.** GitHub Pages caps a published site at 1 GB and
-  the tree measured 2.36 GB before its bodies were deduped: 89% of it was the
-  same stylesheets re-encoded on all 1,181 pages. Shipping each body once brought
-  it to **660 MB** (HTML 149 MB, assets 513 MB), and 158 body files are in
-  `assets.json`, so `npm run routes` verifies their bytes and content types like
-  any other asset.
+  the tree's HTML was 1.84 GB before its style and script bodies were deduped —
+  the same stylesheets re-encoded on all 1,181 pages. Shipping each body once
+  brought the tree to about **660 MB**, and 158 body files are in `assets.json`,
+  so `npm run routes` verifies their bytes and content types like any other
+  asset.
 
 An educational reproduction of this kind also needs a visible non-affiliation
 disclaimer on the published site (it is not yet in the tree), and the captured
@@ -163,11 +163,11 @@ What that means:
   captured-policy editor, the layer table) are deleted. What the build left
   behind stays, because the tree and the tests still need it: the injected
   layers, the strip audit, the served-tree rules.
-- **The record survives in git.** The tickets, spec, evidence, prototype sources,
-  and the build itself were tracked, so `git show <commit>:...` still has them;
-  the retired refresh workflow — the runbook and the inventory / diff /
-  re-capture / video-probe tools — is one commit further on in history. Only the
-  gitignored captures are unrecoverable.
+- **The record survives in git.** The scrapped effort's tickets, spec, evidence,
+  prototype sources, and the build itself were tracked, so `git show <commit>:...`
+  still has them; the retired refresh workflow — the runbook and the inventory /
+  diff / re-capture / video-probe tools — is one commit further on in history.
+  Only the gitignored captures are unrecoverable.
 - **New work still starts in `.scratch/`.** That is where the issue-tracker
   convention puts an effort's tickets ([docs/agents/issue-tracker.md](docs/agents/issue-tracker.md));
   the scrapped tree was that convention's first effort, not the convention.

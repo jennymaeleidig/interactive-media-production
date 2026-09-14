@@ -20,7 +20,7 @@
 // marked layer (new bytes, new content-addressed name, every carrying page
 // rewritten, `assets.json` regenerated) is a rare deliberate write that owns the
 // record files it invalidates, and it is deferred until a layer actually changes
-// (`spec.md`, decision 2). It does not own the Capture's strip invariant —
+// (a deliberate, deferred write). It does not own the Capture's strip invariant —
 // `audit.mjs` owns the half that keeps captured scripts out; this owns the half
 // that keeps our own sources on the allow-list-free side (`injected-source.mjs`).
 // And it does not treat an asset name as stable across publishes: the name is a

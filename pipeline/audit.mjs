@@ -1,7 +1,7 @@
 // The strip audit: the one invariant every served page has to hold.
 //
-// ADR 0001 removes the third-party machinery from the captured DOM and ADR 0002
-// lets a video slot reach the network again; ADR 0002 states the exception is
+// The strip removes the third-party machinery from the captured DOM and the
+// media allow-list lets a video slot reach the network again; that exception is
 // enforced **by the audit rather than by construction**, which is only true if
 // the audit is one thing. It used to be composed across three files — the
 // residue table and the census in the write pass, the reference checks in the
@@ -22,7 +22,7 @@
 //               the *machinery's* marker, never a word: page copy legitimately
 //               says "qualified", so a bare-word match would flag content.
 //   frames      every `<iframe src>` must name an allow-listed media host —
-//               the ADR 0002 exception, and the reason the allow-list is here.
+//               the media exception, and the reason the allow-list is here.
 //   remote refs the catch-all for the classes nobody has declared inert: a
 //               remote URL in a fetcher position that is neither allow-listed
 //               nor in a documented inert class (`poster` under the captured
@@ -45,7 +45,7 @@ import { MARKER_RE } from './marker.mjs';
 
 /**
  * The hosts a served page may reach: the live media players the embed pass
- * swaps a Capture's inert snapshot for (ADR 0002). The audit's only
+ * swaps a Capture's inert snapshot for. The audit's only
  * configuration, and the embed pass reads it from here too.
  */
 export const MEDIA_HOSTS = ['fast.wistia.net', 'www.youtube.com', 'www.youtube-nocookie.com'];
@@ -64,9 +64,9 @@ const AUDIT_RES = {
   // (the account portals and the Auth0 login host)
   account: /(?:users|login)\.flocksafety\.com/i,
   'known trackers': /googletagmanager\.com|google-analytics\.com|hotjar\.com|hockeystack\.com|bing\.com\/bat|linkedin\.com\/px|connect\.facebook\.net|snap\.licdn\.com|6sense\.com|marketo\.com|munchkin\.marketo/i,
-  // a form action that leaves the machine (ticket 02): absolute or
-  // protocol-relative. Injected mock actions are root-relative /api/... and
-  // never match; the count must stay zero on every page.
+  // a form action that leaves the machine (the form-action residue class):
+  // absolute or protocol-relative. Injected mock actions are root-relative
+  // /api/... and never match; the count must stay zero on every page.
   externalFormActions: /<form\b[^>]*?\saction\s*=\s*("|')?(?:https?:)?\/\//i,
 };
 
@@ -132,7 +132,7 @@ export function srcdocScripts(html) {
   return { total, executable, allowScripts, allowScriptsExecutable };
 }
 
-// The attributes a browser fetches on load, by element (ticket 20). Everything
+// The attributes a browser fetches on load, by element. Everything
 // here is a *fetch*; an `<a href>` or a `<link rel=canonical>` is navigation or
 // metadata and is not on the list.
 /** The fetch-position attribute(s) each element asks from. @type {Record<string, string[]>} */
@@ -157,8 +157,8 @@ const ABSOLUTE_URL = /^(?:https?:)?\/\//i;
 
 /**
  * Remote references in a class the audit does not know to be inert: a fetcher
- * attribute on an element that would actually ask the network for it (ticket
- * 20). The known classes are accepted in writing (ADR 0002) — an allow-listed
+ * attribute on an element that would actually ask the network for it. The known
+ * classes are accepted in writing — an allow-listed
  * `<iframe src>`, a `poster` (`img-src` refuses it, or the element never asks),
  * a Lottie `data-src` (`connect-src 'self'`), a CSS `url()` (`img-src`), and a
  * `srcdoc` payload (sandboxed; see `srcdocScripts`). This must be empty on
@@ -188,7 +188,7 @@ export function unclassifiedRemoteRefs(html) {
       for (const url of candidates) {
         if (!ABSOLUTE_URL.test(url)) continue;
         if (attr === 'poster') continue; // inert class — img-src refuses it / the element never asks
-        if ((name === 'iframe' || name === 'frame') && MEDIA_HOSTS.includes(hostOf(url))) continue; // the ADR's exception
+        if ((name === 'iframe' || name === 'frame') && MEDIA_HOSTS.includes(hostOf(url))) continue; // the media exception
         if (name === 'link' && NON_FETCHING_REL.test(rel)) continue; // advertises, never fetches
         refs.push(url);
       }
@@ -278,20 +278,20 @@ export function audit(html) {
   for (const [name, re] of Object.entries(AUDIT_RES)) {
     findings[name] = (html.match(new RegExp(re.source, re.flags.replace('g', '') + 'g')) || []).length;
   }
-  // ADR 0002's exception is enforced here rather than held by construction: a
+  // The media exception is enforced here rather than held by construction: a
   // frame may only point at an allow-listed media host. Image-side remote
   // references (a captured `poster=`, a Lottie `data-src`) are refused by the
   // captured `img-src 'self' data:` and so are not part of this count.
   findings['off-allowlist frames'] = offAllowlistFrames(html).length;
   // The frame audit reads absolute `src` values only, and the script census
   // reads `<script>` open tags — neither says anything about the 600-odd
-  // `srcdoc` payloads in the tree (ticket 20). `srcdoc scripts` looks inside
+  // `srcdoc` payloads in the tree. `srcdoc scripts` looks inside
   // them: an executable script there fails the invariant instead of relying on
   // what SingleFile happened to drop.
   findings['srcdoc scripts'] = srcdocScripts(html).executable;
   // The catch-all for the reference classes nobody has declared inert — a
   // remote reference in a fetcher position that is neither on the media
-  // allow-list nor in a documented inert class (ticket 20).
+  // allow-list nor in a documented inert class.
   findings['unclassified remote refs'] = unclassifiedRemoteRefs(html).length;
   return findings;
 }

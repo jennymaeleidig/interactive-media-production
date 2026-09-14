@@ -1,4 +1,4 @@
-// Scroll choreography + modal DOM seam (ticket 21): the captured page's
+// Scroll choreography + modal DOM seam: the captured page's
 // JS-driven behavior restored in vanilla JS — `[animate="scrub-word"]` colors,
 // `.line-label` reveal, `[data-scroll-video]` play/pause, and the
 // `dialog.c-modal` open/close with its route draw and markers. The runtime

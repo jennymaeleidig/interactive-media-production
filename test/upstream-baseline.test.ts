@@ -1,7 +1,7 @@
-// Ticket 02's seam: the upstream watch's moving baseline. Reading it, writing
+// The moving-baseline seam: the upstream watch's moving baseline. Reading it, writing
 // it, deriving it from a run, diffing two of them, and the one write decision
 // are all pure functions of a baseline's text and a run's fetched bytes, so the
-// whole of ticket 02 is pinned here — offline — beside ticket 01's index seam.
+// whole of the baseline is pinned here — offline — beside the index seam.
 // The network edge (`regression/upstream-watch-cli.mjs`) is hand-run and
 // deliberately outside the suite; it is the only place a baseline is read from
 // or written to disk.
@@ -47,7 +47,7 @@ describe('readBaseline / serializeBaseline', () => {
     expect(readBaseline(text).rows.map((r) => r.path)).toEqual(['/a', '/z']);
   });
 
-  it('preserves a row field from a later ticket, so a read/accept cannot erase it', () => {
+  it('preserves a row field from a later tier, so a read/accept cannot erase it', () => {
     const text = JSON.stringify({ version: BASELINE_VERSION, verified: VERIFIED, rows: [{ ...row('/a', 200), copy: 'prose-digest' }] });
     const baseline = readBaseline(text);
     expect(baseline.rows[0]).toMatchObject({ path: '/a', copy: 'prose-digest' });
@@ -107,7 +107,7 @@ describe('runWatch — the delta since the last run', () => {
   // Run 1 holds /gone-later as a sitemap-only page; run 2 drops it, adds /new,
   // and moves /b from 200 to 404. The frozen Capture list still holds /a and /b,
   // so the index tier is unaffected by /gone-later's removal — only the moving
-  // baseline can see it, which is the ticket's whole point.
+  // baseline can see it, which is the baseline's whole point.
   const before = () => runWatch({ ...run(['/a', '/b', '/gone-later'], ['/a', '/b'], { '/a': { status: 200 }, '/b': { status: 200 }, '/gone-later': { status: 200 } }), previous: null, accept: false, verified: VERIFIED });
   const after = (previous: ReturnType<typeof before>['baseline']) =>
     runWatch({ ...run(['/a', '/b', '/new'], ['/a', '/b'], { '/a': { status: 200 }, '/b': { status: 404 }, '/new': { status: 200 } }), previous, accept: false, verified: '2026-09-14' });
@@ -131,7 +131,7 @@ describe('runWatch — the delta since the last run', () => {
     expect(moved.report.since?.changed).toEqual([{ path: '/a', fields: [{ field: 'location', from: '/x', to: '/y' }] }]);
   });
 
-  it('diffs every carried row field, so a later ticket’s digest needs no new case here', () => {
+  it('diffs every carried row field, so a later tier’s digest needs no new case here', () => {
     const base = { version: BASELINE_VERSION, verified: VERIFIED, rows: [{ ...row('/a', 200), copy: 'one' }] };
     const moved = { ...base, rows: [{ ...base.rows[0], copy: 'two' }] };
     expect(diffBaseline(base, moved).changed).toEqual([{ path: '/a', fields: [{ field: 'copy', from: 'one', to: 'two' }] }]);
@@ -227,7 +227,7 @@ describe('the committed baseline', () => {
     expect(committed.rows.find((r) => r.path === '/events/test-event')).toEqual(row('/events/test-event', 401));
   });
 
-  it('carries the copy digest ticket 03 measured, on every live 200 the tree serves', () => {
+  it('carries the copy digest the copy tier measured, on every live 200 the tree serves', () => {
     const projected = committed.rows.filter((r) => 'copy' in r);
     // The 1,181 pages the tree serves, out of the 1,200 live 200s; the 19
     // served-page gaps stay plain rows, as do the 3xx and 401 paths that have
@@ -239,13 +239,13 @@ describe('the committed baseline', () => {
     }
   });
 
-  it('carries the live chrome digest ticket 05 measured, on every page the tree serves', () => {
+  it('carries the live chrome digest the chrome tier measured, on every page the tree serves', () => {
     const projected = committed.rows.filter((r) => 'chrome' in r);
     expect(projected).toHaveLength(1181);
     for (const r of projected) expect(r.chrome).toMatch(/^[0-9a-f]{16}$/);
   });
 
-  it('carries the shared asset set ticket 05 measured: name, URL, digest and size', () => {
+  it('carries the shared asset set the restyle tier measured: name, URL, digest and size', () => {
     expect(committed.assets).toHaveLength(4);
     const urls = (committed.assets ?? []).map((a) => a.url);
     expect(urls).toEqual([...urls].sort());
@@ -261,7 +261,7 @@ describe('the committed baseline', () => {
   });
 });
 
-// Ticket 03: the copy projection joins the baseline row and the run report. The
+// The copy projection joins the baseline row and the run report. The
 // row carries the digest of the live page's prose, so a later run can report
 // that upstream's copy moved even before the per-page comparison says so; the
 // run reports the live-versus-served counts and the findings.
@@ -322,9 +322,9 @@ describe('the copy tier — baseline row and run report', () => {
   });
 });
 
-// Ticket 05: the shared asset set joins the baseline as a top-level `assets`
+// The shared asset set joins the baseline as a top-level `assets`
 // section — it is shared across every page, so it is not a per-row field — and
-// the live chrome digest joins the row ticket 04 left plain.
+// the live chrome digest joins the row the chrome projection left plain.
 describe('the shared asset set and the chrome digest in the baseline', () => {
   const assetRecord = { name: 'shared.css', url: 'https://cdn.example/shared.css', digest: 'a'.repeat(16), bytes: 12 };
 

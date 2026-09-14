@@ -1,5 +1,5 @@
-// Interactions DOM seam (the interactions DOM seam, added to the spec's
-// Testing Decisions at ticket 05): the delegated click contract — tabs,
+// Interactions DOM seam (added to the seam harness's
+// roster): the delegated click contract — tabs,
 // dropdowns, accordions, and sliders operate by captured classes and
 // geometry, from one shared runtime with no per-page bespoke logic; reduced
 // motion never blocks function. The runtime under test is the exact source
@@ -17,7 +17,7 @@ const SOURCE = layerSource('interactions');
 // home4 tabs (flock-ecosystem), the two w-dropdown shapes (animated-height
 // FAQ + base-rule filter), the accordion-css item (LPR),
 // and both slider control vocabularies (data-slider quotes, swiper arrows).
-// The hiding rules are the captured Webflow base rules (ticket 15): the
+// The hiding rules are the captured Webflow base rules (corrected Capture stylesheet): the
 // 2026-09-09 capture's SingleFile artifact class (sf-hidden) is gone.
 const PAGE = `<!DOCTYPE html><html><head><style>.w-tab-pane{display:none;position:relative}.w--tab-active{display:block}.w-dropdown-list{display:none}.w-dropdown-list.w--open{display:block}</style></head><body>
 
@@ -466,7 +466,7 @@ describe('reduced motion never blocks interaction function', () => {
   });
 });
 
-describe('the YouTube reveal (ticket 17: the /trust video cards)', () => {
+describe('the YouTube reveal (the /trust video cards)', () => {
   it('arms the captured frame and crossfades the panel in on the poster click', () => {
     const dom = domOf(PAGE, { reduced: true });
     const doc = (dom.window as Win).document;

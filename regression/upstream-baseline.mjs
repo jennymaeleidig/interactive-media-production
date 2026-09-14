@@ -1,13 +1,13 @@
-// The upstream watch's moving baseline (ticket 02): the state that lets a run
+// The upstream watch's moving baseline: the state that lets a run
 // report what moved *since we last looked* — including a path added and removed
-// between two runs, which ticket 01's frozen Capture list cannot see.
+// between two runs, which the frozen Capture list cannot see.
 //
 // This module owns the baseline's whole life as a pure value: its text form
 // (`readBaseline` / `serializeBaseline`), its derivation from one run
 // (`baselineFromReport`), the arithmetic between two of them (`diffBaseline`),
 // and the single write decision (`runWatch`'s `write`). Nothing here reads a
 // file or reaches the network — the hand-run edge does the I/O — so the whole
-// of ticket 02 is pinned offline in `test/upstream-baseline.test.ts`.
+// of this module is pinned offline in `test/upstream-baseline.test.ts`.
 //
 // The write rule: only an explicit `--accept` rewrites an existing baseline, so
 // a check can never silently move its own reference point. The one exception is
@@ -27,7 +27,7 @@ import { mediaReport } from './upstream-media.mjs';
 import { acceptanceEntries, byAcceptance, mediaSlotIdentity, partitionAccepted } from './upstream-accept.mjs';
 
 /**
- * The schema of the committed baseline. Later tickets add per-row projection
+ * The schema of the committed baseline. Later projection tiers add per-row projection
  * digests, and a reader must never guess which row shape it holds, so a version
  * it does not know is an error rather than a silent misread.
  * @type {number}
@@ -37,32 +37,32 @@ export const BASELINE_VERSION = 1;
 /**
  * One watched URL's state when the baseline was accepted. `location` is the
  * redirect target of a 3xx (a same-origin path), null otherwise. The later
- * tickets' projection digests join this row.
+ * tiers' projection digests join this row.
  * @typedef {Object} BaselineRow
  * @property {string} path
  * @property {boolean} inSitemap
  * @property {number} status
  * @property {string|null} location
- * @property {string} [copy]  the **copy projection** digest ticket 03 records
- * @property {string} [chrome]  the live **chrome projection** digest ticket 05 records
+ * @property {string} [copy]  the **copy projection** digest the copy tier records
+ * @property {string} [chrome]  the live **chrome projection** digest the chrome tier records
  */
 
 /**
  * The committed state: one row per watched URL, the shared asset set's digests
- * (ticket 05), and the date the run verified. `assets` is absent on a baseline
- * recorded before ticket 05; a v1 reader preserves it when present.
+ * (the shared-asset set), and the date the run verified. `assets` is absent on a baseline
+ * recorded before the shared-asset set; a v1 reader preserves it when present.
  * @typedef {Object} Baseline
  * @property {number} version
  * @property {string} verified  the **verified-in-sync date**, `YYYY-MM-DD`
  * @property {import('./upstream-assets.mjs').AssetRecord[]} [assets]
- * @property {import('./upstream-accept.mjs').AcceptanceEntry[]} [accepted]  ticket 08's known-drift set
+ * @property {import('./upstream-accept.mjs').AcceptanceEntry[]} [accepted]  the known-drift set
  * @property {BaselineRow[]} rows
  */
 
 /**
- * Ticket 01's report inputs plus ticket 02's baseline state, ticket 03's copy
- * pages, ticket 04's chrome pages, ticket 05's shared asset bytes and ticket
- * 06's media pages and probe results.
+ * The index report inputs plus the baseline state, the copy projection's
+ * pages, the chrome projection's pages, the shared asset bytes and the
+ * media pages and probe results.
  * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, acceptDrift?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[], assets?: import('./upstream-assets.mjs').FetchedAsset[], mediaPages?: import('./upstream-media.mjs').MediaPage[], mediaProbes?: Record<string, import('./upstream-media.mjs').MediaProbe>}} RunInputs
  */
 
@@ -105,13 +105,13 @@ function readRow(value, index) {
   if (typeof status !== 'number') return bad(`row ${index} has no numeric status`);
   if (location !== undefined && location !== null && typeof location !== 'string') return bad(`row ${index} has a non-string redirect target`);
   // Preserve any other field rather than dropping it: the projection digests a
-  // later ticket adds ride here, and a read-then-accept must not erase state it
+  // later tiers add ride here, and a read-then-accept must not erase state it
   // does not yet understand. `diffBaseline` compares whatever fields it finds.
   return { ...value, path: p, inSitemap, status, location: location ?? null };
 }
 
 /**
- * Read the ticket 05 shared-asset section. Each record is checked so a
+ * Read the shared-asset section. Each record is checked so a
  * malformed baseline is an error (exit 2), never a silently shrunken asset set
  * that would report the whole set as newly changed.
  * @param {unknown} value
@@ -131,7 +131,7 @@ function readAssets(value) {
 }
 
 /**
- * Read ticket 08's accepted-drift section. Each entry is checked so a malformed
+ * Read the accepted-drift section. Each entry is checked so a malformed
  * baseline is an error (exit 2), never a silently empty accepted set that would
  * re-alarm every recorded difference.
  * @param {unknown} value
@@ -166,7 +166,7 @@ function readAccepted(value) {
  * must never be read as an empty one, which would report the whole universe as
  * newly added. A version a reader does not know is an error; an unknown *row*
  * field within a known version is preserved instead, because Version 1 rows are
- * additive — a later ticket's digest must survive a read/accept round-trip.
+ * additive — a later tier's digest must survive a read/accept round-trip.
  * @param {string} text
  * @returns {Baseline}
  */
@@ -212,7 +212,7 @@ export function serializeBaseline(baseline) {
  * target — plus, for a URL this run projected, the digest of the **live** page's
  * copy. `inCapture` comes from the frozen Capture list and `lastmod` is context
  * the baseline has no use for. A path with no digest keeps the plain v1 row, so
- * a baseline recorded before ticket 03 still reads.
+ * a baseline recorded before the copy projection still reads.
  * @param {import('./upstream-watch.mjs').WatchReport} report
  * @param {string} verified
  * @param {{copyDigests?: Record<string, string>, chromeDigests?: Record<string, string>, assets?: import('./upstream-assets.mjs').AssetRecord[], accepted?: import('./upstream-accept.mjs').AcceptanceEntry[]}} [digests]
@@ -251,9 +251,9 @@ export function baselineFromReport(report, verified, { copyDigests = {}, chromeD
  * entirely; a path in both whose carried fields moved is changed, with the
  * fields that moved.
  *
- * Every carried field is compared generically, so a field a later ticket adds
+ * Every carried field is compared generically, so a field a later tier adds
  * to the row (a projection digest) is diffed the moment it is recorded — there
- * is no per-field list here for that ticket to forget to update.
+ * is no per-field list here for that tier to forget to update.
  * @param {Baseline} previous
  * @param {Baseline} current
  * @returns {import('./upstream-watch.mjs').BaselineDelta}
@@ -306,17 +306,17 @@ function liveFingerprint(fingerprint, what) {
 }
 
 /**
- * One run of the watch, as a value. Builds ticket 01's index report, compares
+ * One run of the watch, as a value. Builds the index report, compares
  * the copy projection live versus served when the edge hands it `copyPages`
- * (ticket 03) and the chrome projection when it hands it `chromePages` (ticket
- * 04), classifies every media slot when the edge hands it `mediaPages` and
- * `mediaProbes` (ticket 06), derives this run's baseline (carrying the copy and
+ * and the chrome projection when it hands it `chromePages`, classifies every
+ * media slot when the edge hands it `mediaPages` and
+ * `mediaProbes`, derives this run's baseline (carrying the copy and
  * chrome digests and the shared asset set) and diffs it against the previous
  * one. `write` is true only for the
  * silent first run (no previous baseline) or an explicit accept; a plain run
  * with a previous baseline never moves the reference point.
  * `--accept-drift` records the current run's copy, chrome, restyle and media
- * differences as known (ticket 08), so a later plain run reports them as
+ * differences as known, so a later plain run reports them as
  * accepted rather than as findings and exits 0; a difference whose live side
  * moves again no longer matches and re-alarms. The accepted set is committed in
  * the baseline and only `--accept-drift` rewrites it.
@@ -452,7 +452,7 @@ export function runWatch(inputs) {
 
 /**
  * Whether a write target lies outside the served tree. The edge writes exactly
- * two files — the baseline and `--out` evidence — and ticket 02's rule is that
+ * two files — the baseline and `--out` evidence — and the rule is that
  * no run writes anywhere in `served/`; this is the pure test the edge applies
  * before it writes, so a mistyped `--out served/...` is refused rather than
  * becoming an unlogged edit of the artifact.

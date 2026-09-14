@@ -1,12 +1,11 @@
-// The Chat mimic's minimal fixture (ticket 08) — throwaway content that
+// The Chat mimic's minimal fixture — throwaway content that
 // exercises the engine end to end. Real Yarn content is the artist's future
-// effort (spec, Out of Scope); the engine is content-agnostic.
+// effort (a declared non-goal); the engine is content-agnostic.
 //
 // Strings marked PINNED are transcribed verbatim from one observed Qualified
-// session (the flock-parody effort's ticket-06 evidence — `.scratch/` at the
-// time, in git history now: evidence/06-qualified-conversation-ux/ — s9
-// greeting, s10 general + support, s12
-// demo ask, 2026-09-09). The live assistant's copy is GPT-generated fresh per
+// session (captured Qualified-conversation evidence, at the time under
+// `.scratch/` — s9 greeting, s10 general + support, s12 demo ask,
+// 2026-09-09). The live assistant's copy is GPT-generated fresh per
 // session, so the mimic fixes one canonical string per beat.
 //
 // Strings and choices marked GLUE are structural filler the fixture needs to
@@ -14,7 +13,7 @@
 //
 // ALL choices are Yarn options (->). The wrapper renders the pending set as
 // user-style bubbles in the composer slot; selecting one is a message send.
-// No free text, no persistent CTA row (spec, Chat mimic).
+// No free text, no persistent CTA row (the Chat mimic contract).
 //
 // Yarn authoring gotcha (carried from the chat-wrapper prototype): a `//`
 // comment placed BETWEEN options silently drops every option after it. Keep
@@ -56,7 +55,7 @@ Flock: You can reach our support team through the following channels: - Call us 
 ===
 title: demo
 ---
-// THE EMAIL GATE (ratified, spec "Chat mimic"): the pinned s12 ask, then a
+// THE EMAIL GATE (ratified, the Chat mimic contract): the pinned s12 ask, then a
 // single "Maybe later" option that returns to the hub. The live widget opens a
 // meeting booker here; the mimic stops on purpose — no email capture, no
 // booker, no POST. The stop is stated here, in the script, so builders can

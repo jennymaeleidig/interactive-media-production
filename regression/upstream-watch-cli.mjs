@@ -1,4 +1,4 @@
-// The upstream watch's network edge (tickets 01–06): fetch the sitemap and
+// The upstream watch's network edge: fetch the sitemap and
 // homepage, discover and fetch the site's shared asset set, probe every path in
 // the watched universe once, fetch the body of every watched page the tree
 // serves, ask each distinct media slot whether its media is alive, hand the
@@ -9,7 +9,7 @@
 //
 // It is deliberately outside the test suite: the suite must stay green on a
 // fresh clone with no network, so the cores are pinned by fixtures and this edge
-// is run by hand (`npm run upstream`). Since ticket 02 it writes exactly two
+// is run by hand (`npm run upstream`). It writes exactly two
 // files — the baseline and the optional `--out` evidence — and refuses any
 // target inside `served/`, so a check can never become a second, unlogged editor
 // of the artifact.
@@ -19,7 +19,7 @@
 // The baseline is the moving reference point (regression/upstream-baseline.json):
 // the first run records it silently, every later run diffs against it, and only
 // `--accept` rewrites it. `--accept-drift` also records the current run's copy,
-// chrome, restyle and media differences as known (ticket 08), so a plain run
+// chrome, restyle and media differences as known, so a plain run
 // reports them as accepted and exits 0 until their live side moves again.
 //
 // Exit codes: 0 no findings, 1 findings, 2 operational failure (an incomplete
@@ -156,7 +156,7 @@ async function main() {
 
   const inputs = { origin: ORIGIN, sitemapXml, homepageHtml, captureList };
 
-  // Ticket 05: the site's shared asset set, discovered from the live homepage's
+  // The site's shared asset set, discovered from the live homepage's
   // own references. Fetched before the probe pass so a failure is an operational
   // error rather than a clean run with a partial asset set — and an empty
   // discovery is itself a failure, never a clean zero-asset measurement.
@@ -197,7 +197,7 @@ async function main() {
   // media census needs every served page regardless of upstream status. The
   // census rides this map, so it is the whole tree only as long as every served
   // `.html` is reachable from the universe — true today (a served page outside
-  // the universe would need its own tree walk; recorded in ticket 06).
+  // the universe would need its own tree walk; recorded in the media tier).
   /** @type {Map<string, string>} */
   const servedHtml = new Map();
   for (const [watched, file] of servedFiles) servedHtml.set(watched, readFileSync(file, 'utf8'));
