@@ -9,13 +9,16 @@
 // tests (`motion`, `interactions`, `story-hook`, serving), each free to drift
 // from the others.
 //
-// One member is not inert, and pretending otherwise is how this rule stayed
-// green for a year without being true: the Chat mimic's whole function is one
-// POST per turn to the local message API (`fetch('/api/chat', …)`), which the
-// captured CSP admits with `connect-src 'self'`. So there are two rules and a
-// roster that says which member gets which:
+// One member used to be the exception, and pretending otherwise is how this rule
+// stayed green for a year without being true: the Chat mimic's whole function
+// was one POST per turn to the local message API (`fetch('/api/chat', …)`),
+// which the captured CSP admits with `connect-src 'self'`. The mimic's dialogue
+// engine now runs in the page (`pipeline/chat-runtime.js`), so no member reaches
+// anything and the exception is gone. The roster can still declare
+// `outbound: 'self'` if a same-origin call ever comes back, which is why there
+// are two rules and a roster that says which member gets which:
 //
-//   isInertSource      — names no network primitive at all. Every member but one.
+//   isInertSource      — names no network primitive at all. Every member today.
 //   isSelfBoundSource  — may name `fetch`, but only at a root-relative path.
 //
 // Both are deliberately conservative. A bare identifier anywhere — a string, a
@@ -68,8 +71,8 @@ export function isInertSource(source) {
  * `fetch`, and every `fetch` in it is called with a root-relative path literal
  * (`'/api/chat'`), never an absolute or protocol-relative URL, never a
  * variable, and never a bare, uncalled mention. This is the rule for a member
- * the roster gives an `outbound` allowance — today only the Chat mimic, whose one
- * POST to the local API is what the chat mount *is*.
+ * the roster gives an `outbound` allowance — no member has one today, but the
+ * vocabulary stays while a same-origin call is conceivable.
  * @param {string} source
  * @returns {boolean}
  */
@@ -85,7 +88,7 @@ export function isSelfBoundSource(source) {
 
 /**
  * Whether a source honours the outbound allowance the roster declares for it:
- * `'none'` (the default, and every member but one) means inert; `'self'` means
+ * `'none'` (the default, and every member today) means inert; `'self'` means
  * same-origin-bound. Pass the member's declared allowance, never a guess.
  * @param {string} source
  * @param {'none'|'self'|undefined} outbound

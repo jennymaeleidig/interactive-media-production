@@ -41,7 +41,7 @@ const readers = (shipped: Record<string, string>, maintained: Record<string, { b
 });
 
 describe('the declared roster', () => {
-  it('names seven marked members: six site-wide and one page-scoped', () => {
+  it('names thirteen marked members: six site-wide and seven page-scoped', () => {
     expect(LAYERS.map((l: { name: string }) => l.name)).toEqual([
       'motion',
       'interactions',
@@ -50,11 +50,30 @@ describe('the declared roster', () => {
       'story-hook',
       'legibility',
       'scroll',
+      'lottie-flock-dfr',
+      'lottie-flock-freeform',
+      'lottie-flock-os',
+      'lottie-flock-safety-platform',
+      'lottie-gunshot-detection',
+      'lottie-video-cameras',
     ]);
     expect(LAYERS.filter((l: { scope: string }) => l.scope === 'site')).toHaveLength(6);
     const legibility = LAYERS.find((l: { name: string }) => l.name === 'legibility')!;
     expect(legibility.scope).toBe('page');
     expect(legibility.pages).toEqual(['/safe-cities']);
+  });
+
+  it('scopes each Lottie hero to its own product page, one route each', () => {
+    const lottie = LAYERS.filter((l: { name: string }) => l.name.startsWith('lottie-'));
+    expect(lottie).toHaveLength(6);
+    for (const layer of lottie) {
+      expect(layer.scope).toBe('page');
+      expect(layer.pages ?? []).toHaveLength(1);
+      expect(layer.pages?.[0]).toMatch(/^\/products\//);
+      expect(layer.parts).toHaveLength(1);
+      expect(layer.parts[0]).toMatchObject({ kind: 'js', delivery: 'asset' });
+      expect(layer.parts[0].source).toBe(`pipeline/lottie/${layer.name.slice('lottie-'.length)}.runtime.js`);
+    }
   });
 
   it('gives every member a delivery form, and a source except the page patch', () => {
@@ -69,7 +88,7 @@ describe('the declared roster', () => {
     }
   });
 
-  it('records the order the tree ships: css before js, legibility before scroll', () => {
+  it('records the order the tree ships: css before js, legibility and scroll before the Lottie heroes', () => {
     const flat = LAYERS.flatMap((l: { name: string; parts: { kind: string }[] }) =>
       l.parts.map((p: { kind: string }) => `${l.name}/${p.kind}`),
     );
@@ -86,6 +105,12 @@ describe('the declared roster', () => {
       'legibility/css',
       'scroll/css',
       'scroll/js',
+      'lottie-flock-dfr/js',
+      'lottie-flock-freeform/js',
+      'lottie-flock-os/js',
+      'lottie-flock-safety-platform/js',
+      'lottie-gunshot-detection/js',
+      'lottie-video-cameras/js',
     ]);
   });
 });
@@ -232,6 +257,14 @@ describe('against the committed tree', () => {
   it('finds safe-cities carrying all seven, including the page patch', () => {
     const { failures } = real('/safe-cities');
     expect(failures).toEqual([]);
+  });
+
+  it('finds a product page carrying its Lottie hero after the site-wide members', () => {
+    const { failures, notes } = real('/products/flock-dfr');
+    expect(failures).toEqual([]);
+    // the Lottie hero adds no note of its own — only the six site-wide prose drifts
+    expect(notes).toHaveLength(6);
+    expect(notes.some((n: string) => n.includes('lottie'))).toBe(false);
   });
 
   it('reports the comment-only drift the tree cannot rebuild away, as notes', () => {

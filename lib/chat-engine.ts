@@ -34,13 +34,13 @@ import {
 import type { DialogueOption } from 'yarnspinner-typescript';
 import { loadYarnProject } from 'yarnspinner-typescript/node';
 import path from 'node:path';
-import type { ChatLine, ChatResponse, ChatState, ChatTurn } from '../pipeline/chat-turn.mjs';
+import type { ChatLine, ChatRequest, ChatResponse, ChatState, ChatTurn } from '../pipeline/chat-turn.mjs';
 
 // The message API's shape is declared once, in `pipeline/chat-turn.mjs`: the
-// widget that parses it and the dialogue engine that builds it are the two ends
-// of the same seam, and the widget ships. Re-exported so the seams and the route
-// keep importing it from here.
-export type { ChatLine, ChatResponse, ChatState, ChatTurn };
+// widget that parses it, the client engine that answers it in the page
+// (`pipeline/chat-engine.mjs`), and the dialogue engine below are the ends of the
+// same seam. Re-exported so the seams and the route keep importing it from here.
+export type { ChatLine, ChatRequest, ChatResponse, ChatState, ChatTurn };
 
 // ---------------------------------------------------------------------------
 // Program: compiled once per server process.
@@ -134,11 +134,6 @@ function ensureSession(sessionId: string): Session {
 // ---------------------------------------------------------------------------
 // Public surface — one shape per request type.
 // ---------------------------------------------------------------------------
-export type ChatRequest =
-  | { type: 'start'; sessionId?: string }
-  | { type: 'resume'; sessionId: string }
-  | { type: 'option'; sessionId: string; optionIndex: number };
-
 /**
  * Validate an untrusted request body into a `ChatRequest`, or null. The HTTP
  * shell uses this so a malformed POST is a 400, never a thrown `handleChat`.

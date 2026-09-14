@@ -19,6 +19,8 @@
     "start": "next start",
     "routes": "node regression/routes.mjs",
     "upstream": "node regression/upstream-watch-cli.mjs",
+    "check:layers": "node pipeline/publish-layers.mjs --check",
+    "publish:layers": "node pipeline/publish-layers.mjs --apply",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.checkjs.json",
     "test": "vitest run"
   },
@@ -33,6 +35,7 @@
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "esbuild": "^0.28.2",
     "jsdom": "^30.0.1",
     "parse5": "^8.0.1",
     "typescript": "^5.9.3",

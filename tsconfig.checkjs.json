@@ -17,10 +17,15 @@
   "compilerOptions": {
     "checkJs": true,
     "noEmit": true,
-    "incremental": false
+    "incremental": false,
+    // `chat-engine.mjs` imports the generated `chat-program.json`, whose type is
+    // declared beside it as `chat-program.d.json.ts`
+    "allowArbitraryExtensions": true
   },
   "include": [
     "pipeline/chat-turn.mjs",
+    "pipeline/chat-engine.mjs",
+    "pipeline/build-chat-runtime.mjs",
     "pipeline/chat-widget.js",
     "pipeline/injected-layers.mjs",
     "pipeline/injected-source.mjs",

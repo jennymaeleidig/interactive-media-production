@@ -35,9 +35,9 @@
  *    capture-of-record.
  *  - Geometry note: the research table's 92x92 / 412x296 / 538xN figures are
  *    the HOST IFRAME rects. The visible boxes measured from the captured
- *    screenshots are the fidelity target: a 54px launcher circle, a 332x252
- *    pounce card, and a 343px-wide content-height panel, each inset 17px from
- *    the bottom-right corner. Both are recorded; the visible box wins because
+ *    screenshots are the fidelity target: a 54px launcher circle and a
+ *    343px-wide content-height panel, each inset 17px from the bottom-right
+ *    corner. Both are recorded; the visible box wins because
  *    the side-by-side (ticket 09 checkbox 7) compares pixels.
  *
  * The widget is an injected runtime (pipeline/chat-widget.js, ticket 10), the
@@ -203,7 +203,11 @@
   width: 54px;
   height: 54px;
   padding: 0;
-  border: 0;
+  /* The captured mark's own circular edge sits on the square's boundary, so at
+     cover it is clipped by border-radius:50% into a hairline, uneven rim. An
+     explicit border in the launcher's own captured color insets the mark to
+     the padding box and gives the circle a clean, deliberate ring. */
+  border: 2px solid var(--LAUNCHER_BACKGROUND_COLOR);
   border-radius: 50%;
   cursor: pointer;
   background-color: var(--LAUNCHER_BACKGROUND_COLOR);
@@ -213,7 +217,7 @@
   box-shadow: rgba(0, 0, 0, 0.15) 0 5px 20px 0;
 }
 
-/* ---- the card and the panel share one surface ---- */
+/* ---- the panel surface ---- */
 .fpc-surface {
   pointer-events: auto;
   position: absolute;
@@ -224,21 +228,10 @@
   background: #fff;
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.15) 0 5px 20px 0;
-  /* Clipped, as before the corner-close experiment: the card now uses the
-     panel's in-header close (user direction 2026-09-10), so nothing protrudes
-     and the scroll log stays inside the rounded corners. */
+  /* Clipped, as before the corner-close experiment: the panel uses the
+     in-header close (user direction 2026-09-10), so nothing protrudes and the
+     scroll log stays inside the rounded corners. */
   overflow: hidden;
-}
-/* The pounce card is the SAME UI as the expanded panel — same header, same
-   bubbles with the avatar beside the greeting, same composer, same footer
-   (user direction 2026-09-10; the earlier card-specific type/bubble treatment
-   is scrapped). Only the box differs: the captured card is 332px wide (the
-   panel 343) and content-driven, floored at the captured 252px and capped at
-   the capture's viewportH - 150px ceiling like the panel. */
-.fpc-surface--card {
-  width: 332px;
-  min-height: 252px;
-  max-height: calc(100vh - 150px);
 }
 /* expanded panel: 343px wide, content-driven height, floored at the captured
    413px single-greeting panel. */
@@ -298,8 +291,7 @@
   cursor: pointer;
   color: var(--HEADER_ICON_BUTTON_COLOR);
 }
-/* panel close: bare dark cross inside the header (captured top-right). Both
-   surfaces use it since the card became panel-UI (user direction 2026-09-10). */
+/* panel close: bare dark cross inside the header (captured top-right). */
 .fpc-close__icon {
   display: block;
   width: 12px;
@@ -376,14 +368,6 @@
   border: 1px solid var(--MESSAGE_BUBBLE_OWN_BORDER_COLOR);
   color: var(--MESSAGE_BUBBLE_OWN_TEXT_COLOR);
 }
-/* the card's greeting is the captured click-to-open preview: same box, a
-   button so it is focusable. */
-.fpc-bubble--preview {
-  text-align: left;
-  font-family: inherit;
-  cursor: pointer;
-}
-
 /* ---- composer: the original's input chrome, INERT. The pending Yarn choice
    set renders as user-style chips inside its slot; the placeholder shows when
    no chips are pending; the send button does nothing (captured send icon
@@ -485,12 +469,6 @@
     bottom: 16px;
     width: 50px;
     height: 50px;
-  }
-  /* The card keeps its bottom-right dock; the live mobile card sits 2px
-     closer to the bottom edge than the desktop capture's 17px. */
-  .fpc-surface--card {
-    right: 17px;
-    bottom: 15px;
   }
   /* The expanded conversation takes the whole viewport, square-cornered. */
   .fpc-surface--panel {

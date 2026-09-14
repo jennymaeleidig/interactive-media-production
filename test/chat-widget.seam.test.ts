@@ -1,91 +1,57 @@
-// Chat widget DOM seam (re-pointed at the injected runtime by
-// the site-wide mount): the widget's external behavior, evaluated in a real DOM (jsdom)
+// Chat widget DOM seam (re-pointed at the injected runtime by the site-wide
+// mount): the widget's external behavior, evaluated in a real DOM (jsdom)
 // against the exact bytes the build inlines on every launcher page
-// (pipeline/chat-widget.js) — the same bytes every mounted served page
-// carries. The message-API seam covers the message API; this one covers the
-// surface the visitor sees, which the API seam cannot reach: the three
-// captured surfaces, the scroll pounce, the inert composer, the choice chips
-// in the composer slot, complete-bubble replies, and the absence of typing
-// indicators and sounds.
+// (`pipeline/chat-runtime.js` — the generated asset that carries the client-side
+// dialogue engine ahead of the widget, built by
+// `pipeline/build-chat-runtime.mjs`) — the same bytes every mounted served page
+// carries. The message-API seam covers the server engine; this one covers the
+// surface the visitor sees, which no engine seam can reach: the three captured
+// surfaces, the inert composer, the choice chips in the composer slot,
+// complete-bubble replies, and the absence of typing indicators and sounds.
 //
-// fetch is stubbed with scripted turn batches, so the test is headless and
-// never touches the network or the real capture run. A fresh JSDOM window per
-// test isolates the runtime's mount guard and its scroll listener.
+// There is no fetch stub: the engine runs the real `dialogue/flock.yarn`
+// program in the page, so these assertions are the deployed conversation, and
+// the resume case drives a real round trip through `localStorage`.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { DOMWindow } from 'jsdom';
+import { handleChat } from '../lib/chat-engine';
+import type { ChatLine } from '../pipeline/chat-turn.mjs';
+import { isInertSource } from '../pipeline/injected-source.mjs';
 import { layerSource, seamWindow } from './seam-harness';
 
 const CHAT_CSS = layerSource('chat', 'css');
+/** The shipped asset: the engine bundle plus the widget, concatenated. */
+const CHAT_JS = layerSource('chat', 'runtime');
 
-const GREETING = 'Hey there! I\u2019m Flock, your friendly AI Sales Assistant. What questions do you have about Flock\u2019s offerings today?';
-const GENERAL = 'I can help with our products and services. How can I help you today?';
+// PINNED copy (s9 greeting, s10 general + support), the same strings
+// test/chat.seam.test.ts locks against the dialogue.
+const GREETING =
+  'Hey there! I\u2019m Flock, your friendly AI Sales Assistant. What questions do you have about Flock\u2019s offerings today?';
+const GENERAL =
+  "I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?";
+const SUPPORT =
+  "You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?";
+const CLOSING = 'Thanks for stopping by — take care!';
 
-interface Turn {
-  lines: { from: 'bot' | 'me'; text: string }[];
-  options: { index: number; text: string }[] | null;
-  complete?: boolean;
-}
-interface Script {
-  start: Turn;
-  options: Record<number, Turn>;
-  resume?: Turn;
-}
-
-/** A scripted per-turn responder; `start` and `option` return fresh batches. */
-function scriptedFetch(script: Script) {
-  const calls: Record<string, unknown>[] = [];
-  const fetchMock = vi.fn(async (_url: string, init: { body: string }) => {
-    const body = JSON.parse(init.body) as Record<string, unknown>;
-    calls.push(body);
-    let turn: Turn;
-    if (body.type === 'resume') {
-      turn = script.resume ?? { lines: [], options: null };
-    } else if (body.type === 'option') {
-      turn = script.options[body.optionIndex as number] ?? { lines: [], options: null };
-    } else {
-      turn = script.start;
-    }
-    return {
-      ok: true,
-      json: async () => ({
-        sessionId: 's-test',
-        turn: { lines: turn.lines, options: turn.options, complete: turn.complete ?? false },
-        state: { node: 'Start', complete: false, vars: {} },
-        ...(body.type === 'resume' ? { replay: turn.lines } : {}),
-      }),
-    } as Response;
-  });
-  return { fetchMock, calls };
-}
+const HUB = ['What can you help me with?', 'Get a Demo', 'Support'];
+const GENERAL_PENDING = ['Get a Demo', 'Support', "That's all for now"];
+const SUPPORT_PENDING = ['Get a Demo', "That's all for now"];
 
 let win: DOMWindow;
-let calls: Record<string, unknown>[];
 
-/** Resolve the promise microtasks a turn's fetch chain schedules. */
-async function flush(): Promise<void> {
-  for (let i = 0; i < 6; i++) await Promise.resolve();
-}
-
-function mount(opts: { script: Script; saved?: string }) {
-  const scripted = scriptedFetch(opts.script);
-  calls = scripted.calls;
+/**
+ * Mount the shipped asset into a fresh window. `seed` restores the two
+ * localStorage keys a prior page left, which is how a reload is simulated.
+ */
+function mount(seed?: { session: string; state: string }) {
   const seam = seamWindow('chat', '<!DOCTYPE html><html><body></body></html>', {
     url: 'http://localhost/',
     prep: (window) => {
-      const w = window as unknown as {
-        fetch: typeof fetch;
-        setTimeout: typeof window.setTimeout;
-        clearTimeout: typeof window.clearTimeout;
-        localStorage: Storage;
-      };
-      // jsdom's own timers bypass vitest's fake timers; route the runtime's
-      // window.setTimeout/clearTimeout to the ones this test controls.
-      w.fetch = scripted.fetchMock as unknown as typeof fetch;
-      w.setTimeout = globalThis.setTimeout as unknown as typeof window.setTimeout;
-      w.clearTimeout = globalThis.clearTimeout as unknown as typeof window.clearTimeout;
-      if (opts.saved) w.localStorage.setItem('flock-chat-session', opts.saved);
+      if (!seed) return;
+      window.localStorage.setItem('flock-chat-session', seed.session);
+      window.localStorage.setItem('flock-chat-state', seed.state);
     },
   });
   win = seam.window;
@@ -99,183 +65,199 @@ function mount(opts: { script: Script; saved?: string }) {
 
 const doc = () => win.document;
 const $ = <T extends Element>(sel: string) => doc().querySelector<T>(sel);
+const texts = (sel: string) => [...doc().querySelectorAll(sel)].map((el) => el.textContent);
+/** Every rendered bubble, bot and visitor alike, in document order. */
+const bubbleTexts = () => texts('.fpc-bubble, .fpc-bubble--me');
+const chipTexts = () => texts('.fpc-chip');
 
-/** jsdom reports scrollY 0; set it and fire the captured pounce trigger. */
-async function scrollPastFold() {
-  Object.defineProperty(win, 'scrollY', { value: 400, writable: true, configurable: true });
-  win.dispatchEvent(new win.Event('scroll'));
-  vi.advanceTimersByTime(1500);
+/** Resolve the promise chain a turn schedules (the engine answers asynchronously). */
+async function flush(): Promise<void> {
+  for (let i = 0; i < 8; i++) await Promise.resolve();
+}
+
+/** Open the expanded panel the way the visitor does: click the launcher. */
+async function openPanel() {
+  $<HTMLButtonElement>('.fpc-launcher')!.click();
   await flush();
 }
 
-const HUB = [
-  { index: 0, text: 'What can you help me with?' },
-  { index: 1, text: 'Get a Demo' },
-  { index: 2, text: 'Support' },
-];
-
-beforeEach(() => {
-  vi.useFakeTimers();
-});
+/** Select one chip the way the visitor does. */
+async function selectChip(text: string) {
+  const chip = [...doc().querySelectorAll<HTMLButtonElement>('.fpc-chip')].find((c) => c.textContent === text);
+  if (!chip) throw new Error(`no chip ${JSON.stringify(text)}`);
+  chip.click();
+  await flush();
+}
 
 afterEach(() => {
-  vi.runOnlyPendingTimers();
-  vi.useRealTimers();
   win?.close();
 });
 
 describe('the three captured surfaces', () => {
   it('shows the launcher on load, and opens the expanded panel on click', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
+    mount();
     expect($('.fpc-launcher')).not.toBeNull();
     $<HTMLButtonElement>('.fpc-launcher')!.click();
     await flush();
     expect($('.fpc-surface--panel')).not.toBeNull();
     expect($('.fpc-launcher')).toBeNull();
+    // opening starts the real conversation: the pinned greeting plus the hub
+    expect(bubbleTexts()).toEqual([GREETING]);
+    expect(chipTexts()).toEqual(HUB);
   });
 
-  it('fires the pounce on the captured scroll trigger and morphs into the panel from the greeting preview', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    expect($('.fpc-surface--card')).toBeNull();
-    await scrollPastFold();
-    const card = $('.fpc-surface--card');
-    expect(card).not.toBeNull();
-    expect(card!.textContent).toContain(GREETING);
-    // captured behavior: clicking the greeting preview opens the conversation
-    $<HTMLButtonElement>('.fpc-bubble--preview')!.click();
+  it('never peeks: scrolling cannot open a surface or start a conversation', async () => {
+    mount();
+    expect($('.fpc-surface')).toBeNull();
+    Object.defineProperty(win, 'scrollY', { value: 400, writable: true, configurable: true });
+    win.dispatchEvent(new win.Event('scroll'));
     await flush();
-    expect($('.fpc-surface--panel')).not.toBeNull();
-  });
-
-  it('does not re-pounce once the visitor has engaged', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    $<HTMLButtonElement>('.fpc-launcher')!.click();
-    await flush();
-    await scrollPastFold();
-    // exactly one start: the launcher's; the scroll did not fire a second
-    expect(calls.filter((c) => c.type === 'start')).toHaveLength(1);
+    expect($('.fpc-surface')).toBeNull();
+    // no turn ran, so the engine wrote no session state
+    expect(win.localStorage.getItem('flock-chat-state')).toBeNull();
   });
 });
 
 describe('the inert composer and its chips', () => {
   it('renders the pending choices as chips inside the composer slot', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    await scrollPastFold();
+    mount();
+    await openPanel();
     const slot = $('.fpc-composer .fpc-slot');
     expect(slot).not.toBeNull();
-    expect([...slot!.querySelectorAll('.fpc-chip')].map((c) => c.textContent)).toEqual([
-      'What can you help me with?',
-      'Get a Demo',
-      'Support',
-    ]);
+    expect([...slot!.querySelectorAll('.fpc-chip')].map((c) => c.textContent)).toEqual(HUB);
   });
 
-  it('shows the placeholder when no chips are pending — captured string per surface', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: null }, options: {} } });
-    await scrollPastFold();
-    expect($('.fpc-placeholder')!.textContent).toBe('Ask a question');
-    $<HTMLButtonElement>('.fpc-bubble--preview')!.click();
-    await flush();
+  it('shows the panel placeholder when the conversation has no pending choice', async () => {
+    mount();
+    await openPanel();
+    await selectChip('What can you help me with?');
+    await selectChip("That's all for now");
+    // the end node completes the dialogue: a closing line and no chips
+    expect(bubbleTexts()).toEqual([GREETING, 'What can you help me with?', GENERAL, "That's all for now", CLOSING]);
+    expect(chipTexts()).toEqual([]);
     expect($('.fpc-placeholder')!.textContent).toBe('Enter a message');
   });
 
-  it('selecting a chip reads as the visitor’s own sent message and advances the turn', async () => {
-    mount({
-      script: {
-        start: { lines: [{ from: 'bot', text: GREETING }], options: HUB },
-        options: {
-          0: {
-            lines: [{ from: 'me', text: 'What can you help me with?' }, { from: 'bot', text: GENERAL }],
-            options: [{ index: 0, text: "That's all for now" }],
-          },
-        },
-      },
-    });
-    await scrollPastFold();
-    const chip = [...doc().querySelectorAll<HTMLButtonElement>('.fpc-chip')].find((c) => c.textContent === 'What can you help me with?')!;
-    chip.click();
-    await flush();
-    const own = $('.fpc-bubble--me');
-    expect(own!.textContent).toBe('What can you help me with?');
+  it('selecting a chip reads as the visitor\u2019s own sent message and advances the turn', async () => {
+    mount();
+    await openPanel();
+    await selectChip('What can you help me with?');
     // exactly ONE echo: the engine prepends the visitor line, so the widget must
     // not add its own copy (the double-echo this assertion guards against)
-    expect([...doc().querySelectorAll('.fpc-bubble--me')].map((b) => b.textContent)).toEqual([
-      'What can you help me with?',
-    ]);
-    expect(doc().body.textContent).toContain(GENERAL); // the reply arrives as the next batch
-    expect(calls.at(-1)).toMatchObject({ type: 'option', optionIndex: 0 });
+    expect(texts('.fpc-bubble--me')).toEqual(['What can you help me with?']);
+    expect(bubbleTexts()).toEqual([GREETING, 'What can you help me with?', GENERAL]);
+    expect(chipTexts()).toEqual(GENERAL_PENDING);
   });
 
   it('keeps the send button inert: no turn, no navigation, aria-disabled', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    await scrollPastFold();
-    const before = calls.length;
+    mount();
+    await openPanel();
     const send = $<HTMLButtonElement>('.fpc-send')!;
     expect(send.getAttribute('aria-disabled')).toBe('true');
     expect(send.type).toBe('button');
+    const before = bubbleTexts();
     send.click();
     await flush();
-    expect(calls).toHaveLength(before);
+    expect(bubbleTexts()).toEqual(before);
+    expect(texts('.fpc-bubble--me')).toEqual([]);
+    expect(chipTexts()).toEqual(HUB);
   });
 });
 
 describe('replies and the no-sound / no-typing contract', () => {
   it('renders complete bubbles with no typing indicator and no sounds', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    await scrollPastFold();
+    mount();
+    await openPanel();
     expect($('audio')).toBeNull();
     // no typing/dot/pulse affordance is rendered anywhere in the widget
     for (const el of doc().querySelectorAll('*')) {
       expect(el.className.toString()).not.toMatch(/typing|dot|pulse|bubblePop/i);
     }
     // the reply is a complete bubble, never a streaming placeholder
-    expect($('.fpc-bubble--bot')!.textContent).toBe(GREETING);
+    expect($('.fpc-bubble')!.textContent).toBe(GREETING);
   });
 });
 
 describe('session persistence', () => {
-  it('resumes a saved server-side session on reload instead of re-pouncing', async () => {
-    mount({
-      saved: 's-live',
-      script: {
-        start: { lines: [{ from: 'bot', text: GREETING }], options: HUB },
-        options: {},
-        resume: {
-          lines: [
-            { from: 'bot', text: GREETING },
-            { from: 'me', text: 'Support' },
-          ],
-          options: HUB,
-        },
-      },
-    });
-    await flush();
-    expect(calls[0]).toMatchObject({ type: 'resume', sessionId: 's-live' });
-    // the restored thread is there when the launcher opens the panel
+  it('resumes the persisted conversation on reload instead of starting over', async () => {
+    mount();
+    await openPanel();
+    await selectChip('Support');
+    const session = win.localStorage.getItem('flock-chat-session');
+    const state = win.localStorage.getItem('flock-chat-state');
+    expect(session, 'the session id the widget persists').toBeTruthy();
+    expect(state, 'the engine snapshot').toBeTruthy();
+    win.close();
+
+    // reload: a fresh window seeded with what the prior page left behind
+    mount({ session: session as string, state: state as string });
+    await flush(); // the widget's restore() resumes at mount
     $<HTMLButtonElement>('.fpc-launcher')!.click();
     await flush();
-    expect(doc().body.textContent).toContain('Support');
-    await scrollPastFold();
-    expect($('.fpc-surface--card')).toBeNull(); // live session does not pounce
+
+    // the whole thread is replayed, with no second greeting
+    expect(bubbleTexts()).toEqual([GREETING, 'Support', SUPPORT]);
+    expect(bubbleTexts().filter((text) => text === GREETING)).toHaveLength(1);
+    // and the pending choice set is re-offered
+    expect(chipTexts()).toEqual(SUPPORT_PENDING);
+    // the session id survives the reload
+    expect(win.localStorage.getItem('flock-chat-session')).toBe(session);
+    // and the resume itself mutated nothing — the snapshot is byte-identical
+    expect(win.localStorage.getItem('flock-chat-state')).toBe(state);
+  });
+});
+
+describe('the client engine and the message API agree', () => {
+  /** Drive the server engine down the same choice script and collect its turns. */
+  function serverConversation(script: string[]): { lines: ChatLine[]; options: string[] | null; vars: Record<string, unknown> }[] {
+    const steps: { lines: ChatLine[]; options: string[] | null; vars: Record<string, unknown> }[] = [];
+    let res = handleChat({ type: 'start' });
+    steps.push({ lines: res.turn.lines, options: res.turn.options?.map((o) => o.text) ?? null, vars: res.state.vars });
+    for (const pick of script) {
+      const live = handleChat({ type: 'resume', sessionId: res.sessionId });
+      const index = live.turn.options?.find((o) => o.text === pick)?.index;
+      if (index === undefined) throw new Error(`no server option ${JSON.stringify(pick)}`);
+      res = handleChat({ type: 'option', sessionId: res.sessionId, optionIndex: index });
+      steps.push({ lines: res.turn.lines, options: res.turn.options?.map((o) => o.text) ?? null, vars: res.state.vars });
+    }
+    return steps;
+  }
+
+  it('renders the same lines, choice sets and variables the server engine would', async () => {
+    const script = ['What can you help me with?', "That's all for now"];
+    const steps = serverConversation(script);
+    const expectedLines = steps.flatMap((step) => step.lines.map((line) => line.text));
+    /** The variables the client engine persisted for the live session. */
+    const clientVars = () => JSON.parse(win.localStorage.getItem('flock-chat-state') as string).vars as Record<string, unknown>;
+
+    mount();
+    await openPanel();
+    expect(clientVars()).toEqual(steps[0].vars);
+    for (let i = 0; i < script.length; i++) {
+      // the choices on offer agree before the next selection
+      expect(chipTexts()).toEqual(steps[i].options ?? []);
+      await selectChip(script[i]);
+      // and so does the surfaced variable set (the serialization seam)
+      expect(clientVars()).toEqual(steps[i + 1].vars);
+    }
+    expect(chipTexts()).toEqual(steps[script.length].options ?? []);
+    expect(bubbleTexts()).toEqual(expectedLines);
+  });
+});
+
+describe('site-wide mount invariants', () => {
+  it('ships no network primitive \u2014 the whole conversation runs in the page', () => {
+    // the shipped asset is the engine bundle plus the widget; the outbound rule
+    // (`injected-source.mjs`) is what the serving check applies to it, and the
+    // client engine is what replaced the retired POST to the message API
+    expect(isInertSource(CHAT_JS)).toBe(true);
+    expect(CHAT_JS).toContain('__flockChatEngine');
   });
 
-  it('cancels an already-armed pounce when a live session lands (the resume/scroll race)', async () => {
-    mount({
-      saved: 's-live',
-      script: {
-        start: { lines: [{ from: 'bot', text: GREETING }], options: HUB },
-        options: {},
-        resume: { lines: [{ from: 'bot', text: GREETING }], options: HUB },
-      },
-    });
-    // scroll before the resume resolves: the pounce timer arms on a not-yet-live session
-    Object.defineProperty(win, 'scrollY', { value: 400, writable: true, configurable: true });
-    win.dispatchEvent(new win.Event('scroll'));
-    await flush(); // the resume lands and must cancel the armed timer
-    vi.advanceTimersByTime(1500);
-    await flush();
-    expect($('.fpc-surface--card')).toBeNull();
-    expect(calls.filter((c) => c.type === 'start')).toHaveLength(0);
+  it('links the widget footer at the Recreation\u2019s own privacy route', async () => {
+    mount();
+    await openPanel();
+    expect($<HTMLAnchorElement>('.fpc-footer a')!.getAttribute('href')).toBe('/legal/privacy-policy');
   });
 });
 
@@ -350,7 +332,7 @@ describe('mobile layout parity', () => {
     expect(CHAT_CSS).not.toMatch(/transition|animation|@keyframes/i);
   });
 
-  it('never reads the reduced-motion query — it has nothing to suppress', () => {
+  it('never reads the reduced-motion query \u2014 it has nothing to suppress', () => {
     const seam = seamWindow('chat', '<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/' });
     expect(seam.reducedMotion.reads()).toBe(0);
     expect(seam.reducedMotion.listeners()).toBe(0);
@@ -364,22 +346,5 @@ describe('mobile layout parity', () => {
     expect(root, 'the .fpc-root z-index').not.toBeNull();
     expect(Number(root![1])).toBeGreaterThan(2000);
     expect(Number(root![1])).toBeLessThan(2147483647);
-  });
-});
-
-describe('site-wide mount invariants', () => {
-  it('never requests anything but its own message API', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    await scrollPastFold();
-    $<HTMLButtonElement>('.fpc-bubble--preview')!.click();
-    await flush();
-    const fetchMock = win.fetch as unknown as ReturnType<typeof vi.fn>;
-    for (const call of fetchMock.mock.calls) expect(call[0]).toBe('/api/chat');
-  });
-
-  it('links the widget footer at the Recreation’s own privacy route', async () => {
-    mount({ script: { start: { lines: [{ from: 'bot', text: GREETING }], options: HUB }, options: {} } });
-    await scrollPastFold();
-    expect($<HTMLAnchorElement>('.fpc-footer a')!.getAttribute('href')).toBe('/legal/privacy-policy');
   });
 });

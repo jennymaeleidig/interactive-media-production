@@ -17,7 +17,8 @@ build stripped any executable `<script>` that survived, and the served bytes
 keep only `application/ld+json` data blocks. Any code that adds network
 behavior to a served page (fetch, XHR, WebSocket, remote `src`, beacon)
 violates the piece. The injected layers (motion, interactions, nav, chat,
-story-hook, scroll, and the page-scoped legibility patch) are inline, DOM-only,
+story-hook, scroll, the page-scoped legibility patch, and the six page-scoped
+Lottie heroes) are inline, DOM-only,
 and must degrade to the captured end-state with JavaScript disabled. `pipeline/audit.mjs` is the invariant's single home —
 `audit(pageHtml) → findings`, with the media allow-list as its only
 configuration. It owns the residue classes, the executable-script census (the
@@ -25,8 +26,7 @@ configuration. It owns the residue classes, the executable-script census (the
 check, and the unclassified-fetch check; the serving check calls it on every
 served page's bytes.
 
-Two things a served page may still reach, both deliberate and both frozen into
-the tree by the retired build:
+These are the frozen tree's deliberate exceptions, all from the retired build:
 
 - **Video players** (the media allow-list). A capture cannot play a video, so
   it kept an inert snapshot of the player — an inlined `srcdoc` player
@@ -42,17 +42,21 @@ the tree by the retired build:
   still appear in the captured bytes; the captured `img-src 'self' data:`
   refuses them, which is why the image half needs no grant. The hidden Vidzflow
   video.js documents are stripped, not played.
-- **The chat's same-origin POST.** The captures' own CSP (`default-src 'none'`,
-  no `connect-src`) refuses even that, so the retired build edited the policy
-  one directive at a time, **replacing** a directive rather than appending a
-  second one (two directives intersect and the resource stays blocked, which
-  looks exactly like the grant never having been made). Three grants are in the
-  frozen tree, each logged per page: the chat mount appends
-  exactly `connect-src 'self'` on launcher pages, the embed pass widens
-  `frame-src` by the hosts it used, and the dedupe pass widens
-  `style-src`/`script-src` by `'self'` for the body files it wrote. No grant
-  reaches further: `'self'` is the Recreation origin and the frame hosts are the
-  audit's allow-list, so nothing can leave the machine.
+- **The chat's retired same-origin POST grant.** The mimic's dialogue engine now
+  runs in the page (`pipeline/chat-runtime.js`, built by
+  `pipeline/build-chat-runtime.mjs`), so no served page makes a request of its
+  own. The captured CSP (`default-src 'none'`, no `connect-src`) refused the old
+  `POST /api/chat`, so the retired build edited the policy one directive at a
+  time, **replacing** a directive rather than appending a second one (two
+  directives intersect and the resource stays blocked, which looks exactly like
+  the grant never having been made). The grant is still in the frozen tree — the
+  chat mount appended exactly `connect-src 'self'` on launcher pages — and
+  nothing uses it any more.
+- **The other two frozen CSP grants.** The embed pass widened `frame-src` by the
+  hosts it used, and the dedupe pass widened `style-src`/`script-src` by `'self'`
+  for the body files it wrote. No grant reaches further: `'self'` is the
+  Recreation origin and the frame hosts are the audit's allow-list, so nothing
+  can leave the machine.
 
 **Serving time edits nothing.** `app/[[...path]]/route.ts` and `lib/serving.ts`
 return the frozen file's bytes unmodified — no policy edit, no rewrite, no
@@ -80,17 +84,29 @@ like any other asset.
   at the repo root: `app/` for routes, `pipeline/` for the rules the serving
   layer and the checks share, `test/` for tests.
 - **`pipeline/` is plain Node ESM JavaScript with JSDoc types** — no separate
-  compile step, no bundler coupling. It holds the **injected browser runtimes**
+  compile step, with one deliberate bundler coupling: the chat runtime
+  (`pipeline/chat-engine.mjs` + `pipeline/chat-program.json` →
+  `pipeline/chat-runtime.js`, `pipeline/build-chat-runtime.mjs`) is built by
+  esbuild because a browser cannot compile Yarn or resolve a module graph. It
+  holds the **injected browser runtimes**
   (`motion-runtime.js`, `interactions-runtime.js`, `nav-runtime.js`,
-  `chat-widget.js`, `story-hook.js`, `scroll-runtime.js` and their CSS) — plain
+  `chat-runtime.js` (generated), `story-hook.js`, `scroll-runtime.js`, the six
+  generated `lottie/<name>.runtime.js` heroes, and their
+  CSS) — plain
   browser JavaScript, kept ES5-safe, delivered into the tree as
   content-addressed assets — and the **serving-time rules and checks** below.
+  `pipeline/build-lottie-layers.mjs` reads the vendored lottie-web player
+  (`pipeline/vendor/lottie.min.js`, MIT — `pipeline/vendor/LOTTIE-CITATION.md`)
+  and each page's animation JSON, neuters the player for `isInertSource`, and
+  emits one self-contained runtime per hero; the player is never hand-edited.
   The build that turned captures into the tree was retired with the captures it
   read (2026-09-13); [README.md](README.md) and [CONTEXT.md](CONTEXT.md) say
   why, and there is no rebuild path.
 - **The marked bytes have one owner** (`pipeline/injected-layers.mjs`): the
-  seven-member roster (`motion`, `interactions`, `nav`, `chat`, `story-hook`,
-  `scroll`, and the page-scoped `legibility`), each member's delivery form
+  thirteen-member roster — six site-wide (`motion`, `interactions`, `nav`,
+  `chat`, `story-hook`, `scroll`) and seven page-scoped (`legibility` on
+  `/safe-cities`, and the six `lottie-<name>` heroes, one product page each) —
+  each member's delivery form
   (asset-backed CSS/JS, inline CSS, or no style), the order the members appear
   in a page, and each member's maintained source. `markedMembers(pageHtml)`
   reads a page's `data-flock-parody` tags in document order (the marker's name
@@ -101,10 +117,10 @@ like any other asset.
   serving check folds it in per page.
 - **The injected-source outbound rule has one owner**
   (`pipeline/injected-source.mjs`): every marked JS part must reference no
-  network primitive, except `chat`, whose single same-origin `POST /api/chat`
-  is its whole purpose and is declared as such in the roster. Pinned at
-  `test/injected-source.test.ts`; the serving check applies it to every shipped
-  JS part.
+  network primitive — including `chat`, whose dialogue engine now runs in the
+  page. The roster can still declare a same-origin allowance if one is ever
+  needed. Pinned at `test/injected-source.test.ts`; the serving check applies it
+  to every shipped JS part.
 - **The chat turn shape is declared once** (`pipeline/chat-turn.mjs`): the JSDoc
   typedefs that the widget (`pipeline/chat-widget.js`, under `checkJs`), the
   dialogue engine (`lib/chat-engine.ts`), and the seam tests all derive from. See
@@ -231,8 +247,8 @@ like any other asset.
     `.scroll`/`.scroll-up`, hover `.show`, mobile tap-toggle and take-over,
     outside-click and resize, reduced motion), chat-widget
     (`test/chat-widget.seam.test.ts` — the widget's three captured surfaces, its
-    inert composer and chip slot, the message API stubbed at `fetch`, and the
-    mobile-parity stylesheet shape, because jsdom cannot evaluate media
+    inert composer and chip slot, the real dialogue engine evaluated in the page,
+    and the mobile-parity stylesheet shape, because jsdom cannot evaluate media
     queries), story-hook (`test/story-hook.seam.test.ts` — the
     `window.flockParody.apply` patch contract), and scroll
     (`test/scroll.seam.test.ts` — the scroll choreography + modal runtime:
@@ -245,7 +261,9 @@ like any other asset.
     registration order, the `<html>` class writes each layer owns, and which
     layer owns a modal's open state. `test/seam-harness.ts` carries one
     reduced-motion policy per layer (`read-once`, `read-fresh`, or `none`), so a
-    layer cannot be added without declaring the policy its seam pins.
+    layer cannot be added without declaring the policy its seam pins — the six
+    Lottie heroes declare `read-once` (their mount reads the query once and jumps
+    to the final frame) although they have no DOM seam of their own yet.
   - **The chat message API seam** (`test/chat.seam.test.ts`) — the dialogue
     engine behind `app/api/chat/route.ts`.
   All seven DOM seams — the six runtime seams above plus the composition
@@ -361,7 +379,7 @@ dev/build for everyone:
   slot**, **media liveness**, **accepted drift**, and
   **demotion**.
 - **Known follow-up — stale ticket/spec references frozen into the tree.** The
-  11 injected layer sources (`pipeline/motion.css` … `pipeline/scroll-runtime.js`)
+  11 site-wide injected layer sources (`pipeline/motion.css` … `pipeline/scroll-runtime.js`)
   are mirrored byte-for-byte into `served/`, and their comments still cite
   resolved tickets and a retired spec — 41 references, including `scroll.css`
   text that sits inside the frozen page bytes. Clearing them is a served-tree
@@ -384,12 +402,18 @@ dev/build for everyone:
 4. If anything under `served/` changed: `npm run routes` for the full-scale
    serving check (route classes + byte-identity + the strip audit on every
    page), and say in the commit why a frozen byte changed. There is no rebuild
-   path — the pipeline that wrote the tree was retired with the captures it
-   read.
-5. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to
+   path for the **Capture's** bytes — the pipeline that wrote the tree was
+   retired with the captures it read.
+5. If you changed an injected layer's maintained source in `pipeline/`:
+   `npm run publish:layers` is the publish path for the Recreation's **own**
+   bytes — it writes each changed member to its new content-addressed name,
+   rewrites every carrying page's ref, and updates `served/assets.json`.
+   `npm run check:layers` asserts every shipped member is content-addressed and
+   ships the maintained code (comment-only drift is a note, not a failure).
+6. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to
    the current branch — staging only files the ticket touched.
 
-Steps 1–3 are also the **deploy gate**: `.github/workflows/publish.yml` runs them
+The gate steps (1–3, plus `check:layers`) are also the **deploy gate**: `.github/workflows/publish.yml` runs them
 on every push to `main`, then materializes the **Publish artifact** and deploys
 it, so a failure stops before materialization and a broken tree cannot reach the
 live site. That workflow is the repository's only CI — a check added to this list

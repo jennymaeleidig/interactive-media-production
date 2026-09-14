@@ -31,6 +31,16 @@
  */
 
 /**
+ * One request: the conversation step the widget sends and the engine answers.
+ * `start` mints or resumes, `resume` replays a saved thread, `option` selects a
+ * pending choice by its engine index. The widget sends one per turn; the client
+ * engine and the server route read the same shape.
+ * @typedef {{ type: 'start', sessionId?: string }
+ *   | { type: 'resume', sessionId: string }
+ *   | { type: 'option', sessionId: string, optionIndex: number }} ChatRequest
+ */
+
+/**
  * What a session is, minus its position: the current node, whether it finished,
  * and every Yarn variable. The node is null before a dialogue starts and once it
  * has run out of content. Deliberately not the VM's position — a session is

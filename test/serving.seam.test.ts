@@ -182,10 +182,11 @@ describe('chat mount over HTTP', () => {
     // unmounted page to check the absent branch against
     expect(homeBody).not.toContain('flock-chat-session');
     expect(await chatSource(homeBody, 'style')).toContain('.fpc-root');
-    expect(await chatSource(homeBody, 'script')).toContain('/api/chat');
+    // the engine ships in the same asset, ahead of the widget that calls it
+    expect(await chatSource(homeBody, 'script')).toContain('__flockChatEngine');
   });
 
-  it('grants the captured CSP exactly the one source the widget POST needs', async () => {
+  it('keeps the captured CSP\u2019s one grant, a leftover of the retired server-side chat', async () => {
     const meta = /<meta\b[^>]*http-equiv=\s*content-security-policy[^>]*>/i.exec(homeBody)?.[0];
     expect(meta).toBeDefined();
     expect(meta).toContain("connect-src 'self';");

@@ -95,3 +95,24 @@ html.fpm-motion [data-animation-gsap=clip-in]:not(.fpm-in) { opacity: 0; }
  * per the census's guidance (~0.3-0.6s). */
 html.fpm-motion [data-fpm-reveal] { transition: opacity 0.45s ease-out; }
 html.fpm-motion [data-fpm-reveal]:not(.fpm-in) { opacity: 0; }
+
+/* ---- alpha-media scroll assembly (the /products/flock-dfr capture) ----
+ * The captured stylesheet keeps the from-state as a plain rule —
+ * .alpha-media__stage{transform:scale(.5)} and
+ * .alpha-media__item{transform:scale(2)} — which the build's normalization
+ * never retired because it was not an inline style; the live page animated
+ * both to scale(1) on scroll-into-view. The ungated rule lands the static
+ * end-state; the gated from-state replays the assembly once the runtime arms
+ * motion, and the observer's .fpm-in releases it. The item keys off the
+ * STAGE's state because the observer observes the stage alone. */
+.alpha-media__stage,
+.alpha-media__item {
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: none;
+}
+html.fpm-motion .alpha-media__stage:not(.fpm-in) {
+  transform: scale(0.5);
+}
+html.fpm-motion .alpha-media__stage:not(.fpm-in) .alpha-media__item {
+  transform: scale(2);
+}

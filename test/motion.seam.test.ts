@@ -13,6 +13,7 @@ import { layerSource, seamWindow } from './seam-harness';
 import { isInertSource } from '../pipeline/injected-source.mjs';
 
 const SOURCE = layerSource('motion');
+const MOTION_CSS = layerSource('motion', 'css');
 
 const PAGE = `<!DOCTYPE html><html><body>
 <h1 data-split-title class="is-split is-visible"><span class=title-word>Safer</span></h1>
@@ -20,6 +21,7 @@ const PAGE = `<!DOCTYPE html><html><body>
 <div data-animation-gsap=fade-in-2>cards</div>
 <div data-animation-gsap=image-clip>clip</div>
 <div data-fpm-reveal>generic</div>
+<div class=alpha-media__stage><div class=alpha-media__item>frame</div></div>
 </body></html>`;
 
 function domOf(html: string, opts: { reduced?: boolean } = {}) {
@@ -46,7 +48,7 @@ describe('the runtime arms the motion layer only when reduced motion allows', ()
     expect(doc.documentElement.classList.contains('fpm-motion')).toBe(true);
     // no IntersectionObserver in jsdom — the fallback releases every from-state
     // so the page still lands on its static end-state
-    for (const sel of ['[data-split-gsap]', '[data-animation-gsap=fade-in-2]', '[data-animation-gsap=image-clip]', '[data-fpm-reveal]']) {
+    for (const sel of ['[data-split-gsap]', '[data-animation-gsap=fade-in-2]', '[data-animation-gsap=image-clip]', '[data-fpm-reveal]', '.alpha-media__stage']) {
       expect(doc.querySelector(sel)!.classList.contains('fpm-in'), sel).toBe(true);
     }
   });
@@ -66,7 +68,18 @@ describe('the runtime arms the motion layer only when reduced motion allows', ()
     expect(doc.documentElement.classList.contains('fpm-motion')).toBe(false);
     expect(doc.querySelector('[data-split-gsap]')!.classList.contains('fpm-in')).toBe(false);
     expect(doc.querySelector('[data-fpm-reveal]')!.classList.contains('fpm-in')).toBe(false);
+    expect(doc.querySelector('.alpha-media__stage')!.classList.contains('fpm-in')).toBe(false);
     expect(doc.querySelector('[data-split-title]')!.classList.contains('is-visible')).toBe(true);
+  });
+
+  it('lands the alpha-media end-state and gates its from-state on fpm-motion', () => {
+    // the captured stylesheet keeps the from-state as a plain rule, so the
+    // authored half has to land scale(1) ungated and re-arm scale(.5)/scale(2)
+    // only under html.fpm-motion — the /products/flock-dfr width fix.
+    expect(MOTION_CSS).toContain('.alpha-media__stage');
+    expect(MOTION_CSS).toContain('transform: none');
+    expect(MOTION_CSS).toContain('html.fpm-motion .alpha-media__stage:not(.fpm-in)');
+    expect(MOTION_CSS).toContain('transform: scale(2)');
   });
 
   it('reads the query once, at boot: a change afterwards cannot reach it', () => {

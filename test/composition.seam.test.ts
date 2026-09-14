@@ -114,7 +114,11 @@ describe('all seven marked members in one window', () => {
   it('installs every layer the page names, without an uncaught error', () => {
     const { document, errors } = composed();
     // the page's own order is the roster's — one declaration, checked against the artifact
-    expect(LAYERS).toEqual(ROSTER.map((l: { name: string }) => l.name));
+    expect(LAYERS).toEqual(
+      ROSTER.filter((l: { scope: string; pages?: string[] }) => l.scope === 'site' || (l.pages ?? []).includes('/safe-cities')).map(
+        (l: { name: string }) => l.name,
+      ),
+    );
     expect(LAYERS).toHaveLength(7);
     // the two layers that write a class on <html> both got there
     expect(document.documentElement.classList.contains('fpm-motion')).toBe(true);

@@ -7,20 +7,22 @@
 // It owns the WHOLE widget DOM: the launcher is created here, never in the
 // static markup, so a no-JS page renders the captured end-state with no
 // widget — exactly as the original, whose launcher was script-injected by
-// Qualified. Plain browser JavaScript, ES5-safe, DOM-only. Its only request
-// is the same-origin POST to /api/chat (ticket 08).
+// Qualified. Plain browser JavaScript, ES5-safe, DOM-only, and network-free:
+// the conversation runs against the client-side dialogue engine bundled ahead
+// of this file in the same asset (`pipeline/chat-runtime.js`), which is why the
+// mimic works on static hosting where there is no server to POST to.
 //
 // Contract, as ticket 09 and the message API define it:
-//  - one POST per turn (start | resume | option); replies render as COMPLETE
-//    bubbles — no typing indicator, no sounds;
+//  - one turn per conversation step (start | resume | option), answered by
+//    `window.__flockChatEngine`; replies render as COMPLETE bubbles — no typing
+//    indicator, no sounds;
 //  - the composer box and send icon are visually present but INERT;
 //  - the pending Yarn choice set renders as green chips inside the composer
-//    slot; selecting one reads as the visitor's own sent message (the server
+//    slot; selecting one reads as the visitor's own sent message (the engine
 //    owns the echo);
-//  - the pounce is scroll-armed once per session (a restored session does not
-//    re-pounce);
 //  - the session id persists in localStorage['flock-chat-session'] and is
-//    replayed on reload.
+//    replayed on reload; the engine's own session state lives in
+//    localStorage['flock-chat-state'].
 (function () {
   'use strict';
 
@@ -28,16 +30,6 @@
   window.__flockChat = true;
 
   var STORAGE_KEY = 'flock-chat-session';
-  /**
-   * The pounce is SCROLL-ARMED in the Capture, but the Capture never recorded
-   * its thresholds: the live widget's pounce was rule-gated server-side and
-   * fired ~36s after load in the observed sessions, with no client-visible
-   * constant. These two values are the mimic's documented stand-ins for the
-   * captured trigger SHAPE (scroll past the fold, then a short beat) — the
-   * only such values here.
-   */
-  var POUNCE_SCROLL_PX = 120;
-  var POUNCE_DELAY_MS = 1500;
   /**
    * The SVG namespace, pinned as a literal so `createElementNS` resolves to the
    * typed overload instead of returning a bare `Element`.
@@ -54,7 +46,7 @@
   /**
    * The widget's own state. `lines` and `options` mirror one turn of the message
    * API (`chat-turn.mjs`), which `applyResponse` below is the only place to fill.
-   * @type {{ mode: string, lines: ChatLine[], options: ChatOption[]|null, sessionId: string|null, divider: string, engaged: boolean, pounceTimer: number|null }}
+   * @type {{ mode: string, lines: ChatLine[], options: ChatOption[]|null, sessionId: string|null, divider: string }}
    */
   var state = {
     mode: 'launcher',
@@ -64,8 +56,6 @@
     // the captured "Today, h:mm am" divider is frozen at mount, so it never
     // ticks over mid-conversation
     divider: todayLabel(),
-    engaged: false,
-    pounceTimer: null,
   };
   /**
    * The widget's own root element, once mounted.
@@ -136,18 +126,7 @@
     var avatar = el('span', 'fpc-bubble-avatar');
     avatar.setAttribute('aria-hidden', 'true');
     row.appendChild(avatar);
-    if (state.mode === 'card') {
-      // captured behavior: clicking the greeting preview opens the panel
-      var preview = el('button', 'fpc-bubble fpc-bubble--bot fpc-bubble--preview', line.text);
-      preview.type = 'button';
-      preview.setAttribute('aria-label', 'Message preview - click to open the conversation');
-      preview.addEventListener('click', function () {
-        open('panel');
-      });
-      row.appendChild(preview);
-    } else {
-      row.appendChild(el('div', 'fpc-bubble fpc-bubble--bot', line.text));
-    }
+    row.appendChild(el('div', 'fpc-bubble fpc-bubble--bot', line.text));
     return row;
   }
 
@@ -172,7 +151,7 @@
         })(state.options[i]);
       }
     } else {
-      slot.appendChild(el('span', 'fpc-placeholder', state.mode === 'card' ? 'Ask a question' : 'Enter a message'));
+      slot.appendChild(el('span', 'fpc-placeholder', 'Enter a message'));
     }
     box.appendChild(slot);
     var send = el('button', 'fpc-send');
@@ -244,7 +223,7 @@
       launcher.type = 'button';
       launcher.setAttribute('aria-label', 'Open chat');
       launcher.addEventListener('click', function () {
-        open('panel');
+        open();
       });
       root.appendChild(launcher);
     } else {
@@ -257,21 +236,15 @@
     if (log) log.scrollTop = log.scrollHeight;
   }
 
-  // ---- the message API (ticket 08) -----------------------------------------
+  // ---- the dialogue engine (ticket 08 contract) -----------------------------
 
   /**
-   * The one place the API's response is parsed: `post` below hands it straight
+   * The one place an engine response is parsed: `post` below hands it straight
    * here, and every field it reads is part of the declared turn shape.
    * @param {ChatResponse} res
    */
   function applyResponse(res) {
     state.sessionId = res.sessionId;
-    // A session just went live: a pounce armed by an earlier scroll must not
-    // fire into it (the captured contract — a live session never re-pounces).
-    if (state.pounceTimer) {
-      window.clearTimeout(state.pounceTimer);
-      state.pounceTimer = null;
-    }
     try {
       window.localStorage.setItem(STORAGE_KEY, res.sessionId);
     } catch (e) {
@@ -292,33 +265,22 @@
   }
 
   /**
-   * One request per turn to the local message API — the Chat mimic's only
-   * outbound call (`injected-source.mjs`).
-   * @param {unknown} body
+   * One turn against the client-side dialogue engine bundled ahead of this
+   * file (`window.__flockChatEngine`). The engine answers with a Promise, the
+   * call shape the message API's client had; a missing engine leaves the last
+   * state, and a failed turn does the same — there is no network to blame.
+   * @param {ChatRequest} body
    */
   function post(body) {
-    return fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-      .then(function (res) {
-        if (!res.ok) return;
-        return res.json().then(applyResponse);
-      })
-      .catch(function () {
-        // no network is the invariant; a failed turn leaves the last state
-      });
+    var engine = window.__flockChatEngine;
+    if (!engine) return Promise.resolve();
+    return engine.turn(body).then(applyResponse).catch(function () {
+      // a failed turn leaves the last state
+    });
   }
 
-  /** @param {string} next */
-  function open(next) {
-    state.engaged = true;
-    if (state.pounceTimer) {
-      window.clearTimeout(state.pounceTimer);
-      state.pounceTimer = null;
-    }
-    state.mode = next;
+  function open() {
+    state.mode = 'panel';
     render();
     if (!state.sessionId) post({ type: 'start' });
   }
@@ -331,26 +293,14 @@
   /** @param {ChatOption} option */
   function select(option) {
     if (!state.sessionId) return;
-    // The SERVER owns the echo: the option turn already prepends the
+    // The ENGINE owns the echo: the option turn already prepends the
     // visitor's line, so the widget must not append its own copy.
     state.options = null;
     render();
     post({ type: 'option', sessionId: state.sessionId, optionIndex: option.index });
   }
 
-  // ---- mount, session restore, pounce --------------------------------------
-
-  function onScroll() {
-    if (state.engaged || state.pounceTimer || state.sessionId) return;
-    if (window.scrollY <= POUNCE_SCROLL_PX) return;
-    state.pounceTimer = window.setTimeout(function () {
-      state.pounceTimer = null;
-      post({ type: 'start' }).then(function () {
-        state.mode = 'card';
-        render();
-      });
-    }, POUNCE_DELAY_MS);
-  }
+  // ---- mount, session restore ----------------------------------------------
 
   function restore() {
     var saved = null;
@@ -360,15 +310,6 @@
       saved = null;
     }
     if (!saved) return;
-    // Legibility aid: a live session silently suppresses the pounce (the
-    // captured contract — no re-pounce), which reads as "the scroll gate never
-    // fired" while testing. Say why, once.
-    if (window.console && window.console.info) {
-      window.console.info(
-        '[flock] live chat session restored \u2014 pounce suppressed. ' +
-          'Remove localStorage["flock-chat-session"] and reload to see the pounce.',
-      );
-    }
     post({ type: 'resume', sessionId: saved });
   }
 
@@ -377,7 +318,6 @@
     root = el('div', 'fpc-root');
     document.body.appendChild(root);
     render();
-    window.addEventListener('scroll', onScroll, { passive: true });
     restore();
   }
 

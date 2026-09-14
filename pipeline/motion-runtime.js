@@ -48,7 +48,7 @@
     '[data-animation-gsap=fade-in],[data-animation-gsap=fade-in-2],' +
     '[data-animation-gsap=image-clip],[data-animation-gsap=clip-in],' +
     '[data-split-gsap],[data-animation-gsap=words],[data-animation-gsap=lines],' +
-    '[data-fpm-reveal]'
+    '[data-fpm-reveal],.alpha-media__stage'
   );
   if (targets.length && 'IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {

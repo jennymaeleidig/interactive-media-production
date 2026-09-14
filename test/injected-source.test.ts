@@ -1,8 +1,8 @@
 // The rule over our own injected sources: they touch the document and nothing
-// else — except the one member whose job is to talk to our own API. The other
-// half of the invariant, what the Capture's own bytes may reach, is `audit.mjs`'s
-// Media allow-list, and the two are deliberately not the same module (one guards
-// captured bytes, this one guards ours).
+// else, every member of the roster. The other half of the invariant, what the
+// Capture's own bytes may reach, is `audit.mjs`'s Media allow-list, and the two
+// are deliberately not the same module (one guards captured bytes, this one
+// guards ours).
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
@@ -37,9 +37,9 @@ describe('isInertSource', () => {
 });
 
 describe('isSelfBoundSource', () => {
-  it('accepts the one call the Chat mimic makes', () => {
+  it('accepts a same-origin call at a root-relative path', () => {
     expect(isSelfBoundSource("return fetch('/api/chat', { method: 'POST', body: JSON.stringify(body) })")).toBe(true);
-    expect(isSelfBoundSource('fetch("/api/chat")')).toBe(true);
+    expect(isSelfBoundSource('fetch("/somewhere")')).toBe(true);
   });
 
   it('accepts a same-origin member that reaches nothing at all', () => {
@@ -86,11 +86,11 @@ describe('the injected sources in the tree', () => {
   /** The allowance the roster declares for one member. */
   const outboundOf = (name: string, kind: string) => partOf(name, kind)?.outbound;
 
-  it('allows exactly one member to reach anything, because exactly one has to', () => {
+  it('allows no member to reach anything — the chat engine runs in the page', () => {
     const allowed = LAYERS.flatMap((l: { name: string; parts: { kind: string; outbound?: string }[] }) =>
       l.parts.filter((p) => p.outbound === 'self').map((p) => `${l.name}/${p.kind}`),
     );
-    expect(allowed).toEqual(['chat/js']);
+    expect(allowed).toEqual([]);
   });
 
   it('leaves every marked member of a served page inside its declared allowance', () => {

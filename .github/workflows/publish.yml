@@ -60,6 +60,12 @@ jobs:
       - name: Test
         run: npm test
 
+      # The Recreation's own injected bytes are a pipeline output: this fails
+      # before the build when a `pipeline/` layer source changed without
+      # `npm run publish:layers` (CODING_STANDARDS.md, "before finishing").
+      - name: Check injected layers
+        run: npm run check:layers
+
       - name: Build
         run: npm run build
 

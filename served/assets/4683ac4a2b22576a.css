@@ -1,8 +1,7 @@
-
 /* SPDX-License-Identifier: CC0-1.0
  *
- * The motion reveal layer, CSS half — injected inline into every served page
- * by the build (pipeline/build.mjs pass 4, ticket 04). Inert until the
+ * The motion reveal layer, CSS half — injected into every served page, and
+ * carried by the tree as a content-addressed asset (ticket 04). Inert until the
  * runtime adds `.fpm-motion` to <html> (JS running AND prefers-reduced-motion
  * allowing): with JavaScript disabled, or with reduced motion requested, none
  * of these rules apply and the page renders as the normalized static
@@ -13,9 +12,9 @@
  * Interactions (tabs/dropdowns/accordion/swiper) are ticket 05, not here.
  * CSS has no line comments: block comments only in this file. "fpm" =
  * flock-parody-motion, the family the data-flock-parody="motion" tags anchor.
- * KEEP IN SYNC: the from-values below must equal what the build strips
- * (WORD_FROM_TOKENS in pipeline/build.mjs) — the CSS re-applies exactly the
- * tokens the static DOM no longer carries.
+ * KEEP IN SYNC: the from-values below must equal the tokens the tree's static
+ * DOM does not carry (the retired build stripped them by its WORD_FROM_TOKENS
+ * census) — the CSS re-applies exactly those tokens.
  */
 
 /* ---- smooth scroll for anchor jumps (tier 1, census pattern 16) ----
@@ -97,3 +96,23 @@ html.fpm-motion [data-animation-gsap=clip-in]:not(.fpm-in) { opacity: 0; }
 html.fpm-motion [data-fpm-reveal] { transition: opacity 0.45s ease-out; }
 html.fpm-motion [data-fpm-reveal]:not(.fpm-in) { opacity: 0; }
 
+/* ---- alpha-media scroll assembly (the /products/flock-dfr capture) ----
+ * The captured stylesheet keeps the from-state as a plain rule —
+ * .alpha-media__stage{transform:scale(.5)} and
+ * .alpha-media__item{transform:scale(2)} — which the build's normalization
+ * never retired because it was not an inline style; the live page animated
+ * both to scale(1) on scroll-into-view. The ungated rule lands the static
+ * end-state; the gated from-state replays the assembly once the runtime arms
+ * motion, and the observer's .fpm-in releases it. The item keys off the
+ * STAGE's state because the observer observes the stage alone. */
+.alpha-media__stage,
+.alpha-media__item {
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: none;
+}
+html.fpm-motion .alpha-media__stage:not(.fpm-in) {
+  transform: scale(0.5);
+}
+html.fpm-motion .alpha-media__stage:not(.fpm-in) .alpha-media__item {
+  transform: scale(2);
+}

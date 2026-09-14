@@ -53,6 +53,28 @@ function setScroll(win: Win, y: number) {
   win.dispatchEvent(new win.Event('scroll'));
 }
 
+// A page with the /products chapter menu 800px down the document (jsdom does
+// no layout, so the test supplies the rect the live script read as
+// `$chapters.offset().top`).
+const PRODUCT_HUB_PAGE = `<!DOCTYPE html><html><head></head><body>
+<div class=product-hub_main><div class=product-hub_menu><a href=#cameras>Cameras</a></div></div>
+</body></html>`;
+
+function productHubDom(): { win: Win; menu: HTMLElement } {
+  const seam = seamWindow('nav', PRODUCT_HUB_PAGE, {
+    prep: (window) => {
+      const menu = window.document.querySelector('.product-hub_menu') as HTMLElement;
+      menu.getBoundingClientRect = () =>
+        ({ top: 800, bottom: 840, left: 0, right: 100, width: 100, height: 40, x: 0, y: 800, toJSON: () => ({}) }) as DOMRect;
+    },
+  });
+  releaseDomReady(seam.window);
+  return {
+    win: seam.window as Win,
+    menu: seam.window.document.querySelector('.product-hub_menu') as HTMLElement,
+  };
+}
+
 function clickIn(win: Win, el: Element) {
   const ev = new win.MouseEvent('click', { bubbles: true, cancelable: true });
   el.dispatchEvent(ev);
@@ -228,6 +250,22 @@ describe('nav layer', () => {
     ]) {
       expect(selectors).toContain(sel);
     }
+  });
+
+  it('raises the /products chapter menu 72px on scroll-up while stuck, lowering it on scroll-down', () => {
+    const { win, menu } = productHubDom();
+    setScroll(win, 900); // down past the sticky threshold: still docked
+    expect(menu.style.transform).toBe('');
+    setScroll(win, 850); // up while stuck: drop clear of the header
+    expect(menu.style.transform).toBe('translateY(72px)');
+    setScroll(win, 700); // above the sticky threshold: reset
+    expect(menu.style.transform).toBe('translateY(0px)');
+    setScroll(win, 900); // down again, stuck but never raised: no move
+    expect(menu.style.transform).toBe('translateY(0px)');
+    setScroll(win, 850); // up while stuck: raise once more
+    expect(menu.style.transform).toBe('translateY(72px)');
+    setScroll(win, 950); // down while stuck: lower it back to the frame
+    expect(menu.style.transform).toBe('translateY(0px)');
   });
 
   it('is inert when the page carries no shared header', () => {

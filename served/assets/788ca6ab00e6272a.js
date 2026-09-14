@@ -1,7 +1,6 @@
-
 // SPDX-License-Identifier: CC0-1.0
-// The shared header's behavior layer, runtime half (ticket 14) — injected
-// inline into every served page by the build (pipeline/build.mjs navPass).
+// The shared header's behavior layer, runtime half (ticket 14) — injected into
+// every served page, and carried by the tree as a content-addressed asset.
 //
 // The live site's header script (fetched from the page, 2026-09-11) drives
 // three things by class, and the corrected Capture's own stylesheet renders
@@ -11,6 +10,8 @@
 //             class is kept for fidelity)
 //   hover  -> .nav__dd gets .show at >=992px; a tap toggles it below
 //   button -> .header__bg gets .is-open, and the mobile menu list reveals
+//   hub    -> the /products chapter menu (.product-hub_menu) raises 72px while
+//             stuck and scrolling up, dropping it clear of the header
 // The live site animated the reveal and the hamburger cross with a stripped
 // runtime; this file performs those two moves itself. Reduced motion only
 // drops the reveal animation, never the state change.
@@ -33,7 +34,56 @@
     return window.innerWidth >= DESKTOP_MIN;
   }
 
+  // The product hub's sticky chapter menu (`/products` only): the live page
+  // carried a stripped inline jQuery script that raises the menu 72px while
+  // the visitor scrolls up once it is stuck, so the pills drop clear of the
+  // fixed header and reappear; scrolling down (or leaving the stuck zone) puts
+  // it back. No layer reimplemented it and the captured CSS carries only the
+  // sticky frame, so this owns the move. Touch resets the direction baseline,
+  // as the live script did.
+  function initProductHub() {
+    var menu = document.querySelector('.product-hub_menu');
+    if (!menu) return;
+    var OFFSET = 72;
+    function scrollY() {
+      return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
+    // document-relative top, read once at boot — the live script's
+    // `$chapters.offset().top`, which already includes the current scroll.
+    var stickyTop = menu.getBoundingClientRect().top + scrollY();
+    var lastScroll = scrollY();
+    var raised = false;
+    function update() {
+      var current = scrollY();
+      var scrollingUp = current < lastScroll;
+      var isSticky = current >= stickyTop;
+      if (isSticky) {
+        if (scrollingUp && !raised) {
+          menu.style.transform = 'translateY(' + OFFSET + 'px)';
+          raised = true;
+        } else if (!scrollingUp && raised) {
+          menu.style.transform = 'translateY(0px)';
+          raised = false;
+        }
+      } else if (raised) {
+        menu.style.transform = 'translateY(0px)';
+        raised = false;
+      }
+      lastScroll = current;
+    }
+    window.addEventListener('scroll', update, false);
+    window.addEventListener(
+      'touchstart',
+      function () {
+        lastScroll = scrollY();
+      },
+      false,
+    );
+    update();
+  }
+
   function init() {
+    initProductHub();
     var header = document.getElementById('header');
     if (!header) return;
     var headerBg = document.querySelector('.header__bg');
@@ -165,4 +215,3 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, false);
   else init();
 })();
-

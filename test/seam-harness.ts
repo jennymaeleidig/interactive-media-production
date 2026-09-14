@@ -23,13 +23,14 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const SEAM_URL = 'https://recreation.test/';
 
 /**
- * How each injected layer reads `prefers-reduced-motion`. Three read the query
- * once, at boot, and are blind to a change afterwards; the interaction layer
- * reads it fresh at each use, so a change must reach it; the two that never
- * animate do not read it at all. This is a contract, not a note: every seam
- * asserts its own layer's policy through the counter below, so a layer that
- * starts reading the query somewhere new fails its own seam — and a seventh
- * layer cannot be added without declaring one.
+ * How each injected layer reads `prefers-reduced-motion`. Most read the query
+ * once, at boot, and are blind to a change afterwards (the Lottie mounts jump to
+ * their final frame on that single read); the interaction layer reads it fresh
+ * at each use, so a change must reach it; the two that never animate do not read
+ * it at all. This is a contract, not a note: every seam asserts its own layer's
+ * policy through the counter below, so a layer that starts reading the query
+ * somewhere new fails its own seam — and a new layer cannot be added without
+ * declaring one.
  */
 export type ReducedPolicy = 'read-once' | 'read-fresh' | 'none';
 
@@ -46,25 +47,31 @@ const REDUCED: Record<string, ReducedPolicy> = {
   chat: 'none',
   'story-hook': 'none',
   scroll: 'read-once',
+  // the six Lottie mounts: each reads the query once and jumps to the final
+  // frame instead of observing for scroll-into-view
+  'lottie-flock-dfr': 'read-once',
+  'lottie-flock-freeform': 'read-once',
+  'lottie-flock-os': 'read-once',
+  'lottie-flock-safety-platform': 'read-once',
+  'lottie-gunshot-detection': 'read-once',
+  'lottie-video-cameras': 'read-once',
 };
 
 /** The roster, narrowed to the fields this harness reads. */
 const ROSTER_LAYERS = ROSTER as unknown as { name: string; parts: { kind: string; source?: string }[] }[];
 
 /**
- * The injected runtimes, by layer: the source file each layer ships (the
- * basename of the roster's maintained source), and how it reads the
- * reduced-motion query. The tree in `served/` carries these bytes as
- * content-addressed assets; `pipeline/injected-layers.mjs` owns the pair, and
- * `test/injected-layers.test.ts` is where their agreement is asserted, not here.
+ * The injected runtimes, by layer: the source file each layer ships (the roster's
+ * maintained path, repo-relative — `pipeline/lottie/` holds the generated Lottie
+ * runtimes), and how it reads the reduced-motion query. The tree in `served/`
+ * carries these bytes as content-addressed assets; `pipeline/injected-layers.mjs`
+ * owns the pair, and `test/injected-layers.test.ts` is where their agreement is
+ * asserted, not here.
  */
 const LAYERS: Record<string, { runtime?: string; css?: string; reduced: ReducedPolicy }> = Object.fromEntries(
   Object.entries(REDUCED).map(([name, reduced]) => {
     const file = (kind: string) =>
-      ROSTER_LAYERS.find((layer) => layer.name === name)
-        ?.parts.find((part) => part.kind === kind)
-        ?.source?.split('/')
-        .pop();
+      ROSTER_LAYERS.find((layer) => layer.name === name)?.parts.find((part) => part.kind === kind)?.source;
     return [name, { runtime: file('js'), css: file('css'), reduced }];
   }),
 );
@@ -83,7 +90,7 @@ export function reducedPolicy(layer: string): ReducedPolicy {
 export function layerSource(layer: string, kind: 'runtime' | 'css' = 'runtime'): string {
   const file = LAYERS[layer]?.[kind];
   if (file === undefined) throw new Error(`no ${kind} for injected layer '${layer}'`);
-  return readFileSync(path.join(HERE, '..', 'pipeline', file), 'utf8');
+  return readFileSync(path.join(HERE, '..', file), 'utf8');
 }
 
 /** Eval the injected source into a jsdom window, as an inline body script observes it. */
