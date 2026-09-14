@@ -1,8 +1,9 @@
-// The upstream watch's network edge (tickets 01–05): fetch the sitemap and
+// The upstream watch's network edge (tickets 01–06): fetch the sitemap and
 // homepage, discover and fetch the site's shared asset set, probe every path in
 // the watched universe once, fetch the body of every watched page the tree
-// serves, hand the bytes and the previous baseline to the pure cores, print what
-// they decide, and record the baseline when the run is allowed to. This file
+// serves, ask each distinct media slot whether its media is alive, hand the
+// bytes and the previous baseline to the pure cores, print what they decide, and
+// record the baseline when the run is allowed to. This file
 // decides nothing itself — it adds only the network, the filesystem, and the
 // process exit code.
 //
@@ -33,6 +34,7 @@ import { pageCandidates } from '../pipeline/served-tree.mjs';
 import { exitCode, formatWatchReport, watchedUniverse } from './upstream-watch.mjs';
 import { outsideServedTree, readBaseline, runWatch, serializeBaseline } from './upstream-baseline.mjs';
 import { assetRefs } from './upstream-assets.mjs';
+import { livenessUrl, mediaSlots } from './upstream-media.mjs';
 
 const ORIGIN = 'https://www.flocksafety.com';
 const CONCURRENCY = 8;
@@ -89,6 +91,18 @@ function readPreviousBaseline() {
     throw err;
   }
   return readBaseline(text);
+}
+
+/** Probe one media slot's liveness URL. Every HTTP status is a completed
+ * measurement — 404, 401 and 403 carry the class — so only a transport failure
+ * throws; a status the rule cannot classify is thrown by the pure core and
+ * becomes an operational failure. Only Wistia's metadata answers with a body,
+ * so nothing else is read. @param {import('./upstream-media.mjs').MediaSlot} slot */
+async function probeMedia(slot) {
+  const res = await fetch(livenessUrl(slot), { redirect: 'manual' });
+  if (slot.provider === 'wistia' && res.status === 200) return { status: res.status, body: await res.text() };
+  res.body?.cancel().catch(() => {});
+  return { status: res.status };
 }
 
 /**
@@ -175,6 +189,15 @@ async function main() {
     if (file !== undefined) servedFiles.set(watched, file);
   }
 
+  // Read every served page the watched universe answers once. The copy
+  // comparison needs the served bytes only where upstream answers 200, but the
+  // media census needs every served page regardless of upstream status.
+  /** @type {Map<string, string>} */
+  const servedHtml = new Map();
+  for (const [watched, file] of servedFiles) servedHtml.set(watched, readFileSync(file, 'utf8'));
+  /** @type {import('./upstream-media.mjs').MediaPage[]} */
+  const mediaPages = [...servedHtml].map(([watched, html]) => ({ path: watched, html }));
+
   const results = await mapLimit(universe, CONCURRENCY, async (/** @type {string} */ watched) => {
     try {
       return { path: watched, probe: await probe(ORIGIN + watched, servedFiles.has(watched)) };
@@ -198,14 +221,46 @@ async function main() {
   for (const result of results) {
     probes[result.path] = { status: result.probe.status, location: result.probe.location };
     const body = result.probe.body;
-    const file = servedFiles.get(result.path);
-    if (body === undefined || file === undefined) continue;
-    copyPages.push({ path: result.path, served: readFileSync(file, 'utf8'), live: body });
+    const served = servedHtml.get(result.path);
+    if (body === undefined || served === undefined) continue;
+    copyPages.push({ path: result.path, served, live: body });
   }
+
+  // Media liveness: every allow-listed slot the served tree carries, asked once
+  // per distinct media. An unclassifiable slot or a failed probe is an
+  // operational failure, so the measurement is never silently partial.
+  /** @type {Map<string, import('./upstream-media.mjs').MediaSlot>} */
+  const slotsByKey = new Map();
+  for (const page of mediaPages) {
+    for (const slot of mediaSlots(page.html)) {
+      if (slot.key === null) return fail(`upstream watch cannot classify an allow-listed media frame at ${page.path}: ${slot.url}`);
+      if (!slotsByKey.has(slot.key)) slotsByKey.set(slot.key, slot);
+    }
+  }
+  const mediaKeys = [...slotsByKey.keys()];
+  const mediaResults = await mapLimit(mediaKeys, CONCURRENCY, async (/** @type {string} */ key) => {
+    const slot = /** @type {import('./upstream-media.mjs').MediaSlot} */ (slotsByKey.get(key));
+    try {
+      return { key, probe: await probeMedia(slot) };
+    } catch (err) {
+      return { key, error: message(err) };
+    }
+  });
+  /** @type {Array<{key: string, error: string}>} */
+  const mediaFailed = mediaResults.filter((result) => 'error' in result);
+  if (mediaFailed.length > 0) {
+    console.error(`✗ ${mediaFailed.length} of ${mediaKeys.length} media probe(s) failed — the measurement is incomplete, so this is not a clean run:`);
+    for (const f of mediaFailed.slice(0, 20)) console.error(`  ${f.key}: ${f.error}`);
+    process.exitCode = 2;
+    return;
+  }
+  /** @type {Record<string, import('./upstream-media.mjs').MediaProbe>} */
+  const mediaProbes = {};
+  for (const result of mediaResults) mediaProbes[result.key] = { status: result.probe.status, body: result.probe.body };
 
   let run;
   try {
-    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages, chromePages: copyPages, assets });
+    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages, chromePages: copyPages, assets, mediaPages, mediaProbes });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }

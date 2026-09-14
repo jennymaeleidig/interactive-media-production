@@ -26,6 +26,7 @@
     "regression/upstream-copy.mjs",
     "regression/upstream-chrome.mjs",
     "regression/upstream-assets.mjs",
+    "regression/upstream-media.mjs",
     "pipeline/globals.d.ts"
   ]
 }

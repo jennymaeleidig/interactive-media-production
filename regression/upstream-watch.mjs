@@ -112,6 +112,14 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
+ * Ticket 06's media tier as the report carries it: the slots compared, the
+ * per-(page, slot) findings, and the liveness tally. Unlike the other tiers it
+ * is an absolute measurement rather than a diff against the baseline, so it is
+ * reported on the silent first run too.
+ * @typedef {import('./upstream-media.mjs').MediaTier} MediaTier
+ */
+
+/**
  * The comparison a run produces. `inventory` is the whole measurement;
  * `findings` are the drift against the frozen Capture list, which ticket 01
  * alone can see. Ticket 02's `since` is the drift against the moving baseline;
@@ -130,6 +138,7 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {BaselineDelta} [since]  what moved since the previous run; set by `runWatch`
  * @property {CopyTier} [copy]  the served-versus-live prose comparison; set by `runWatch`
  * @property {ChromeTier & {restyle?: import('./upstream-assets.mjs').RestyleTier}} [chrome]  the served-versus-live chrome comparison and, nested, the shared-asset restyle comparison; set by `runWatch`
+ * @property {MediaTier} [media]  the served media slots whose upstream media is not alive; set by `runWatch`
  */
 
 /**
@@ -337,7 +346,8 @@ export function buildWatchReport(inputs) {
 
 /**
  * Whether anything in the report is drift: an index finding, a moved baseline,
- * a copy difference, or a chrome difference no allow-list entry explains. The
+ * a copy difference, a chrome difference no allow-list entry explains, or a
+ * media slot whose upstream media no longer resolves. The
  * exit code and the printed summary both ask this one function, so a clean
  * print can never disagree with a nonzero exit.
  * @param {WatchReport} report
@@ -351,7 +361,8 @@ function reportMoved(report) {
   const copyDrift = report.copy !== undefined && report.copy.differed > 0;
   const chromeDrift = report.chrome !== undefined && report.chrome.differed > 0;
   const restyleDrift = (report.chrome?.restyle?.differed ?? 0) > 0;
-  return indexDrift || baselineDrift || copyDrift || chromeDrift || restyleDrift;
+  const mediaDrift = (report.media?.differed ?? 0) > 0;
+  return indexDrift || baselineDrift || copyDrift || chromeDrift || restyleDrift || mediaDrift;
 }
 
 /** One run's text for the human view, bounded so a whole-page rewrite cannot
@@ -394,6 +405,10 @@ export function formatWatchReport(report) {
       const { compared: assetsCompared, differed: assetsDiffered } = report.chrome.restyle;
       lines.push(`  restyle (chrome tier, shared assets): ${assetsCompared} compared · ${assetsDiffered} changed`);
     }
+  }
+  if (report.media) {
+    const { compared, differed } = report.media;
+    lines.push(`  media: ${compared} slot(s) compared · ${differed} differed`);
   }
   if (demotions.length > 0) {
     lines.push(`  demotions (context, not findings): ${demotions.length}`);
@@ -451,6 +466,14 @@ export function formatWatchReport(report) {
       lines.push(`    ~ ${finding.name} (${finding.bytes} bytes)`);
     }
   }
+  // A media finding is a slot, not a page edit: it names the page, the slot key
+  // the probe map uses, and the media host's liveness class.
+  if (report.media && report.media.findings.length > 0) {
+    lines.push('  media findings — served media slots whose upstream media no longer resolves:');
+    for (const finding of report.media.findings) {
+      lines.push(`    ~ ${finding.path} · ${finding.slot} (${finding.liveness})`);
+    }
+  }
   const moved = reportMoved(report);
   if (report.since) {
     lines.push(moved ? '✗ Drift — see findings above.' : '✓ In sync with the Capture list and the baseline.');
@@ -463,10 +486,11 @@ export function formatWatchReport(report) {
 /**
  * The command's exit code: 1 when the index drifted (ticket 01), the baseline
  * moved (ticket 02), the served prose no longer matches live (ticket 03), the
- * served chrome no longer matches live beyond the allow-list (ticket 04), or a
- * shared asset's bytes moved (ticket 05), 0 otherwise. An operational failure
- * (2) is the driver's, not the report's — an incomplete measurement must never
- * masquerade as a clean one.
+ * served chrome no longer matches live beyond the allow-list (ticket 04), a
+ * shared asset's bytes moved (ticket 05), or a served media slot's media no
+ * longer resolves (ticket 06), 0 otherwise. An operational failure (2) is the
+ * driver's, not the report's — an incomplete measurement must never masquerade
+ * as a clean one.
  * @param {WatchReport} report
  * @returns {0|1}
  */

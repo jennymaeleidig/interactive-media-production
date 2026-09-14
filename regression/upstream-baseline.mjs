@@ -23,6 +23,7 @@ import { buildWatchReport } from './upstream-watch.mjs';
 import { copyReport } from './upstream-copy.mjs';
 import { chromeReport } from './upstream-chrome.mjs';
 import { assetReport, byAssetUrl } from './upstream-assets.mjs';
+import { mediaReport } from './upstream-media.mjs';
 
 /**
  * The schema of the committed baseline. Later tickets add per-row projection
@@ -58,8 +59,9 @@ export const BASELINE_VERSION = 1;
 
 /**
  * Ticket 01's report inputs plus ticket 02's baseline state, ticket 03's copy
- * pages, ticket 04's chrome pages and ticket 05's shared asset bytes.
- * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[], assets?: import('./upstream-assets.mjs').FetchedAsset[]}} RunInputs
+ * pages, ticket 04's chrome pages, ticket 05's shared asset bytes and ticket
+ * 06's media pages and probe results.
+ * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[], assets?: import('./upstream-assets.mjs').FetchedAsset[], mediaPages?: import('./upstream-media.mjs').MediaPage[], mediaProbes?: Record<string, import('./upstream-media.mjs').MediaProbe>}} RunInputs
  */
 
 /**
@@ -256,18 +258,24 @@ export function diffBaseline(previous, current) {
  * One run of the watch, as a value. Builds ticket 01's index report, compares
  * the copy projection live versus served when the edge hands it `copyPages`
  * (ticket 03) and the chrome projection when it hands it `chromePages` (ticket
- * 04), derives this run's baseline — carrying the copy digests — and diffs it
- * against the previous one. `write` is true only for the silent first run (no
- * previous baseline) or an explicit accept; a plain run with a previous
- * baseline never moves the reference point.
+ * 04), classifies every media slot when the edge hands it `mediaPages` and
+ * `mediaProbes` (ticket 06), derives this run's baseline — carrying the copy
+ * digests — and diffs it against the previous one. `write` is true only for the
+ * silent first run (no previous baseline) or an explicit accept; a plain run
+ * with a previous baseline never moves the reference point.
  * @param {RunInputs} inputs
  * @returns {WatchRun}
  */
 export function runWatch(inputs) {
-  const { previous = null, accept = false, verified, copyPages, chromePages, assets, ...rest } = inputs;
+  const { previous = null, accept = false, verified, copyPages, chromePages, assets, mediaPages, mediaProbes, ...rest } = inputs;
   const report = buildWatchReport(rest);
   const copy = copyPages === undefined ? null : copyReport(copyPages);
   const chrome = chromePages === undefined ? null : chromeReport(chromePages);
+  // Media liveness is an absolute measurement, not a comparison against the
+  // previous baseline: a dead media is dead on the silent first run too, so its
+  // findings are never suppressed. Unlike the restyle tier it needs no prior
+  // state, and unlike a copy or chrome digest it cannot be a false positive.
+  const media = mediaPages === undefined ? null : mediaReport(mediaPages, mediaProbes ?? {});
   // The restyle tier is a comparison against the previous baseline's asset set;
   // the silent first run has none, so its findings are suppressed below but the
   // run's own asset set is still recorded.
@@ -313,6 +321,7 @@ export function runWatch(inputs) {
       since,
       ...(copy === null ? {} : { copy: { compared: copy.compared, differed: copy.differed, findings: copy.findings } }),
       ...(chromeTier === null ? {} : { chrome: chromeTier }),
+      ...(media === null ? {} : { media }),
     },
     baseline,
     write,

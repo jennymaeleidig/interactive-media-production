@@ -264,7 +264,7 @@ like any other asset.
   (`test/cli.test.ts`), and the upstream watch's pure modules
   (`test/upstream-watch.test.ts`, `test/upstream-baseline.test.ts`,
   `test/upstream-copy.test.ts`, `test/upstream-chrome.test.ts`,
-  `test/upstream-assets.test.ts`). They are the
+  `test/upstream-assets.test.ts`, `test/upstream-media.test.ts`). They are the
   one exception to "no tests against
   internals": apart from them, no test targets incidental pipeline internals or
   module structure, and a test that breaks in a behavior-preserving refactor is
@@ -336,12 +336,15 @@ dev/build for everyone:
   git history only. **One deliberate exception**: the **upstream watch**
   (`npm run upstream`, `regression/upstream-watch.mjs`,
   `regression/upstream-baseline.mjs`, `regression/upstream-copy.mjs`,
-  `regression/upstream-chrome.mjs` and `regression/upstream-assets.mjs` plus
+  `regression/upstream-chrome.mjs`, `regression/upstream-assets.mjs` and
+  `regression/upstream-media.mjs` plus
   their thin network edge) is a hand-run
   tool that reads upstream's sitemap and homepage, probes every watched URL,
   compares each served page's **copy projection** and **chrome projection**
   (the latter against the strip table's allow-list) to the live page's, digests
-  the site's shared stylesheet and script set for the **restyle signal**, and
+  the site's shared stylesheet and script set for the **restyle signal**, asks
+  every **media slot** the served tree carries whether its media is alive (the
+  **media liveness** check), and
   reports index drift and what has moved since its last run; it never writes
   `served/` or any tree record — its only writes are its committed baseline
   (`regression/upstream-baseline.json`) and `--out` evidence, and it refuses a
@@ -349,7 +352,8 @@ dev/build for everyone:
   the "should the snapshot move?" decision can be made on evidence. Its own doc
   lives in the ticket and the module header; see `CONTEXT.md` for **upstream
   watch**, **watched universe**, **upstream baseline**, **silent baseline**,
-  **copy projection**, **chrome projection**, **restyle signal**, and
+  **copy projection**, **chrome projection**, **restyle signal**, **media
+  slot**, **media liveness**, and
   **demotion**.
 - **No ADR record**: decisions live inline — in `CONTEXT.md` terms, in this
   file, and in the comments beside the code they constrain. Don't cite a

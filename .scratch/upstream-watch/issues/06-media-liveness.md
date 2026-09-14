@@ -1,13 +1,14 @@
 # 06 — Media liveness
 
-Status: open
+Status: claimed
 Blocked by: 04, 04b
 
 ## What to build
 
 The one class of rot a page edit cannot explain. The media allow-list is the whole
 of the exception to the tree's zero-outbound rule, so the frames a served page
-carries still reach the network at runtime — 91 frames across 74 pages. When a
+carries still reach the network at runtime — the served tree (the 2026-09-12
+capture) holds 217 allow-listed slots across 162 pages. When a
 media dies upstream, the served page shows a dead player and nobody edited
 anything.
 

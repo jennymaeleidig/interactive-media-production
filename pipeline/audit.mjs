@@ -135,6 +135,7 @@ export function srcdocScripts(html) {
 // The attributes a browser fetches on load, by element (ticket 20). Everything
 // here is a *fetch*; an `<a href>` or a `<link rel=canonical>` is navigation or
 // metadata and is not on the list.
+/** The fetch-position attribute(s) each element asks from. @type {Record<string, string[]>} */
 const FETCHERS = {
   iframe: ['src'],
   frame: ['src'],
@@ -272,6 +273,7 @@ export function scriptCensus(html) {
  * @returns {Record<string, number>}
  */
 export function audit(html) {
+  /** @type {Record<string, number>} */
   const findings = {};
   for (const [name, re] of Object.entries(AUDIT_RES)) {
     findings[name] = (html.match(new RegExp(re.source, re.flags.replace('g', '') + 'g')) || []).length;
