@@ -23,6 +23,7 @@
     "pipeline/injected-source.mjs",
     "regression/upstream-watch.mjs",
     "regression/upstream-baseline.mjs",
+    "regression/upstream-accept.mjs",
     "regression/upstream-copy.mjs",
     "regression/upstream-chrome.mjs",
     "regression/upstream-assets.mjs",

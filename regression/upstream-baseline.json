@@ -27,6 +27,33 @@
       "bytes": 279929
     }
   ],
+  "accepted": [
+    {
+      "tier": "copy",
+      "path": "/careers",
+      "fingerprint": "c8aac51cdc60762a"
+    },
+    {
+      "tier": "chrome",
+      "path": "/faq",
+      "fingerprint": "ff07ed92007a3fda"
+    },
+    {
+      "tier": "chrome",
+      "path": "/press-center",
+      "fingerprint": "8e9824c31d766f2a"
+    },
+    {
+      "tier": "chrome",
+      "path": "/resources",
+      "fingerprint": "91d0da5be0bfb5e6"
+    },
+    {
+      "tier": "chrome",
+      "path": "/upcoming-events",
+      "fingerprint": "b92a2d6a393b25b8"
+    }
+  ],
   "rows": [
     {
       "path": "/",

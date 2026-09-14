@@ -24,6 +24,7 @@ import { copyReport } from './upstream-copy.mjs';
 import { chromeReport } from './upstream-chrome.mjs';
 import { assetReport, byAssetUrl } from './upstream-assets.mjs';
 import { mediaReport } from './upstream-media.mjs';
+import { acceptanceEntries, byAcceptance, mediaSlotIdentity, partitionAccepted } from './upstream-accept.mjs';
 
 /**
  * The schema of the committed baseline. Later tickets add per-row projection
@@ -54,6 +55,7 @@ export const BASELINE_VERSION = 1;
  * @property {number} version
  * @property {string} verified  the **verified-in-sync date**, `YYYY-MM-DD`
  * @property {import('./upstream-assets.mjs').AssetRecord[]} [assets]
+ * @property {import('./upstream-accept.mjs').AcceptanceEntry[]} [accepted]  ticket 08's known-drift set
  * @property {BaselineRow[]} rows
  */
 
@@ -61,7 +63,7 @@ export const BASELINE_VERSION = 1;
  * Ticket 01's report inputs plus ticket 02's baseline state, ticket 03's copy
  * pages, ticket 04's chrome pages, ticket 05's shared asset bytes and ticket
  * 06's media pages and probe results.
- * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[], assets?: import('./upstream-assets.mjs').FetchedAsset[], mediaPages?: import('./upstream-media.mjs').MediaPage[], mediaProbes?: Record<string, import('./upstream-media.mjs').MediaProbe>}} RunInputs
+ * @typedef {import('./upstream-watch.mjs').ReportInputs & {previous?: Baseline|null, accept?: boolean, acceptDrift?: boolean, verified: string, copyPages?: import('./upstream-copy.mjs').CopyPage[], chromePages?: import('./upstream-copy.mjs').CopyPage[], assets?: import('./upstream-assets.mjs').FetchedAsset[], mediaPages?: import('./upstream-media.mjs').MediaPage[], mediaProbes?: Record<string, import('./upstream-media.mjs').MediaProbe>}} RunInputs
  */
 
 /**
@@ -129,6 +131,36 @@ function readAssets(value) {
 }
 
 /**
+ * Read ticket 08's accepted-drift section. Each entry is checked so a malformed
+ * baseline is an error (exit 2), never a silently empty accepted set that would
+ * re-alarm every recorded difference.
+ * @param {unknown} value
+ * @returns {import('./upstream-accept.mjs').AcceptanceEntry[]}
+ */
+function readAccepted(value) {
+  if (!Array.isArray(value)) return bad('accepted is not an array');
+  return value.map((entry, index) => {
+    if (entry === null || typeof entry !== 'object') return bad(`accepted entry ${index} is not an object`);
+    const { tier, path: p, url, slot, fingerprint } = /** @type {Record<string, unknown>} */ (entry);
+    if (typeof fingerprint !== 'string') return bad(`accepted entry ${index} has no fingerprint`);
+    if (tier === 'copy' || tier === 'chrome') {
+      if (typeof p !== 'string') return bad(`accepted entry ${index} has no path`);
+      return { tier, path: p, fingerprint };
+    }
+    if (tier === 'restyle') {
+      if (typeof url !== 'string') return bad(`accepted entry ${index} has no url`);
+      return { tier, url, fingerprint };
+    }
+    if (tier === 'media') {
+      if (typeof p !== 'string') return bad(`accepted entry ${index} has no path`);
+      if (typeof slot !== 'string') return bad(`accepted entry ${index} has no slot`);
+      return { tier, path: p, slot, fingerprint };
+    }
+    return bad(`accepted entry ${index} has an unknown tier`);
+  });
+}
+
+/**
  * Parse a committed baseline from its text. Everything wrong with the text is
  * an error the edge turns into exit 2: a malformed or future-schema baseline
  * must never be read as an empty one, which would report the whole universe as
@@ -147,13 +179,14 @@ export function readBaseline(text) {
     return bad('not JSON');
   }
   if (parsed === null || typeof parsed !== 'object') return bad('not an object');
-  const { version, verified, rows, assets } = /** @type {Record<string, unknown>} */ (parsed);
+  const { version, verified, rows, assets, accepted } = /** @type {Record<string, unknown>} */ (parsed);
   if (version !== BASELINE_VERSION) return bad(`unknown version ${String(version)}`);
   if (typeof verified !== 'string' || !VERIFIED_DATE_PATTERN.test(verified)) return bad('missing or malformed verified date');
   if (!Array.isArray(rows)) return bad('rows is not an array');
   /** @type {Baseline} */
   const baseline = { version, verified, rows: rows.map(readRow) };
   if (assets !== undefined) baseline.assets = readAssets(assets);
+  if (accepted !== undefined) baseline.accepted = readAccepted(accepted);
   return baseline;
 }
 
@@ -165,9 +198,10 @@ export function readBaseline(text) {
  */
 export function serializeBaseline(baseline) {
   const rows = [...baseline.rows].sort(byPath);
-  /** @type {{version: number, verified: string, assets?: import('./upstream-assets.mjs').AssetRecord[], rows?: BaselineRow[]}} */
+  /** @type {{version: number, verified: string, assets?: import('./upstream-assets.mjs').AssetRecord[], accepted?: import('./upstream-accept.mjs').AcceptanceEntry[], rows?: BaselineRow[]}} */
   const out = { version: baseline.version, verified: baseline.verified };
   if (baseline.assets !== undefined) out.assets = [...baseline.assets].sort(byAssetUrl);
+  if (baseline.accepted !== undefined && baseline.accepted.length > 0) out.accepted = [...baseline.accepted].sort(byAcceptance);
   out.rows = rows;
   return `${JSON.stringify(out, null, 2)}\n`;
 }
@@ -181,12 +215,13 @@ export function serializeBaseline(baseline) {
  * a baseline recorded before ticket 03 still reads.
  * @param {import('./upstream-watch.mjs').WatchReport} report
  * @param {string} verified
- * @param {{copyDigests?: Record<string, string>, chromeDigests?: Record<string, string>, assets?: import('./upstream-assets.mjs').AssetRecord[]}} [digests]
- *   the run's projection digests and shared asset set; bundled so the two
- *   same-shaped digest maps cannot be transposed at the call site
+ * @param {{copyDigests?: Record<string, string>, chromeDigests?: Record<string, string>, assets?: import('./upstream-assets.mjs').AssetRecord[], accepted?: import('./upstream-accept.mjs').AcceptanceEntry[]}} [digests]
+ *   the run's projection digests, shared asset set and accepted-drift set;
+ *   bundled so the two same-shaped digest maps cannot be transposed at the
+ *   call site
  * @returns {Baseline}
  */
-export function baselineFromReport(report, verified, { copyDigests = {}, chromeDigests = {}, assets } = {}) {
+export function baselineFromReport(report, verified, { copyDigests = {}, chromeDigests = {}, assets, accepted } = {}) {
   const rows = report.inventory
     .map((row) => {
       const carried = /** @type {BaselineRow} */ ({
@@ -205,6 +240,7 @@ export function baselineFromReport(report, verified, { copyDigests = {}, chromeD
   /** @type {Baseline} */
   const baseline = { version: BASELINE_VERSION, verified, rows };
   if (assets !== undefined) baseline.assets = [...assets].sort(byAssetUrl);
+  if (accepted !== undefined && accepted.length > 0) baseline.accepted = [...accepted].sort(byAcceptance);
   return baseline;
 }
 
@@ -255,6 +291,21 @@ export function diffBaseline(previous, current) {
 }
 
 /**
+ * The live fingerprint a difference is matched by. Every current difference
+ * carries one — a copy or chrome finding has a digest for its page, a restyle
+ * finding has a record, media has its liveness class — so a missing one is a
+ * broken measurement. Refusing it keeps an empty string from ever being
+ * recorded, which would match a later missing digest and go quiet.
+ * @param {string|undefined} fingerprint
+ * @param {string} what
+ * @returns {string}
+ */
+function liveFingerprint(fingerprint, what) {
+  if (fingerprint === undefined) throw new Error(`no live fingerprint for ${what}`);
+  return fingerprint;
+}
+
+/**
  * One run of the watch, as a value. Builds ticket 01's index report, compares
  * the copy projection live versus served when the edge hands it `copyPages`
  * (ticket 03) and the chrome projection when it hands it `chromePages` (ticket
@@ -264,11 +315,16 @@ export function diffBaseline(previous, current) {
  * one. `write` is true only for the
  * silent first run (no previous baseline) or an explicit accept; a plain run
  * with a previous baseline never moves the reference point.
+ * `--accept-drift` records the current run's copy, chrome, restyle and media
+ * differences as known (ticket 08), so a later plain run reports them as
+ * accepted rather than as findings and exits 0; a difference whose live side
+ * moves again no longer matches and re-alarms. The accepted set is committed in
+ * the baseline and only `--accept-drift` rewrites it.
  * @param {RunInputs} inputs
  * @returns {WatchRun}
  */
 export function runWatch(inputs) {
-  const { previous = null, accept = false, verified, copyPages, chromePages, assets, mediaPages, mediaProbes, ...rest } = inputs;
+  const { previous = null, accept = false, acceptDrift = false, verified, copyPages, chromePages, assets, mediaPages, mediaProbes, ...rest } = inputs;
   const report = buildWatchReport(rest);
   const copy = copyPages === undefined ? null : copyReport(copyPages);
   const chrome = chromePages === undefined ? null : chromeReport(chromePages);
@@ -281,14 +337,62 @@ export function runWatch(inputs) {
   // the silent first run has none, so its findings are suppressed below but the
   // run's own asset set is still recorded.
   const restyle = assets === undefined ? null : assetReport(assets, previous?.assets ?? []);
+
+  // The current run's differences, each carrying the live fingerprint an
+  // accepted entry must match. Index added/removed is deliberately absent:
+  // --accept-drift records content drift, not the page set.
+  /** @type {import('./upstream-accept.mjs').AcceptanceEntry[]} */
+  const differences = [];
+  for (const finding of copy?.findings ?? []) differences.push({ tier: 'copy', path: finding.path, fingerprint: liveFingerprint(copy?.digests[finding.path], `copy ${finding.path}`) });
+  for (const finding of chrome?.findings ?? []) differences.push({ tier: 'chrome', path: finding.path, fingerprint: liveFingerprint(chrome?.digests[finding.path], `chrome ${finding.path}`) });
+  if (previous !== null) {
+    for (const finding of restyle?.findings ?? []) {
+      const record = restyle?.records.find((r) => r.url === finding.url);
+      differences.push({ tier: 'restyle', url: finding.url, fingerprint: liveFingerprint(record?.digest, `restyle ${finding.url}`) });
+    }
+  }
+  for (const finding of media?.findings ?? []) differences.push({ tier: 'media', path: finding.path, slot: finding.slot, fingerprint: finding.liveness });
+
+  // On --accept-drift every current difference is recorded, so none is a
+  // finding on the run that accepts it; a plain run matches against the
+  // committed set. The set is replaced, never merged.
+  const partitioned = acceptDrift
+    ? { accepted: differences, active: /** @type {import('./upstream-accept.mjs').AcceptanceEntry[]} */ ([]) }
+    : partitionAccepted(differences, previous?.accepted ?? []);
+  /** @type {Set<string>} */
+  const copyActive = new Set();
+  /** @type {Set<string>} */
+  const chromeActive = new Set();
+  /** @type {Set<string>} */
+  const restyleActive = new Set();
+  /** @type {Set<string>} */
+  const mediaActive = new Set();
+  for (const difference of partitioned.active) {
+    if (difference.tier === 'copy') copyActive.add(difference.path);
+    else if (difference.tier === 'chrome') chromeActive.add(difference.path);
+    else if (difference.tier === 'restyle') restyleActive.add(difference.url);
+    else if (difference.tier === 'media') mediaActive.add(mediaSlotIdentity(difference.path, difference.slot));
+  }
+  const copyFindings = (copy?.findings ?? []).filter((f) => copyActive.has(f.path));
+  const chromeFindings = (chrome?.findings ?? []).filter((f) => chromeActive.has(f.path));
+  const restyleFindings = previous === null || restyle === null ? [] : restyle.findings.filter((f) => restyleActive.has(f.url));
+  const mediaFindings = (media?.findings ?? []).filter((f) => mediaActive.has(mediaSlotIdentity(f.path, f.slot)));
+
+  // --accept-drift advances the moving reference exactly as --accept does,
+  // except the shared asset set: the restyle finding *is* the comparison
+  // against that set, so advancing it would absorb the difference and stop it
+  // being shown as accepted. The accepted entry carries the new digest, and a
+  // plain --accept is what advances the asset reference.
+  const assetsForBaseline = acceptDrift && previous?.assets !== undefined ? previous.assets : restyle?.records;
   const baseline = baselineFromReport(report, verified, {
     copyDigests: copy?.digests,
     chromeDigests: chrome?.digests,
-    assets: restyle?.records,
+    assets: assetsForBaseline,
+    accepted: acceptDrift ? acceptanceEntries(differences) : previous?.accepted,
   });
   /** @type {import('./upstream-watch.mjs').BaselineDelta} */
   const since = previous === null ? { from: null, added: [], removed: [], changed: [] } : diffBaseline(previous, baseline);
-  const write = previous === null || accept;
+  const write = previous === null || accept || acceptDrift;
   // The report states the date the committed baseline carries *after* this run:
   // the new date when this run records one, the previous baseline's when a plain
   // run leaves the reference point alone — never today's date for a run that
@@ -302,27 +406,44 @@ export function runWatch(inputs) {
       ? null
       : {
           compared: chrome?.compared ?? 0,
-          differed: chrome?.differed ?? 0,
-          findings: chrome?.findings ?? [],
+          differed: chromeFindings.length,
+          findings: chromeFindings,
           hits: chrome?.hits ?? [],
           ...(restyle === null
             ? {}
             : {
                 restyle: {
                   compared: restyle.compared,
-                  differed: previous === null ? 0 : restyle.differed,
-                  findings: previous === null ? [] : restyle.findings,
+                  differed: restyleFindings.length,
+                  findings: restyleFindings,
                 },
               }),
         };
+
+  // The pages a future re-capture would need: every page carrying any drift
+  // this run still reports — a non-accepted per-page finding, the index tier's
+  // added/removed set, or a row that moved against the baseline. Restyle
+  // findings name an asset, not a page, so they contribute no page.
+  const candidates = new Set();
+  for (const difference of partitioned.active) {
+    if (difference.tier !== 'restyle') candidates.add(difference.path);
+  }
+  for (const p of report.findings.added) candidates.add(p);
+  for (const removed of report.findings.removed) candidates.add(removed.path);
+  for (const p of since.added) candidates.add(p);
+  for (const p of since.removed) candidates.add(p);
+  for (const change of since.changed) candidates.add(change.path);
+
   return {
     report: {
       ...report,
       verified: recorded,
       since,
-      ...(copy === null ? {} : { copy: { compared: copy.compared, differed: copy.differed, findings: copy.findings } }),
+      refreshCandidates: [...candidates].sort(),
+      ...(copy === null ? {} : { copy: { compared: copy.compared, differed: copyFindings.length, findings: copyFindings } }),
       ...(chromeTier === null ? {} : { chrome: chromeTier }),
-      ...(media === null ? {} : { media }),
+      ...(media === null ? {} : { media: { compared: media.compared, differed: mediaFindings.length, findings: mediaFindings, liveness: media.liveness } }),
+      ...(partitioned.accepted.length === 0 ? {} : { accepted: { count: partitioned.accepted.length, entries: partitioned.accepted } }),
     },
     baseline,
     write,

@@ -14,11 +14,13 @@
 // target inside `served/`, so a check can never become a second, unlogged editor
 // of the artifact.
 //
-// Usage: npm run upstream [-- --accept] [--json] [--out <path>]
+// Usage: npm run upstream [-- --accept] [--accept-drift] [--json] [--out <path>]
 //
 // The baseline is the moving reference point (regression/upstream-baseline.json):
 // the first run records it silently, every later run diffs against it, and only
-// `--accept` rewrites it.
+// `--accept` rewrites it. `--accept-drift` also records the current run's copy,
+// chrome, restyle and media differences as known (ticket 08), so a plain run
+// reports them as accepted and exits 0 until their live side moves again.
 //
 // Exit codes: 0 no findings, 1 findings, 2 operational failure (an incomplete
 // measurement — a failed fetch, an unparsable sitemap, a failed probe, an
@@ -122,6 +124,7 @@ async function main() {
   const arg = makeArg(process.argv.slice(2));
   const asJson = process.argv.includes('--json');
   const accept = process.argv.includes('--accept');
+  const acceptDrift = process.argv.includes('--accept-drift');
   const out = arg('--out');
   const { targets, outPath } = writeTargets(out);
   const verified = new Date().toISOString().slice(0, 10);
@@ -263,7 +266,7 @@ async function main() {
 
   let run;
   try {
-    run = runWatch({ ...inputs, probes, previous, accept, verified, copyPages, chromePages: copyPages, assets, mediaPages, mediaProbes });
+    run = runWatch({ ...inputs, probes, previous, accept, acceptDrift, verified, copyPages, chromePages: copyPages, assets, mediaPages, mediaProbes });
   } catch (err) {
     return fail(`upstream watch could not build the report: ${message(err)}`);
   }

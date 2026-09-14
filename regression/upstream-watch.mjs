@@ -120,6 +120,16 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  */
 
 /**
+ * Ticket 08's known-drift view as the report carries it: the differences a
+ * recorded acceptance entry vouches for, still reported as a count and a
+ * page/tier but not as findings, so a steady-state run can exit 0 without
+ * hiding what it accepted.
+ * @typedef {Object} AcceptedTier
+ * @property {number} count
+ * @property {import('./upstream-accept.mjs').AcceptanceEntry[]} entries
+ */
+
+/**
  * The comparison a run produces. `inventory` is the whole measurement;
  * `findings` are the drift against the frozen Capture list, which ticket 01
  * alone can see. Ticket 02's `since` is the drift against the moving baseline;
@@ -139,6 +149,8 @@ export const LIVENESS_CLASSES = ['200', '3xx', '401', '4xx', '5xx'];
  * @property {CopyTier} [copy]  the served-versus-live prose comparison; set by `runWatch`
  * @property {ChromeTier & {restyle?: import('./upstream-assets.mjs').RestyleTier}} [chrome]  the served-versus-live chrome comparison and, nested, the shared-asset restyle comparison; set by `runWatch`
  * @property {MediaTier} [media]  the served media slots whose upstream media is not alive; set by `runWatch`
+ * @property {AcceptedTier} [accepted]  the differences a recorded acceptance entry vouches for (ticket 08)
+ * @property {string[]} [refreshCandidates]  the pages a future re-capture would need (ticket 08)
  */
 
 /**
@@ -410,6 +422,19 @@ export function formatWatchReport(report) {
   if (report.media) {
     const { compared, differed } = report.media;
     lines.push(`  media: ${compared} slot(s) compared · ${differed} differed`);
+  }
+  // Accepted drift is deliberately its own block: it is shown so it is never
+  // silently dropped, but it is not a finding and the closing line stays clean.
+  if (report.accepted && report.accepted.count > 0) {
+    lines.push(`  accepted (known drift, not findings): ${report.accepted.count}`);
+    for (const entry of report.accepted.entries) {
+      const where = entry.tier === 'restyle' ? entry.url : entry.tier === 'media' ? `${entry.path} · ${entry.slot}` : entry.path;
+      lines.push(`    · ${entry.tier}: ${where}`);
+    }
+  }
+  if (report.refreshCandidates && report.refreshCandidates.length > 0) {
+    lines.push('  refresh candidates — pages a re-capture would need:');
+    for (const p of report.refreshCandidates) lines.push(`    · ${p}`);
   }
   if (demotions.length > 0) {
     lines.push(`  demotions (context, not findings): ${demotions.length}`);
