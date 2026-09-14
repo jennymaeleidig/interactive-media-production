@@ -145,3 +145,16 @@ not changed: the media census rides the watched universe's served pages rather
 than a tree walk (identical today; noted in the CLI), and the standards axis's
 per-file judgement calls (duplicated fan-out guards, sibling digest wrappers)
 are left as the repo's existing shape.
+
+**Post-review live validation caught a real media bug.** That review's live run
+(2026-09-14) reported 125 of 217 slots `gone` — every Wistia slot — while the
+tier's own tests stayed green, because both the parser and its fixture assumed a
+body shape Wistia never sends (`{status: 'ready', assets: [...]}` at the top
+level). The real endpoint wraps the media under `media` and marks a ready video
+`status: 2` with a non-empty `assets` array, and answers a deleted/unknown id
+with HTTP 200 `{"error": true}` and no `media`. `wistiaReady` now reads that
+contract and the test fixture is the real shape plus the deleted-id body; a
+re-run measured `media: 217 compared · 0 differed`. The lesson is recorded here
+because it is the tier's: a synthesized all-alive fixture can encode an invented
+contract, so the hand-run live pass — not the offline tests — is what validated
+this check.

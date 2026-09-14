@@ -32,9 +32,13 @@ const NOCOOKIE = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?si=xyz';
  * answered, plus the body a Wistia metadata read needs. */
 type Probe = { status: number; body?: string };
 
-/** The body a live Wistia media's metadata endpoint answers with: a ready
- * status and at least one delivery asset. */
-const ready = (assets: unknown[] = [{ type: 'original' }]) => JSON.stringify({ status: 'ready', assets });
+/** The body a live Wistia media's metadata endpoint answers with: the endpoint
+ * wraps the media, and `status: 2` plus a non-empty `assets` array is ready.
+ * The shape is taken from a real 2026-09-13 read, not invented. */
+const ready = (assets: unknown[] = [{ type: 'original' }]) => JSON.stringify({ media: { status: 2, assets }, options: {} });
+
+/** The body Wistia answers a deleted/unknown id with: HTTP 200 and no `media`. */
+const deleted = () => JSON.stringify({ error: true, iframe: true });
 
 /** One run's fetched inputs: the universe is the union of these three sources. */
 function run(sitemap: string[], capture: string[], probes: Record<string, { status: number; location?: string }>, homepage: string[] = []) {
@@ -138,11 +142,16 @@ describe('mediaLiveness — one probe result', () => {
   });
 
   it('reads a Wistia media that is not ready as gone', () => {
-    expect(mediaLiveness('wistia', 200, JSON.stringify({ status: 'processing', assets: [{ type: 'original' }] }))).toBe('gone');
+    expect(mediaLiveness('wistia', 200, JSON.stringify({ media: { status: 1, assets: [{ type: 'original' }] } }))).toBe('gone');
   });
 
   it('reads a ready Wistia media with no delivery asset as gone', () => {
-    expect(mediaLiveness('wistia', 200, JSON.stringify({ status: 'ready', assets: [] }))).toBe('gone');
+    expect(mediaLiveness('wistia', 200, JSON.stringify({ media: { status: 2, assets: [] } }))).toBe('gone');
+  });
+
+  it('reads the 200 a deleted Wistia id answers with as gone, not an outage', () => {
+    // Real Wistia: an unknown id is HTTP 200 `{"error": true}`, not a 404.
+    expect(mediaLiveness('wistia', 200, deleted())).toBe('gone');
   });
 
   it('reads an unparsable Wistia body as gone, matching the retired probe', () => {

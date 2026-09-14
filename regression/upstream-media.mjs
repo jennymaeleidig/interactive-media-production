@@ -155,8 +155,11 @@ export function livenessUrl(slot) {
 }
 
 /**
- * Whether a Wistia metadata body describes a playable media: `status: ready`
- * with at least one delivery asset. An unparseable body is not ready.
+ * Whether a Wistia metadata body describes a playable media. The endpoint
+ * wraps everything under `media`; a ready media is `status: 2` with at least
+ * one delivery asset. A deleted/unknown id answers HTTP 200 with
+ * `{"error": true}` and no `media`, which is gone; an unparsable body is not
+ * ready.
  * @param {string|undefined} body
  * @returns {boolean}
  */
@@ -165,7 +168,9 @@ function wistiaReady(body) {
   try {
     const parsed = JSON.parse(body);
     if (parsed === null || typeof parsed !== 'object') return false;
-    return parsed.status === 'ready' && Array.isArray(parsed.assets) && parsed.assets.length > 0;
+    const media = parsed.media;
+    if (media === null || typeof media !== 'object') return false;
+    return media.status === 2 && Array.isArray(media.assets) && media.assets.length > 0;
   } catch {
     return false;
   }
