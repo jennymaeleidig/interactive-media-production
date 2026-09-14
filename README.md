@@ -29,10 +29,15 @@ npm run routes     # full-scale serving check over HTTP (~10 s): every live
 npm run upstream   # the upstream watch: is live flocksafety.com still matching
                    #   the snapshot? hand-run; reads upstream, writes only the
                    #   committed baseline (and --out evidence), never served/
+
+node pipeline/publish-artifact.mjs   # materialize the Publish artifact into
+                   #   .tmp/publish (gitignored) — what the workflow uploads
 ```
 
-There is no pipeline step and no build input: `served/` — 660 MB, 4,466 files,
+There is no rebuild step and no build input: `served/` — 660 MB, 4,466 files,
 1,181 pages — is the artifact, committed like the source that serves it.
+Publishing copies it and never re-derives it; see
+[Publishing](#publishing).
 
 ## How it works
 
@@ -127,19 +132,52 @@ not as findings):
 
 ## Publishing
 
-The tree is static HTML plus hashed files, so serving it needs no export step —
-but two constraints come from its own shape:
+**The site is live at <https://flocksafety.cam/>**, published from this
+repository by `.github/workflows/publish.yml`. A push to `main` — or dispatching
+the workflow by hand — runs the repository's own gate (`npm ci`, `npm run
+typecheck`, `npm test`, `npm run build`), materializes the **Publish artifact**
+with `node pipeline/publish-artifact.mjs --out .tmp/publish`, asserts it carries
+no symlink or hard link, uploads it, and deploys it to GitHub Pages under the
+`pages` concurrency group. A failing check stops before materialization, so the
+live site is never the debugging surface. It is the repository's only CI and
+needs no stored secret.
+
+The host reaches a **URL root** rather than a project subpath: Pages takes GitHub
+Actions as its source, `flocksafety.cam` is attached as the custom domain (apex
+`A`/`AAAA` plus a `www` CNAME pointed at GitHub), and Enforce HTTPS is on, so
+`http://` and `www` both 301 to `https://flocksafety.cam/`. The old project URLs
+(`https://jennymaeleidig.github.io/interactive-media-production/…`) 301 there
+too, with the path preserved.
+
+Why the published directory is not just `served/`:
 
 - **It must live at a site root**, not under a path. Every reference is
   root-absolute (`/assets/<sha16>.<ext>`, `/products/flock-os`), so a
-  project-page URL (`https://<owner>.github.io/<repo>/`) 404s every asset
-  unless a publish step rewrites the prefix.
+  project-page URL (`https://<owner>.github.io/<repo>/`) 404s every asset. A
+  publish-time prefix rewrite would fix that and break the guarantee that
+  published bytes equal served bytes, so the site moves to a root instead.
+- **`/<route>` must resolve.** The tree holds `foo.html`, and the host serves
+  `/<route>` from `/<route>.html` by an appending rule nobody documents. The
+  artifact therefore also carries a **Route copy** of every non-root page, so
+  correctness never rests on that rule.
 - **Size is the binding limit.** GitHub Pages caps a published site at 1 GB and
   the tree's HTML was 1.84 GB before its style and script bodies were deduped —
   the same stylesheets re-encoded on all 1,181 pages. Shipping each body once
   brought the tree to about **660 MB**, and 158 body files are in `assets.json`,
   so `npm run routes` verifies their bytes and content types like any other
-  asset.
+  asset. The artifact is **831 MB over 5,714 files**, about 17% under the cap,
+  and the materializer refuses to write one that would exceed it.
+
+**Measured against the host on 2026-09-14**, the first real deploy:
+
+- an extensionless route serves its `.html` twin with a **200 and no redirect** —
+  the appending rule does fire on the Actions build route, so the route copies'
+  value is the hop, never correctness;
+- a **Redirect page** answers 200 (GitHub Pages never answers 301 for one — the
+  recorded fidelity gap), and its source 301s once to the trailing slash first;
+- a dead path answers **404** with the tree's own `Not found` body;
+- a **form POST** answers **405**, so a form breaks visibly — which is what the
+  forms notice belongs in the tree's own bytes to disclose, and does not yet.
 
 An educational reproduction of this kind also needs a visible non-affiliation
 disclaimer on the published site (it is not yet in the tree), and the captured

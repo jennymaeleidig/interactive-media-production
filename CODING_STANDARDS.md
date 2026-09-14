@@ -324,6 +324,13 @@ dev/build for everyone:
   `served/build-summary.json`, `served/assets.json`, `served/redirects.json`,
   `served/forms-manifest.json`, plus the frozen page listing
   (`regression/capture-list-2026-09-12.txt`).
+- **Publishing copies, it never rebuilds.** `pipeline/publish-artifact.mjs`
+  materializes the **Publish artifact** into `.tmp/publish` (gitignored) by
+  reading `served/`; it only ever reads the tree and writes nothing back to the
+  repository. What ships is the tree's own bytes plus generated **Route copies**,
+  one redirect page per local `redirects.json` entry, and a `404.html`. The tree
+  stays the thing `npm run routes` measures and the thing the serving seam
+  serves.
 - **The snapshot is frozen**: the Recreation reproduces flocksafety.com as it
   stood on 2026-09-12 and does not follow the live site, so nothing in the repo
   — tool, test, or doc — reaches upstream. The retired refresh procedure
@@ -381,3 +388,9 @@ dev/build for everyone:
    read.
 5. Ticket status updated (`docs/agents/issue-tracker.md`), work committed to
    the current branch — staging only files the ticket touched.
+
+Steps 1–3 are also the **deploy gate**: `.github/workflows/publish.yml` runs them
+on every push to `main`, then materializes the **Publish artifact** and deploys
+it, so a failure stops before materialization and a broken tree cannot reach the
+live site. That workflow is the repository's only CI — a check added to this list
+does not join it on its own, so change both together.
