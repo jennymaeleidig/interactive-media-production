@@ -29,7 +29,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    // next-themes writes `class` and `color-scheme` onto <html> before React
+    // hydrates; the mismatch is expected, so it is suppressed here (the
+    // provider is pinned to light, and it never changes).
+    <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
         {/* Self-hosted faces, leaned on before first paint. */}

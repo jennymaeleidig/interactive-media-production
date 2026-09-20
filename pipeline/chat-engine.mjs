@@ -19,6 +19,7 @@
 
 import programJson from './chat-program.json';
 import { CHAT_BLOCKS } from './chat-blocks.mjs';
+import { CHAT_BLOCK_TYPES } from './chat-turn.mjs';
 import { Dialogue, InMemoryVariableStorage, runUntilCompleteEvents } from 'yarnspinner-typescript';
 
 // `chat-program.json` is deployment data, not source; its type — the runtime's
@@ -52,7 +53,35 @@ const STORAGE_KEY = 'flock-chat-state';
 let memory = null;
 
 /**
- * The persisted session, or null. A corrupt or partially-written blob is
+ * True when a persisted snapshot still matches this build: a block log whose
+ * every entry the renderer can dispatch, a vars object, and a node this
+ * program still declares. A snapshot written by an older build (a different
+ * block shape, a renamed node) is stale, and replaying it would paint fallback
+ * bubbles — so it is treated as absent and the visitor starts fresh.
+ * @param {unknown} parsed
+ * @returns {boolean}
+ */
+function isCurrentSnapshot(parsed) {
+  if (!parsed || typeof parsed !== 'object') return false;
+  const snapshot = /** @type {Record<string, unknown>} */ (parsed);
+  if (typeof snapshot.sessionId !== 'string' || typeof snapshot.complete !== 'boolean') return false;
+  if (!snapshot.vars || typeof snapshot.vars !== 'object') return false;
+  if (snapshot.node !== null && (typeof snapshot.node !== 'string' || !Object.hasOwn(program.nodes, snapshot.node))) return false;
+  return (
+    Array.isArray(snapshot.log) &&
+    snapshot.log.every(
+      (block) =>
+        block &&
+        typeof block === 'object' &&
+        typeof block.type === 'string' &&
+        CHAT_BLOCK_TYPES.includes(block.type) &&
+        (block.who === 'bot' || block.who === 'me'),
+    )
+  );
+}
+
+/**
+ * The persisted session, or null. A corrupt, partially-written or stale blob is
  * treated as absent rather than thrown at a visitor.
  * @returns {ChatSnapshot|null}
  */
@@ -61,9 +90,7 @@ function load() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object' && typeof parsed.sessionId === 'string' && Array.isArray(parsed.log)) {
-        return /** @type {ChatSnapshot} */ (parsed);
-      }
+      if (isCurrentSnapshot(parsed)) return /** @type {ChatSnapshot} */ (parsed);
     }
   } catch (error) {
     // storage unavailable or unreadable — the in-page copy is the fallback

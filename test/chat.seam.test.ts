@@ -251,4 +251,26 @@ describe('stale-client guards', () => {
     expect(res.turn.complete).toBe(true);
     expect(optionTexts(res)).toBeNull();
   });
+
+  it('ignores a session blob whose blocks an older build wrote', async () => {
+    const stale = {
+      sessionId: 'stale-old-build',
+      vars: {},
+      log: [{ who: 'bot', text: 'the pre-block shape' }],
+      node: 'Start',
+      complete: false,
+    };
+    window.localStorage.setItem('flock-chat-state', JSON.stringify(stale));
+    const res = await turn({ type: 'resume', sessionId: 'stale-old-build' });
+    // Treated as absent, so the visitor gets a fresh greeting rather than a
+    // replayed log of blocks no adapter can dispatch.
+    expect(res.turn.blocks).toEqual([text('bot', GREETING)]);
+  });
+
+  it('ignores a session blob naming a node this program no longer declares', async () => {
+    const stale = { sessionId: 'stale-old-node', vars: {}, log: [], node: 'RemovedNode', complete: false };
+    window.localStorage.setItem('flock-chat-state', JSON.stringify(stale));
+    const res = await turn({ type: 'resume', sessionId: 'stale-old-node' });
+    expect(res.turn.blocks).toEqual([text('bot', GREETING)]);
+  });
 });

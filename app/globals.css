@@ -115,6 +115,15 @@
     font-family: var(--font-sans);
   }
 
+  /* Nothing here drags an OS window. A host that makes the top strip a titlebar
+     (Electron, a VS Code-style webview) makes any child of that strip draggable
+     unless it opts out; the header opts out and cannot start a text-selection
+     drag either. */
+  header {
+    -webkit-app-region: no-drag;
+    user-select: none;
+  }
+
   :focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--color-focus-ring);

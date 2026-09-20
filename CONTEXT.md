@@ -5,7 +5,7 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 ## Terms
 
 - **The piece** — the chat and the page that carries it: one launcher, one conversation, one canvas with nothing else on it. _Avoid_: the site, the demo, the app.
-- **Chat surface** — the one full-viewport column the conversation plays in: the floating capsule header (wordmark, "scripted preview" line, the `?` info affordance) and the chip-row composer tray with its inert send glyph. No launcher, no panel, no text input. Its look is the vendored React shell's, styled from the lock ADR's tokens. _Avoid_: bubble, chat window, chatbot UI, launcher, widget.
+- **Chat surface** — the one full-viewport column the conversation plays in: the floating capsule header (wordmark and the `?` info affordance) and the chip-row composer tray with its inert send glyph. No launcher, no panel, no text input. Its look is the vendored React shell's, styled from the lock ADR's tokens. _Avoid_: bubble, chat window, chatbot UI, launcher, widget.
 - **Chat runtime** — the one file carrying the dialogue engine with the compiled program inlined, `/chat/runtime.js`. The React shell is part of the page's own bundle and reaches the engine only through the declared chat interface. They cannot ship out of step because they are one file. _Avoid_: bundle, main script.
 - **Dialogue program** — `dialogue/flock.yarn`, compiled to `pipeline/chat-program.json` at build time, because a browser cannot compile Yarn.
 - **Block** — one typed piece of a reply: `text`, `image`, `frame`, `link`, `me`, or a designed fallback for an unknown type. A reply is a sequence of blocks, and a block named in the dialogue program is declared in the block inventory. _Avoid_: message, attachment, card.
