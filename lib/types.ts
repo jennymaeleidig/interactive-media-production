@@ -1,6 +1,6 @@
 // The shapes the vendored React shell reads.
 //
-// The turn vocabulary itself lives in `pipeline/chat-turn.mjs` (the engine's own
+// The turn vocabulary itself lives in `lib/chat-turn.mjs` (the engine's own
 // declaration), and the shell imports `ChatBlock`/`ChatOption` from there
 // directly. This module only narrows the sequence for the renderer: a
 // `ChatMessage` is a speaker-run — consecutive blocks with the same `who`
@@ -8,7 +8,7 @@
 // table, keyed by `ChatBlock['type']`.
 //
 // SPDX-License-Identifier: CC0-1.0
-import type { ChatBlock } from '@/pipeline/chat-turn.mjs';
+import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
 type ChatRole = 'assistant' | 'user';
 

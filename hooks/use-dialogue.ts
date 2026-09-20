@@ -17,7 +17,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useState } from 'react';
-import type { ChatOption, ChatResponse } from '@/pipeline/chat-turn.mjs';
+import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/types';
 
 /** The host page's one runtime script; the hook waits for it on a cold load. */

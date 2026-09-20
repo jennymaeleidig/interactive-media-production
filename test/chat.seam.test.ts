@@ -1,17 +1,17 @@
 // Chat dialogue seam: the engine the piece ships, driven headlessly.
 // start/option → the whole block sequence each turn, the live choice sets, surfaced
 // variables, session persistence across calls, and the email-gate branch shape.
-// The engine under test is `pipeline/chat-engine.mjs` — the module
-// `pipeline/build-chat-runtime.mjs` bundles into the committed
-// `pipeline/chat-runtime.js`, which `/chat/runtime.js` publishes — run in a real
+// The engine under test is `scripts/chat-engine.mjs` — the module
+// `scripts/build-chat-runtime.mjs` bundles into the committed
+// `scripts/chat-runtime.js`, which `/chat/runtime.js` publishes — run in a real
 // DOM (jsdom) because its one session lives in `localStorage`, not in a server
 // process. There is no HTTP boundary to drive: nothing answers a turn but this
 // engine, so this is the surface that ships.
 //
-// A turn out is the whole block sequence so far (`pipeline/chat-turn.mjs`), so
+// A turn out is the whole block sequence so far (`lib/chat-turn.mjs`), so
 // these tests assert the exact block sequence the viewer sees. Blocks authored in
 // Yarn as plain lines are `text` blocks; `<<block "id">>` resolves against the
-// inventory (`pipeline/chat-blocks.mjs`). Containment is a contract term here
+// inventory (`lib/chat-blocks.mjs`). Containment is a contract term here
 // too: an id the inventory does not name degrades to a designed fallback and
 // cannot cost the rest of the turn.
 //
@@ -21,12 +21,12 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { ChatBlock, ChatRequest, ChatResponse } from '../pipeline/chat-turn.mjs';
-import { CHAT_BLOCKS } from '../pipeline/chat-blocks.mjs';
+import type { ChatBlock, ChatRequest, ChatResponse } from '../lib/chat-turn.mjs';
+import { CHAT_BLOCKS } from '../lib/chat-blocks.mjs';
 // Side-effect import: the engine installs its whole public surface as
 // `window.__flockChatEngine`. Read live so a stale test cannot pass against a
 // captured function if the module stops installing it.
-import '../pipeline/chat-engine.mjs';
+import '../scripts/chat-engine.mjs';
 
 const engine = window.__flockChatEngine!;
 
@@ -58,7 +58,7 @@ const CLOSING = 'Thanks for stopping by — take care!';
 
 const HUB_OPTIONS = ['What can you help me with?', 'Get a Demo', 'Support'];
 
-/** The seeded link block, exactly as `pipeline/chat-blocks.mjs` declares it. */
+/** The seeded link block, exactly as `lib/chat-blocks.mjs` declares it. */
 const FLOCK_LINK: ChatBlock = { who: 'bot', type: 'link', href: 'https://www.flocksafety.com/', label: 'Flock Safety', newMessage: true };
 
 function start(): Promise<ChatResponse> {

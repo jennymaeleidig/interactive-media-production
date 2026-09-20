@@ -12,7 +12,7 @@
 // Adapted from vercel/chatbot's part switch (Apache-2.0); see ../NOTICE.md.
 //
 // The `frame` and `image` adapters check their `src` against the inventory's
-// derived allowlist (`pipeline/chat-blocks.mjs`) and issue no request for a
+// derived allowlist (`lib/chat-blocks.mjs`) and issue no request for a
 // source no human authored. The allowlist is computed once from the declaration,
 // which is frozen at build time. The shipped inventory is empty, so neither
 // adapter can render anything yet; both stay as capability.
@@ -21,10 +21,10 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { Mark } from '@/components/brand/mark';
-import { allowedSources } from '@/pipeline/chat-blocks.mjs';
+import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { cn } from '@/lib/utils';
 import { ExternalLinkIcon } from './icons';
-import type { ChatBlock } from '@/pipeline/chat-turn.mjs';
+import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import type { ChatMessage as ChatMessageType } from '@/lib/types';
 
 /** The authored remote sources, frozen once from the inventory. */

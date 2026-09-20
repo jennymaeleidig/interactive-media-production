@@ -1,6 +1,6 @@
 # Keep the turn contract in-process
 
-The chat's turn contract (`pipeline/chat-turn.mjs`) was written against a server that no longer
+The chat's turn contract (`lib/chat-turn.mjs`) was written against a server that no longer
 exists: a static export has no process to answer a turn, so the engine was rebuilt client-side but
 kept the server's shape — a conversation id minted per session and round-tripped on every request,
 a separate `resume` verb, a `replay` field carrying the resumed block sequence, and `Promise`-wrapped handlers

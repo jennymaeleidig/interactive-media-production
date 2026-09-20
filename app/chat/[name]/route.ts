@@ -1,6 +1,6 @@
 // The chat's shipped file, served from its maintained source.
 //
-// `pipeline/chat-assets.mjs` declares which maintained file each published path
+// `scripts/chat-assets.mjs` declares which maintained file each published path
 // carries; this route is the only thing that answers that path, and the
 // declarations are what the artifact check and the asset seam read too, so the
 // three cannot disagree about what the piece serves.
@@ -11,7 +11,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import path from 'node:path';
-import { CHAT_ASSETS, assetFor, readAsset } from '@/pipeline/chat-assets.mjs';
+import { CHAT_ASSETS, assetFor, readAsset } from '@/scripts/chat-assets.mjs';
 
 export const dynamic = 'force-static';
 export const dynamicParams = false;

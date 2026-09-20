@@ -1,10 +1,10 @@
 // `checkJs` over the chat's own JavaScript, so the modules that ship bytes or
 // decide what they are (`chat-engine.mjs` against the turn vocabulary in
-// `pipeline/chat-turn.mjs`, the block inventory, the runtime builder, the
+// `lib/chat-turn.mjs`, the block inventory, the runtime builder, the
 // published bytes, the artifact check) are typechecked where they lie, by
 // annotation alone.
 //
-// The scope is deliberately not `pipeline/**`. A listed module's own imports are
+// The scope is deliberately not `scripts/**`. A listed module's own imports are
 // pulled into the program too; the ones fixable by annotation are listed outright
 // so the checked set is what this file says it is.
 {
@@ -18,12 +18,12 @@
     "allowArbitraryExtensions": true
   },
   "include": [
-    "pipeline/chat-turn.mjs",
-    "pipeline/chat-engine.mjs",
-    "pipeline/chat-blocks.mjs",
-    "pipeline/build-chat-runtime.mjs",
-    "pipeline/chat-assets.mjs",
-    "regression/artifact.mjs",
-    "pipeline/globals.d.ts"
+    "lib/chat-turn.mjs",
+    "scripts/chat-engine.mjs",
+    "lib/chat-blocks.mjs",
+    "scripts/build-chat-runtime.mjs",
+    "scripts/chat-assets.mjs",
+    "test/artifact.mjs",
+    "scripts/globals.d.ts"
   ]
 }

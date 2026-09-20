@@ -2,7 +2,7 @@
 //
 // `<title>` stays in costume; the unfurl tags go honest (`lib/share.ts`), because
 // the preview is the only out-of-frame carrier that survives a browser warning.
-// The chat runtime is declared once, by the path `pipeline/chat-assets.mjs`
+// The chat runtime is declared once, by the path `scripts/chat-assets.mjs`
 // publishes; the React shell itself ships in this page's own bundle.
 //
 // SPDX-License-Identifier: CC0-1.0

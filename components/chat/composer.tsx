@@ -11,7 +11,7 @@
 // ../NOTICE.md.
 //
 // SPDX-License-Identifier: CC0-1.0
-import type { ChatOption } from '@/pipeline/chat-turn.mjs';
+import type { ChatOption } from '@/lib/chat-turn.mjs';
 import { SendIcon } from './icons';
 
 export function Composer({

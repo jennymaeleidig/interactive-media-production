@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { ChatResponse } from '../pipeline/chat-turn.mjs';
+import type { ChatResponse } from '../lib/chat-turn.mjs';
 import { shippedAsset } from './seam-harness';
 
 beforeAll(() => {

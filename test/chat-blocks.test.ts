@@ -1,6 +1,6 @@
 // The block inventory, pinned.
 //
-// `pipeline/chat-blocks.mjs` is the hand-reviewed declaration of every block the
+// `lib/chat-blocks.mjs` is the hand-reviewed declaration of every block the
 // piece can render and every remote source it may reach. It is the no-ask rule's
 // allowlist (`CODING_STANDARDS.md`), so this suite is its check: the ids are
 // unique, every type is in the locked vocabulary, the derived allowlist equals
@@ -13,8 +13,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { CHAT_BLOCKS, allowedSources } from '../pipeline/chat-blocks.mjs';
-import { CHAT_BLOCK_TYPES } from '../pipeline/chat-turn.mjs';
+import { CHAT_BLOCKS, allowedSources } from '../lib/chat-blocks.mjs';
+import { CHAT_BLOCK_TYPES } from '../lib/chat-turn.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -23,7 +23,7 @@ const LOCKED = CHAT_BLOCK_TYPES.filter((type) => type !== 'unknown');
 
 /** Every string in the compiled program that is a block command. */
 function programBlockIds(): string[] {
-  const program = JSON.parse(readFileSync(path.join(ROOT, 'pipeline/chat-program.json'), 'utf8'));
+  const program = JSON.parse(readFileSync(path.join(ROOT, 'scripts/chat-program.json'), 'utf8'));
   const ids: string[] = [];
   /** @param {unknown} value */
   const walk = (value: unknown) => {
