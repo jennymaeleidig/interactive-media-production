@@ -23,7 +23,8 @@ import type { ReactNode } from 'react';
 import { allowedSources } from '@/pipeline/chat-blocks.mjs';
 import { cn } from '@/lib/utils';
 import { ExternalLinkIcon } from './icons';
-import type { ChatBlock, ChatMessage as ChatMessageType } from '@/lib/types';
+import type { ChatBlock } from '@/pipeline/chat-turn.mjs';
+import type { ChatMessage as ChatMessageType } from '@/lib/types';
 
 /** The authored remote sources, frozen once from the inventory. */
 const ALLOWED_SOURCES = allowedSources();

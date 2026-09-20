@@ -16,34 +16,16 @@
 // SPDX-License-Identifier: CC0-1.0
 
 /**
- * @typedef {object} TextPayload
- * @property {'text'} type
- * @property {string} text
- */
-/**
- * @typedef {object} ImagePayload
- * @property {'image'} type
- * @property {string} src
- * @property {string} alt
- * @property {string} [caption]
- */
-/**
- * @typedef {object} FramePayload
- * @property {'frame'} type
- * @property {string} src
- * @property {string} sandbox
- * @property {string} title
- * @property {string} [caption]
- */
-/**
- * @typedef {object} LinkPayload
- * @property {'link'} type
- * @property {string} href
- * @property {string} label
- */
-/**
- * A block payload: everything an inventory entry declares except the speaker,
- * which the engine supplies. @typedef {TextPayload | ImagePayload | FramePayload | LinkPayload} BlockPayload
+ * One inventory entry's payload: a block with its speaker and bubble boundary
+ * removed, since the engine supplies `who` and the authored command decides
+ * `newMessage`. Derived from the one block declaration
+ * (`pipeline/chat-turn.mjs`), so a field rename or addition is one edit there
+ * and this cannot drift.
+ * @typedef {Exclude<ChatBlock, { type: 'me' | 'unknown' }> extends infer Block
+ *   ? Block extends unknown
+ *     ? Omit<Block, 'who' | 'newMessage'>
+ *     : never
+ *   : never} BlockPayload
  */
 
 /**
