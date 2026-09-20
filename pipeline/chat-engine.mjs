@@ -4,11 +4,11 @@
 //
 // Why it exists: the piece is a static export with no server behind it, so no
 // route can answer a request per turn and the shell would render an empty
-// column. This module keeps the session in `localStorage` instead of a server's
-// module-level Map, and rebuilds the `Dialogue` from a snapshot on every turn —
-// a page has no process to keep it in. The snapshot therefore holds exactly what
-// the server's `state` reports (vars, node, blocks, completion) and never VM
-// position: a turn re-enters the persisted node at its top, which is why the
+// column. This module owns the one session, keeping it in `localStorage` instead
+// of a server's module-level Map, and rebuilds the `Dialogue` from the snapshot
+// on every turn — a page has no process to keep it in. The snapshot therefore
+// holds exactly what `state` reports (vars, node, blocks, completion) and never
+// VM position: a turn re-enters the persisted node at its top, which is why the
 // snapshot needs nothing more.
 //
 // This file is not served. `pipeline/build-chat-runtime.mjs` bundles it (plus
@@ -27,16 +27,16 @@ import { Dialogue, InMemoryVariableStorage, runUntilCompleteEvents } from 'yarns
 // bundle's way.
 const program = programJson;
 
-/** Where the one client-side session lives. New key, owned by this engine. */
+/** Where the one client-side session lives. Owned by this engine. */
 const STORAGE_KEY = 'flock-chat-state';
 
 /**
  * A persisted session: the whole conversation plus the three facts `state`
  * reports. `node` is null before a dialogue starts and once it has run out of
  * content; `complete` is carried explicitly because a rebuilt dialogue's
- * `isComplete` is false until it runs again.
+ * `isComplete` is false until it runs again. There is no id: this engine owns
+ * the one conversation, so nothing outside it needs to name one.
  * @typedef {{
- *   sessionId: string,
  *   vars: Record<string, unknown>,
  *   log: ChatBlock[],
  *   node: string | null,
@@ -53,6 +53,14 @@ const STORAGE_KEY = 'flock-chat-state';
 let memory = null;
 
 /**
+ * Whether `localStorage` accepted the last write. When it refuses (private mode,
+ * a full quota) the in-page copy is the session and `load` must prefer it over
+ * the empty store; when it accepts, an empty store means the page has no
+ * session.
+ */
+let persisted = false;
+
+/**
  * True when a persisted snapshot still matches this build: a block log whose
  * every entry the renderer can dispatch, a vars object, and a node this
  * program still declares. A snapshot written by an older build (a different
@@ -64,7 +72,7 @@ let memory = null;
 function isCurrentSnapshot(parsed) {
   if (!parsed || typeof parsed !== 'object') return false;
   const snapshot = /** @type {Record<string, unknown>} */ (parsed);
-  if (typeof snapshot.sessionId !== 'string' || typeof snapshot.complete !== 'boolean') return false;
+  if (typeof snapshot.complete !== 'boolean') return false;
   if (!snapshot.vars || typeof snapshot.vars !== 'object') return false;
   if (snapshot.node !== null && (typeof snapshot.node !== 'string' || !Object.hasOwn(program.nodes, snapshot.node))) return false;
   return (
@@ -92,10 +100,14 @@ function load() {
       const parsed = JSON.parse(raw);
       if (isCurrentSnapshot(parsed)) return /** @type {ChatSnapshot} */ (parsed);
     }
+    // Storage is readable and holds nothing current: the page has no session.
+    // Preferring the in-page copy here would resurrect a session the store
+    // already forgot (or an older build's blob).
+    return persisted ? null : memory;
   } catch (error) {
     // storage unavailable or unreadable — the in-page copy is the fallback
+    return memory;
   }
-  return memory;
 }
 
 /**
@@ -107,19 +119,11 @@ function save(snapshot) {
   memory = snapshot;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    persisted = true;
   } catch (error) {
     // private mode or a full quota — the in-page copy carries the session
+    persisted = false;
   }
-}
-
-/** A fresh session id, shaped like the server's `crypto.randomUUID()`. */
-function newId() {
-  try {
-    if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
-  } catch (error) {
-    // no crypto — fall through to a weaker id
-  }
-  return 'flock-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 }
 
 /**
@@ -212,102 +216,85 @@ function optionList(options) {
 
 /**
  * Rebuild a session from a snapshot: seed the storage, re-enter the persisted
- * node at its top, and recover the live option set the server's in-memory
+ * node at its top, and recover the live choice set the server's in-memory
  * Dialogue would still be holding. The sweep re-delivers the node's blocks
  * (already in `log`) and re-runs its statements; the recorded variables are
- * restored afterwards so a resume mutates nothing, exactly as the server's
- * resume does not.
+ * restored afterwards so restoring mutates nothing, exactly as resuming does
+ * not. `pending` is resolved once, here — the choice set the session is waiting
+ * on, or null when it is not waiting — so no caller repeats that branch.
  * @param {ChatSnapshot} snapshot
+ * @returns {{ dialogue: Dialogue, storage: InstanceType<typeof InMemoryVariableStorage>, pending: YarnOption[]|null }}
  */
-function rebuild(snapshot) {
+function restore(snapshot) {
   const { dialogue, storage } = open(snapshot.vars);
   /** @type {YarnOption[]|null} */
-  let pendingOptions = null;
+  let pending = null;
   if (!snapshot.complete && snapshot.node) {
     dialogue.setNode(snapshot.node);
     const swept = sweep(dialogue);
-    pendingOptions = swept.options;
+    pending = dialogue.isWaitingForOptionSelection ? swept.options : null;
     for (const [name, value] of Object.entries(snapshot.vars)) storage.set(name, value);
   }
-  return { dialogue, storage, pendingOptions };
+  return { dialogue, storage, pending };
 }
 
 /**
- * `start` — idempotent the way the server's is: naming a live session resumes
- * it instead of resetting, so a stale client can never blank the conversation.
- * `start` with no session id mints a fresh one.
- * @param {string} [sessionId]
+ * A snapshot at its rest state: the whole transcript so far and the choice set
+ * it is waiting on (or null when it has run out). Adds no blocks — a reload, or
+ * an option that resolves to nothing, hands back the conversation as it stands.
+ * @param {ChatSnapshot} snapshot
  * @returns {ChatResponse}
  */
-function start(sessionId) {
-  const live = sessionId ? load() : null;
-  if (live && sessionId && live.sessionId === sessionId) return resume(sessionId);
-  const id = sessionId ?? newId();
+function resting(snapshot) {
+  const { pending } = restore(snapshot);
+  return {
+    turn: { blocks: snapshot.log.slice(), options: optionList(pending) },
+    state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
+  };
+}
+
+/**
+ * `start` — opens this page's session. A live snapshot resumes in place (the
+ * whole transcript, the pending choice set) instead of resetting, so a stale
+ * client can never blank the conversation; with none it begins one at the
+ * program's entry node.
+ * @returns {ChatResponse}
+ */
+function start() {
+  const snapshot = load();
+  if (snapshot) return resting(snapshot);
   const { dialogue, storage } = open();
   dialogue.setNode('Start');
   const swept = sweep(dialogue);
-  const blocks = swept.blocks;
   const vars = Object.fromEntries(storage.entries());
-  save({ sessionId: id, vars, log: blocks.slice(), node: dialogue.currentNode, complete: swept.complete });
+  save({ vars, log: swept.blocks.slice(), node: dialogue.currentNode, complete: swept.complete });
   return {
-    sessionId: id,
-    turn: { blocks, options: optionList(swept.options), complete: swept.complete },
+    turn: { blocks: swept.blocks, options: optionList(swept.options) },
     state: { node: dialogue.currentNode, complete: swept.complete, vars },
   };
 }
 
 /**
- * `resume` — unknown or absent session state starts one, as the server does.
- * A live one replays the whole conversation and re-offers the pending set
- * without adding blocks.
- * @param {string} sessionId
- * @returns {ChatResponse}
- */
-function resume(sessionId) {
-  const snapshot = load();
-  if (!snapshot || snapshot.sessionId !== sessionId) return start(sessionId);
-  const session = rebuild(snapshot);
-  const pending = session.dialogue.isWaitingForOptionSelection ? session.pendingOptions : null;
-  return {
-    sessionId,
-    turn: { blocks: [], options: optionList(pending), complete: snapshot.complete },
-    state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
-    replay: snapshot.log.slice(),
-  };
-}
-
-/**
- * `option` — select a pending choice and collect the reply. A stale session or
- * an index with no live option set hands back the rest state instead of
- * crashing; the visitor's line is echoed the way the server echoes it (the
- * shell never adds its own copy).
- * @param {string} sessionId
+ * `option` — select a pending choice and collect the reply. With no session, or
+ * an index with no live option set, it hands back the rest state instead of
+ * crashing; the visitor's line is echoed here (the shell never adds its own
+ * copy).
  * @param {number} optionIndex
  * @returns {ChatResponse}
  */
-function option(sessionId, optionIndex) {
+function option(optionIndex) {
   const snapshot = load();
-  if (!snapshot || snapshot.sessionId !== sessionId) return start();
-  const session = rebuild(snapshot);
-  const pending = session.dialogue.isWaitingForOptionSelection ? session.pendingOptions : null;
-  const label = pending ? pending.find((candidate) => candidate.index === optionIndex)?.text : undefined;
-  if (!pending || label === undefined) {
-    return {
-      sessionId,
-      turn: { blocks: [], options: optionList(pending), complete: snapshot.complete },
-      state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
-    };
-  }
-  const log = snapshot.log.slice();
-  log.push({ who: 'me', type: 'text', text: label });
+  if (!snapshot) return start();
+  const session = restore(snapshot);
+  const label = session.pending?.find((candidate) => candidate.index === optionIndex)?.text;
+  if (label === undefined) return resting(snapshot);
   session.dialogue.selectOption(optionIndex);
   const swept = sweep(session.dialogue);
-  log.push(...swept.blocks);
+  const log = snapshot.log.concat([{ who: 'me', type: 'text', text: label }, ...swept.blocks]);
   const vars = Object.fromEntries(session.storage.entries());
-  save({ sessionId, vars, log, node: session.dialogue.currentNode, complete: swept.complete });
+  save({ vars, log: log.slice(), node: session.dialogue.currentNode, complete: swept.complete });
   return {
-    sessionId,
-    turn: { blocks: [{ who: 'me', type: 'text', text: label }, ...swept.blocks], options: optionList(swept.options), complete: swept.complete },
+    turn: { blocks: log, options: optionList(swept.options) },
     state: { node: session.dialogue.currentNode, complete: swept.complete, vars },
   };
 }
@@ -319,9 +306,8 @@ function option(sessionId, optionIndex) {
  * @returns {Promise<ChatResponse>}
  */
 function turn(request) {
-  if (request.type === 'resume') return Promise.resolve(resume(request.sessionId));
-  if (request.type === 'option') return Promise.resolve(option(request.sessionId, request.optionIndex));
-  return Promise.resolve(start(request.sessionId));
+  if (request.type === 'option') return Promise.resolve(option(request.optionIndex));
+  return Promise.resolve(start());
 }
 
 // The React shell reaches the engine only through this declared global; it is

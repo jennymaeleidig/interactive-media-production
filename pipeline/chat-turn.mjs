@@ -1,4 +1,4 @@
-// The shape of one turn of the message API, declared once.
+// The shape of one turn, declared once.
 //
 // Three readers need it and none of them can see the others: the engine that
 // builds it (`pipeline/chat-engine.mjs`), the vendored React shell that renders
@@ -39,20 +39,20 @@ export const CHAT_BLOCK_TYPES = ['text', 'image', 'frame', 'link', 'me', 'unknow
  */
 
 /**
- * One turn: the blocks it added, the live choice set, and whether the
- * conversation is over. A resting session still gets a turn — no new blocks, the
- * same choice set — so a reload can re-offer it.
- * @typedef {{ blocks: ChatBlock[], options: ChatOption[] | null, complete: boolean }} ChatTurn
+ * One turn: the whole block sequence so far and the live choice set. The engine
+ * returns the entire transcript on every request, so the shell replaces its
+ * state rather than merging, and there is no separate replay. A resting session
+ * still gets a turn — the same blocks and choice set — so a reload can re-offer
+ * it. Completion is the session's; it is declared once, on `ChatState`.
+ * @typedef {{ blocks: ChatBlock[], options: ChatOption[] | null }} ChatTurn
  */
 
 /**
- * One request: the conversation step the shell sends and the engine answers.
- * `start` mints or resumes, `resume` replays a saved thread, `option` selects a
- * pending choice by its engine index. The shell sends one per turn; the client
- * engine reads the same shape.
- * @typedef {{ type: 'start', sessionId?: string }
- *   | { type: 'resume', sessionId: string }
- *   | { type: 'option', sessionId: string, optionIndex: number }} ChatRequest
+ * One request: the step the shell sends and the engine answers. `start` opens
+ * this page's session — resuming the live one, or beginning one when there is
+ * none; `option` selects a pending choice by its engine index. There is no id on
+ * it: the engine owns the one conversation.
+ * @typedef {{ type: 'start' } | { type: 'option', optionIndex: number }} ChatRequest
  */
 
 /**
@@ -64,8 +64,8 @@ export const CHAT_BLOCK_TYPES = ['text', 'image', 'frame', 'link', 'me', 'unknow
  */
 
 /**
- * The whole body of one message-API response.
- * @typedef {{ sessionId: string, turn: ChatTurn, state: ChatState, replay?: ChatBlock[] }} ChatResponse
+ * The whole body of one turn response: the transcript, and the session's report.
+ * @typedef {{ turn: ChatTurn, state: ChatState }} ChatResponse
  */
 
 export {};

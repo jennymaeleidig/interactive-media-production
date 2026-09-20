@@ -9,15 +9,17 @@
 // groups a turn's blocks into one message per speaker-run, so the renderer never
 // sees a `who`.
 //
-// There is no loading, typing or delivery state: nothing about a turn is shown
-// until its blocks arrive, and the chips never disable.
+// The engine owns the session and answers every turn with the whole transcript,
+// so this hook keeps no copy of its own: it replaces `messages` with whatever
+// came back rather than merging. There is no loading, typing or delivery state
+// either — nothing about a turn is shown until its blocks arrive, and the chips
+// never disable.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { groupBlocks, type ChatBlock, type ChatMessage, type ChatOption } from '@/lib/types';
+import { useCallback, useEffect, useState } from 'react';
+import type { ChatOption } from '@/pipeline/chat-turn.mjs';
+import { groupBlocks, type ChatMessage } from '@/lib/types';
 
-/** Where the conversation's id lives, so a reload resumes rather than restarts. */
-const SESSION_KEY = 'flock-chat-session';
 /** The host page's one runtime script; the hook waits for it on a cold load. */
 const RUNTIME_SRC = '/chat/runtime.js';
 
@@ -54,55 +56,21 @@ function engineReady(): Promise<Engine | undefined> {
   });
 }
 
-/** The stored session id, or undefined when storage refuses to be read. */
-function storedSession(): string | undefined {
-  try {
-    return window.localStorage.getItem(SESSION_KEY) ?? undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-/** The engine's answer applied as the shell's next state. */
-function opening(
-  messages: ChatMessage[],
-  blocks: readonly ChatBlock[],
-  options: ChatOption[] | null,
-): { messages: ChatMessage[]; options: ChatOption[] } {
-  // Re-group the whole sequence, not just the new blocks: ids are positions in
-  // one growing list, so a turn cannot mint a key an earlier turn already used,
-  // and a speaker-run split across turns still merges into one bubble.
-  const grouped = groupBlocks([...messages.flatMap((message) => message.parts), ...blocks]);
-  return { messages: grouped, options: options ?? [] };
-}
-
 export function useDialogue(): Dialogue {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [options, setOptions] = useState<ChatOption[]>([]);
-  // The live session id lives here, not only in localStorage: a browser that
-  // refuses storage must still be able to advance the conversation in-page.
-  const sessionId = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     engineReady()
       .then((api) => {
         if (cancelled || !api) return;
-        const stored = storedSession();
-        return api.turn(stored ? { type: 'start', sessionId: stored } : { type: 'start' }).then((res) => {
+        // `start` opens this page's session: the engine resumes the live one or
+        // begins one, and either way answers with the whole transcript.
+        return api.turn({ type: 'start' }).then((res) => {
           if (cancelled) return;
-          sessionId.current = res.sessionId;
-          try {
-            window.localStorage.setItem(SESSION_KEY, res.sessionId);
-          } catch {
-            // private mode or a full quota — the ref carries the session in-page
-          }
-          // A live session answers with `replay` (the whole transcript) and no
-          // new blocks; a fresh one answers with the opening blocks.
-          const seen = res.replay ?? [];
-          const next = opening([], seen.length > 0 ? seen : res.turn.blocks, res.turn.options);
-          setMessages(next.messages);
-          setOptions(next.options);
+          setMessages(groupBlocks(res.turn.blocks));
+          setOptions(res.turn.options ?? []);
         });
       })
       .catch(() => {
@@ -116,12 +84,11 @@ export function useDialogue(): Dialogue {
 
   const sendOption = useCallback((option: ChatOption) => {
     const api = engine();
-    const id = sessionId.current;
-    if (!api || id === null) return;
+    if (!api) return;
     api
-      .turn({ type: 'option', sessionId: id, optionIndex: option.index })
+      .turn({ type: 'option', optionIndex: option.index })
       .then((res) => {
-        setMessages((prev) => opening(prev, res.turn.blocks, null).messages);
+        setMessages(groupBlocks(res.turn.blocks));
         setOptions(res.turn.options ?? []);
       })
       .catch(() => {

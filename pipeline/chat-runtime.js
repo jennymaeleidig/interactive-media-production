@@ -4731,13 +4731,14 @@
   var program = chat_program_default;
   var STORAGE_KEY = "flock-chat-state";
   var memory = null;
+  var persisted = false;
   function isCurrentSnapshot(parsed) {
     if (!parsed || typeof parsed !== "object") return false;
     const snapshot = (
       /** @type {Record<string, unknown>} */
       parsed
     );
-    if (typeof snapshot.sessionId !== "string" || typeof snapshot.complete !== "boolean") return false;
+    if (typeof snapshot.complete !== "boolean") return false;
     if (!snapshot.vars || typeof snapshot.vars !== "object") return false;
     if (snapshot.node !== null && (typeof snapshot.node !== "string" || !Object.hasOwn(program.nodes, snapshot.node))) return false;
     return Array.isArray(snapshot.log) && snapshot.log.every(
@@ -4754,23 +4755,19 @@
           parsed
         );
       }
+      return persisted ? null : memory;
     } catch (error) {
+      return memory;
     }
-    return memory;
   }
   function save(snapshot) {
     memory = snapshot;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+      persisted = true;
     } catch (error) {
+      persisted = false;
     }
-  }
-  function newId() {
-    try {
-      if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
-    } catch (error) {
-    }
-    return "flock-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   }
   function open(vars) {
     const storage = new InMemoryVariableStorage();
@@ -4814,76 +4811,57 @@
   function optionList(options) {
     return options ? options.map((option2) => ({ index: option2.index, text: option2.text })) : null;
   }
-  function rebuild(snapshot) {
+  function restore(snapshot) {
     const { dialogue, storage } = open(snapshot.vars);
-    let pendingOptions = null;
+    let pending = null;
     if (!snapshot.complete && snapshot.node) {
       dialogue.setNode(snapshot.node);
       const swept = sweep(dialogue);
-      pendingOptions = swept.options;
+      pending = dialogue.isWaitingForOptionSelection ? swept.options : null;
       for (const [name, value] of Object.entries(snapshot.vars)) storage.set(name, value);
     }
-    return { dialogue, storage, pendingOptions };
+    return { dialogue, storage, pending };
   }
-  function start(sessionId) {
-    const live = sessionId ? load() : null;
-    if (live && sessionId && live.sessionId === sessionId) return resume(sessionId);
-    const id = sessionId != null ? sessionId : newId();
+  function resting(snapshot) {
+    const { pending } = restore(snapshot);
+    return {
+      turn: { blocks: snapshot.log.slice(), options: optionList(pending) },
+      state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars }
+    };
+  }
+  function start() {
+    const snapshot = load();
+    if (snapshot) return resting(snapshot);
     const { dialogue, storage } = open();
     dialogue.setNode("Start");
     const swept = sweep(dialogue);
-    const blocks = swept.blocks;
     const vars = Object.fromEntries(storage.entries());
-    save({ sessionId: id, vars, log: blocks.slice(), node: dialogue.currentNode, complete: swept.complete });
+    save({ vars, log: swept.blocks.slice(), node: dialogue.currentNode, complete: swept.complete });
     return {
-      sessionId: id,
-      turn: { blocks, options: optionList(swept.options), complete: swept.complete },
+      turn: { blocks: swept.blocks, options: optionList(swept.options) },
       state: { node: dialogue.currentNode, complete: swept.complete, vars }
     };
   }
-  function resume(sessionId) {
+  function option(optionIndex) {
+    var _a, _b;
     const snapshot = load();
-    if (!snapshot || snapshot.sessionId !== sessionId) return start(sessionId);
-    const session = rebuild(snapshot);
-    const pending = session.dialogue.isWaitingForOptionSelection ? session.pendingOptions : null;
-    return {
-      sessionId,
-      turn: { blocks: [], options: optionList(pending), complete: snapshot.complete },
-      state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
-      replay: snapshot.log.slice()
-    };
-  }
-  function option(sessionId, optionIndex) {
-    var _a;
-    const snapshot = load();
-    if (!snapshot || snapshot.sessionId !== sessionId) return start();
-    const session = rebuild(snapshot);
-    const pending = session.dialogue.isWaitingForOptionSelection ? session.pendingOptions : null;
-    const label = pending ? (_a = pending.find((candidate) => candidate.index === optionIndex)) == null ? void 0 : _a.text : void 0;
-    if (!pending || label === void 0) {
-      return {
-        sessionId,
-        turn: { blocks: [], options: optionList(pending), complete: snapshot.complete },
-        state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars }
-      };
-    }
-    const log = snapshot.log.slice();
-    log.push({ who: "me", type: "text", text: label });
+    if (!snapshot) return start();
+    const session = restore(snapshot);
+    const label = (_b = (_a = session.pending) == null ? void 0 : _a.find((candidate) => candidate.index === optionIndex)) == null ? void 0 : _b.text;
+    if (label === void 0) return resting(snapshot);
     session.dialogue.selectOption(optionIndex);
     const swept = sweep(session.dialogue);
-    log.push(...swept.blocks);
+    const log = snapshot.log.concat([{ who: "me", type: "text", text: label }, ...swept.blocks]);
     const vars = Object.fromEntries(session.storage.entries());
-    save({ sessionId, vars, log, node: session.dialogue.currentNode, complete: swept.complete });
+    save({ vars, log: log.slice(), node: session.dialogue.currentNode, complete: swept.complete });
     return {
-      sessionId,
-      turn: { blocks: [{ who: "me", type: "text", text: label }, ...swept.blocks], options: optionList(swept.options), complete: swept.complete },
+      turn: { blocks: log, options: optionList(swept.options) },
       state: { node: session.dialogue.currentNode, complete: swept.complete, vars }
     };
   }
   function turn(request) {
-    if (request.type === "resume") return Promise.resolve(resume(request.sessionId));
-    if (request.type === "option") return Promise.resolve(option(request.sessionId, request.optionIndex));
-    return Promise.resolve(start(request.sessionId));
+    if (request.type === "option") return Promise.resolve(option(request.optionIndex));
+    return Promise.resolve(start());
   }
   window.__flockChatEngine = { turn };
 })();
