@@ -87,6 +87,10 @@ it is the one place a bright green still shows, and a dark ring would vanish aga
 Both bubbles' text is `#183129` — the human's call, so the two message kinds read as one voice. The
 captured widget's own bot text was `#101010`.
 
+The transcript carries two pieces of chrome beside those bubbles. The assistant's mark sits on a
+disc in `#304833` (the accent) with the ramp's `grey-1` for the mark itself, once per assistant run;
+the day divider is `grey-5`.
+
 `#ecefeb` is Flock's `grey-1`. `#f1f4f7` is **not** on Flock's ramp — it is the captured widget's
 rendered bubble, kept because it is what the piece ships. Neither is `#fefdfb`, the ground: it is
 the human's pick, revised from `#f2efea` on 2026-02-18.
@@ -141,6 +145,7 @@ and the `design-taste-frontend` skill.
 | Asset                | File                        | Status                                                                         |
 | -------------------- | --------------------------- | ------------------------------------------------------------------------------ |
 | Wordmark             | header, SVG, 138×32 viewBox | Trademark of Flock Group Inc. No rights claimed.                               |
+| Assistant mark       | transcript, inline SVG      | Trademark of Flock Group Inc. No rights claimed. The wordmark's own geometry.  |
 | Favicon              | one 32px PNG                | Trademark of Flock Group Inc. No rights claimed.                               |
 | Apple touch icon     | 256px PNG                   | Trademark of Flock Group Inc. No rights claimed.                               |
 | Sohne Regular / Book | two `woff2`                 | Commercial typeface licensed to Flock Group Inc (Lineto). No rights claimed.   |

@@ -74,6 +74,37 @@ describe('the mounted shell', () => {
     expect(send.closest('button')).toBeNull();
   });
 
+  it("marks an assistant run once, and the viewer's turn never", async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    expect(screen.getAllByTestId('assistant-mark')).toHaveLength(1);
+
+    fireEvent.click(screen.getByText('Get a Demo'));
+    await screen.findByText(/provide your email address/);
+    // The viewer's turn adds a bubble and no mark; the reply adds one.
+    expect(screen.getAllByTestId('message-user')).toHaveLength(1);
+    expect(screen.getAllByTestId('assistant-mark')).toHaveLength(2);
+  });
+
+  it('does not repeat the mark on a continued run', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByText('Support'));
+    await screen.findByText(/You can reach our support team/);
+    fireEvent.click(screen.getByText("That's all for now"));
+    await screen.findByText(/Thanks for stopping by/);
+    // The closing turn is two assistant bubbles in one run, cut by `newMessage`:
+    // four assistant bubbles, three runs, three marks.
+    expect(screen.getAllByTestId('message-assistant')).toHaveLength(4);
+    expect(screen.getAllByTestId('assistant-mark')).toHaveLength(3);
+  });
+
+  it('opens the transcript with the day divider', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    expect(screen.getByTestId('day-divider').textContent).toMatch(/^Today, \d{1,2}:\d{2} (am|pm)$/);
+  });
+
   it('restores the transcript after a reload', async () => {
     const first = render(<ChatShell />);
     await screen.findByText(GREETING);

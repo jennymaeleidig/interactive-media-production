@@ -20,6 +20,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { Mark } from '@/components/brand/mark';
 import { allowedSources } from '@/pipeline/chat-blocks.mjs';
 import { cn } from '@/lib/utils';
 import { ExternalLinkIcon } from './icons';
@@ -120,6 +121,19 @@ export function BlockPart({ block }: AdapterProps) {
   }
 }
 
+/** The assistant's mark on its disc, set beside the first bubble of a run —
+ * the reference widget's own placement. Decorative: the bubble is the message. */
+function AssistantMark() {
+  return (
+    <span
+      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-content text-grey-1"
+      data-testid="assistant-mark"
+    >
+      <Mark className="h-4 w-auto" />
+    </span>
+  );
+}
+
 /** One speaker-run: the parts, in order, inside one bubble. */
 export function Message({
   message,
@@ -134,11 +148,18 @@ export function Message({
   const user = message.role === 'user';
   const reduceMotion = useReducedMotion();
   return (
-    <div className={cn('flex w-full flex-col', user ? 'items-end' : 'items-start', className)}>
+    <div className={cn('flex w-full gap-2', user ? 'justify-end' : 'justify-start', className)}>
+      {user ? null : (
+        // A continued bubble holds the column open with nothing in it, so a run's
+        // bubbles stay aligned under the one mark.
+        <div aria-hidden="true" className="w-7 shrink-0">
+          {grouping.continues ? null : <AssistantMark />}
+        </div>
+      )}
       <div
         className={cn(
           'flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
-          user ? 'ml-auto bg-bubble-me' : 'bg-bubble-bot',
+          user ? 'bg-bubble-me' : 'bg-bubble-bot',
           grouping.continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
           grouping.continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
         )}

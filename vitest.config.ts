@@ -47,6 +47,12 @@ export default defineConfig({
       {
         test: { name: 'chat-assets', include: ['test/chat-assets.test.ts', 'test/copy.test.ts'] },
       },
+      // The day divider's format is the piece's own, not the viewer's locale's,
+      // so it is pinned without a DOM.
+      {
+        resolve: { alias: { '@': root } },
+        test: { name: 'time', include: ['test/time.test.ts'] },
+      },
       // The artifact check is an npm script — it needs a built export and a
       // server — so this project tests its verdicts, not the artifact.
       {

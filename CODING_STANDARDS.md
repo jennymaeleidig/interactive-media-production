@@ -78,7 +78,8 @@ server-side route, middleware, a rewrite — is out of scope for this repo.
     `pipeline/chat-engine.mjs`, the module the runtime bundles.
   - **The shell seam** (`test/chat-shell.seam.test.tsx`) — the surface the
     visitor sees, mounted in jsdom against the exact bytes the host publishes:
-    the greeting and chip row, the inert composer with no input anywhere, the
+    the greeting and chip row, the assistant's mark once per run and the day
+    divider's stamp, the inert composer with no input anywhere, the
     resume round trip, the block adapters, containment of a throwing adapter, a
     frame URL outside the derived allowlist issuing no request, and the `?`
     disclosure opening.
@@ -102,8 +103,9 @@ server-side route, middleware, a rewrite — is out of scope for this repo.
     `environment: 'jsdom'`, and `test/setup-jsdom.ts` installs the in-memory
     `localStorage` this Node runtime shadows.
 - **Pure-module seams** pin a module's declared contract where that contract is
-  its behaviour: the published bytes' shape (`test/chat-assets.test.ts`) and the
-  artifact check's serving seam and pure verdicts (`test/artifact.test.ts`). They are the one exception to "no tests against
+  its behaviour: the published bytes' shape (`test/chat-assets.test.ts`), the
+  artifact check's serving seam and pure verdicts (`test/artifact.test.ts`), and
+  the day divider's format (`test/time.test.ts`). They are the one exception to "no tests against
   internals"; apart from them no test targets incidental structure, and a test
   that breaks in a behaviour-preserving refactor is wrong.
 - Red → green, one slice at a time. New behaviour starts as a failing test at an

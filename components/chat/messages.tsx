@@ -7,9 +7,13 @@
 // turn and a speaker change reads as a break. Adapted from vercel/chatbot
 // (Apache-2.0); see ../NOTICE.md.
 //
+// The day divider opens it, as the reference widget's does.
+//
 // SPDX-License-Identifier: CC0-1.0
+import { useEffect, useState } from 'react';
 import { StickToBottom } from 'use-stick-to-bottom';
 import { cn } from '@/lib/utils';
+import { dayLabel } from '@/lib/time';
 import type { ChatMessage } from '@/lib/types';
 import { Message } from './message';
 
@@ -19,6 +23,14 @@ const BETWEEN_SPEAKERS = 'mt-5';
 const SAME_SPEAKER = 'mt-1.5';
 
 export function Messages({ messages }: { messages: ChatMessage[] }) {
+  // The stamp is read once, on mount. During the prerender there is no clock to
+  // read — a build-time one would be wrong for every visitor — so it stays null
+  // until the browser has it, and the divider arrives with the greeting.
+  const [openedAt, setOpenedAt] = useState<Date | null>(null);
+  useEffect(() => {
+    setOpenedAt(new Date());
+  }, []);
+
   return (
     <StickToBottom
       className="relative min-h-0 flex-1 overflow-y-hidden"
@@ -27,6 +39,11 @@ export function Messages({ messages }: { messages: ChatMessage[] }) {
       role="log"
     >
       <StickToBottom.Content className="mx-auto flex w-full max-w-3xl flex-col px-5 pt-28 pb-8">
+        {openedAt && messages.length > 0 ? (
+          <p className="pb-5 text-center text-sm text-muted-foreground" data-testid="day-divider">
+            {dayLabel(openedAt)}
+          </p>
+        ) : null}
         {messages.map((message, index) => {
           const previous = messages[index - 1];
           const next = messages[index + 1];
