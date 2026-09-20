@@ -15,13 +15,19 @@ const ok = (url: string, body: string, contentType = 'text/html; charset=utf-8')
 
 describe('findingsFor', () => {
   const expected = {
-    '/': { contentType: 'text/html', references: ['/chat/widget.css', '/chat/runtime.js'] },
+    '/': {
+      contentType: 'text/html',
+      references: ['/chat/runtime.js', 'An artwork, not Flock Safety.', 'og:title', 'og:description', 'name="description"'],
+    },
     '/chat/runtime.js': { contentType: 'text/javascript; charset=utf-8', body: 'console.log(1)', source: 'pipeline/chat-runtime.js' },
   };
 
   it('says nothing when the artifact is what it should be', () => {
     const probes = [
-      ok('/', '<link href="/chat/widget.css"><script src="/chat/runtime.js">'),
+      ok(
+        '/',
+        '<title>Flock Safety</title><meta property="og:title" content="An artwork, not Flock Safety."><meta property="og:description"><meta name="description"><script src="/chat/runtime.js">',
+      ),
       ok('/chat/runtime.js', 'console.log(1)', 'text/javascript; charset=utf-8'),
     ];
     expect(findingsFor(probes, expected)).toEqual([]);
@@ -32,9 +38,17 @@ describe('findingsFor', () => {
     expect(findings).toEqual(['/: answered 404']);
   });
 
-  it('reports a page that no longer names the chat', () => {
+  it('reports a page that no longer names the chat runtime', () => {
     const findings = findingsFor([ok('/', '<p>nothing here</p>')], expected);
-    expect(findings).toEqual(['/: does not reference /chat/widget.css', '/: does not reference /chat/runtime.js']);
+    expect(findings).toContain('/: does not reference /chat/runtime.js');
+  });
+
+  it('reports a page that lost the honest preview metadata', () => {
+    const findings = findingsFor([ok('/', '<title>Flock Safety</title><script src="/chat/runtime.js">')], expected);
+    expect(findings).toContain('/: does not reference An artwork, not Flock Safety.');
+    expect(findings).toContain('/: does not reference og:title');
+    expect(findings).toContain('/: does not reference og:description');
+    expect(findings).toContain('/: does not reference name="description"');
   });
 
   it('reports bytes that drifted from the maintained source', () => {
@@ -47,6 +61,7 @@ describe('findingsFor', () => {
     expect(findings).toEqual(['/chat/runtime.js: answered text/html; charset=utf-8, expected text/javascript; charset=utf-8']);
   });
 });
+
 
 describe('candidatesFor', () => {
   it('answers the export directory for the root', () => {
@@ -65,8 +80,8 @@ describe('candidatesFor', () => {
   });
 
   it('answers a published file as itself, and never appends an extension to it', () => {
-    expect(candidatesFor('/chat/widget.css')).toEqual(['chat/widget.css']);
     expect(candidatesFor('/chat/runtime.js')).toEqual(['chat/runtime.js']);
+    expect(candidatesFor('/favicon-32.png')).toEqual(['favicon-32.png']);
   });
 });
 

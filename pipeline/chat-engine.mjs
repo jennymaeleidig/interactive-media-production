@@ -1,28 +1,25 @@
 // SPDX-License-Identifier: CC0-1.0
 // The chat's dialogue engine, client-side: the engine the page ships, speaking
-// the same turn contract (`pipeline/chat-turn.mjs`) the widget reads.
+// the same turn contract (`pipeline/chat-turn.mjs`) the vendored shell renders.
 //
 // Why it exists: the piece is a static export with no server behind it, so no
-// route can answer a request per turn and the widget would render an empty
-// panel. This module keeps the session in `localStorage` instead of the server's
+// route can answer a request per turn and the shell would render an empty
+// column. This module keeps the session in `localStorage` instead of a server's
 // module-level Map, and rebuilds the `Dialogue` from a snapshot on every turn —
 // a page has no process to keep it in. The snapshot therefore holds exactly what
-// the server's `state` reports (vars, node, log, completion) and never VM
+// the server's `state` reports (vars, node, blocks, completion) and never VM
 // position: a turn re-enters the persisted node at its top, which is why the
 // snapshot needs nothing more.
 //
 // This file is not served. `pipeline/build-chat-runtime.mjs` bundles it (plus
-// its `yarnspinner-typescript` runtime and the compiled `chat-program.json`)
-// into `pipeline/chat-runtime.js`, the file `/chat/runtime.js` publishes beside
-// the widget. Comments here are the review surface; the bundle is generated.
-//
-// The bundled bytes must name no network primitive (`pipeline/chat-source.mjs`),
-// so this file avoids the string `fetch` even in prose and never writes a
-// dynamic `import(` — the global type aliases in `pipeline/globals.d.ts` exist
-// for the same reason.
+// its `yarnspinner-typescript` runtime, the compiled `chat-program.json`, and the
+// inlined `pipeline/chat-blocks.mjs` inventory) into `pipeline/chat-runtime.js`,
+// the file `/chat/runtime.js` publishes. Comments here are the review surface;
+// the bundle is generated.
 
 import programJson from './chat-program.json';
-import { Dialogue, EMPTY_TRANSCRIPT, InMemoryVariableStorage, runUntilStopped } from 'yarnspinner-typescript';
+import { CHAT_BLOCKS } from './chat-blocks.mjs';
+import { Dialogue, InMemoryVariableStorage, runUntilCompleteEvents } from 'yarnspinner-typescript';
 
 // `chat-program.json` is deployment data, not source; its type — the runtime's
 // `Program` — is declared beside it (`chat-program.d.json.ts`), out of the
@@ -40,7 +37,7 @@ const STORAGE_KEY = 'flock-chat-state';
  * @typedef {{
  *   sessionId: string,
  *   vars: Record<string, unknown>,
- *   log: ChatLine[],
+ *   log: ChatBlock[],
  *   node: string | null,
  *   complete: boolean,
  * }} ChatSnapshot
@@ -115,17 +112,55 @@ function open(vars) {
   return { dialogue, storage };
 }
 
+/** The command an authored block takes: `<<block "id">>` lowers to this text. */
+const BLOCK_COMMAND = /^block\s+"([^"]+)"\s*$/;
+
 /**
- * Pull a dialogue to its next rest state (an option set or completion), sweeping
- * past line and command stops.
+ * Resolve one command into a block, or null when the command is not a block.
+ * An id the inventory does not name degrades to a designed unknown block, so an
+ * authoring typo costs its own block and never the turn (ticket 01's containment
+ * contract). Remote URLs come from the inventory, never from the command text.
+ * @param {string} command
+ * @returns {ChatBlock|null}
+ */
+function blockFromCommand(command) {
+  const match = BLOCK_COMMAND.exec(command);
+  if (!match) return null;
+  const id = match[1];
+  const payload = CHAT_BLOCKS[id];
+  if (payload === undefined) {
+    return { who: 'bot', type: 'unknown', id, reason: 'Unknown block' };
+  }
+  return /** @type {ChatBlock} */ ({ who: 'bot', ...payload });
+}
+
+/**
+ * Drain a dialogue to its next rest state (an option set or completion),
+ * reducing the ordered event stream into blocks. Order matters — a reply is a
+ * sequence — so this reads events rather than the transcript's separate `lines`
+ * and `commands` arrays, which lose the interleaving.
  * @param {Dialogue} dialogue
+ * @returns {{ blocks: ChatBlock[], options: YarnOption[]|null, complete: boolean }}
  */
 function sweep(dialogue) {
-  let { transcript, stopped } = runUntilStopped(dialogue, EMPTY_TRANSCRIPT);
-  while (stopped === 'command' || stopped === 'line') {
-    ({ transcript, stopped } = runUntilStopped(dialogue, transcript));
+  /** @type {ChatBlock[]} */
+  const blocks = [];
+  /** @type {YarnOption[]|null} */
+  let options = null;
+  let complete = false;
+  for (const event of runUntilCompleteEvents(dialogue)) {
+    if (event.type === 'line') {
+      blocks.push({ who: 'bot', type: 'text', text: event.text });
+    } else if (event.type === 'command') {
+      const block = blockFromCommand(event.command);
+      if (block) blocks.push(block);
+    } else if (event.type === 'options') {
+      options = event.options;
+    } else if (event.type === 'dialogueComplete') {
+      complete = true;
+    }
   }
-  return { transcript, stopped };
+  return { blocks, options, complete };
 }
 
 /**
@@ -138,18 +173,9 @@ function optionList(options) {
 }
 
 /**
- * The mimic's half of one line.
- * @param {{ text: string }} line
- * @returns {ChatLine}
- */
-function botLine(line) {
-  return { from: 'bot', text: line.text };
-}
-
-/**
  * Rebuild a session from a snapshot: seed the storage, re-enter the persisted
  * node at its top, and recover the live option set the server's in-memory
- * Dialogue would still be holding. The sweep re-delivers the node's lines
+ * Dialogue would still be holding. The sweep re-delivers the node's blocks
  * (already in `log`) and re-runs its statements; the recorded variables are
  * restored afterwards so a resume mutates nothing, exactly as the server's
  * resume does not.
@@ -161,8 +187,8 @@ function rebuild(snapshot) {
   let pendingOptions = null;
   if (!snapshot.complete && snapshot.node) {
     dialogue.setNode(snapshot.node);
-    const { transcript, stopped } = sweep(dialogue);
-    pendingOptions = stopped === 'options' ? transcript.options ?? null : null;
+    const swept = sweep(dialogue);
+    pendingOptions = swept.options;
     for (const [name, value] of Object.entries(snapshot.vars)) storage.set(name, value);
   }
   return { dialogue, storage, pendingOptions };
@@ -181,23 +207,21 @@ function start(sessionId) {
   const id = sessionId ?? newId();
   const { dialogue, storage } = open();
   dialogue.setNode('Start');
-  const { transcript, stopped } = sweep(dialogue);
-  const lines = transcript.lines.map(botLine);
-  const complete = stopped === 'complete';
-  const pending = stopped === 'options' ? transcript.options ?? [] : null;
+  const swept = sweep(dialogue);
+  const blocks = swept.blocks;
   const vars = Object.fromEntries(storage.entries());
-  save({ sessionId: id, vars, log: lines.slice(), node: dialogue.currentNode, complete });
+  save({ sessionId: id, vars, log: blocks.slice(), node: dialogue.currentNode, complete: swept.complete });
   return {
     sessionId: id,
-    turn: { lines, options: optionList(pending), complete },
-    state: { node: dialogue.currentNode, complete, vars },
+    turn: { blocks, options: optionList(swept.options), complete: swept.complete },
+    state: { node: dialogue.currentNode, complete: swept.complete, vars },
   };
 }
 
 /**
  * `resume` — unknown or absent session state starts one, as the server does.
  * A live one replays the whole conversation and re-offers the pending set
- * without adding lines.
+ * without adding blocks.
  * @param {string} sessionId
  * @returns {ChatResponse}
  */
@@ -208,7 +232,7 @@ function resume(sessionId) {
   const pending = session.dialogue.isWaitingForOptionSelection ? session.pendingOptions : null;
   return {
     sessionId,
-    turn: { lines: [], options: optionList(pending), complete: snapshot.complete },
+    turn: { blocks: [], options: optionList(pending), complete: snapshot.complete },
     state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
     replay: snapshot.log.slice(),
   };
@@ -218,7 +242,7 @@ function resume(sessionId) {
  * `option` — select a pending choice and collect the reply. A stale session or
  * an index with no live option set hands back the rest state instead of
  * crashing; the visitor's line is echoed the way the server echoes it (the
- * widget never adds its own copy).
+ * shell never adds its own copy).
  * @param {string} sessionId
  * @param {number} optionIndex
  * @returns {ChatResponse}
@@ -232,29 +256,26 @@ function option(sessionId, optionIndex) {
   if (!pending || label === undefined) {
     return {
       sessionId,
-      turn: { lines: [], options: optionList(pending), complete: snapshot.complete },
+      turn: { blocks: [], options: optionList(pending), complete: snapshot.complete },
       state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
     };
   }
   const log = snapshot.log.slice();
-  log.push({ from: 'me', text: label });
+  log.push({ who: 'me', type: 'text', text: label });
   session.dialogue.selectOption(optionIndex);
-  const { transcript, stopped } = sweep(session.dialogue);
-  const lines = transcript.lines.map(botLine);
-  log.push(...lines);
-  const complete = stopped === 'complete';
-  const nextPending = stopped === 'options' ? transcript.options ?? [] : null;
+  const swept = sweep(session.dialogue);
+  log.push(...swept.blocks);
   const vars = Object.fromEntries(session.storage.entries());
-  save({ sessionId, vars, log, node: session.dialogue.currentNode, complete });
+  save({ sessionId, vars, log, node: session.dialogue.currentNode, complete: swept.complete });
   return {
     sessionId,
-    turn: { lines: [{ from: 'me', text: label }, ...lines], options: optionList(nextPending), complete },
-    state: { node: session.dialogue.currentNode, complete, vars },
+    turn: { blocks: [{ who: 'me', type: 'text', text: label }, ...swept.blocks], options: optionList(swept.options), complete: swept.complete },
+    state: { node: session.dialogue.currentNode, complete: swept.complete, vars },
   };
 }
 
 /**
- * One turn. Returns a Promise so the widget's network-shaped
+ * One turn. Returns a Promise so the shell's network-shaped
  * `turn(body).then(applyResponse)` is the same code it always was.
  * @param {ChatRequest} request
  * @returns {Promise<ChatResponse>}
@@ -265,6 +286,7 @@ function turn(request) {
   return Promise.resolve(start(request.sessionId));
 }
 
-// The widget (concatenated after this bundle) calls this global; it is the
-// whole public surface, matching the message API's one shape per request type.
+// The React shell reaches the engine only through this declared global; it is
+// the whole public surface, matching the message API's one shape per request
+// type.
 window.__flockChatEngine = { turn };

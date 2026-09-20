@@ -159,6 +159,10 @@
             "line:27ec4b80"
           ],
           "text": "Flock: Thanks for stopping by — take care!"
+        },
+        {
+          "content": "block \"flock-home\"",
+          "op": "runCommand"
         }
       ],
       "sourceFile": "flock.yarn",

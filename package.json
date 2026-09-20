@@ -2,7 +2,7 @@
   "name": "interactive-media-production",
   "version": "1.0.0",
   "private": true,
-  "description": "A chat assistant on one page: a static Next.js export carrying the chat widget and its client-side dialogue engine.",
+  "description": "A chat piece on one page: a static Next.js export carrying a chip-only, scripted dialogue and the vendored React shell that renders it.",
   "license": "CC0-1.0",
   "browserslist": [
     ">0.5%",
@@ -23,12 +23,20 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "framer-motion": "^13.4.0",
+    "lucide-react": "^1.47.0",
     "next": "^15.5.6",
+    "next-themes": "^0.4.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "tailwindcss": "^4.3.3",
+    "use-stick-to-bottom": "^1.1.6",
     "yarnspinner-typescript": "^1.0.0"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",

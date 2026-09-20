@@ -84,4 +84,7 @@ title: end
 // dialogue completion (an empty node is dropped by the compiler, so a jump
 // to it would be a runtime dead end).
 Flock: Thanks for stopping by — take care!
+// The one shipped non-text block: the seed link the block inventory names. It
+// exercises `<<block>>` end to end (id → inventory → a typed block in the turn).
+<<block "flock-home">>
 ===

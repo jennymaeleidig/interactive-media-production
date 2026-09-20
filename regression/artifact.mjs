@@ -1,13 +1,15 @@
 // The artifact check: the built export is the chat, and it is reachable.
 //
 // The unit suite proves behaviour from sources; this proves the *artifact*. It
-// serves the export directory over HTTP the way a host would and asks the four
+// serves the export directory over HTTP the way a host would and asks the
 // questions a source suite cannot answer:
 //
-//   * the host page exists, is HTML, and names both of the chat's files;
-//   * each path `pipeline/chat-assets.mjs` publishes answers with bytes
-//     identical to the maintained source it declares;
-//   * the privacy path the widget links to resolves.
+//   * the host page exists and is HTML;
+//   * it names the one path `pipeline/chat-assets.mjs` publishes;
+//   * it carries the honest preview metadata, the only out-of-frame carrier that
+//     survives a browser warning, and the in-page `?` disclosure is present;
+//   * the published bytes are identical to the maintained source they declare;
+//   * the privacy path resolves.
 //
 // It is environmental rather than a suite member: it needs a build first, and it
 // costs a server and a directory walk. `npm test` stays the fast suite a
@@ -30,6 +32,20 @@ export const OUT_DIR = path.join(ROOT, 'out');
 
 /** The documents the export must carry, as published URLs. */
 export const PAGES = ['/', '/legal/privacy-policy'];
+
+/**
+ * The honest preview surface, pinned: the first sentence must stand alone, and
+ * the unfurl tags must survive Meta's first-megabyte crawl (the exported head is
+ * under a hundred kilobytes, so presence is early enough). The disclosure
+ * toggle's accessible name comes from the shell's own HTML.
+ */
+export const HONEST_PREVIEW_REFERENCES = [
+  'An artwork, not Flock Safety.',
+  'og:title',
+  'og:description',
+  'name="description"',
+  'What is this?',
+];
 
 /**
  * The files that could answer one published URL: a URL that already names a
@@ -102,7 +118,7 @@ export function expectations() {
   }
   expected['/'] = {
     ...expected['/'],
-    references: CHAT_ASSETS.map((asset) => asset.path),
+    references: [...CHAT_ASSETS.map((asset) => asset.path), ...HONEST_PREVIEW_REFERENCES],
   };
   for (const asset of CHAT_ASSETS) {
     expected[asset.path] = {

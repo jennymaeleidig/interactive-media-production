@@ -1,27 +1,26 @@
 // The window globals the chat's shipped bytes define and read, and the turn
 // vocabulary they share, declared so `checkJs` (`tsconfig.checkjs.json`) can
-// check those files where they lie. Nothing here exists at runtime: the widget
-// assigns the window properties itself, and the aliases are type-only — the
+// check those files where they lie. Nothing here exists at runtime: the engine
+// assigns the window property itself, and the aliases are type-only — the
 // declaration they point at is `pipeline/chat-turn.mjs`.
 //
 // SPDX-License-Identifier: CC0-1.0
 
 declare global {
   interface Window {
-    /** The widget's mount guard — it injects itself once per page. */
-    __flockChat?: boolean;
     /**
-     * The client-side dialogue engine, assigned by the bundle the widget ships
-     * after (`pipeline/chat-runtime.js`). The widget calls it; there is no
-     * server to call. See `pipeline/chat-engine.mjs`.
+     * The client-side dialogue engine, assigned by the bundle the host page
+     * serves (`pipeline/chat-runtime.js`). The vendored React shell calls it
+     * through its `useDialogue` hook; there is no server to call. See
+     * `pipeline/chat-engine.mjs`.
      */
     __flockChatEngine?: { turn(request: ChatRequest): Promise<ChatResponse> };
   }
 
-  /** One client turn: the widget sends it, the client engine answers it. */
+  /** One client turn: the shell sends it, the client engine answers it. */
   type ChatRequest = import('./chat-turn.mjs').ChatRequest;
-  /** One conversation message, as the widget renders it. */
-  type ChatLine = import('./chat-turn.mjs').ChatLine;
+  /** One typed piece of a reply. */
+  type ChatBlock = import('./chat-turn.mjs').ChatBlock;
   /** One pending choice. */
   type ChatOption = import('./chat-turn.mjs').ChatOption;
   /** One turn of the conversation. */
@@ -30,8 +29,8 @@ declare global {
   type ChatResponse = import('./chat-turn.mjs').ChatResponse;
 
   /**
-   * The dialogue runtime type the client engine names without writing an
-   * `import(…)` into bytes the no-network rule reads as code.
+   * The dialogue runtime option type the client engine names without writing an
+   * `import(…)` into the bundle.
    */
   type YarnOption = import('yarnspinner-typescript').DialogueOption;
 }

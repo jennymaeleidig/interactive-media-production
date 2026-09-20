@@ -12,8 +12,8 @@ import { describe, expect, it } from 'vitest';
 import { CHAT_ASSETS, assetFor, readAsset } from '../pipeline/chat-assets.mjs';
 
 describe('CHAT_ASSETS', () => {
-  it('is the chat’s two shipped files, the runtime and its stylesheet', () => {
-    expect(CHAT_ASSETS.map((asset) => asset.path)).toEqual(['/chat/runtime.js', '/chat/widget.css']);
+  it('is the chat’s one shipped file: the engine and its program together', () => {
+    expect(CHAT_ASSETS.map((asset) => asset.path)).toEqual(['/chat/runtime.js']);
   });
 
   it('publishes each path once, under /chat/', () => {
@@ -46,6 +46,7 @@ describe('assetFor', () => {
 
   it('answers null for anything else, so a route cannot serve an unnamed file', () => {
     expect(assetFor('/chat/other.js')).toBeNull();
+    expect(assetFor('/chat/widget.css')).toBeNull();
     expect(assetFor('/chat/')).toBeNull();
     expect(assetFor('/chat/runtime.js/..')).toBeNull();
     expect(assetFor('')).toBeNull();

@@ -1,16 +1,122 @@
-// The host's canvas — and the whole of it. The chat arrives with its own
-// stylesheet (`/chat/widget.css`, which carries the widget's surfaces and its
-// embedded typeface), so there is nothing here to theme: this file centres the
-// one sentence the page carries and gets out of the way.
-//
-// SPDX-License-Identifier: CC0-1.0
-main {
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 1rem;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  text-align: center;
+/*
+ * The piece's one authoring stylesheet.
+ *
+ * Two token layers, per `docs/brand.md`: the homepage-derived surface values the
+ * full-viewport prototype settled (the later authority, ticket 06), and Flock's
+ * raw green/grey ramp re-exported under its own names so fidelity stays diffable
+ * against the brand reference. No red exists in the palette — nothing may read
+ * as an error state the piece does not have.
+ *
+ * The typefaces are Flock's, vendored under `public/fonts/` by decision (ticket
+ * 03); they are commercial faces licensed to Flock Group Inc, no rights are
+ * claimed here, and this file carries no license stamp because of it.
+ */
+@import "tailwindcss";
+
+/* Flock's ramp, verbatim from the brand reference. */
+@theme {
+  --color-flock: #304833;
+  --color-green-1: #e2fbdb;
+  --color-green-2: #cbf3bf;
+  --color-green-3: #b2e4a3;
+  --color-green-4: #84da6c;
+  --color-green-5: #2e9212;
+  --color-green-6: #1d5b0b;
+  --color-green-7: #123a09;
+  --color-green-8: #061602;
+  --color-grey-1: #ecefeb;
+  --color-grey-2: #d8dbd7;
+  --color-grey-3: #bbc0b9;
+  --color-grey-4: #a0a89e;
+  --color-grey-5: #777c75;
+  --color-grey-6: #525751;
+  --color-grey-7: #3c403b;
+  --color-grey-8: #22281f;
+}
+
+/* The surface the piece plays in: light ground, cream chrome, green content. */
+@theme {
+  --color-ground: #fefdfb;
+  --color-chrome: #eeeee3;
+  --color-content: #304833;
+  --color-capsule-content: #061602;
+  --color-edge: #bbc0b9;
+  --color-chip: #183129;
+  --color-chip-content: #eeeee3;
+  --color-bubble-bot: #f1f4f7;
+  --color-bubble-me: #ecefeb;
+  --color-bubble-content: #183129;
+  --color-focus-ring: #84da6c;
+  --color-inert-glyph: #888f91;
+
+  /* Semantic roles the vendored shell reads. */
+  --color-background: #fefdfb;
+  --color-foreground: #304833;
+  --color-border: #bbc0b9;
+  --color-card: #eeeee3;
+  --color-muted: #ecefeb;
+  --color-muted-foreground: #777c75;
+  --color-accent: #304833;
+  --color-accent-foreground: #eeeee3;
+  --color-ring: #84da6c;
+}
+
+/* Shape and motion, frozen as values. Flat by default; the only shadow is the
+   focus ring, which is an accessibility constraint, not a style choice. */
+@theme {
+  --radius-card: 1rem;
+  --radius-capsule: 8px;
+  --radius-chip: 0.5rem;
+  --radius-pill: 100px;
+  --ease-rise: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* Three roman faces, self-hosted; the fallback stacks are Flock's own. */
+@theme {
+  --font-sans: "Sohne", Arial, sans-serif;
+  --font-serif: "Denton", Georgia, sans-serif;
+  --font-display: "Denim", Arial, sans-serif;
+}
+
+@font-face {
+  font-family: "Sohne";
+  src: url("/fonts/Sohne-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sohne";
+  src: url("/fonts/Sohne-Book.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Denim";
+  src: url("/fonts/Denim-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-ground);
+    color: var(--color-content);
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+  }
 }

@@ -4,9 +4,12 @@
 // This is the one place that knows both sides of the delivery, because three
 // readers need to agree about it and none of them can see the others: the asset
 // route that answers the paths, the artifact check that verifies the built
-// export, and the widget seam that mounts the bytes. A published path is fixed
-// rather than content-addressed, and nothing is mirrored — with the captured
-// tree gone there is no second copy to keep in step.
+// export, and the seam that mounts the bytes. A published path is fixed rather
+// than content-addressed, and nothing is mirrored.
+//
+// The React shell ships in the page's own Next bundle, so the roster holds one
+// entry: the engine and the compiled program together (`CONTEXT.md` "Chat
+// runtime").
 //
 // SPDX-License-Identifier: CC0-1.0
 import { readFileSync } from 'node:fs';
@@ -28,11 +31,6 @@ export const CHAT_ASSETS = [
     path: '/chat/runtime.js',
     source: 'pipeline/chat-runtime.js',
     contentType: 'text/javascript; charset=utf-8',
-  },
-  {
-    path: '/chat/widget.css',
-    source: 'pipeline/chat-widget.css',
-    contentType: 'text/css; charset=utf-8',
   },
 ];
 

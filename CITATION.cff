@@ -11,3 +11,23 @@ keywords:
   - react
   - chatbot
   - yarn-spinner
+message: >
+  The CC0-1.0 licence above covers this repository's own work only. Assets
+  reproduced from Flock Safety - the wordmark, favicon and Apple touch icon, and
+  the Sohne and Denim fonts - remain the trademarks and licensed property of
+  Flock Group Inc, with no rights claimed here. Their status is recorded per
+  asset in docs/brand.md; the risk of reproducing them is accepted in
+  docs/adr/0002-accept-impersonation-risk.md.
+references:
+  - type: website
+    title: 'Flock Safety brand identity: research findings'
+    url: 'https://www.flocksafety.com/legal/trademark-notice'
+  - type: website
+    title: 'Flock Safety home'
+    url: 'https://www.flocksafety.com/'
+  - type: software
+    title: 'vercel/chatbot'
+    url: 'https://github.com/vercel/chatbot'
+    notes: >
+      Apache-2.0. The chat surfaces under components/ are a trimmed, adapted port;
+      see components/NOTICE.md and components/LICENSE.
