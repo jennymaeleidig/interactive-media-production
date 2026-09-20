@@ -14,7 +14,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { findingsFor, insideOut, probe } from '../regression/artifact.mjs';
+import { findingsFor, insideOut, probe } from '../test/artifact.mjs';
 
 /** The shape of a probe the check hands to `findingsFor`. */
 const ok = (url: string, body: string, contentType = 'text/html; charset=utf-8') => ({ url, status: 200, contentType, body });
@@ -25,7 +25,7 @@ describe('findingsFor', () => {
       contentType: 'text/html',
       references: ['/chat/runtime.js', 'An artwork, not Flock Safety.', 'og:title', 'og:description', 'name="description"'],
     },
-    '/chat/runtime.js': { contentType: 'text/javascript; charset=utf-8', body: 'console.log(1)', source: 'pipeline/chat-runtime.js' },
+    '/chat/runtime.js': { contentType: 'text/javascript; charset=utf-8', body: 'console.log(1)', source: 'scripts/chat-runtime.js' },
   };
 
   it('says nothing when the artifact is what it should be', () => {
@@ -59,7 +59,7 @@ describe('findingsFor', () => {
 
   it('reports bytes that drifted from the maintained source', () => {
     const findings = findingsFor([ok('/chat/runtime.js', 'console.log(2)', 'text/javascript; charset=utf-8')], expected);
-    expect(findings).toEqual(['/chat/runtime.js: does not carry the bytes of pipeline/chat-runtime.js']);
+    expect(findings).toEqual(['/chat/runtime.js: does not carry the bytes of scripts/chat-runtime.js']);
   });
 
   it('reports a media type the path should not have', () => {
@@ -118,7 +118,7 @@ describe('probe', () => {
 
   it('feeds the verdicts: a served directory composes with findingsFor', async () => {
     const expected = {
-      '/chat/runtime.js': { contentType: 'text/javascript', body: 'console.log(1)', source: 'pipeline/chat-runtime.js' },
+      '/chat/runtime.js': { contentType: 'text/javascript', body: 'console.log(1)', source: 'scripts/chat-runtime.js' },
     };
     const { status, contentType, body } = await probe(root, '/chat/runtime.js');
     expect(findingsFor([{ url: '/chat/runtime.js', status, contentType, body }], expected)).toEqual([]);

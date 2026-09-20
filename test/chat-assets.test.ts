@@ -1,6 +1,6 @@
 // The declaration of what the chat publishes.
 //
-// `pipeline/chat-assets.mjs` is read by three callers that cannot see each
+// `scripts/chat-assets.mjs` is read by three callers that cannot see each
 // other — the asset route, the artifact check and this seam — so its shape is
 // the contract between them: a published path, the maintained file it carries,
 // and the media type it answers with.
@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CHAT_ASSETS, assetFor, readAsset } from '../pipeline/chat-assets.mjs';
+import { CHAT_ASSETS, assetFor, readAsset } from '../scripts/chat-assets.mjs';
 
 describe('CHAT_ASSETS', () => {
   it('is the chat’s one shipped file: the engine and its program together', () => {

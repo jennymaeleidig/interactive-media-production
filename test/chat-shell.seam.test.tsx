@@ -16,10 +16,10 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChatShell } from '@/components/chat/chat-shell';
 import { BLOCK_ADAPTERS, Message } from '@/components/chat/message';
-import { CHAT_BLOCK_TYPES } from '@/pipeline/chat-turn.mjs';
+import { CHAT_BLOCK_TYPES } from '@/lib/chat-turn.mjs';
 import { groupBlocks } from '@/lib/types';
 import type { ChatMessage } from '@/lib/types';
-import type { ChatBlock } from '@/pipeline/chat-turn.mjs';
+import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { shippedAsset } from './seam-harness';
 
 const GREETING =

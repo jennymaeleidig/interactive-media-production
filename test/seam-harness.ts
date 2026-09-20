@@ -1,7 +1,7 @@
 // The seam harness for the chat's DOM seams.
 //
 // The question a DOM seam asks is "do the exact bytes the host serves behave in
-// a real DOM?" The bytes come from `pipeline/chat-assets.mjs` — the same
+// a real DOM?" The bytes come from `scripts/chat-assets.mjs` — the same
 // declaration the asset route answers from — so a seam cannot silently test a
 // different file than the one that ships. jsdom itself is provided by vitest's
 // `environment: 'jsdom'` and owned by the test, not by this module: the shell
@@ -9,7 +9,7 @@
 // the module directly.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { assetFor, readAsset } from '../pipeline/chat-assets.mjs';
+import { assetFor, readAsset } from '../scripts/chat-assets.mjs';
 
 /**
  * One published file's maintained bytes — exactly what its path answers with.
