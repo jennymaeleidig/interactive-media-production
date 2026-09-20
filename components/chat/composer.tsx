@@ -37,7 +37,15 @@ export function Composer({
             </button>
           ))}
         </div>
-        <span aria-disabled="true" aria-hidden="true" className="shrink-0 pb-1 text-inert-glyph" data-testid="inert-send">
+        {/* The box matches a chip's own height (`text-base` line-height plus `py-2`), so the
+            glyph centres on the chip row instead of hanging below it, and stays bottom-aligned
+            with the last chip row when the chips wrap. */}
+        <span
+          aria-disabled="true"
+          aria-hidden="true"
+          className="flex h-10 shrink-0 items-center text-inert-glyph"
+          data-testid="inert-send"
+        >
           <SendIcon />
         </span>
       </div>
