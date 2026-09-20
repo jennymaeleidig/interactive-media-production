@@ -66,7 +66,7 @@ export function Disclosure() {
           {more ? (
             <div className="mt-3 flex flex-col gap-2">
               <p>
-                An artwork by Jenny Leidig. The Flock wordmark, typefaces and palette reproduce Flock
+                The Flock wordmark, typefaces and palette reproduce Flock
                 Safety&rsquo;s own, which are Flock Group Inc&rsquo;s marks and licensed typefaces; no rights
                 are claimed by this project.
               </p>
