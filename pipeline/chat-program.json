@@ -161,7 +161,7 @@
           "text": "Flock: Thanks for stopping by — take care!"
         },
         {
-          "content": "block \"flock-home\"",
+          "content": "block \"flock-home\" new",
           "op": "runCommand"
         }
       ],

@@ -28,7 +28,7 @@ function programBlockIds(): string[] {
   /** @param {unknown} value */
   const walk = (value: unknown) => {
     if (typeof value === 'string') {
-      const match = /^block "([^"]+)"$/.exec(value);
+      const match = /^block "([^"]+)"(?:\s+(?:new|join))?$/.exec(value);
       if (match) ids.push(match[1]);
       return;
     }

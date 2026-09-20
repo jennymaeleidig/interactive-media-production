@@ -20,13 +20,15 @@ export interface ChatMessage {
   parts: ChatBlock[];
 }
 
-/** Group a flat, ordered block sequence into one message per speaker-run. */
+/** Group a flat, ordered block sequence into one message per speaker-run. A
+ * block that sets `newMessage` cuts the run, so one speaker can send several
+ * bubbles in a turn (ticket 08's grouping, with an authored boundary). */
 export function groupBlocks(blocks: readonly ChatBlock[]): ChatMessage[] {
   const messages: ChatMessage[] = [];
   for (const block of blocks) {
     const role: ChatRole = block.who === 'me' ? 'user' : 'assistant';
     const last = messages.at(-1);
-    if (last && last.role === role) {
+    if (last && last.role === role && !block.newMessage) {
       last.parts.push(block);
     } else {
       messages.push({ id: `${role}-${messages.length}`, role, parts: [block] });

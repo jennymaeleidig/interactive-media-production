@@ -187,7 +187,7 @@
             text: "Flock: Thanks for stopping by \u2014 take care!"
           },
           {
-            content: 'block "flock-home"',
+            content: 'block "flock-home" new',
             op: "runCommand"
           }
         ],
@@ -4783,19 +4783,15 @@
     });
     return { dialogue, storage };
   }
-  var BLOCK_COMMAND = /^block\s+"([^"]+)"\s*$/;
+  var BLOCK_COMMAND = /^block\s+"([^"]+)"(?:\s+(new|join))?\s*$/;
   function blockFromCommand(command) {
     const match = BLOCK_COMMAND.exec(command);
     if (!match) return null;
     const id = match[1];
     const payload = CHAT_BLOCKS[id];
-    if (payload === void 0) {
-      return { who: "bot", type: "unknown", id, reason: "Unknown block" };
-    }
-    return (
-      /** @type {ChatBlock} */
-      __spreadValues({ who: "bot" }, payload)
-    );
+    const block = payload === void 0 ? { who: "bot", type: "unknown", id, reason: "Unknown block" } : __spreadValues({ who: "bot" }, payload);
+    if (match[2] === "new") block.newMessage = true;
+    return block;
   }
   function sweep(dialogue) {
     const blocks = [];

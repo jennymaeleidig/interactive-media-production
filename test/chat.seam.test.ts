@@ -54,7 +54,7 @@ const CLOSING = 'Thanks for stopping by — take care!';
 const HUB_OPTIONS = ['What can you help me with?', 'Get a Demo', 'Support'];
 
 /** The seeded link block, exactly as `pipeline/chat-blocks.mjs` declares it. */
-const FLOCK_LINK: ChatBlock = { who: 'bot', type: 'link', href: 'https://www.flocksafety.com/', label: 'Flock Safety' };
+const FLOCK_LINK: ChatBlock = { who: 'bot', type: 'link', href: 'https://www.flocksafety.com/', label: 'Flock Safety', newMessage: true };
 
 function start(): Promise<ChatResponse> {
   return turn({ type: 'start' });
@@ -147,7 +147,7 @@ describe('block resolution (containment)', () => {
       expect(end.turn.blocks).toEqual([
         text('me', "That's all for now"),
         text('bot', CLOSING),
-        { who: 'bot', type: 'unknown', id: 'flock-home', reason: 'Unknown block' },
+        { who: 'bot', type: 'unknown', id: 'flock-home', reason: 'Unknown block', newMessage: true },
       ]);
     } finally {
       inventory['flock-home'] = saved;

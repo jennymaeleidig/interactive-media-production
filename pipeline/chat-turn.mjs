@@ -11,18 +11,21 @@
 // SPDX-License-Identifier: CC0-1.0
 
 /**
- * One typed piece of a reply. A block is `{ who, type, ...payload }`; the
- * transcript walks the sequence and dispatches each block to one adapter keyed
- * by `type`, so adding a type is one entry (ticket 01, `CONTEXT.md` "Block").
- * The locked vocabulary is `text | image | frame | link | me`, plus the designed
- * `unknown` fallback a block renders when it cannot resolve.
+ * One typed piece of a reply. A block is `{ who, type, ...payload }`, optionally
+ * carrying `newMessage` to start a fresh bubble even when the previous block has
+ * the same `who`. The transcript walks the sequence, dispatches each block to
+ * one adapter keyed by `type`, and groups blocks into bubbles by speaker-run,
+ * cut at every `newMessage` (ticket 01, `CONTEXT.md` "Block"). The locked
+ * vocabulary is `text | image | frame | link | me`, plus the designed `unknown`
+ * fallback a block renders when it cannot resolve.
  *
- * @typedef {{ who: 'bot' | 'me', type: 'text', text: string }} TextBlock
- * @typedef {{ who: 'bot' | 'me', type: 'image', src: string, alt: string, caption?: string }} ImageBlock
- * @typedef {{ who: 'bot' | 'me', type: 'frame', src: string, sandbox: string, title: string, caption?: string }} FrameBlock
- * @typedef {{ who: 'bot' | 'me', type: 'link', href: string, label: string }} LinkBlock
- * @typedef {{ who: 'bot' | 'me', type: 'me' }} MeBlock
- * @typedef {{ who: 'bot' | 'me', type: 'unknown', id?: string, reason: string }} UnknownBlock
+ * @typedef {{ newMessage?: boolean }} BlockBoundary
+ * @typedef {BlockBoundary & { who: 'bot' | 'me', type: 'text', text: string }} TextBlock
+ * @typedef {BlockBoundary & { who: 'bot' | 'me', type: 'image', src: string, alt: string, caption?: string }} ImageBlock
+ * @typedef {BlockBoundary & { who: 'bot' | 'me', type: 'frame', src: string, sandbox: string, title: string, caption?: string }} FrameBlock
+ * @typedef {BlockBoundary & { who: 'bot' | 'me', type: 'link', href: string, label: string }} LinkBlock
+ * @typedef {BlockBoundary & { who: 'bot' | 'me', type: 'me' }} MeBlock
+ * @typedef {BlockBoundary & { who: 'bot' | 'me', type: 'unknown', id?: string, reason: string }} UnknownBlock
  * @typedef {TextBlock | ImageBlock | FrameBlock | LinkBlock | MeBlock | UnknownBlock} ChatBlock
  */
 

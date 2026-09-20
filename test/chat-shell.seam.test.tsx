@@ -17,6 +17,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { ChatShell } from '@/components/chat/chat-shell';
 import { BLOCK_ADAPTERS, Message } from '@/components/chat/message';
 import { CHAT_BLOCK_TYPES } from '@/pipeline/chat-turn.mjs';
+import { groupBlocks } from '@/lib/types';
 import type { ChatBlock, ChatMessage } from '@/lib/types';
 import { shippedAsset } from './seam-harness';
 
@@ -100,6 +101,44 @@ describe('the mounted shell', () => {
       spy.mockRestore();
     }
     expect(errors.filter((message) => message.includes('same key'))).toEqual([]);
+  });
+
+  it('sends the closing line and the link as two assistant messages', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByText('Support'));
+    await screen.findByText(/You can reach our support team/);
+    fireEvent.click(screen.getByText("That's all for now"));
+    await screen.findByText(/Thanks for stopping by/);
+    const linkBubble = screen.getByText('Flock Safety').closest('[data-testid="message-assistant"]');
+    expect(linkBubble?.textContent).not.toContain('Thanks for stopping by');
+  });
+});
+
+describe('block grouping', () => {
+  it('keeps consecutive same-speaker text in one bubble', () => {
+    const grouped = groupBlocks([
+      { who: 'bot', type: 'text', text: 'one' },
+      { who: 'bot', type: 'text', text: 'two' },
+    ]);
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0].parts).toHaveLength(2);
+  });
+
+  it('cuts a new bubble at a newMessage boundary', () => {
+    const grouped = groupBlocks([
+      { who: 'bot', type: 'text', text: 'Thanks for stopping by — take care!' },
+      {
+        who: 'bot',
+        type: 'link',
+        href: 'https://www.flocksafety.com/',
+        label: 'Flock Safety',
+        newMessage: true,
+      },
+    ]);
+    expect(grouped).toHaveLength(2);
+    expect(grouped[0].parts).toHaveLength(1);
+    expect(grouped[1].parts).toHaveLength(1);
   });
 });
 

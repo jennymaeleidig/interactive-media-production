@@ -85,6 +85,9 @@ title: end
 // to it would be a runtime dead end).
 Flock: Thanks for stopping by — take care!
 // The one shipped non-text block: the seed link the block inventory names. It
-// exercises `<<block>>` end to end (id → inventory → a typed block in the turn).
-<<block "flock-home">>
+// exercises `<<block>>` end to end (id → inventory → a typed block in the turn),
+// and `new` places it in its own bubble rather than gluing it onto the line
+// above. `<<block "flock-home" join>>` (or a bare `<<block>>`) would keep it in
+// the closing bubble instead — the placement is the author's choice per command.
+<<block "flock-home" new>>
 ===

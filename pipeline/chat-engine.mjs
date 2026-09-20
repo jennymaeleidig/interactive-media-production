@@ -140,13 +140,21 @@ function open(vars) {
 }
 
 /** The command an authored block takes: `<<block "id">>` lowers to this text. */
-const BLOCK_COMMAND = /^block\s+"([^"]+)"\s*$/;
+/**
+ * `<<block "id">>` joins the current bubble; `<<block "id" new>>` opens a new
+ * one. `join` is the spelled-out default. The placement is the author's call per
+ * command, so the same block can sit in a run or stand alone.
+ */
+const BLOCK_COMMAND = /^block\s+"([^"]+)"(?:\s+(new|join))?\s*$/;
 
 /**
  * Resolve one command into a block, or null when the command is not a block.
  * An id the inventory does not name degrades to a designed unknown block, so an
  * authoring typo costs its own block and never the turn (ticket 01's containment
  * contract). Remote URLs come from the inventory, never from the command text.
+ *
+ * A trailing `new` opens a fresh bubble for this block; the default (`join`)
+ * keeps it in the current speaker-run. Text lines always join.
  * @param {string} command
  * @returns {ChatBlock|null}
  */
@@ -155,10 +163,13 @@ function blockFromCommand(command) {
   if (!match) return null;
   const id = match[1];
   const payload = CHAT_BLOCKS[id];
-  if (payload === undefined) {
-    return { who: 'bot', type: 'unknown', id, reason: 'Unknown block' };
-  }
-  return /** @type {ChatBlock} */ ({ who: 'bot', ...payload });
+  /** @type {ChatBlock} */
+  const block =
+    payload === undefined
+      ? { who: 'bot', type: 'unknown', id, reason: 'Unknown block' }
+      : { who: 'bot', ...payload };
+  if (match[2] === 'new') block.newMessage = true;
+  return block;
 }
 
 /**

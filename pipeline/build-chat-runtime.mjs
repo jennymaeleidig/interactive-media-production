@@ -74,8 +74,8 @@ function compileProgram() {
   return `${JSON.stringify(stableKeys(project.program), null, 2)}\n`;
 }
 
-/** Bundle the engine. @returns {Promise<string>} */
-async function bundleRuntime() {
+/** Bundle the engine, inlining the freshly compiled program. @param {string} program @returns {Promise<string>} */
+async function bundleRuntime(program) {
   const result = await build({
     entryPoints: [ENGINE_FILE],
     bundle: true,
@@ -84,6 +84,17 @@ async function bundleRuntime() {
     target: 'es2017',
     legalComments: 'none',
     write: false,
+    // The engine imports `./chat-program.json`; resolve that to the bytes just
+    // compiled, not the copy on disk. Reading the disk here would inline the
+    // previous compile and ship a runtime one edit behind its program.
+    plugins: [
+      {
+        name: 'fresh-program',
+        setup(pluginBuild) {
+          pluginBuild.onLoad({ filter: /chat-program\.json$/ }, () => ({ contents: program, loader: 'json' }));
+        },
+      },
+    ],
   });
   return HEADER + result.outputFiles[0].text;
 }
@@ -93,7 +104,8 @@ async function bundleRuntime() {
  * @returns {Promise<{ program: string, runtime: string }>}
  */
 export async function buildChatRuntime() {
-  return { program: compileProgram(), runtime: await bundleRuntime() };
+  const program = compileProgram();
+  return { program, runtime: await bundleRuntime(program) };
 }
 
 /** The committed bytes, or null when the file is absent. @param {string} file */
