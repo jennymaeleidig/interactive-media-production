@@ -120,15 +120,26 @@ export function BlockPart({ block }: AdapterProps) {
 }
 
 /** One speaker-run: the parts, in order, inside one bubble. */
-export function Message({ message }: { message: ChatMessageType }) {
+export function Message({
+  message,
+  className,
+  grouping = {},
+}: {
+  message: ChatMessageType;
+  className?: string;
+  /** Whether a same-speaker bubble sits above or below, so the shared corners square off. */
+  grouping?: { continues?: boolean; continued?: boolean };
+}) {
   const user = message.role === 'user';
   const reduceMotion = useReducedMotion();
   return (
-    <div className={cn('flex w-full flex-col', user ? 'items-end' : 'items-start')}>
+    <div className={cn('flex w-full flex-col', user ? 'items-end' : 'items-start', className)}>
       <div
         className={cn(
           'flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
           user ? 'ml-auto bg-bubble-me' : 'bg-bubble-bot',
+          grouping.continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
+          grouping.continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
         )}
         data-role={message.role}
         data-testid={`message-${message.role}`}
