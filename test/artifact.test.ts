@@ -1,14 +1,20 @@
 // The artifact check's verdicts, over synthetic probes.
 //
 // The check itself needs a build and a server, so it is an npm script rather
-// than a suite member; what is testable here is what it *concludes*. Every
-// assertion below is a way the published artifact could be wrong while the
-// sources look fine: a missing page, a wrong media type, bytes that drifted from
-// the maintained source, and a host page that stopped naming the chat.
+// than a suite member; what is testable here is what it *concludes*, and the
+// serving seam it concludes from. Every assertion below is a way the published
+// artifact could be wrong while the sources look fine: a missing page, a wrong
+// media type, bytes that drifted from the maintained source, and a host page
+// that stopped naming the chat. `probe` drives the real serving logic against a
+// real temporary directory, so the seam covers file resolution and the
+// directory-escape guard without a socket.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { describe, expect, it } from 'vitest';
-import { candidatesFor, findingsFor, insideOut } from '../regression/artifact.mjs';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { findingsFor, insideOut, probe } from '../regression/artifact.mjs';
 
 /** The shape of a probe the check hands to `findingsFor`. */
 const ok = (url: string, body: string, contentType = 'text/html; charset=utf-8') => ({ url, status: 200, contentType, body });
@@ -62,26 +68,68 @@ describe('findingsFor', () => {
   });
 });
 
+describe('probe', () => {
+  let root: string;
 
-describe('candidatesFor', () => {
-  it('answers the export directory for the root', () => {
-    expect(candidatesFor('/')).toEqual(['index.html']);
+  beforeAll(async () => {
+    root = await mkdtemp(path.join(tmpdir(), 'flock-artifact-'));
+    await writeFile(path.join(root, 'index.html'), '<!doctype html><script src="/chat/runtime.js">');
+    await mkdir(path.join(root, 'legal'), { recursive: true });
+    await writeFile(path.join(root, 'legal/privacy-policy.html'), '<h1>privacy</h1>');
+    await mkdir(path.join(root, 'deep'), { recursive: true });
+    await writeFile(path.join(root, 'deep/index.html'), '<h1>deep index</h1>');
+    await mkdir(path.join(root, 'chat'), { recursive: true });
+    await writeFile(path.join(root, 'chat/runtime.js'), 'console.log(1)');
   });
 
-  it('prefers the file the export writes, and falls back to a directory index', () => {
-    expect(candidatesFor('/legal/privacy-policy')).toEqual([
-      'legal/privacy-policy.html',
-      'legal/privacy-policy/index.html',
-    ]);
-    expect(candidatesFor('/legal/privacy-policy/')).toEqual([
-      'legal/privacy-policy.html',
-      'legal/privacy-policy/index.html',
-    ]);
+  afterAll(() => rm(root, { recursive: true, force: true }));
+
+  it('serves the export directory index for the root', async () => {
+    const res = await probe(root, '/');
+    expect(res.status).toBe(200);
+    expect(res.contentType).toBe('text/html; charset=utf-8');
+    expect(res.body).toContain('/chat/runtime.js');
   });
 
-  it('answers a published file as itself, and never appends an extension to it', () => {
-    expect(candidatesFor('/chat/runtime.js')).toEqual(['chat/runtime.js']);
-    expect(candidatesFor('/favicon-32.png')).toEqual(['favicon-32.png']);
+  it('serves the file the export writes for a route', async () => {
+    const res = await probe(root, '/legal/privacy-policy');
+    expect(res.status).toBe(200);
+    expect(res.body).toContain('privacy');
+  });
+
+  it('falls back to a directory index when the export writes one', async () => {
+    const res = await probe(root, '/deep');
+    expect(res.status).toBe(200);
+    expect(res.body).toContain('deep index');
+  });
+
+  it('serves a published file as itself, with its media type', async () => {
+    const res = await probe(root, '/chat/runtime.js');
+    expect(res.status).toBe(200);
+    expect(res.contentType).toBe('text/javascript; charset=utf-8');
+    expect(res.body).toBe('console.log(1)');
+  });
+
+  it('answers 404 for a URL the directory does not carry', async () => {
+    const res = await probe(root, '/nope');
+    expect(res.status).toBe(404);
+    expect(res.contentType).toBe('text/plain; charset=utf-8');
+  });
+
+  it('feeds the verdicts: a served directory composes with findingsFor', async () => {
+    const expected = {
+      '/chat/runtime.js': { contentType: 'text/javascript', body: 'console.log(1)', source: 'pipeline/chat-runtime.js' },
+    };
+    const { status, contentType, body } = await probe(root, '/chat/runtime.js');
+    expect(findingsFor([{ url: '/chat/runtime.js', status, contentType, body }], expected)).toEqual([]);
+  });
+
+  it('reports a media type the path should not have, from the served bytes', async () => {
+    const expected = { '/chat/runtime.js': { contentType: 'text/html', body: 'console.log(1)' } };
+    const { status, contentType, body } = await probe(root, '/chat/runtime.js');
+    expect(findingsFor([{ url: '/chat/runtime.js', status, contentType, body }], expected)).toEqual([
+      '/chat/runtime.js: answered text/javascript; charset=utf-8, expected text/html',
+    ]);
   });
 });
 

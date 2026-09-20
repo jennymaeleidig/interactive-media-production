@@ -55,7 +55,7 @@ export const HONEST_PREVIEW_REFERENCES = [
  * @param {string} pathname
  * @returns {string[]}
  */
-export function candidatesFor(pathname) {
+function candidatesFor(pathname) {
   const relative = pathname.replace(/^\/+/, '').replace(/\/+$/, '');
   if (relative === '') return ['index.html'];
   if (path.extname(relative) !== '') return [relative];
@@ -92,6 +92,14 @@ function mimeFor(file) {
 /**
  * @typedef {object} Probe
  * @property {string} url
+ * @property {number} status
+ * @property {string} contentType
+ * @property {string} body
+ */
+
+/**
+ * One URL answered from a static directory, as data.
+ * @typedef {object} Served
  * @property {number} status
  * @property {string} contentType
  * @property {string} body
@@ -166,28 +174,27 @@ export function findingsFor(probes, expected) {
 }
 
 /**
- * Answer one request from the export directory: the first candidate that exists
- * inside it, or a 404.
- * @param {import('node:http').IncomingMessage} req
- * @param {import('node:http').ServerResponse} res
+ * Serve one URL from a static directory the way a host would: the first
+ * candidate that exists inside `root`, or a 404. Returns the response as data,
+ * so the seam can drive the real serving logic against a real directory without
+ * a socket; the check's HTTP listener is a thin adapter over this.
  * @param {string} root
+ * @param {string} url
+ * @returns {Promise<Served>}
  */
-async function answer(req, res, root) {
-  const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+export async function probe(root, url) {
+  const pathname = new URL(url, 'http://localhost').pathname;
   for (const candidate of candidatesFor(pathname)) {
     const file = path.resolve(path.join(root, candidate));
     if (!insideOut(root, file)) continue;
     try {
-      const body = await readFile(file);
-      res.writeHead(200, { 'content-type': mimeFor(file) });
-      res.end(body);
-      return;
+      const body = await readFile(file, 'utf8');
+      return { status: 200, contentType: mimeFor(file), body };
     } catch {
       // try the next candidate
     }
   }
-  res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
-  res.end('Not found\n');
+  return { status: 404, contentType: 'text/plain; charset=utf-8', body: 'Not found\n' };
 }
 
 async function main() {
@@ -196,10 +203,15 @@ async function main() {
     process.exit(1);
   }
   const server = createServer((req, res) => {
-    answer(req, res, OUT_DIR).catch(() => {
-      res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
-      res.end('error\n');
-    });
+    probe(OUT_DIR, req.url ?? '/')
+      .then(({ status, contentType, body }) => {
+        res.writeHead(status, { 'content-type': contentType });
+        res.end(body);
+      })
+      .catch(() => {
+        res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('error\n');
+      });
   });
   /** @type {Promise<void>} */
   const listening = new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
