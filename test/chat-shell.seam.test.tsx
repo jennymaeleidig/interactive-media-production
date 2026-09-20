@@ -13,7 +13,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChatShell } from '@/components/chat/chat-shell';
 import { BLOCK_ADAPTERS, Message } from '@/components/chat/message';
 import { CHAT_BLOCK_TYPES } from '@/pipeline/chat-turn.mjs';
@@ -83,6 +83,24 @@ describe('the mounted shell', () => {
     expect(await screen.findByText(GREETING)).toBeTruthy();
     expect(await screen.findByText(/You can reach our support team/)).toBeTruthy();
   });
+
+  it('keeps message keys unique as the conversation grows', async () => {
+    const errors: string[] = [];
+    const spy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+      errors.push(args.map(String).join(' '));
+    });
+    try {
+      render(<ChatShell />);
+      await screen.findByText(GREETING);
+      fireEvent.click(screen.getByText('Support'));
+      await screen.findByText(/You can reach our support team/);
+      fireEvent.click(screen.getByText("That's all for now"));
+      await screen.findByText(/Thanks for stopping by/);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(errors.filter((message) => message.includes('same key'))).toEqual([]);
+  });
 });
 
 describe('the block adapters', () => {
@@ -107,6 +125,10 @@ describe('the block adapters', () => {
     expect(screen.getByText('hello')).toBeTruthy();
     const link = screen.getByText('Flock Safety').closest('a');
     expect(link?.getAttribute('href')).toBe('https://www.flocksafety.com/');
+    // Inline link, not a button: it carries the open-in-new-tab glyph itself.
+    expect(link?.querySelector('svg')).toBeTruthy();
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(screen.getByText(/opens in a new tab/)).toBeTruthy();
     expect(screen.getByText(/could not be shown/)).toBeTruthy();
   });
 

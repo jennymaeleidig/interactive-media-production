@@ -72,7 +72,11 @@ function opening(
   blocks: readonly ChatBlock[],
   options: ChatOption[] | null,
 ): { messages: ChatMessage[]; options: ChatOption[] } {
-  return { messages: [...messages, ...groupBlocks(blocks)], options: options ?? [] };
+  // Re-group the whole sequence, not just the new blocks: ids are positions in
+  // one growing list, so a turn cannot mint a key an earlier turn already used,
+  // and a speaker-run split across turns still merges into one bubble.
+  const grouped = groupBlocks([...messages.flatMap((message) => message.parts), ...blocks]);
+  return { messages: grouped, options: options ?? [] };
 }
 
 export function useDialogue(): Dialogue {

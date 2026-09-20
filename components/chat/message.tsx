@@ -22,6 +22,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { allowedSources } from '@/pipeline/chat-blocks.mjs';
 import { cn } from '@/lib/utils';
+import { ExternalLinkIcon } from './icons';
 import type { ChatBlock, ChatMessage as ChatMessageType } from '@/lib/types';
 
 /** The authored remote sources, frozen once from the inventory. */
@@ -58,12 +59,14 @@ function LinkPart({ block }: AdapterProps) {
   const { href, label } = block as Extract<ChatBlock, { type: 'link' }>;
   return (
     <a
-      className="inline-flex w-fit rounded-pill bg-chip px-4 py-2 text-base text-chip-content hover:opacity-90"
+      className="inline-flex w-fit items-center gap-1 text-content underline underline-offset-2 hover:opacity-90"
       href={href}
       rel="noreferrer noopener"
       target="_blank"
     >
       {label}
+      <ExternalLinkIcon />
+      <span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }
