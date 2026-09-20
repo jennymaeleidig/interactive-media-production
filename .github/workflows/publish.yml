@@ -59,7 +59,7 @@ jobs:
       - name: Test
         run: npm test
 
-      # The chat's shipped bytes are a pipeline output: this fails before the
+      # The chat's shipped bytes are a scripts output: this fails before the
       # build when a dialogue or engine source changed without
       # `npm run chat:build`.
       - name: Check the chat runtime is fresh

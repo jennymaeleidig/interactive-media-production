@@ -16,9 +16,9 @@
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev",
     "build": "next build",
-    "chat:build": "node pipeline/build-chat-runtime.mjs",
-    "chat:check": "node pipeline/build-chat-runtime.mjs --check",
-    "check:artifact": "node regression/artifact.mjs",
+    "chat:build": "node scripts/build-chat-runtime.mjs",
+    "chat:check": "node scripts/build-chat-runtime.mjs --check",
+    "check:artifact": "node test/artifact.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.checkjs.json",
     "test": "vitest run"
   },
