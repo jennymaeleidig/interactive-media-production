@@ -58,7 +58,7 @@ export function Disclosure() {
       </button>
       {open ? (
         <div
-          className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2.5rem))] rounded-card border border-edge bg-chrome p-4 text-sm text-capsule-content shadow-none"
+          className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2.5rem))] rounded-card border border-edge bg-chrome p-4 text-base text-capsule-content shadow-none"
           data-testid="disclosure-popover"
           role="dialog"
         >

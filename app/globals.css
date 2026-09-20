@@ -103,6 +103,22 @@
 }
 
 @layer base {
+  /*
+   * The one scaling dial. Every Tailwind size is rem-based, so this scales the
+   * type, the spacing and the shape together; nothing here is pinned to a px
+   * value except the first-party radii, which are already small. 17px is the
+   * phone baseline, nudged up once there is desk width.
+   */
+  html {
+    font-size: 17px;
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 18px;
+    }
+  }
+
   html,
   body {
     height: 100%;

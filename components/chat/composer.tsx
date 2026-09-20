@@ -27,7 +27,7 @@ export function Composer({
         <div className="flex flex-1 flex-wrap gap-2" data-testid="chip-row">
           {options.map((option) => (
             <button
-              className="rounded-chip bg-chip px-4 py-2 text-left text-sm text-chip-content transition-colors hover:opacity-90"
+              className="rounded-chip bg-chip px-4 py-2 text-left text-base text-chip-content transition-colors hover:opacity-90"
               data-chip={option.index}
               key={`${option.index}-${option.text}`}
               onClick={() => onSelect(option)}

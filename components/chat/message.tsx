@@ -58,7 +58,7 @@ function LinkPart({ block }: AdapterProps) {
   const { href, label } = block as Extract<ChatBlock, { type: 'link' }>;
   return (
     <a
-      className="inline-flex w-fit rounded-pill bg-chip px-4 py-2 text-sm text-chip-content hover:opacity-90"
+      className="inline-flex w-fit rounded-pill bg-chip px-4 py-2 text-base text-chip-content hover:opacity-90"
       href={href}
       rel="noreferrer noopener"
       target="_blank"
@@ -124,7 +124,7 @@ export function Message({ message }: { message: ChatMessageType }) {
     <div className={cn('flex w-full flex-col', user ? 'items-end' : 'items-start')}>
       <div
         className={cn(
-          'flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-sm leading-relaxed text-bubble-content',
+          'flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
           user ? 'ml-auto bg-bubble-me' : 'bg-bubble-bot',
         )}
         data-role={message.role}
