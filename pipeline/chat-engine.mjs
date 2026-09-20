@@ -239,23 +239,26 @@ function restore(snapshot) {
 }
 
 /**
- * A snapshot at its rest state: the whole transcript so far and the choice set
+ * A snapshot at its rest state: the whole block sequence so far and the choice set
  * it is waiting on (or null when it has run out). Adds no blocks — a reload, or
  * an option that resolves to nothing, hands back the conversation as it stands.
+ * `pending` is the choice set a caller already resolved by restoring the
+ * snapshot; omit it and this restores once to find it.
  * @param {ChatSnapshot} snapshot
+ * @param {YarnOption[]|null} [pending]
  * @returns {ChatResponse}
  */
-function resting(snapshot) {
-  const { pending } = restore(snapshot);
+function resting(snapshot, pending) {
+  const resolved = pending === undefined ? restore(snapshot).pending : pending;
   return {
-    turn: { blocks: snapshot.log.slice(), options: optionList(pending) },
+    turn: { blocks: snapshot.log.slice(), options: optionList(resolved) },
     state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars },
   };
 }
 
 /**
  * `start` — opens this page's session. A live snapshot resumes in place (the
- * whole transcript, the pending choice set) instead of resetting, so a stale
+ * whole block sequence, the pending choice set) instead of resetting, so a stale
  * client can never blank the conversation; with none it begins one at the
  * program's entry node.
  * @returns {ChatResponse}
@@ -287,7 +290,7 @@ function option(optionIndex) {
   if (!snapshot) return start();
   const session = restore(snapshot);
   const label = session.pending?.find((candidate) => candidate.index === optionIndex)?.text;
-  if (label === undefined) return resting(snapshot);
+  if (label === undefined) return resting(snapshot, session.pending);
   session.dialogue.selectOption(optionIndex);
   const swept = sweep(session.dialogue);
   const log = snapshot.log.concat([{ who: 'me', type: 'text', text: label }, ...swept.blocks]);

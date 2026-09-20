@@ -4822,10 +4822,10 @@
     }
     return { dialogue, storage, pending };
   }
-  function resting(snapshot) {
-    const { pending } = restore(snapshot);
+  function resting(snapshot, pending) {
+    const resolved = pending === void 0 ? restore(snapshot).pending : pending;
     return {
-      turn: { blocks: snapshot.log.slice(), options: optionList(pending) },
+      turn: { blocks: snapshot.log.slice(), options: optionList(resolved) },
       state: { node: snapshot.node, complete: snapshot.complete, vars: snapshot.vars }
     };
   }
@@ -4848,7 +4848,7 @@
     if (!snapshot) return start();
     const session = restore(snapshot);
     const label = (_b = (_a = session.pending) == null ? void 0 : _a.find((candidate) => candidate.index === optionIndex)) == null ? void 0 : _b.text;
-    if (label === void 0) return resting(snapshot);
+    if (label === void 0) return resting(snapshot, session.pending);
     session.dialogue.selectOption(optionIndex);
     const swept = sweep(session.dialogue);
     const log = snapshot.log.concat([{ who: "me", type: "text", text: label }, ...swept.blocks]);

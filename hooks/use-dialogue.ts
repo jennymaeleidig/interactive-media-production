@@ -9,7 +9,7 @@
 // groups a turn's blocks into one message per speaker-run, so the renderer never
 // sees a `who`.
 //
-// The engine owns the session and answers every turn with the whole transcript,
+// The engine owns the session and answers every turn with the whole block sequence,
 // so this hook keeps no copy of its own: it replaces `messages` with whatever
 // came back rather than merging. There is no loading, typing or delivery state
 // either — nothing about a turn is shown until its blocks arrive, and the chips
@@ -17,7 +17,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useState } from 'react';
-import type { ChatOption } from '@/pipeline/chat-turn.mjs';
+import type { ChatOption, ChatResponse } from '@/pipeline/chat-turn.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/types';
 
 /** The host page's one runtime script; the hook waits for it on a cold load. */
@@ -60,17 +60,23 @@ export function useDialogue(): Dialogue {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [options, setOptions] = useState<ChatOption[]>([]);
 
+  /** The engine's answer applied as the shell's next state. It returns the whole
+   * block sequence, so this replaces rather than merges. */
+  const apply = useCallback((res: ChatResponse) => {
+    setMessages(groupBlocks(res.turn.blocks));
+    setOptions(res.turn.options ?? []);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     engineReady()
       .then((api) => {
         if (cancelled || !api) return;
         // `start` opens this page's session: the engine resumes the live one or
-        // begins one, and either way answers with the whole transcript.
+        // begins one, and either way answers with the whole block sequence.
         return api.turn({ type: 'start' }).then((res) => {
           if (cancelled) return;
-          setMessages(groupBlocks(res.turn.blocks));
-          setOptions(res.turn.options ?? []);
+          apply(res);
         });
       })
       .catch(() => {
@@ -80,21 +86,18 @@ export function useDialogue(): Dialogue {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [apply]);
 
   const sendOption = useCallback((option: ChatOption) => {
     const api = engine();
     if (!api) return;
     api
       .turn({ type: 'option', optionIndex: option.index })
-      .then((res) => {
-        setMessages(groupBlocks(res.turn.blocks));
-        setOptions(res.turn.options ?? []);
-      })
+      .then(apply)
       .catch(() => {
         // As above: nothing in-frame can act on it.
       });
-  }, []);
+  }, [apply]);
 
   return { messages, options, sendOption };
 }

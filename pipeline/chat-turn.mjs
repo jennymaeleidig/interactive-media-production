@@ -13,7 +13,7 @@
 /**
  * One typed piece of a reply. A block is `{ who, type, ...payload }`, optionally
  * carrying `newMessage` to start a fresh bubble even when the previous block has
- * the same `who`. The transcript walks the sequence, dispatches each block to
+ * the same `who`. The chat surface walks the sequence, dispatching each block to
  * one adapter keyed by `type`, and groups blocks into bubbles by speaker-run,
  * cut at every `newMessage` (ticket 01, `CONTEXT.md` "Block"). The locked
  * vocabulary is `text | image | frame | link | me`, plus the designed `unknown`
@@ -40,7 +40,7 @@ export const CHAT_BLOCK_TYPES = ['text', 'image', 'frame', 'link', 'me', 'unknow
 
 /**
  * One turn: the whole block sequence so far and the live choice set. The engine
- * returns the entire transcript on every request, so the shell replaces its
+ * returns the whole block sequence on every request, so the shell replaces its
  * state rather than merging, and there is no separate replay. A resting session
  * still gets a turn — the same blocks and choice set — so a reload can re-offer
  * it. Completion is the session's; it is declared once, on `ChatState`.
@@ -64,7 +64,7 @@ export const CHAT_BLOCK_TYPES = ['text', 'image', 'frame', 'link', 'me', 'unknow
  */
 
 /**
- * The whole body of one turn response: the transcript, and the session's report.
+ * The whole body of one turn response: the block sequence, and the session's report.
  * @typedef {{ turn: ChatTurn, state: ChatState }} ChatResponse
  */
 

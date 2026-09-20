@@ -1,5 +1,5 @@
 // Chat dialogue seam: the engine the piece ships, driven headlessly.
-// start/option → the whole transcript each turn, the live choice sets, surfaced
+// start/option → the whole block sequence each turn, the live choice sets, surfaced
 // variables, session persistence across calls, and the email-gate branch shape.
 // The engine under test is `pipeline/chat-engine.mjs` — the module
 // `pipeline/build-chat-runtime.mjs` bundles into the committed
@@ -9,7 +9,7 @@
 // engine, so this is the surface that ships.
 //
 // A turn out is the whole block sequence so far (`pipeline/chat-turn.mjs`), so
-// these tests assert the exact transcript the viewer sees. Blocks authored in
+// these tests assert the exact block sequence the viewer sees. Blocks authored in
 // Yarn as plain lines are `text` blocks; `<<block "id">>` resolves against the
 // inventory (`pipeline/chat-blocks.mjs`). Containment is a contract term here
 // too: an id the inventory does not name degrades to a designed fallback and
@@ -73,7 +73,7 @@ async function option(label: string): Promise<ChatResponse> {
   return turn({ type: 'option', optionIndex: index });
 }
 
-/** The text of every text block in the transcript, in order. */
+/** The text of every text block in the block sequence, in order. */
 function texts(res: ChatResponse): string[] {
   return res.turn.blocks.flatMap((block) => (block.type === 'text' ? [block.text] : []));
 }
