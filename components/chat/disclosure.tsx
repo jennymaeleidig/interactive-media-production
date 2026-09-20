@@ -49,7 +49,7 @@ export function Disclosure() {
       <button
         aria-expanded={open}
         aria-label="What is this?"
-        className="flex h-7 w-7 items-center justify-center rounded-pill border border-edge text-sm text-capsule-content"
+        className="font-chrome flex h-7 w-7 items-center justify-center rounded-pill border border-edge text-sm text-capsule-content"
         data-testid="disclosure-toggle"
         onClick={() => (open ? close() : setOpen(true))}
         type="button"
@@ -58,7 +58,7 @@ export function Disclosure() {
       </button>
       {open ? (
         <div
-          className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2.5rem))] rounded-card border border-edge bg-chrome p-4 text-base text-capsule-content shadow-none"
+          className="font-chrome absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2.5rem))] rounded-card border border-edge bg-chrome p-4 text-base text-capsule-content shadow-none"
           data-testid="disclosure-popover"
           role="dialog"
         >

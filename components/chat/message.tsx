@@ -80,7 +80,7 @@ function ImagePart({ block }: AdapterProps) {
     <figure className="overflow-hidden rounded-chip">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img alt={alt} className="h-auto w-full" src={src} />
-      {caption ? <figcaption className="pt-2 text-xs text-muted-foreground">{caption}</figcaption> : null}
+      {caption ? <figcaption className="font-chrome pt-2 text-xs text-muted-foreground">{caption}</figcaption> : null}
     </figure>
   );
 }
@@ -91,7 +91,7 @@ function FramePart({ block }: AdapterProps) {
   return (
     <figure className="w-full overflow-hidden rounded-chip">
       <iframe className="h-[220px] w-full" sandbox={sandbox} src={src} title={title} />
-      {caption ? <figcaption className="pt-2 text-xs text-muted-foreground">{caption}</figcaption> : null}
+      {caption ? <figcaption className="font-chrome pt-2 text-xs text-muted-foreground">{caption}</figcaption> : null}
     </figure>
   );
 }

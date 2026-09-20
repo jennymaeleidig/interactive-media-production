@@ -40,7 +40,7 @@ export function Messages({ messages }: { messages: ChatMessage[] }) {
     >
       <StickToBottom.Content className="mx-auto flex w-full max-w-3xl flex-col px-5 pt-28 pb-8">
         {openedAt && messages.length > 0 ? (
-          <p className="pb-5 text-center text-sm text-muted-foreground" data-testid="day-divider">
+          <p className="font-chrome pb-5 text-center text-sm text-muted-foreground" data-testid="day-divider">
             {dayLabel(openedAt)}
           </p>
         ) : null}

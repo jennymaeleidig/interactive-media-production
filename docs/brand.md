@@ -105,11 +105,16 @@ rather than the page.
 Three files, roman only, self-hosted under `/fonts/` and declared in `app/globals.css`. The
 piece is self-contained — no external font CDN — so there is no remote source in `@font-face`.
 
-| Face          | Weight | Use                                     | Source                            |
-| ------------- | ------ | --------------------------------------- | --------------------------------- |
-| Sohne Regular | 400    | Body text, chat prose                   | Lineto, via Flock's Webflow CDN   |
-| Sohne Book    | 400    | Lighter chrome: labels, chips, metadata | Lineto, via Flock's Webflow CDN   |
-| Denim Bold    | 700    | Display, content-block headings         | Displaay, via Flock's Webflow CDN |
+| Face          | Weight | Use                                             | Source                            |
+| ------------- | ------ | ----------------------------------------------- | --------------------------------- |
+| Sohne Regular | 400    | Body text, chat prose                           | Lineto, via Flock's Webflow CDN   |
+| Sohne Book    | 400    | Chrome: chips, labels, metadata, the disclosure | Lineto, via Flock's Webflow CDN   |
+| Denim Bold    | 700    | Display, content-block headings                 | Displaay, via Flock's Webflow CDN |
+
+**Book is its own family** (`--font-chrome`), not a lighter weight of Regular: both files identify
+as regular, so declaring them at two weights of one family leaves Book unreachable and the chrome
+silently in the prose face. Prose is Regular; the chips, the day divider, image and frame captions,
+and the `?` disclosure are Book.
 
 **Dropped, deliberately — do not re-add:** Denton (serif display; chat content has no serif voice),
 every italic, every other Denim and Sohne weight, and both Thermochrome decorative faces. If a
