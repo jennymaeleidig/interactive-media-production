@@ -6,9 +6,7 @@ Safe Browsing heuristics flag, and it sits squarely against Flock's trademark no
 no licence to third parties and reserves all rights, with written permission from
 legal@flocksafety.com as the only stated path.
 
-**Jenny Leidig accepts this exposure, knowingly and on 2026-02-18.** No one else assumes it: not
-the repository, not its tooling, not any future contributor. Anyone who forks, deploys, or extends
-this work carries their own exposure and cannot rely on this acceptance.
+No one assumes this exposure: not the repository, not its tooling, not any future contributor. Anyone who forks, deploys, or extends this work carries their own exposure and cannot rely on this acceptance.
 
 The response to the risk is preventive and reactive only — reduce signals, report false positives,
 and wait out caches. It is never evasion. Cloaking, serving different content to reviewers or
