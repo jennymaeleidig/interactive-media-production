@@ -1,0 +1,41 @@
+{
+  "name": "interactive-media-production",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A chat assistant on one page: a static Next.js export carrying the chat widget and its client-side dialogue engine.",
+  "license": "CC0-1.0",
+  "browserslist": [
+    ">0.5%",
+    "last 2 versions",
+    "not dead",
+    "not op_mini all"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "WATCHPACK_POLLING=true next dev",
+    "build": "next build",
+    "chat:build": "node pipeline/build-chat-runtime.mjs",
+    "chat:check": "node pipeline/build-chat-runtime.mjs --check",
+    "check:artifact": "node regression/artifact.mjs",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.checkjs.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "next": "^15.5.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "yarnspinner-typescript": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.7.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,16 @@
+// The host's canvas — and the whole of it. The chat arrives with its own
+// stylesheet (`/chat/widget.css`, which carries the widget's surfaces and its
+// embedded typeface), so there is nothing here to theme: this file centres the
+// one sentence the page carries and gets out of the way.
+//
+// SPDX-License-Identifier: CC0-1.0
+main {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 1rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  text-align: center;
+}

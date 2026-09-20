@@ -1,0 +1,101 @@
+# Publish the chat to GitHub Pages.
+#
+# The repository's own typecheck, test and build are the gate: a broken piece
+# stops in `build`, before anything is uploaded, so the live site is never the
+# debugging surface. `next build` writes the static export to `out/` (the
+# `output: 'export'` setting in `next.config.ts`) and the artifact check reads
+# that directory back over HTTP — the same bytes the upload carries.
+#
+# Actions are pinned to commit SHAs, not tags, because this workflow holds
+# `id-token: write`: a moved tag would be enough to mint a deployment token.
+# Each comment names the release the SHA came from.
+#
+# Pages must already be enabled with "GitHub Actions" as its source — that is a
+# repository setting, not a workflow step. `configure-pages` fails loudly when it
+# is not, rather than publishing somewhere unexpected.
+#
+# SPDX-License-Identifier: CC0-1.0
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deployment at a time. Do not cancel an in-flight one: a cancelled deploy
+# can leave Pages mid-update, and a queued run is cheap to wait for.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # The active LTS. `engines` permits >=20, but the 20 line reached
+          # end-of-life in April 2026, so CI runs a supported version that
+          # still satisfies every dependency's own engine range.
+          node-version: 24
+          cache: npm
+
+      - name: Install (locked)
+        run: npm ci
+
+      # The gate: the repository's existing checks, nothing new. Everything below
+      # runs only if all of them pass. These restate CODING_STANDARDS.md "before
+      # finishing" by hand, so a check added there does not join CI on its own —
+      # change both together.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # The chat's shipped bytes are a pipeline output: this fails before the
+      # build when a dialogue or engine source changed without
+      # `npm run chat:build`.
+      - name: Check the chat runtime is fresh
+        run: npm run chat:check
+
+      - name: Build
+        run: npm run build
+
+      # And this fails when the export does not carry what the build thinks it
+      # does — the published bytes are the maintained bytes, and the host page
+      # still names them.
+      - name: Check the artifact
+        run: npm run check:artifact
+
+      # Ordering is deliberate: the build consumes no base path (the piece is
+      # served from a URL root), so configuring Pages after it loses nothing; the
+      # step still runs before the upload, and fails loudly if Pages is not
+      # enabled with GitHub Actions as its source.
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload the artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -1,0 +1,14 @@
+node_modules/
+.pi/npm/
+.next/
+.sandbox/
+.DS_Store
+.scratch/
+
+# Build outputs — none of these is committed. The chat's generated program and
+# runtime (`pipeline/chat-program.json`, `pipeline/chat-runtime.js`) are the bytes
+# the piece ships, so they are tracked deliberately; `npm run chat:check` is what
+# keeps them tied to their sources.
+out/
+.tmp/
+*.tsbuildinfo

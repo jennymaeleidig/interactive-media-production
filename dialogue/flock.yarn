@@ -1,0 +1,87 @@
+// The Chat mimic's minimal fixture — throwaway content that
+// exercises the engine end to end. Real Yarn content is the artist's future
+// effort (a declared non-goal); the engine is content-agnostic.
+//
+// Strings marked PINNED are transcribed verbatim from one observed Qualified
+// session (captured Qualified-conversation evidence, at the time under
+// `.scratch/` — s9 greeting, s10 general + support, s12 demo ask,
+// 2026-09-09). The live assistant's copy is GPT-generated fresh per
+// session, so the mimic fixes one canonical string per beat.
+//
+// Strings and choices marked GLUE are structural filler the fixture needs to
+// exercise branching; they are NOT observed copy.
+//
+// ALL choices are Yarn options (->). The wrapper renders the pending set as
+// user-style bubbles in the composer slot; selecting one is a message send.
+// No free text, no persistent CTA row (the Chat mimic contract).
+//
+// Yarn authoring gotcha (carried from the chat-wrapper prototype): a `//`
+// comment placed BETWEEN options silently drops every option after it. Keep
+// comments at line level or node top.
+
+title: Start
+---
+<<declare $demoRequested = false>>
+Flock: Hey there! I’m Flock, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?
+-> What can you help me with?
+    <<jump general>>
+-> Get a Demo
+    <<set $demoRequested = true>>
+    <<jump demo>>
+-> Support
+    <<jump support>>
+===
+title: general
+---
+Flock: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
+// GLUE: unobserved exit choice below, added so the loop has an end.
+-> Get a Demo
+    <<set $demoRequested = true>>
+    <<jump demo>>
+-> Support
+    <<jump support>>
+-> That's all for now
+    <<jump end>>
+===
+title: support
+---
+Flock: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?
+// GLUE: unobserved exit choice below, added so the loop has an end.
+-> Get a Demo
+    <<set $demoRequested = true>>
+    <<jump demo>>
+-> That's all for now
+    <<jump end>>
+===
+title: demo
+---
+// THE EMAIL GATE (ratified, the Chat mimic contract): the pinned s12 ask, then a
+// single "Maybe later" option that returns to the hub. The live widget opens a
+// meeting booker here; the mimic stops on purpose — no email capture, no
+// booker, no POST. The stop is stated here, in the script, so builders can
+// tell an intentional stop from an unfinished one; the rendered UI carries NO
+// divergence notice of any kind (prohibited).
+Flock: I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further.
+-> Maybe later
+    <<jump hub>>
+===
+title: hub
+---
+// The hub option set: the same choices the greeting offered, re-offered
+// without repeating the greeting. The email gate jumps here, so the gate
+// never dead-ends the widget.
+-> What can you help me with?
+    <<jump general>>
+-> Get a Demo
+    <<set $demoRequested = true>>
+    <<jump demo>>
+-> Support
+    <<jump support>>
+===
+title: end
+---
+// GLUE: unobserved closing line; it is what makes the exit choices reach
+// dialogue completion (an empty node is dropped by the compiler, so a jump
+// to it would be a runtime dead end).
+Flock: Thanks for stopping by — take care!
+===
