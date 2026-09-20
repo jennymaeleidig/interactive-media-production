@@ -72,12 +72,18 @@
 }
 
 /* Three roman faces, self-hosted; the fallback stacks are Flock's own. Denton
-   is dropped by decision (`docs/brand.md`), so there is no serif token. */
+   is dropped by decision (`docs/brand.md`), so there is no serif token. Book is
+   chrome's own face, not a lighter weight of `font-sans`. */
 @theme {
   --font-sans: "Sohne", Arial, sans-serif;
+  --font-chrome: "Sohne Book", Arial, sans-serif;
   --font-display: "Denim", Arial, sans-serif;
 }
 
+/* Book is a face of its own in Flock's kit, not a weight of Regular: `docs/brand.md`
+   gives it the lighter chrome (labels, chips, metadata) and Regular the body prose.
+   Both files call themselves regular, so one family at two weights would leave one
+   of them unreachable and silently shadowed. */
 @font-face {
   font-family: "Sohne";
   src: url("/fonts/Sohne-Regular.woff2") format("woff2");
@@ -87,9 +93,9 @@
 }
 
 @font-face {
-  font-family: "Sohne";
+  font-family: "Sohne Book";
   src: url("/fonts/Sohne-Book.woff2") format("woff2");
-  font-weight: 300;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
