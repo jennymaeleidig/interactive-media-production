@@ -27,15 +27,18 @@ Two further decisions shape every change:
 ## Stack & layout
 
 - **Next.js (App Router) + React + TypeScript (strict)**, npm. `app/` routes,
-  `scripts/` the chat's own modules, `test/` tests, `test/` the artifact
-  check, `dialogue/` the Yarn sources (authoring real dialogue is a change to
-  those sources and nothing else).
-- **`scripts/` is plain Node ESM with JSDoc types** — no compile step, except
-  the deliberate bundler coupling: `chat-engine.mjs`, `chat-blocks.mjs` and
-  `chat-program.json` become `chat-runtime.js` via `build-chat-runtime.mjs`
-  (esbuild), ES5-safe and DOM-only, because a browser cannot compile Yarn or
-  resolve a module graph. The React shell reaches the engine only through
-  `window.__flockChatEngine`, the interface the drift seam pins.
+  `lib/` the declarations both sides read (the turn contract and the block
+  inventory, in JSDoc-typed ESM beside the shell's own TypeScript), `scripts/`
+  the Node tooling and the bytes it builds, `test/` the suite including the
+  artifact check, `dialogue/` the Yarn sources (authoring real dialogue is a
+  change to those sources and nothing else).
+- **`lib/` and `scripts/` are plain ESM with JSDoc types** — no compile step,
+  except the deliberate bundler coupling: `scripts/chat-engine.mjs`,
+  `lib/chat-blocks.mjs` and `chat-program.json` become `chat-runtime.js` via
+  `scripts/build-chat-runtime.mjs` (esbuild), ES5-safe and DOM-only, because a
+  browser cannot compile Yarn or resolve a module graph. The React shell reaches
+  the engine only through `window.__flockChatEngine`, the interface the drift
+  seam pins.
 - **The generated files are committed** — `chat-program.json` and
   `chat-runtime.js` are the bytes the piece ships, not build outputs;
   `npm run chat:check` fails when they stop following from their sources.
