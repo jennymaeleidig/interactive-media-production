@@ -13,8 +13,8 @@ any change done.
 presents nothing to fill in and nothing to submit — no form, no text field, no
 capture — and it carries no analytics, no tracker, and no viewer identifier. The
 only thing it persists is the scripted session in the viewer's own browser
-(`localStorage['flock-chat-session']`, `localStorage['flock-chat-state']`), and
-nothing about the viewer leaves the page.
+(`localStorage['flock-chat-state']`), and nothing about the viewer leaves the
+page.
 
 The page may reach the network: a `frame` can render an authored page, an
 `image` can load an asset, a font arrives from the host. What it may not do is
@@ -95,14 +95,15 @@ server-side route, middleware, a rewrite — is out of scope for this repo.
     published path, carries the honest preview metadata and the `?` disclosure,
     the path answers with the maintained bytes, and the privacy path resolves. It
     is environmental — an instrument, not a suite member — because it needs a
-    build and a server; `test/artifact.test.ts` covers its verdicts.
+    build and a server; `test/artifact.test.ts` drives its serving seam (`probe`)
+    over a temporary directory and covers its verdicts.
   - `test/seam-harness.ts` resolves the published bytes through the declaration,
     so a seam cannot test a file the host does not serve. jsdom itself is vitest's
     `environment: 'jsdom'`, and `test/setup-jsdom.ts` installs the in-memory
     `localStorage` this Node runtime shadows.
 - **Pure-module seams** pin a module's declared contract where that contract is
   its behaviour: the published bytes' shape (`test/chat-assets.test.ts`) and the
-  artifact check's pure cores (`test/artifact.test.ts`). They are the one exception to "no tests against
+  artifact check's serving seam and pure verdicts (`test/artifact.test.ts`). They are the one exception to "no tests against
   internals"; apart from them no test targets incidental structure, and a test
   that breaks in a behaviour-preserving refactor is wrong.
 - Red → green, one slice at a time. New behaviour starts as a failing test at an
