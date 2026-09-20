@@ -109,6 +109,9 @@ dev/build for everyone:
   file watcher dies (EMFILE) and every dev route 404s with an empty manifest.
 - **`browserslist`** in `package.json` is required by `next build` (caniuse
   data resolution). Don't delete the field.
+- **The workspace root is pinned in `next.config.ts`** (`outputFileTracingRoot`).
+  There is an unrelated `package-lock.json` above this repo, and without the pin
+  every `next build` warns that it guessed the workspace root.
 - **Headless Chromium cannot launch under the main agent sandbox** — it needs
   Docker (the `capsulecode/singlefile` image, colima). Nothing here needs a
   browser to build, test or check: the widget seam runs in jsdom, and the
