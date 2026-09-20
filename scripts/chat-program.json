@@ -1,0 +1,425 @@
+{
+  "enums": {},
+  "initialValues": {
+    "demoRequested": [
+      {
+        "op": "pushBool",
+        "value": false
+      }
+    ]
+  },
+  "languageVersion": 2,
+  "nodes": {
+    "Start": {
+      "headers": {
+        "title": "Start"
+      },
+      "instructions": [
+        {
+          "op": "runLine",
+          "tags": [
+            "line:19a46f2e",
+            "lastline"
+          ],
+          "text": "Flock: Hey there! I’m Flock, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 9,
+          "op": "addOption",
+          "tags": [
+            "line:8f946859"
+          ],
+          "text": "What can you help me with?"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 11,
+          "op": "addOption",
+          "tags": [
+            "line:35c561c0"
+          ],
+          "text": "Get a Demo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 15,
+          "op": "addOption",
+          "tags": [
+            "line:a3f566b7"
+          ],
+          "text": "Support"
+        },
+        {
+          "op": "showOptions"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        },
+        {
+          "node": "general",
+          "op": "runNode"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "name": "demoRequested",
+          "op": "popVariable"
+        },
+        {
+          "node": "demo",
+          "op": "runNode"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        },
+        {
+          "node": "support",
+          "op": "runNode"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        }
+      ],
+      "sourceFile": "flock.yarn",
+      "startLine": 22,
+      "title": "Start"
+    },
+    "demo": {
+      "headers": {
+        "title": "demo"
+      },
+      "instructions": [
+        {
+          "op": "runLine",
+          "tags": [
+            "line:7329b1ce",
+            "lastline"
+          ],
+          "text": "Flock: I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further."
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 5,
+          "op": "addOption",
+          "tags": [
+            "line:c978b857"
+          ],
+          "text": "Maybe later"
+        },
+        {
+          "op": "showOptions"
+        },
+        {
+          "index": 7,
+          "op": "jumpTo"
+        },
+        {
+          "node": "hub",
+          "op": "runNode"
+        },
+        {
+          "index": 7,
+          "op": "jumpTo"
+        }
+      ],
+      "sourceFile": "flock.yarn",
+      "startLine": 56,
+      "title": "demo"
+    },
+    "end": {
+      "headers": {
+        "title": "end"
+      },
+      "instructions": [
+        {
+          "op": "runLine",
+          "tags": [
+            "line:27ec4b80"
+          ],
+          "text": "Flock: Thanks for stopping by — take care!"
+        },
+        {
+          "content": "block \"flock-home\" new",
+          "op": "runCommand"
+        }
+      ],
+      "sourceFile": "flock.yarn",
+      "startLine": 81,
+      "title": "end"
+    },
+    "general": {
+      "headers": {
+        "title": "general"
+      },
+      "instructions": [
+        {
+          "op": "runLine",
+          "tags": [
+            "line:860a3348",
+            "lastline"
+          ],
+          "text": "Flock: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 9,
+          "op": "addOption",
+          "tags": [
+            "line:103a343f"
+          ],
+          "text": "Get a Demo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 13,
+          "op": "addOption",
+          "tags": [
+            "line:aa6b3da6"
+          ],
+          "text": "Support"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 15,
+          "op": "addOption",
+          "tags": [
+            "line:3c5b3ad1"
+          ],
+          "text": "That's all for now"
+        },
+        {
+          "op": "showOptions"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "name": "demoRequested",
+          "op": "popVariable"
+        },
+        {
+          "node": "demo",
+          "op": "runNode"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        },
+        {
+          "node": "support",
+          "op": "runNode"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        },
+        {
+          "node": "end",
+          "op": "runNode"
+        },
+        {
+          "index": 17,
+          "op": "jumpTo"
+        }
+      ],
+      "sourceFile": "flock.yarn",
+      "startLine": 34,
+      "title": "general"
+    },
+    "hub": {
+      "headers": {
+        "title": "hub"
+      },
+      "instructions": [
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 8,
+          "op": "addOption",
+          "tags": [
+            "line:3570248b"
+          ],
+          "text": "What can you help me with?"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 10,
+          "op": "addOption",
+          "tags": [
+            "line:96e54015"
+          ],
+          "text": "Get a Demo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 14,
+          "op": "addOption",
+          "tags": [
+            "line:00d54762"
+          ],
+          "text": "Support"
+        },
+        {
+          "op": "showOptions"
+        },
+        {
+          "index": 16,
+          "op": "jumpTo"
+        },
+        {
+          "node": "general",
+          "op": "runNode"
+        },
+        {
+          "index": 16,
+          "op": "jumpTo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "name": "demoRequested",
+          "op": "popVariable"
+        },
+        {
+          "node": "demo",
+          "op": "runNode"
+        },
+        {
+          "index": 16,
+          "op": "jumpTo"
+        },
+        {
+          "node": "support",
+          "op": "runNode"
+        },
+        {
+          "index": 16,
+          "op": "jumpTo"
+        }
+      ],
+      "sourceFile": "flock.yarn",
+      "startLine": 68,
+      "title": "hub"
+    },
+    "support": {
+      "headers": {
+        "title": "support"
+      },
+      "instructions": [
+        {
+          "op": "runLine",
+          "tags": [
+            "line:99947e71",
+            "lastline"
+          ],
+          "text": "Flock: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 7,
+          "op": "addOption",
+          "tags": [
+            "line:0fa47906"
+          ],
+          "text": "Get a Demo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "destination": 11,
+          "op": "addOption",
+          "tags": [
+            "line:1c31bbac"
+          ],
+          "text": "That's all for now"
+        },
+        {
+          "op": "showOptions"
+        },
+        {
+          "index": 13,
+          "op": "jumpTo"
+        },
+        {
+          "op": "pushBool",
+          "value": true
+        },
+        {
+          "name": "demoRequested",
+          "op": "popVariable"
+        },
+        {
+          "node": "demo",
+          "op": "runNode"
+        },
+        {
+          "index": 13,
+          "op": "jumpTo"
+        },
+        {
+          "node": "end",
+          "op": "runNode"
+        },
+        {
+          "index": 13,
+          "op": "jumpTo"
+        }
+      ],
+      "sourceFile": "flock.yarn",
+      "startLine": 46,
+      "title": "support"
+    }
+  },
+  "smartVariables": {}
+}
