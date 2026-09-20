@@ -67,16 +67,17 @@ The piece's ground is **not** `grey-1`. The chrome and text are the homepage's o
 | `--color-chrome-content` | `#061602` | The capsule header's wordmark and text (`green-8`)                |
 | `--color-edge`           | `#bbc0b9` | The capsule's hairline border and the tray divider (`grey-3`)     |
 
-Chips are `#183129` with `#eeeee3` text, and the same pair carries the link-out block. `#183129` is
-the **captured widget's own** value (`pipeline/chat-widget.css`: `--THEME_TEXT_COLOR` and
+Chips are `#183129` with `#eeeee3` text; the link-out block is an inline link in the message ink,
+not a chip. `#183129` is
+the **captured widget's own** value (`--THEME_TEXT_COLOR` and
 `--MESSAGE_BUBBLE_OWN_TEXT_COLOR`), not Flock's ramp — kept because it is what the piece ships.
 
 The accent is `--color--flock` (`#304833`), revised from `#5bd640` on the human's call, so on this
 ground the accent and `--color-content` are the same value. The focus ring stays Flock's `#84da6c`:
 it is the one place a bright green still shows, and a dark ring would vanish against a dark chip.
 
-**Message bubbles take the captured widget's own values**, read off the rendered widget in
-`pipeline/chat-widget.css` (`.fpc-bubble--bot` / `.fpc-bubble--me`) rather than Flock's site:
+**Message bubbles take the captured widget's own values**, read off the rendered widget
+(`.fpc-bubble--bot` / `.fpc-bubble--me`) rather than Flock's site:
 
 | Role              | Background | Text      | Source                                                                             |
 | ----------------- | ---------- | --------- | ---------------------------------------------------------------------------------- |
@@ -129,8 +130,8 @@ Frozen as named `@theme` values in `app/globals.css`, not left to taste:
   and hover lift `13px 12px 40px rgba(0,0,0,.25)` are the only two.
 - **Edges:** hairline inner borders via inset shadows, never heavy strokes.
 - **Focus ring:** `box-shadow: 0 0 0 3px #84da6c`. Non-negotiable, and recorded as an accessibility
-  constraint rather than a style preference: the chips are the only focusable things in the piece,
-  and a keyboard user must be able to see where they are.
+  constraint rather than a style preference: the chips and the link-out block are the transcript's
+  focusable things, and a keyboard user must be able to see where they are.
 
 Composition and motion are **not** frozen here — they come from the vendored template's dependencies
 and the `design-taste-frontend` skill.

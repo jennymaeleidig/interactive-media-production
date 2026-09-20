@@ -1,8 +1,8 @@
-// The chat's two shipped files, served from their maintained sources.
+// The chat's shipped file, served from its maintained source.
 //
 // `pipeline/chat-assets.mjs` declares which maintained file each published path
-// carries; this route is the only thing that answers those paths, and the
-// declarations are what the artifact check and the widget seam read too, so the
+// carries; this route is the only thing that answers that path, and the
+// declarations are what the artifact check and the asset seam read too, so the
 // three cannot disagree about what the piece serves.
 //
 // The build exports statically (`next.config.ts`), so `generateStaticParams`

@@ -1,9 +1,9 @@
 // The declaration of what the chat publishes.
 //
 // `pipeline/chat-assets.mjs` is read by three callers that cannot see each
-// other — the asset route, the artifact check and the widget seam — so its
-// shape is the contract between them: a published path, the maintained file it
-// carries, and the media type it answers with.
+// other — the asset route, the artifact check and this seam — so its shape is
+// the contract between them: a published path, the maintained file it carries,
+// and the media type it answers with.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { readFileSync } from 'node:fs';
@@ -46,7 +46,6 @@ describe('assetFor', () => {
 
   it('answers null for anything else, so a route cannot serve an unnamed file', () => {
     expect(assetFor('/chat/other.js')).toBeNull();
-    expect(assetFor('/chat/widget.css')).toBeNull();
     expect(assetFor('/chat/')).toBeNull();
     expect(assetFor('/chat/runtime.js/..')).toBeNull();
     expect(assetFor('')).toBeNull();

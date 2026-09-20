@@ -4,7 +4,7 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 
 ## Terms
 
-- **The piece** — the chat and the page that carries it: one launcher, one conversation, one canvas with nothing else on it. _Avoid_: the site, the demo, the app.
+- **The piece** — the chat and the page that carries it: one conversation, one canvas with nothing else on it. _Avoid_: the site, the demo, the app.
 - **Chat surface** — the one full-viewport column the conversation plays in: the floating capsule header (wordmark and the `?` info affordance) and the chip-row composer tray with its inert send glyph. No launcher, no panel, no text input. Its look is the vendored React shell's, styled from the lock ADR's tokens. _Avoid_: bubble, chat window, chatbot UI, launcher, widget.
 - **Chat runtime** — the one file carrying the dialogue engine with the compiled program inlined, `/chat/runtime.js`. The React shell is part of the page's own bundle and reaches the engine only through the declared chat interface. They cannot ship out of step because they are one file. _Avoid_: bundle, main script.
 - **Dialogue program** — `dialogue/flock.yarn`, compiled to `pipeline/chat-program.json` at build time, because a browser cannot compile Yarn.
@@ -16,7 +16,7 @@ Glossary for this repo. Terms are added as they resolve in conversation; no impl
 - **Hub option set** — the shared choice set (help / Get a Demo / Support) re-offered to the visitor without repeating the greeting. The email gate returns here, so the conversation never dead-ends.
 - **Email gate** — the demo ask that stops: the fixture collects no address and books no meeting. _Avoid_: lead capture, contact form.
 - **Inert composer** — the message box and send icon are present and do nothing; only the chips advance the conversation. _Avoid_: disabled input, stub, placeholder form.
-- **Published path** — a URL the host serves from a maintained file, declared in `pipeline/chat-assets.mjs`: `/chat/runtime.js` and `/chat/widget.css`. There is one declaration because the route, the artifact check and the seam all read it. _Avoid_: static asset, mirror, bundle name.
+- **Published path** — a URL the host serves from a maintained file, declared in `pipeline/chat-assets.mjs`: `/chat/runtime.js`. There is one declaration because the route, the artifact check and the seam all read it. _Avoid_: static asset, mirror, bundle name.
 - **No-ask rule** — the piece asks its viewer for nothing and keeps nothing about them: no form, no capture, no analytics, no viewer identifier, and no request whose target or payload is derived from viewer input (`CODING_STANDARDS.md`). The page reaches the network only at authored block URLs.
 - **Seam** — a place where a test drives the piece from outside: the engine seam, the interface-shape seam, and the artifact seam. _Avoid_: unit boundary, integration layer, mock.
 - **Disclosure** — the plain-voice, out-of-character notice behind the `?` in the viewport's top-right corner, owned by the host page: one sentence on first view ("this is not Flock Safety; it's an artwork"), credits and mark provenance behind a second tap. The one place the piece drops the mask; verisimilitude is preserved by placement (a popover, never a banner), not by wording. _Avoid_: legal notice, banner, cookie-style modal.

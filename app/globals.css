@@ -61,20 +61,20 @@
   --color-ring: #84da6c;
 }
 
-/* Shape and motion, frozen as values. Flat by default; the only shadow is the
-   focus ring, which is an accessibility constraint, not a style choice. */
+/* Shape, frozen as values. Flat by default; the only shadow is the focus ring,
+   which is an accessibility constraint, not a style choice. Motion is the
+   vendored template's, not frozen here (`docs/brand.md`). */
 @theme {
   --radius-card: 1rem;
   --radius-capsule: 8px;
   --radius-chip: 0.5rem;
   --radius-pill: 100px;
-  --ease-rise: cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
-/* Three roman faces, self-hosted; the fallback stacks are Flock's own. */
+/* Three roman faces, self-hosted; the fallback stacks are Flock's own. Denton
+   is dropped by decision (`docs/brand.md`), so there is no serif token. */
 @theme {
   --font-sans: "Sohne", Arial, sans-serif;
-  --font-serif: "Denton", Georgia, sans-serif;
   --font-display: "Denim", Arial, sans-serif;
 }
 

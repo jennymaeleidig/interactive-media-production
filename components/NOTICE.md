@@ -13,7 +13,7 @@ notice is preserved there.
   block adapter table (one entry per block type).
 - `chat/composer.tsx` — the composer row, gutted from `multimodal-input.tsx`:
   a chip row and an inert send glyph, no input, no attachments, no model picker.
-- `chat/icons.tsx` — the send glyph, redrawn.
+- `chat/icons.tsx` — the send and external-link glyphs, redrawn.
 
 ## What was dropped outright
 

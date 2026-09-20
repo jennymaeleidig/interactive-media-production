@@ -3,14 +3,14 @@
 // The one CC0 hook replacing the template's `useChat` (ticket 02, ticket 11).
 //
 // It keeps the `useChat`-shaped surface the vendored components expect
-// (`messages`, `sendMessage`-shaped `sendOption`, `status`) but its only caller
+// (`messages`, `options`, `sendMessage`-shaped `sendOption`) but its only caller
 // is the client-side engine at `window.__flockChatEngine`, which
 // `/chat/runtime.js` installs. It maps `bot`/`me` to `assistant`/`user` and
 // groups a turn's blocks into one message per speaker-run, so the renderer never
 // sees a `who`.
 //
-// There is no loading, typing or delivery indicator anywhere: `status` exists to
-// guard a double send, and no component renders it.
+// There is no loading, typing or delivery state: nothing about a turn is shown
+// until its blocks arrive, and the chips never disable.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -21,12 +21,9 @@ const SESSION_KEY = 'flock-chat-session';
 /** The host page's one runtime script; the hook waits for it on a cold load. */
 const RUNTIME_SRC = '/chat/runtime.js';
 
-export type DialogueStatus = 'ready' | 'submitted' | 'complete' | 'error';
-
 export interface Dialogue {
   messages: ChatMessage[];
   options: ChatOption[];
-  status: DialogueStatus;
   /** Send the chip's authored choice as the next turn. */
   sendOption: (option: ChatOption) => void;
 }
@@ -82,21 +79,15 @@ function opening(
 export function useDialogue(): Dialogue {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [options, setOptions] = useState<ChatOption[]>([]);
-  const [status, setStatus] = useState<DialogueStatus>('ready');
   // The live session id lives here, not only in localStorage: a browser that
   // refuses storage must still be able to advance the conversation in-page.
   const sessionId = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setStatus('submitted');
     engineReady()
       .then((api) => {
-        if (cancelled) return;
-        if (!api) {
-          setStatus('error');
-          return;
-        }
+        if (cancelled || !api) return;
         const stored = storedSession();
         return api.turn(stored ? { type: 'start', sessionId: stored } : { type: 'start' }).then((res) => {
           if (cancelled) return;
@@ -112,11 +103,11 @@ export function useDialogue(): Dialogue {
           const next = opening([], seen.length > 0 ? seen : res.turn.blocks, res.turn.options);
           setMessages(next.messages);
           setOptions(next.options);
-          setStatus(res.turn.complete ? 'complete' : 'ready');
         });
       })
       .catch(() => {
-        if (!cancelled) setStatus('error');
+        // The engine is local; a rejection is a programming error with no
+        // viewer-facing surface.
       });
     return () => {
       cancelled = true;
@@ -127,16 +118,16 @@ export function useDialogue(): Dialogue {
     const api = engine();
     const id = sessionId.current;
     if (!api || id === null) return;
-    setStatus('submitted');
     api
       .turn({ type: 'option', sessionId: id, optionIndex: option.index })
       .then((res) => {
         setMessages((prev) => opening(prev, res.turn.blocks, null).messages);
         setOptions(res.turn.options ?? []);
-        setStatus(res.turn.complete ? 'complete' : 'ready');
       })
-      .catch(() => setStatus('error'));
+      .catch(() => {
+        // As above: nothing in-frame can act on it.
+      });
   }, []);
 
-  return { messages, options, status, sendOption };
+  return { messages, options, sendOption };
 }

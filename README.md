@@ -65,7 +65,7 @@ maintained source, and that the privacy path resolves — so it runs after
 | Path          | What lives there                                                        |
 | ------------- | ----------------------------------------------------------------------- |
 | `app/`        | the routes, the token stylesheet, and the published chat route          |
-| `components/` | the vendored shell (see `NOTICE.md`) and the Flock assets               |
+| `components/` | the vendored shell (see `components/NOTICE.md`) and the Flock assets      |
 | `dialogue/`   | the Yarn sources                                                        |
 | `hooks/`      | `useDialogue`, the shell's replacement for `useChat`                    |
 | `lib/`        | the shell's types, class-name helper, and canonical honest string       |

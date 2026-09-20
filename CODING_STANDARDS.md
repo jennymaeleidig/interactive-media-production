@@ -24,8 +24,8 @@ block sequences, and a `frame` renders only a URL in the hand-authored
 allowlist, so nothing a viewer does can name a host.
 
 The rule this replaces, "the chat's bytes reach nothing", could not survive the
-block seam's frames; its byte scan (`pipeline/chat-source.mjs`) is retired. The
-reversal, with the old text, is
+block seam's frames; its byte scan is retired. The reversal, with the old text,
+is
 [ADR 0003](docs/adr/0003-retire-the-no-network-rule.md).
 
 The shell is the vendored vercel/chatbot chrome with Flock's identity over it
