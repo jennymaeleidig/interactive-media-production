@@ -211,7 +211,9 @@ function sweep(dialogue) {
  * @returns {ChatOption[]|null}
  */
 function optionList(options) {
-  return options ? options.map((option) => ({ index: option.index, text: option.text })) : null;
+  return options
+    ? options.map((option) => ({ index: option.index, text: option.text.split(' ~ ')[0] }))
+    : null;
 }
 
 /**
@@ -281,7 +283,10 @@ function start() {
  * `option` — select a pending choice and collect the reply. With no session, or
  * an index with no live option set, it hands back the rest state instead of
  * crashing; the visitor's line is echoed here (the shell never adds its own
- * copy).
+ * copy). A label containing ` ~ ` echoes as several bubbles: each segment is
+ * its own `me` text block, cut at `newMessage` — the user-side counterpart of
+ * the bot's `newMessage` boundary, so one authored choice can read as two
+ * messages.
  * @param {number} optionIndex
  * @returns {ChatResponse}
  */
@@ -293,7 +298,13 @@ function option(optionIndex) {
   if (label === undefined) return resting(snapshot, session.pending);
   session.dialogue.selectOption(optionIndex);
   const swept = sweep(session.dialogue);
-  const log = snapshot.log.concat([{ who: 'me', type: 'text', text: label }, ...swept.blocks]);
+  const echo = label.split(' ~ ').map((part, index) => ({
+    who: 'me',
+    type: 'text',
+    text: part,
+    ...(index > 0 ? { newMessage: true } : {}),
+  }));
+  const log = snapshot.log.concat([...echo, ...swept.blocks]);
   const vars = Object.fromEntries(session.storage.entries());
   save({ vars, log: log.slice(), node: session.dialogue.currentNode, complete: swept.complete });
   return {
@@ -313,7 +324,24 @@ function turn(request) {
   return Promise.resolve(start());
 }
 
+/**
+ * `reset` — forget the session entirely and begin again at the entry node. The
+ * persisted snapshot is dropped (both stores), and the reply is the fresh
+ * opening turn, exactly as a first visit would have received it.
+ * @returns {Promise<ChatResponse>}
+ */
+function reset() {
+  memory = null;
+  persisted = false;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // storage unreadable/unwritable: the in-page forget above already holds.
+  }
+  return Promise.resolve(start());
+}
+
 // The React shell reaches the engine only through this declared global; it is
 // the whole public surface, matching the message API's one shape per request
 // type.
-window.__flockChatEngine = { turn };
+window.__flockChatEngine = { turn, reset };

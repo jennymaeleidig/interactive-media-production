@@ -9,6 +9,9 @@ notice is preserved there.
 
 - `chat/messages.tsx` — the transcript's scroll surface, rewritten to render a
   serverless block sequence through `use-stick-to-bottom`.
+- `chat/typing-indicator.tsx` — the template's `ThinkingMessage` idea (the
+  three-dot bubble shown while a reply is pending), redrawn with framer-motion
+  dots that breathe, iMessage-style.
 - `chat/message.tsx` — the idea of a part switch, rewritten as the committed
   block adapter table (one entry per block type).
 - `chat/composer.tsx` — the composer row, gutted from `multimodal-input.tsx`:

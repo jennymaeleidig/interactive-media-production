@@ -126,7 +126,7 @@
           }
         ],
         sourceFile: "flock.yarn",
-        startLine: 22,
+        startLine: 24,
         title: "Start"
       },
       demo: {
@@ -162,7 +162,7 @@
             op: "jumpTo"
           },
           {
-            node: "hub",
+            node: "Start",
             op: "runNode"
           },
           {
@@ -171,7 +171,7 @@
           }
         ],
         sourceFile: "flock.yarn",
-        startLine: 56,
+        startLine: 60,
         title: "demo"
       },
       end: {
@@ -182,7 +182,7 @@
           {
             op: "runLine",
             tags: [
-              "line:27ec4b80"
+              "line:a81821f0"
             ],
             text: "Flock: Thanks for stopping by \u2014 take care!"
           },
@@ -192,7 +192,7 @@
           }
         ],
         sourceFile: "flock.yarn",
-        startLine: 81,
+        startLine: 73,
         title: "end"
       },
       general: {
@@ -242,7 +242,7 @@
             tags: [
               "line:3c5b3ad1"
             ],
-            text: "That's all for now"
+            text: "That's all for now ~ talk soon"
           },
           {
             op: "showOptions"
@@ -285,93 +285,8 @@
           }
         ],
         sourceFile: "flock.yarn",
-        startLine: 34,
+        startLine: 36,
         title: "general"
-      },
-      hub: {
-        headers: {
-          title: "hub"
-        },
-        instructions: [
-          {
-            op: "pushBool",
-            value: true
-          },
-          {
-            destination: 8,
-            op: "addOption",
-            tags: [
-              "line:3570248b"
-            ],
-            text: "What can you help me with?"
-          },
-          {
-            op: "pushBool",
-            value: true
-          },
-          {
-            destination: 10,
-            op: "addOption",
-            tags: [
-              "line:96e54015"
-            ],
-            text: "Get a Demo"
-          },
-          {
-            op: "pushBool",
-            value: true
-          },
-          {
-            destination: 14,
-            op: "addOption",
-            tags: [
-              "line:00d54762"
-            ],
-            text: "Support"
-          },
-          {
-            op: "showOptions"
-          },
-          {
-            index: 16,
-            op: "jumpTo"
-          },
-          {
-            node: "general",
-            op: "runNode"
-          },
-          {
-            index: 16,
-            op: "jumpTo"
-          },
-          {
-            op: "pushBool",
-            value: true
-          },
-          {
-            name: "demoRequested",
-            op: "popVariable"
-          },
-          {
-            node: "demo",
-            op: "runNode"
-          },
-          {
-            index: 16,
-            op: "jumpTo"
-          },
-          {
-            node: "support",
-            op: "runNode"
-          },
-          {
-            index: 16,
-            op: "jumpTo"
-          }
-        ],
-        sourceFile: "flock.yarn",
-        startLine: 68,
-        title: "hub"
       },
       support: {
         headers: {
@@ -443,7 +358,7 @@
           }
         ],
         sourceFile: "flock.yarn",
-        startLine: 46,
+        startLine: 50,
         title: "support"
       }
     },
@@ -4809,7 +4724,7 @@
     return { blocks, options, complete };
   }
   function optionList(options) {
-    return options ? options.map((option2) => ({ index: option2.index, text: option2.text })) : null;
+    return options ? options.map((option2) => ({ index: option2.index, text: option2.text.split(" ~ ")[0] })) : null;
   }
   function restore(snapshot) {
     const { dialogue, storage } = open(snapshot.vars);
@@ -4851,7 +4766,12 @@
     if (label === void 0) return resting(snapshot, session.pending);
     session.dialogue.selectOption(optionIndex);
     const swept = sweep(session.dialogue);
-    const log = snapshot.log.concat([{ who: "me", type: "text", text: label }, ...swept.blocks]);
+    const echo = label.split(" ~ ").map((part, index) => __spreadValues({
+      who: "me",
+      type: "text",
+      text: part
+    }, index > 0 ? { newMessage: true } : {}));
+    const log = snapshot.log.concat([...echo, ...swept.blocks]);
     const vars = Object.fromEntries(session.storage.entries());
     save({ vars, log: log.slice(), node: session.dialogue.currentNode, complete: swept.complete });
     return {
@@ -4863,5 +4783,14 @@
     if (request.type === "option") return Promise.resolve(option(request.optionIndex));
     return Promise.resolve(start());
   }
-  window.__flockChatEngine = { turn };
+  function reset() {
+    memory = null;
+    persisted = false;
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+    }
+    return Promise.resolve(start());
+  }
+  window.__flockChatEngine = { turn, reset };
 })();

@@ -29,6 +29,10 @@ export default defineConfig({
           include: ['test/chat-shell.seam.test.tsx'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
+          // Each turn lands behind a typing beat sized from the reply's length
+          // (see `use-dialogue`), so a multi-chip scenario stacks several beats
+          // inside one test.
+          testTimeout: 20000,
         },
       },
       {

@@ -9,7 +9,10 @@
 // credit, the marks' provenance, and the pointer to the real Flock. It is
 // non-modal on purpose — the piece is inert, so there is no conversation state
 // to protect — lights-dismisses on an outside pointer, closes on Esc, and traps
-// no focus. The bypass path is deliberately absent: it lives in the share kit,
+// no focus. A dev-served page (only) also carries a "Start over" control here —
+// the one session reset, a debug fixture builders use to drop the persisted
+// session; a built page never renders it. The bypass
+// path is deliberately absent: it lives in the share kit,
 // because a viewer who meets the interstitial never reaches this page (ticket
 // 09). The wording is declared once in `lib/share.ts`; `test/copy.test.ts` locks
 // it. The prose is Denton — Flock's serif, the disclosure's own voice — while
@@ -22,9 +25,15 @@ import { DISCLOSURE_SENTENCE } from '@/lib/share';
 
 export { DISCLOSURE_SENTENCE };
 
-export function Disclosure() {
+export function Disclosure({ onReset }: { onReset?: () => void }) {
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
+  // The reset affordance is a debug fixture, not a viewer control: it exists so
+  // builders can drop the persisted session and start the piece over. It shows
+  // only when the dev server serves the page (`NODE_ENV=development`, inlined by
+  // Next into the client bundle), so a built page never carries it and the
+  // public surface stays chip-driven (the Chat mimic contract).
+  const [debug] = useState(() => process.env.NODE_ENV === 'development');
   const root = useRef<HTMLDivElement>(null);
   const toggleId = useId();
 
@@ -99,13 +108,28 @@ export function Disclosure() {
             // The timestamp's size and Book, but in the chrome's deep-green ink,
             // not grey — a control that belongs to this sage chip, not a
             // de-emphasised line of prose.
-            <button
-              className="font-chrome mt-3 cursor-pointer text-sm text-capsule-content underline underline-offset-2"
-              onClick={() => setMore(true)}
-              type="button"
-            >
-              More
-            </button>
+            <div className="mt-3 flex items-center gap-4">
+              <button
+                className="font-chrome cursor-pointer text-sm text-capsule-content underline underline-offset-2"
+                onClick={() => setMore(true)}
+                type="button"
+              >
+                More
+              </button>
+              {onReset && debug ? (
+                <button
+                  className="font-chrome cursor-pointer text-sm text-capsule-content underline underline-offset-2"
+                  data-testid="reset-button"
+                  onClick={() => {
+                    close();
+                    onReset();
+                  }}
+                  type="button"
+                >
+                  Start over
+                </button>
+              ) : null}
+            </div>
           )}
         </div>
       ) : null}

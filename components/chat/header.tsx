@@ -9,7 +9,7 @@
 import { Wordmark } from '@/components/brand/wordmark';
 import { Disclosure } from './disclosure';
 
-export function Header() {
+export function Header({ onReset }: { onReset?: () => void }) {
   return (
     <header className="fixed inset-x-5 top-3 z-10" data-testid="capsule-header">
       {/* Frosted laminate, not solid chrome: the transcript scrolls beneath and
@@ -25,7 +25,7 @@ export function Header() {
           <div className="flex items-center gap-3">
             <Wordmark className="text-capsule-content" />
           </div>
-          <Disclosure />
+          <Disclosure onReset={onReset} />
         </div>
       </div>
     </header>

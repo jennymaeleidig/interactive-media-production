@@ -18,11 +18,12 @@ beforeAll(() => {
 });
 
 describe('the engine the shell calls', () => {
-  it('publishes exactly one method, the turn the shell sends', () => {
+  it('publishes exactly the two methods the shell sends', () => {
     const api = window.__flockChatEngine;
     expect(api).toBeDefined();
-    expect(Object.keys(api!)).toEqual(['turn']);
+    expect(Object.keys(api!).sort()).toEqual(['reset', 'turn']);
     expect(typeof api!.turn).toBe('function');
+    expect(typeof api!.reset).toBe('function');
   });
 
   it('answers with the block-carrying turn the shell renders, not lines', async () => {

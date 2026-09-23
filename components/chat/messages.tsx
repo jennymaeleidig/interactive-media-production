@@ -16,13 +16,23 @@ import { cn } from '@/lib/utils';
 import { dayLabel } from '@/lib/time';
 import type { ChatMessage } from '@/lib/types';
 import { Message } from './message';
+import { Loading } from './loading';
+import { TypingIndicator } from './typing-indicator';
 
 /** The gap between one speaker's bubble and another's. */
 const BETWEEN_SPEAKERS = 'mt-5';
 /** The tighter gap between two bubbles from the same speaker. */
 const SAME_SPEAKER = 'mt-1.5';
 
-export function Messages({ messages }: { messages: ChatMessage[] }) {
+export function Messages({
+  messages,
+  isTyping = false,
+  isLoading = false,
+}: {
+  messages: ChatMessage[];
+  isTyping?: boolean;
+  isLoading?: boolean;
+}) {
   // The stamp is read once, on mount. During the prerender there is no clock to
   // read — a build-time one would be wrong for every visitor — so it stays null
   // until the browser has it, and the divider arrives with the greeting.
@@ -44,22 +54,27 @@ export function Messages({ messages }: { messages: ChatMessage[] }) {
             {dayLabel(openedAt)}
           </p>
         ) : null}
-        {messages.map((message, index) => {
-          const previous = messages[index - 1];
-          const next = messages[index + 1];
-          const continues = previous !== undefined && previous.role === message.role;
-          const continued = next !== undefined && next.role === message.role;
-          return (
-            <Message
-              className={cn(
-                previous === undefined ? null : continues ? SAME_SPEAKER : BETWEEN_SPEAKERS,
-              )}
-              grouping={{ continues, continued }}
-              key={message.id}
-              message={message}
-            />
-          );
-        })}
+        {isLoading && messages.length === 0 ? (
+          <Loading />
+        ) : (
+          messages.map((message, index) => {
+            const previous = messages[index - 1];
+            const next = messages[index + 1];
+            const continues = previous !== undefined && previous.role === message.role;
+            const continued = next !== undefined && next.role === message.role;
+            return (
+              <Message
+                className={cn(
+                  previous === undefined ? null : continues ? SAME_SPEAKER : BETWEEN_SPEAKERS,
+                )}
+                grouping={{ continues, continued }}
+                key={message.id}
+                message={message}
+              />
+            );
+          })
+        )}
+        {isTyping ? <TypingIndicator /> : null}
       </StickToBottom.Content>
     </StickToBottom>
   );

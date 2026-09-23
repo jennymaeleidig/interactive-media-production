@@ -14,7 +14,11 @@ declare global {
      * through its `useDialogue` hook; there is no server to call. See
      * `scripts/chat-engine.mjs`.
      */
-    __flockChatEngine?: { turn(request: ChatRequest): Promise<ChatResponse> };
+    __flockChatEngine?: {
+      turn(request: ChatRequest): Promise<ChatResponse>;
+      /** Forget the session and return the fresh opening turn. */
+      reset(): Promise<ChatResponse>;
+    };
   }
 
   /** One client turn: the shell sends it, the client engine answers it. */

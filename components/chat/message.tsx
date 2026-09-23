@@ -122,8 +122,9 @@ export function BlockPart({ block }: AdapterProps) {
 }
 
 /** The assistant's mark on its disc, set beside the first bubble of a run —
- * the reference widget's own placement. Decorative: the bubble is the message. */
-function AssistantMark() {
+ * the reference widget's own placement. Decorative: the bubble is the message.
+ * Exported for the typing indicator, which borrows the same placement. */
+export function AssistantMark() {
   return (
     <span
       className="flex size-7 shrink-0 items-center justify-center rounded-full bg-content text-grey-1"

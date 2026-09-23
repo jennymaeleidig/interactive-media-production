@@ -96,7 +96,7 @@ describe('starting a session', () => {
   });
 });
 
-describe('advancing the conversation', () => {
+describe('advancing the conversation', () => {undefined
   it('echoes the selection as the visitor and yields the next reply', async () => {
     const second = await option('What can you help me with?');
     expect(second.turn.blocks).toEqual([
@@ -122,6 +122,7 @@ describe('advancing the conversation', () => {
       text('me', 'What can you help me with?'),
       text('bot', GENERAL),
       text('me', "That's all for now"),
+      { who: 'me', type: 'text', text: 'talk soon', newMessage: true },
       text('bot', CLOSING),
       FLOCK_LINK,
     ]);
@@ -149,6 +150,7 @@ describe('block resolution (containment)', () => {
         text('me', 'What can you help me with?'),
         text('bot', GENERAL),
         text('me', "That's all for now"),
+        { who: 'me', type: 'text', text: 'talk soon', newMessage: true },
         text('bot', CLOSING),
         { who: 'bot', type: 'unknown', id: 'flock-home', reason: 'Unknown block', newMessage: true },
       ]);
@@ -159,6 +161,17 @@ describe('block resolution (containment)', () => {
 });
 
 describe('session persistence', () => {
+  it('reset forgets the session and reopens at the greeting', async () => {
+    await option('Support');
+    const fresh = await engine.reset();
+    expect(texts(fresh)).toEqual([GREETING]);
+    expect(optionTexts(fresh)).toEqual(HUB_OPTIONS);
+    // and the forget held: a reload after the reset stays fresh, resurrecting
+    // nothing from the dropped conversation.
+    const reloaded = await start();
+    expect(texts(reloaded)).toEqual([GREETING]);
+  });
+
   it('resumes a live session instead of resetting it (start is idempotent)', async () => {
     const advanced = await option('Support');
     const restarted = await start();
@@ -201,20 +214,30 @@ describe('the email gate (ratified)', () => {
     expect(optionTexts(second)).toEqual(['Maybe later']);
   });
 
-  it('never dead-ends: "Maybe later" returns to the hub option set', async () => {
+  it('never dead-ends: "Maybe later" restarts the tree at the greeting', async () => {
     await option('Get a Demo');
     const gate = await option('Maybe later');
     expect(gate.state.complete).toBe(false);
+    // The restart: the greeting re-offers with the greeting's own choices.
     expect(optionTexts(gate)).toEqual(HUB_OPTIONS);
     expect(gate.turn.blocks).toEqual([
       text('bot', GREETING),
       text('me', 'Get a Demo'),
       text('bot', DEMO_ASK),
       text('me', 'Maybe later'),
+      text('bot', GREETING),
     ]);
-    // and the hub is live: a further selection still advances
+    // and the restarted tree is live: a further selection still advances
     const onward = await option('Support');
-    expect(texts(onward)).toEqual([GREETING, 'Get a Demo', DEMO_ASK, 'Maybe later', 'Support', SUPPORT]);
+    expect(texts(onward)).toEqual([
+      GREETING,
+      'Get a Demo',
+      DEMO_ASK,
+      'Maybe later',
+      GREETING,
+      'Support',
+      SUPPORT,
+    ]);
   });
 });
 

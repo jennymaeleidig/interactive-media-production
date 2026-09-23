@@ -100,7 +100,7 @@
         }
       ],
       "sourceFile": "flock.yarn",
-      "startLine": 22,
+      "startLine": 24,
       "title": "Start"
     },
     "demo": {
@@ -136,7 +136,7 @@
           "op": "jumpTo"
         },
         {
-          "node": "hub",
+          "node": "Start",
           "op": "runNode"
         },
         {
@@ -145,7 +145,7 @@
         }
       ],
       "sourceFile": "flock.yarn",
-      "startLine": 56,
+      "startLine": 60,
       "title": "demo"
     },
     "end": {
@@ -156,7 +156,7 @@
         {
           "op": "runLine",
           "tags": [
-            "line:27ec4b80"
+            "line:a81821f0"
           ],
           "text": "Flock: Thanks for stopping by — take care!"
         },
@@ -166,7 +166,7 @@
         }
       ],
       "sourceFile": "flock.yarn",
-      "startLine": 81,
+      "startLine": 73,
       "title": "end"
     },
     "general": {
@@ -216,7 +216,7 @@
           "tags": [
             "line:3c5b3ad1"
           ],
-          "text": "That's all for now"
+          "text": "That's all for now ~ talk soon"
         },
         {
           "op": "showOptions"
@@ -259,93 +259,8 @@
         }
       ],
       "sourceFile": "flock.yarn",
-      "startLine": 34,
+      "startLine": 36,
       "title": "general"
-    },
-    "hub": {
-      "headers": {
-        "title": "hub"
-      },
-      "instructions": [
-        {
-          "op": "pushBool",
-          "value": true
-        },
-        {
-          "destination": 8,
-          "op": "addOption",
-          "tags": [
-            "line:3570248b"
-          ],
-          "text": "What can you help me with?"
-        },
-        {
-          "op": "pushBool",
-          "value": true
-        },
-        {
-          "destination": 10,
-          "op": "addOption",
-          "tags": [
-            "line:96e54015"
-          ],
-          "text": "Get a Demo"
-        },
-        {
-          "op": "pushBool",
-          "value": true
-        },
-        {
-          "destination": 14,
-          "op": "addOption",
-          "tags": [
-            "line:00d54762"
-          ],
-          "text": "Support"
-        },
-        {
-          "op": "showOptions"
-        },
-        {
-          "index": 16,
-          "op": "jumpTo"
-        },
-        {
-          "node": "general",
-          "op": "runNode"
-        },
-        {
-          "index": 16,
-          "op": "jumpTo"
-        },
-        {
-          "op": "pushBool",
-          "value": true
-        },
-        {
-          "name": "demoRequested",
-          "op": "popVariable"
-        },
-        {
-          "node": "demo",
-          "op": "runNode"
-        },
-        {
-          "index": 16,
-          "op": "jumpTo"
-        },
-        {
-          "node": "support",
-          "op": "runNode"
-        },
-        {
-          "index": 16,
-          "op": "jumpTo"
-        }
-      ],
-      "sourceFile": "flock.yarn",
-      "startLine": 68,
-      "title": "hub"
     },
     "support": {
       "headers": {
@@ -417,7 +332,7 @@
         }
       ],
       "sourceFile": "flock.yarn",
-      "startLine": 46,
+      "startLine": 50,
       "title": "support"
     }
   },

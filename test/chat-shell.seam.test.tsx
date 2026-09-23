@@ -12,7 +12,7 @@
 // module; the artifact seam reads the built export.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChatShell } from '@/components/chat/chat-shell';
 import { BLOCK_ADAPTERS, Message } from '@/components/chat/message';
@@ -24,6 +24,11 @@ import { shippedAsset } from './seam-harness';
 
 const GREETING =
   'Hey there! I’m Flock, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?';
+
+// Replies land behind a typing beat sized from the reply's length (see
+// `use-dialogue`), so the suite's async waits get a ceiling above the longest
+// beat rather than the 1s default.
+configure({ asyncUtilTimeout: 4000 });
 
 beforeAll(() => {
   // jsdom has no layout engine; the transcript's autoscroll library observes
@@ -54,6 +59,47 @@ describe('the mounted shell', () => {
     expect(chips.getByText('What can you help me with?')).toBeTruthy();
     expect(chips.getByText('Get a Demo')).toBeTruthy();
     expect(chips.getByText('Support')).toBeTruthy();
+  });
+
+  it('loads the opening turn under the page spinner, and replies under the typing bubble', async () => {
+    render(<ChatShell />);
+    // The page opens on the classic spinner, not the typing bubble.
+    expect(screen.getByTestId('chat-loading')).toBeTruthy();
+    await screen.findByText(GREETING);
+    expect(screen.queryByTestId('chat-loading')).toBeNull();
+
+    // A chip's reply shows the typing bubble, carrying the assistant mark.
+    fireEvent.click(screen.getByText('Support'));
+    const typing = await screen.findByTestId('typing-indicator');
+    expect(within(typing).getByTestId('assistant-mark')).toBeTruthy();
+  });
+
+  it('starts over from the disclosure, with no history carried', async () => {
+    // The reset is a dev-server fixture: stub the dev env the way `next dev`
+    // serves it. A built page never carries the control.
+    vi.stubEnv('NODE_ENV', 'development');
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByText('Support'));
+    // The support reply has landed, so there is a conversation to drop.
+    await screen.findByText(
+      'You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you\'d like assistance with, or any other way I can help you today?',
+    );
+
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    fireEvent.click(screen.getByTestId('reset-button'));
+    // A fresh conversation: the greeting alone, no earlier turn before it.
+    await waitFor(() => expect(screen.getAllByText(GREETING)).toHaveLength(1));
+    vi.unstubAllEnvs();
+  });
+
+  it('offers no reset control outside the dev server', async () => {
+    // The suite runs with NODE_ENV=test, the same statically-inlined-away case
+    // as a production build: no dev fixture in the disclosure.
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    expect(screen.queryByTestId('reset-button')).toBeNull();
   });
 
   it('advances only by chips, with no text input anywhere', async () => {

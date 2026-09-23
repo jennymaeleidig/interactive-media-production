@@ -13,7 +13,9 @@
 //
 // ALL choices are Yarn options (->). The wrapper renders the pending set as
 // user-style bubbles in the composer slot; selecting one is a message send.
-// No free text, no persistent CTA row (the Chat mimic contract).
+// No free text, no persistent CTA row (the Chat mimic contract). A ` ~ ` in an
+// option's text splits its echo into several user bubbles, one per segment —
+// the user-side counterpart of the bot's `newMessage` boundary.
 //
 // Yarn authoring gotcha (carried from the chat-wrapper prototype): a `//`
 // comment placed BETWEEN options silently drops every option after it. Keep
@@ -34,13 +36,15 @@ Flock: Hey there! I’m Flock, your friendly AI Sales Assistant. What questions 
 title: general
 ---
 Flock: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
-// GLUE: unobserved exit choice below, added so the loop has an end.
+// GLUE: unobserved exit choice below, added so the loop has an end. Its ` ~ `
+// demonstrates the user-side split: the echo lands as two bubbles, the chip
+// shows the first segment only.
 -> Get a Demo
     <<set $demoRequested = true>>
     <<jump demo>>
 -> Support
     <<jump support>>
--> That's all for now
+-> That's all for now ~ talk soon
     <<jump end>>
 ===
 title: support
@@ -56,27 +60,15 @@ Flock: You can reach our support team through the following channels: - Call us 
 title: demo
 ---
 // THE EMAIL GATE (ratified, the Chat mimic contract): the pinned s12 ask, then a
-// single "Maybe later" option that returns to the hub. The live widget opens a
+// single "Maybe later" option that restarts the tree — the greeting re-offers,
+// as though the visitor walked up again. The live widget opens a
 // meeting booker here; the mimic stops on purpose — no email capture, no
 // booker, no POST. The stop is stated here, in the script, so builders can
 // tell an intentional stop from an unfinished one; the rendered UI carries NO
 // divergence notice of any kind (prohibited).
 Flock: I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further.
 -> Maybe later
-    <<jump hub>>
-===
-title: hub
----
-// The hub option set: the same choices the greeting offered, re-offered
-// without repeating the greeting. The email gate jumps here, so the gate
-// never dead-ends the widget.
--> What can you help me with?
-    <<jump general>>
--> Get a Demo
-    <<set $demoRequested = true>>
-    <<jump demo>>
--> Support
-    <<jump support>>
+    <<jump Start>>
 ===
 title: end
 ---
