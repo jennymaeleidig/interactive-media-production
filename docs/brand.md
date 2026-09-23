@@ -51,10 +51,10 @@ piece is self-contained — no external font CDN — so there is no remote sourc
 
 | Face           | Weight | Use                                               | Source                            |
 | -------------- | ------ | ------------------------------------------------- | --------------------------------- |
-| Sohne Regular  | 400    | Body text, chat prose                             | Lineto, via Flock's Webflow CDN   |
-| Sohne Book     | 400    | Chrome: chips, labels, metadata, tooltip controls | Lineto, via Flock's Webflow CDN   |
+| Sohne Regular  | 400    | Metadata, day dividers                            | Lineto, via Flock's Webflow CDN   |
+| Sohne Book     | 400    | Chrome: labels, controls                          | Lineto, via Flock's Webflow CDN   |
 | Denim Bold     | 700    | Display, content-block headings                   | Displaay, via Flock's Webflow CDN |
-| Denton Regular | 400    | The `?` disclosure's prose                        | Via Flock's Webflow CDN           |
+| Denton Regular | 400    | The `?` disclosure's prose, chat bubbles, chips   | Via Flock's Webflow CDN           |
 
 Fallback stack, verbatim
 from Flock:

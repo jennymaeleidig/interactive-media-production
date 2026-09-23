@@ -38,10 +38,18 @@
 @theme {
   --color-ground: #fefdfb;
   --color-chrome: #eeeee3;
+  /* The chrome poured thin, for the frosted capsule and tray: the same colour at
+     roughly seven tenths, left to the blur to laminate over whatever scrolls
+     beneath. Browsers without `backdrop-filter` and viewers who asked for
+     reduced transparency both get the solid `--color-chrome` instead. */
+  --color-chrome-glass: rgb(238 238 227 / 0.72);
   --color-content: #304833;
   --color-capsule-content: #061602;
   --color-edge: #bbc0b9;
   --color-chip: #183129;
+  /* One step up the ramp for the chip's hover: colour shift rather than an
+     opacity wash, so the serif never thins out under the pointer. */
+  --color-chip-hover: #22453a;
   --color-chip-content: #eeeee3;
   --color-bubble-bot: #f1f4f7;
   --color-bubble-me: #ecefeb;
@@ -52,12 +60,12 @@
   /* The disclosure tooltip's own surface: a laminate chip rather than a plain
      card, and the one surface in the piece whose colour is not from Flock's ramp.
      `--color-tooltip` is the sage poured light — `--color-tooltip-glass`'s tint at
-     two fifths over `--color-ground`, which is what it renders over the ground
-     anyway — and it is what a browser without `backdrop-filter` and a viewer who
-     asked for reduced transparency both get. No edge token: the chip has no
+     roughly three fifths over `--color-ground`, near to what it renders over the
+     ground anyway — and it is what a browser without `backdrop-filter` and a
+     viewer who asked for reduced transparency both get. No edge token: the chip has no
      border, so the panel and its dink read as one shape. */
   --color-tooltip: #d0d7cc;
-  --color-tooltip-glass: rgb(139 157 133 / 0.4);
+  --color-tooltip-glass: rgb(139 157 133 / 0.62);
 
   /* Semantic roles the vendored shell reads. */
   --color-background: #fefdfb;
@@ -83,8 +91,9 @@
 
 /* Four roman faces, self-hosted; the fallback stacks are Flock's own. Book is
    chrome's own face, not a lighter weight of `font-sans`. Denton is Flock's
-   serif, and only the disclosure speaks in it: prose in the chrome's voice was
-   the one place the piece had no second voice to switch to. */
+   serif, and it is the piece's reading voice: the disclosure's prose, the
+   transcript's bubbles and the chips all speak in it — the block cut (Denim)
+   stays out of the conversation entirely. */
 @theme {
   --font-sans: "Sohne", Arial, sans-serif;
   --font-chrome: "Sohne Book", Arial, sans-serif;
@@ -173,6 +182,11 @@
     background-color: var(--color-ground);
     color: var(--color-content);
     font-family: var(--font-sans);
+    /* Grayscale, not subpixel: on retina macOS subpixel smoothing fattens a
+       400-weight stroke, and Denton Regular is the lightest cut the piece has,
+       so the thinning has to come from the renderer. Grayscale it is. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Nothing here drags an OS window. A host that makes the top strip a titlebar
@@ -209,6 +223,34 @@
  * A class and not utilities because pseudo-elements, the `@supports` fallback
  * and the motion gate have no utility spelling.
  */
+/* Frosted chrome, shared by the header capsule and the composer tray: the
+   transcript scrolls beneath both, and the blur is what keeps them floating
+   over it instead of sitting on it. A class and not utilities because the
+   `@supports` fallback and the transparency gate have no utility spelling.
+   The contract is the tooltip's: solid colour everywhere `backdrop-filter` is
+   missing or unwanted, glass only where it can actually blur. */
+@layer components {
+  .frost {
+    background-color: var(--color-chrome);
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .frost {
+      -webkit-backdrop-filter: blur(24px) saturate(120%);
+      backdrop-filter: blur(24px) saturate(120%);
+      background-color: var(--color-chrome-glass);
+    }
+  }
+
+  /* The viewer who asked for opacity over transparency gets the laminate, not
+     a transcript they cannot read through. */
+  @media (prefers-reduced-transparency: reduce) {
+    .frost {
+      background-color: var(--color-chrome);
+    }
+  }
+}
+
 @layer components {
   .tooltip {
     --tooltip-blur: none;
@@ -268,7 +310,7 @@
 
   @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
     .tooltip {
-      --tooltip-blur: blur(24px) saturate(120%);
+      --tooltip-blur: blur(64px) saturate(130%);
 
       background-color: var(--color-tooltip-glass);
       -webkit-backdrop-filter: var(--tooltip-blur);

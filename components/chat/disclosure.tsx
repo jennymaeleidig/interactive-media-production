@@ -96,8 +96,11 @@ export function Disclosure() {
               </p>
             </div>
           ) : (
+            // The timestamp's size and Book, but in the chrome's deep-green ink,
+            // not grey — a control that belongs to this sage chip, not a
+            // de-emphasised line of prose.
             <button
-              className="font-chrome mt-3 cursor-pointer underline underline-offset-2"
+              className="font-chrome mt-3 cursor-pointer text-sm text-capsule-content underline underline-offset-2"
               onClick={() => setMore(true)}
               type="button"
             >

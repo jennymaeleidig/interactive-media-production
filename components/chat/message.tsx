@@ -158,7 +158,7 @@ export function Message({
       )}
       <div
         className={cn(
-          'flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
+          'font-serif flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
           user ? 'bg-bubble-me' : 'bg-bubble-bot',
           grouping.continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
           grouping.continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
@@ -169,9 +169,9 @@ export function Message({
         {message.parts.map((part, index) => (
           <motion.div
             animate={{ opacity: 1, y: 0 }}
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
             key={`${message.id}-${index}`}
-            transition={reduceMotion ? { duration: 0 } : { delay: index * 0.04, duration: 0.18, ease: [0.2, 0.7, 0.3, 1] }}
+            transition={reduceMotion ? { duration: 0 } : { delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
             <BlockPart block={part} />
           </motion.div>
