@@ -112,6 +112,23 @@ describe('the mounted shell', () => {
     expect(await screen.findByText(/You can reach our support team/)).toBeTruthy();
   });
 
+  it('lands the viewer’s echo at once, and holds only the reply behind its beat', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByText('Support'));
+
+    // While the dots are up, the viewer's own turn is already in the
+    // transcript — a message send reads as sent, not as queued behind the
+    // answer it provokes. (The chip is still up too, greyed, so the lookup
+    // stays inside the transcript's log.)
+    await screen.findByTestId('typing-indicator');
+    const transcript = within(screen.getByRole('log'));
+    expect(transcript.getByText('Support').closest('[data-testid="message-user"]')).toBeTruthy();
+
+    // and the reply follows, behind the beat the dots were holding.
+    await screen.findByText(/You can reach our support team/);
+  });
+
   it('keeps the send glyph present but inert', async () => {
     render(<ChatShell />);
     await screen.findByText(GREETING);

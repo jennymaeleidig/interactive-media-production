@@ -118,24 +118,31 @@ export function useDialogue(): Dialogue {
   // The key is the log position of the run's first block, and the log is
   // append-only within a session, so an id hit is the same run by contract.
   const stamps = useRef(new Map<string, ChatMessage>());
+  // The ledger's one number: how much of the engine's log the transcript
+  // holds, so the next turn's appended blocks — the viewer's echo and the
+  // reply — can be told from the log the transcript already shows. One turn
+  // at a time (`pending`), so it never goes stale.
+  const logLength = useRef(0);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   /** The engine's answer, applied as the shell's next state. It returns the
    * whole block sequence, so this replaces rather than merges — reusing, from
-   * the ledger, every message the transcript already holds. A turn lands
-   * behind a typing beat proportional to its size (`beat`, the default); the
-   * opening turn lands at once, under the page's loading spinner instead. */
+   * the ledger, every message the transcript already holds. The viewer's echo
+   * lands at once; the reply is held behind a typing beat proportional to its
+   * own declared weight. The opening turn lands at once, under the page's
+   * loading spinner instead. */
   const apply = useCallback((res: ChatResponse, beat = true) => {
     const started = performance.now();
-    const land = () => {
+    /** Land the log through `through` blocks. The final land takes the turn's
+     * choice set in and brings the dots down; the echo's land does neither. */
+    const land = (through: number, final: boolean) => {
       // The turn's real engine time, measured once per land; each newly
       // landing bubble adds its own beat — its declared content weight at the
       // piece's pace — so every figure is a measure of that one message
       // alone, frozen at its first landing.
       const engineMs = Math.round(performance.now() - started);
-      pending.current = false;
       setMessages(
-        groupBlocks(res.turn.blocks).map((run) => {
+        groupBlocks(res.turn.blocks.slice(0, through)).map((run) => {
           const kept = stamps.current.get(run.id);
           // The reuse: same object, stamps and all. Runs cannot grow under the
           // append-only turn flow — the engine seam locks that contract ("the
@@ -148,17 +155,32 @@ export function useDialogue(): Dialogue {
           return fresh;
         }),
       );
-      setOptions(res.turn.options ?? []);
-      setIsTyping(false);
-      setIsLoading(false);
+      if (final) {
+        pending.current = false;
+        logLength.current = res.turn.blocks.length;
+        setOptions(res.turn.options ?? []);
+        setIsTyping(false);
+        setIsLoading(false);
+      }
     };
-    if (!beat) {
-      land();
+
+    // What this turn appends, split where the viewer's echo ends: the echo is
+    // the viewer's own turn — nothing to compose — so it lands now, and only
+    // the reply holds the dots. The reply's beat is the reply's weight alone,
+    // never the conversation's.
+    const appended = res.turn.blocks.slice(logLength.current);
+    let echo = 0;
+    while (echo < appended.length && appended[echo].who === 'me') echo += 1;
+    const reply = appended.slice(echo);
+
+    if (!beat || reply.length === 0) {
+      land(res.turn.blocks.length, true);
       return;
     }
+    if (echo > 0) land(logLength.current + echo, false);
     setIsTyping(true);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(land, typingDelay(res.turn.blocks));
+    timer.current = setTimeout(() => land(res.turn.blocks.length, true), typingDelay(reply));
   }, []);
 
   useEffect(() => {
@@ -216,9 +238,10 @@ export function useDialogue(): Dialogue {
     }
     pending.current = false;
     // A fresh conversation: every bubble is genuinely new again, so the old
-    // ledger — objects and stamps alike — is dropped with the transcript it
-    // belonged to.
+    // ledger — objects, stamps, and the log length — is dropped with the
+    // transcript it belonged to.
     stamps.current.clear();
+    logLength.current = 0;
     api
       .reset()
       .then((res) => apply(res, false))
