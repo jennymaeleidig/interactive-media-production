@@ -21,8 +21,7 @@ There is no separate `tokens.css`. Ticket 02 already made `globals.css` the home
 
 ## Colour
 
-Flock's palette is green throughout. There is **no red or maroon anywhere** in their stylesheet —
-the brief's original assumption of a red brand colour was wrong, and no red may enter this piece.
+Flock's palette is a warm green throughout.
 
 | Token              | Value     | Role                                                  |
 | ------------------ | --------- | ----------------------------------------------------- |
@@ -44,10 +43,6 @@ the brief's original assumption of a red brand colour was wrong, and no red may 
 | `--color--grey-7`  | `#3c403b` | Grey ramp step                                        |
 | `--color--grey-8`  | `#22281f` | Dark text, elevated dark surface                      |
 | `--color--white`   | `#ffffff` | Ground                                                |
-
-Flock's alternate accent `#3fc919` and its legacy green `#1a3e2b` are **not** used. `#304833`,
-recorded in the research as a recurring deep green, **is** used — as text on the light ground and as
-the accent (see below), on the human's call.
 
 ## Type
 
@@ -78,7 +73,3 @@ from Flock:
 | Sohne Regular / Book | two `woff2`                 | Commercial typeface licensed to Flock Group Inc (Lineto). No rights claimed.                 |
 | Denton Regular       | one `woff2`                 | Commercial typeface licensed to Flock Group Inc (foundry not identified). No rights claimed. |
 | Denim Bold           | one `woff2`                 | Commercial typeface licensed to Flock Group Inc (Displaay). No rights claimed.               |
-
-**No licence headers on any Flock-derived file**, including the token block in `globals.css`. No
-`SPDX-License-Identifier` line, no CC0 stamp. The repository's own code stays CC0; these assets are
-the opposite case and must not inherit it.

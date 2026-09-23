@@ -19,6 +19,9 @@ is derived from viewer input. The ADR holds the full reasoning and consequences.
 - Named exports; ESM; `.mjs` for scripts/ Node modules.
 - New code is CC0-1.0 (`LICENSE`); mark files with
   `// SPDX-License-Identifier: CC0-1.0` where convenient.
+- **No licence headers on any Flock-derived file**, including the token block in `globals.css`. No
+  `SPDX-License-Identifier` line, no CC0 stamp. The repository's own code stays CC0; these assets are
+  the opposite case and must not inherit it.
 
 ## Repo hygiene
 
