@@ -1,9 +1,6 @@
 # Brand spec: the Flock look
 
-Reference data for reproducing Flock Safety's visual identity, per
-[ADR 0001](adr/0001-reproduce-flock-brand-identity.md). Values are read from Flock's compiled
-stylesheet and recorded in `.scratch/flock-chatbot/research/flock-safety-brand.md`. This file is
-reference material, not a decision — the decisions live in the ADRs.
+Reference data for reproducing Flock Safety's visual identity.
 
 A build session should not have to guess at a colour, a face, or an asset's provenance. If it does,
 this file has a gap.
@@ -52,126 +49,36 @@ Flock's alternate accent `#3fc919` and its legacy green `#1a3e2b` are **not** us
 recorded in the research as a recurring deep green, **is** used — as text on the light ground and as
 the accent (see below), on the human's call.
 
-### The light surface, as amended 2026-02-18
-
-The piece's ground is **not** `grey-1`. The chrome and text are the homepage's own values, read off
-`www.flocksafety.com` and settled against the full-viewport surface prototype
-(`.scratch/flock-chatbot/prototype/full-viewport-surface.html`); the ground itself was revised to
-`#fefdfb` by the human after that:
-
-| Semantic role            | Value     | Role                                                              |
-| ------------------------ | --------- | ----------------------------------------------------------------- |
-| `--color-surface`        | `#fefdfb` | The page ground, revised from the homepage's `#f2efea`            |
-| `--color-surface-raised` | `#eeeee3` | The chrome: the floating capsule header **and** the composer tray |
-| `--color-content`        | `#304833` | Text on the light ground                                          |
-| `--color-chrome-content` | `#061602` | The capsule header's wordmark and text (`green-8`)                |
-| `--color-edge`           | `#bbc0b9` | The capsule's hairline border and the tray divider (`grey-3`)     |
-
-Chips are `#183129` with `#eeeee3` text; the link-out block is an inline link in the message ink,
-not a chip. `#183129` is
-the **captured widget's own** value (`--THEME_TEXT_COLOR` and
-`--MESSAGE_BUBBLE_OWN_TEXT_COLOR`), not Flock's ramp — kept because it is what the piece ships.
-
-The accent is `--color--flock` (`#304833`), revised from `#5bd640` on the human's call, so on this
-ground the accent and `--color-content` are the same value. The focus ring stays Flock's `#84da6c`:
-it is the one place a bright green still shows, and a dark ring would vanish against a dark chip.
-
-**Message bubbles take the captured widget's own values**, read off the rendered widget
-(`.fpc-bubble--bot` / `.fpc-bubble--me`) rather than Flock's site:
-
-| Role              | Background | Text      | Source                                                                             |
-| ----------------- | ---------- | --------- | ---------------------------------------------------------------------------------- |
-| Assistant message | `#f1f4f7`  | `#183129` | `.fpc-bubble--bot` — the *rendered* background; its text was `#101010`, overridden |
-| Viewer message    | `#ecefeb`  | `#183129` | `--MESSAGE_BUBBLE_OWN_BACKGROUND_COLOR` / `--MESSAGE_BUBBLE_OWN_TEXT_COLOR`        |
-
-Both bubbles' text is `#183129` — the human's call, so the two message kinds read as one voice. The
-captured widget's own bot text was `#101010`.
-
-The transcript carries two pieces of chrome beside those bubbles. The assistant's mark sits on a
-disc in `#304833` (the accent) with the ramp's `grey-1` for the mark itself, once per assistant run;
-the day divider is `grey-5`.
-
-`#ecefeb` is Flock's `grey-1`. `#f1f4f7` is **not** on Flock's ramp — it is the captured widget's
-rendered bubble, kept because it is what the piece ships. Neither is `#fefdfb`, the ground: it is
-the human's pick, revised from `#f2efea` on 2026-02-18.
-
-The capsule floats `20px` in from each viewport edge and `12px` from the top, radius `8px`, no
-shadow, always visible — the live header's own numbers. The live header is `opacity: 0` at the top
-of the page and fades in on scroll; that has no equivalent here, because the transcript scrolls
-rather than the page.
-
 ## Type
 
-Three files, roman only, self-hosted under `/fonts/` and declared in `app/globals.css`. The
+Four files, roman only, self-hosted under `/fonts/` and declared in `app/globals.css`. The
 piece is self-contained — no external font CDN — so there is no remote source in `@font-face`.
 
-| Face          | Weight | Use                                             | Source                            |
-| ------------- | ------ | ----------------------------------------------- | --------------------------------- |
-| Sohne Regular | 400    | Body text, chat prose                           | Lineto, via Flock's Webflow CDN   |
-| Sohne Book    | 400    | Chrome: chips, labels, metadata, the disclosure | Lineto, via Flock's Webflow CDN   |
-| Denim Bold    | 700    | Display, content-block headings                 | Displaay, via Flock's Webflow CDN |
+| Face           | Weight | Use                                               | Source                            |
+| -------------- | ------ | ------------------------------------------------- | --------------------------------- |
+| Sohne Regular  | 400    | Body text, chat prose                             | Lineto, via Flock's Webflow CDN   |
+| Sohne Book     | 400    | Chrome: chips, labels, metadata, tooltip controls | Lineto, via Flock's Webflow CDN   |
+| Denim Bold     | 700    | Display, content-block headings                   | Displaay, via Flock's Webflow CDN |
+| Denton Regular | 400    | The `?` disclosure's prose                        | Via Flock's Webflow CDN           |
 
-**Book is its own family** (`--font-chrome`), not a lighter weight of Regular: both files identify
-as regular, so declaring them at two weights of one family leaves Book unreachable and the chrome
-silently in the prose face. Prose is Regular; the chips, the day divider, image and frame captions,
-and the `?` disclosure are Book.
-
-**Dropped, deliberately — do not re-add:** Denton (serif display; chat content has no serif voice),
-every italic, every other Denim and Sohne weight, and both Thermochrome decorative faces. If a
-future ticket seems to need one, that is a new decision, not a forgotten asset.
-
-**Before the fonts load:** `font-display: swap`, with all three files preloaded from the root layout
-as `<link rel="preload" as="font" crossorigin>`. No metric-override descriptors: three local files
-land fast enough, and the piece is a single unlisted artwork where a first-visit flash of `Arial` is
-acceptable. Fallback stack, verbatim from Flock:
+Fallback stack, verbatim
+from Flock:
 
 - Sohne and Denim: `Arial, sans-serif`
-- Denton (should it ever return): `Georgia, sans-serif`
-
-## Shape and density
-
-Frozen as named `@theme` values in `app/globals.css`, not left to taste:
-
-- **Radii:** `1rem` and `8px` / `.5rem` dominate; `12px` / `16px` on larger cards; `100px` full
-  pills for buttons and chips; `4px` on small controls.
-- **Spacing:** Flock's 8-step scale, `--space-50` … `--space-800`.
-- **Shadows:** flat by default — `box-shadow: none` is the norm. Ambient `0 4px 50px rgba(0,0,0,.05)`
-  and hover lift `13px 12px 40px rgba(0,0,0,.25)` are the only two.
-- **Edges:** hairline inner borders via inset shadows, never heavy strokes.
-- **Focus ring:** `box-shadow: 0 0 0 3px #84da6c`. Non-negotiable, and recorded as an accessibility
-  constraint rather than a style preference: the chips and the link-out block are the transcript's
-  focusable things, and a keyboard user must be able to see where they are.
-
-Composition and motion are **not** frozen here — they come from the vendored template's dependencies
-and the `design-taste-frontend` skill.
+- Denton: `Georgia, sans-serif`
 
 ## Assets
 
-| Asset                | File                        | Status                                                                         |
-| -------------------- | --------------------------- | ------------------------------------------------------------------------------ |
-| Wordmark             | header, SVG, 138×32 viewBox | Trademark of Flock Group Inc. No rights claimed.                               |
-| Assistant mark       | transcript, inline SVG      | Trademark of Flock Group Inc. No rights claimed. The wordmark's own geometry.  |
-| Favicon              | one 32px PNG                | Trademark of Flock Group Inc. No rights claimed.                               |
-| Apple touch icon     | 256px PNG                   | Trademark of Flock Group Inc. No rights claimed.                               |
-| Sohne Regular / Book | two `woff2`                 | Commercial typeface licensed to Flock Group Inc (Lineto). No rights claimed.   |
-| Denim Bold           | one `woff2`                 | Commercial typeface licensed to Flock Group Inc (Displaay). No rights claimed. |
-
-Each line above states the asset's real status. This is what documents that the choice was made
-knowingly, not by accident.
-
-**Dropped:** the 1200×628 og image (nothing is shared as a card; the piece is unlisted and never
-indexed) and the second, dark-scheme favicon (the piece has one fixed theme — a light ground — with
-no theme toggle in scope).
+| Asset                | File                        | Status                                                                                       |
+| -------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
+| Wordmark             | header, SVG, 138×32 viewBox | Trademark of Flock Group Inc. No rights claimed.                                             |
+| Assistant mark       | transcript, inline SVG      | Trademark of Flock Group Inc. No rights claimed. The wordmark's own geometry.                |
+| Favicon              | one 32px PNG                | Trademark of Flock Group Inc. No rights claimed.                                             |
+| Apple touch icon     | 256px PNG                   | Trademark of Flock Group Inc. No rights claimed.                                             |
+| Sohne Regular / Book | two `woff2`                 | Commercial typeface licensed to Flock Group Inc (Lineto). No rights claimed.                 |
+| Denton Regular       | one `woff2`                 | Commercial typeface licensed to Flock Group Inc (foundry not identified). No rights claimed. |
+| Denim Bold           | one `woff2`                 | Commercial typeface licensed to Flock Group Inc (Displaay). No rights claimed.               |
 
 **No licence headers on any Flock-derived file**, including the token block in `globals.css`. No
 `SPDX-License-Identifier` line, no CC0 stamp. The repository's own code stays CC0; these assets are
 the opposite case and must not inherit it.
-
-## Voice
-
-For any copy the piece composes itself. Content authored in the Yarn program is a separate effort.
-
-- Sentence case everywhere, including headings and buttons.
-- "Flock" in running copy, "Flock Safety" only where legal or footer framing is intended.
-- Short declarative sentences, civic and reassuring in tone.
-- Plus signs instead of ampersands in nav-like lists.

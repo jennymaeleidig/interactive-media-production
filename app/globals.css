@@ -49,6 +49,16 @@
   --color-focus-ring: #84da6c;
   --color-inert-glyph: #888f91;
 
+  /* The disclosure tooltip's own surface: a laminate chip rather than a plain
+     card, and the one surface in the piece whose colour is not from Flock's ramp.
+     `--color-tooltip` is the sage poured light — `--color-tooltip-glass`'s tint at
+     two fifths over `--color-ground`, which is what it renders over the ground
+     anyway — and it is what a browser without `backdrop-filter` and a viewer who
+     asked for reduced transparency both get. No edge token: the chip has no
+     border, so the panel and its dink read as one shape. */
+  --color-tooltip: #d0d7cc;
+  --color-tooltip-glass: rgb(139 157 133 / 0.4);
+
   /* Semantic roles the vendored shell reads. */
   --color-background: #fefdfb;
   --color-foreground: #304833;
@@ -71,13 +81,15 @@
   --radius-pill: 100px;
 }
 
-/* Three roman faces, self-hosted; the fallback stacks are Flock's own. Denton
-   is dropped by decision (`docs/brand.md`), so there is no serif token. Book is
-   chrome's own face, not a lighter weight of `font-sans`. */
+/* Four roman faces, self-hosted; the fallback stacks are Flock's own. Book is
+   chrome's own face, not a lighter weight of `font-sans`. Denton is Flock's
+   serif, and only the disclosure speaks in it: prose in the chrome's voice was
+   the one place the piece had no second voice to switch to. */
 @theme {
   --font-sans: "Sohne", Arial, sans-serif;
   --font-chrome: "Sohne Book", Arial, sans-serif;
   --font-display: "Denim", Arial, sans-serif;
+  --font-serif: "Denton", Georgia, sans-serif;
 }
 
 /* Book is a face of its own in Flock's kit, not a weight of Regular: `docs/brand.md`
@@ -108,6 +120,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Denton";
+  src: url("/fonts/Denton-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   /*
    * The one scaling dial. Every Tailwind size is rem-based, so this scales the
@@ -123,6 +143,24 @@
     html {
       font-size: 18px;
     }
+  }
+
+  /*
+   * No faux bold, anywhere.
+   *
+   * Nothing in the piece is bold: no component asks for a weight above 400, the
+   * fonts ship as two roman cuts at 400, and Tailwind's `b, strong { font-weight:
+   * bolder }` has nothing to bite on. A browser that cannot match a requested
+   * weight is still free to fake it, and Chrome and Firefox fake differently — so
+   * "the same text reads heavier in one browser than the other" is that
+   * disagreement, and it is closed here rather than diagnosed case by case.
+   *
+   * `font-synthesis-weight` and not `font-synthesis`: the degraded-block copy and
+   * the blocked-at-the-seam note are italic, Flock ships roman faces only, and
+   * synthesising those obliques is wanted.
+   */
+  html {
+    font-synthesis-weight: none;
   }
 
   html,
@@ -149,5 +187,120 @@
   :focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--color-focus-ring);
+  }
+}
+
+/*
+ * The `?` disclosure's tooltip: a laminate bubble that lands from below the
+ * button, with the reference widget's own dink.
+ *
+ * Citation: the bubble-plus-dink geometry and the "land from the direction you
+ * name" reveal are adapted from two CSS-only tooltip write-ups, read rather
+ * than vendored — every rule below is this repo's own:
+ *   - Envato Tuts+, "CSS Tooltip Magic" (Joshua Smith, 2016). License: Unknown.
+ *   - Luigi Cavalieri, "CSS tooltip appearing from any direction" (2019).
+ *     License: Unknown.
+ * Both land the bubble by animating a margin and drawing the dink as a bordered
+ * triangle. Adapted by Jenny Leidig on 2026-09-20: transform and opacity only
+ * (a margin costs layout on every frame), the dink a clipped triangle though it
+ * carries no border here — a hairline would separate the two shapes the fill is
+ * meant to merge — and the whole reveal gated behind `prefers-reduced-motion`.
+ *
+ * A class and not utilities because pseudo-elements, the `@supports` fallback
+ * and the motion gate have no utility spelling.
+ */
+@layer components {
+  .tooltip {
+    --tooltip-blur: none;
+    /* How far the panel moves off the button's right edge to line up with the
+       capsule's own: its padding, then its border. */
+    --tooltip-shift: calc(1rem + 1px);
+
+    position: absolute;
+    top: 100%;
+    right: calc(-1 * var(--tooltip-shift));
+    z-index: 20;
+    width: min(20rem, calc(100vw - 2.5rem));
+    /* Clears the capsule: at 0.5rem the panel's top edge crossed the header's
+       own bottom border, and the glass picked the border up as a bright band. */
+    margin-top: 1rem;
+    /* The land-in grows out of the button's corner, which is the corner the
+       dink sits in. */
+    transform-origin: top right;
+    border-radius: var(--radius-card);
+    background-color: var(--color-tooltip);
+    color: var(--color-capsule-content);
+    font-family: var(--font-serif);
+    /* Keeps the fleck's multiply to this surface. */
+    isolation: isolate;
+  }
+
+  /* Formica's fleck, under the copy — so the ink keeps the contrast it was
+     checked for, and the texture never touches the text. */
+  .tooltip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0.07;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+  }
+
+  /* The dink: a triangle clipped out of a 10px box, its bottom edge on the
+     panel's top edge so the two never overlap (an overlap double-composites the
+     translucent fill into a darker patch), its apex on the button's own centre —
+     half a 1.75rem button, less half the dink, plus the shift the panel took to
+     line up with the capsule. It takes the panel's colour and no stroke, which is
+     what makes the two shapes one. */
+  .tooltip::after {
+    content: "";
+    position: absolute;
+    top: -15px;
+    right: calc(0.875rem - 10px + var(--tooltip-shift));
+    width: 20px;
+    height: 15px;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    background-color: inherit;
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .tooltip {
+      --tooltip-blur: blur(24px) saturate(120%);
+
+      background-color: var(--color-tooltip-glass);
+      -webkit-backdrop-filter: var(--tooltip-blur);
+      backdrop-filter: var(--tooltip-blur);
+    }
+  }
+
+  /* The viewer who asked for opacity over transparency gets the laminate, not a
+     ground they cannot read through. The dink inherits the swap. */
+  @media (prefers-reduced-transparency: reduce) {
+    .tooltip {
+      --tooltip-blur: none;
+
+      background-color: var(--color-tooltip);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tooltip {
+      animation: tooltip-land 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+  }
+}
+
+@keyframes tooltip-land {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

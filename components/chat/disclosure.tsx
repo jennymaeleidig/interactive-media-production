@@ -2,7 +2,9 @@
 
 // The disclosure: the one place the piece drops the mask.
 //
-// A non-modal popover anchored to the `?` in the capsule header. First view is
+// A non-modal popover anchored to the `?` in the capsule header, drawn as the
+// reference widget's tooltip: a laminate bubble with a dink, landing from below
+// the button. First view is
 // one plain, out-of-character sentence; a second tap ("More") adds the artist
 // credit, the marks' provenance, and the pointer to the real Flock. It is
 // non-modal on purpose — the piece is inert, so there is no conversation state
@@ -10,10 +12,12 @@
 // no focus. The bypass path is deliberately absent: it lives in the share kit,
 // because a viewer who meets the interstitial never reaches this page (ticket
 // 09). The wording is declared once in `lib/share.ts`; `test/copy.test.ts` locks
-// it.
+// it. The prose is Denton — Flock's serif, the disclosure's own voice — while
+// everything the viewer can operate inside it stays in the chrome's Book
+// (`docs/brand.md`).
 //
 // SPDX-License-Identifier: CC0-1.0
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { DISCLOSURE_SENTENCE } from '@/lib/share';
 
 export { DISCLOSURE_SENTENCE };
@@ -22,6 +26,7 @@ export function Disclosure() {
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const toggleId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -49,8 +54,9 @@ export function Disclosure() {
       <button
         aria-expanded={open}
         aria-label="What is this?"
-        className="font-chrome flex h-7 w-7 items-center justify-center rounded-pill border border-edge text-sm text-capsule-content"
+        className="font-chrome flex h-7 w-7 cursor-pointer items-center justify-center rounded-pill border border-edge text-sm text-capsule-content transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-ground active:scale-[0.96] motion-reduce:transition-none"
         data-testid="disclosure-toggle"
+        id={toggleId}
         onClick={() => (open ? close() : setOpen(true))}
         type="button"
       >
@@ -58,13 +64,14 @@ export function Disclosure() {
       </button>
       {open ? (
         <div
-          className="font-chrome absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2.5rem))] rounded-card border border-edge bg-chrome p-4 text-base text-capsule-content shadow-none"
+          aria-labelledby={toggleId}
+          className="tooltip p-4 text-base leading-normal"
           data-testid="disclosure-popover"
           role="dialog"
         >
           <p>{DISCLOSURE_SENTENCE}</p>
           {more ? (
-            <div className="mt-3 flex flex-col gap-2">
+            <div className="mt-3 flex flex-col gap-1">
               <p>
                 The Flock wordmark, typefaces and palette reproduce Flock
                 Safety&rsquo;s own, which are Flock Group Inc&rsquo;s marks and licensed typefaces; no rights
@@ -72,19 +79,28 @@ export function Disclosure() {
               </p>
               <p>
                 The real company is at{' '}
-                <a className="underline" href="https://www.flocksafety.com/" rel="noreferrer noopener" target="_blank">
+                <a
+                  className="underline underline-offset-2"
+                  href="https://www.flocksafety.com/"
+                  rel="noreferrer noopener"
+                  target="_blank"
+                >
                   flocksafety.com
                 </a>
                 .
               </p>
               <p>
-                <a className="underline" href="/legal/privacy-policy">
+                <a className="underline underline-offset-2" href="/legal/privacy-policy">
                   Privacy
                 </a>
               </p>
             </div>
           ) : (
-            <button className="mt-3 underline" onClick={() => setMore(true)} type="button">
+            <button
+              className="font-chrome mt-3 cursor-pointer underline underline-offset-2"
+              onClick={() => setMore(true)}
+              type="button"
+            >
               More
             </button>
           )}

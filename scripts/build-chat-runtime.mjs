@@ -28,7 +28,7 @@ import { build } from 'esbuild';
 import { loadYarnProject } from 'yarnspinner-typescript/node';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const PROJECT_FILE = path.join(ROOT, 'dialogue', 'flock.yarnproject');
+const PROJECT_FILE = path.join(ROOT, 'assets/dialogue', 'flock.yarnproject');
 const PROGRAM_FILE = path.join(ROOT, 'scripts', 'chat-program.json');
 const ENGINE_FILE = path.join(ROOT, 'scripts', 'chat-engine.mjs');
 const RUNTIME_FILE = path.join(ROOT, 'scripts', 'chat-runtime.js');
@@ -69,7 +69,7 @@ function compileProgram() {
   const project = loadYarnProject(PROJECT_FILE);
   if (!project.program) {
     const problems = project.diagnostics.map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`).join('\n');
-    throw new Error(`dialogue/flock.yarn failed to compile:\n${problems}`);
+    throw new Error(`assets/dialogue/flock.yarn failed to compile:\n${problems}`);
   }
   return `${JSON.stringify(stableKeys(project.program), null, 2)}\n`;
 }

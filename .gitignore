@@ -1,9 +1,11 @@
 node_modules/
-.pi/npm/
+.pi/
 .next/
 .sandbox/
 .DS_Store
 .scratch/
+.agents/
+skills-lock.json
 
 # Build outputs — none of these is committed. The chat's generated program and
 # runtime (`scripts/chat-program.json`, `scripts/chat-runtime.js`) are the bytes

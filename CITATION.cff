@@ -14,8 +14,8 @@ keywords:
 message: >
   The CC0-1.0 licence above covers this repository's own work only. Assets
   reproduced from Flock Safety - the wordmark, favicon and Apple touch icon, and
-  the Sohne and Denim fonts - remain the trademarks and licensed property of
-  Flock Group Inc, with no rights claimed here. Their status is recorded per
+  the Sohne, Denim and Denton fonts - remain the trademarks and licensed property
+  of Flock Group Inc, with no rights claimed here. Their status is recorded per
   asset in docs/brand.md; the risk of reproducing them is accepted in
   docs/adr/0002-accept-impersonation-risk.md.
 references:
@@ -31,3 +31,23 @@ references:
     notes: >
       Apache-2.0. The chat surfaces under components/ are a trimmed, adapted port;
       see components/NOTICE.md and components/LICENSE.
+  - type: article
+    title: 'CSS Tooltip Magic'
+    authors:
+      - family-names: Smith
+        given-names: Joshua
+    url: 'https://webdesign.tutsplus.com/css-tooltip-magic--cms-28082t'
+    notes: >
+      License: Unknown. The disclosure tooltip's bubble-plus-dink geometry and its
+      fade-and-slide reveal are adapted from this write-up, read rather than
+      vendored; the rules in app/globals.css are this repo's own. See the citation
+      block above .tooltip.
+  - type: article
+    title: 'CSS tooltip appearing from any direction'
+    authors:
+      - family-names: Cavalieri
+        given-names: Luigi
+    url: 'https://luigicavalieri.com/blog/css-tooltip-appearing-from-any-direction/'
+    notes: >
+      License: Unknown. Source of the directional reveal the disclosure tooltip
+      uses to land from below its button. Read rather than vendored.

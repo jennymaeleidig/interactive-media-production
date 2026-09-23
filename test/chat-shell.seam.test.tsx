@@ -248,4 +248,20 @@ describe('the disclosure', () => {
     await waitFor(() => expect(screen.getByTestId('disclosure-popover')).toBeTruthy());
     expect(screen.getByText("This is not Flock Safety; it's an artwork.")).toBeTruthy();
   });
+
+  // The popover is non-modal, so it must also be dismissible without finding the
+  // toggle again: Esc from anywhere, or a pointer landing outside it.
+  it.each([
+    ['Escape', () => fireEvent.keyDown(document, { key: 'Escape' })],
+    ['a pointer outside it', () => fireEvent.pointerDown(document.body)],
+  ])('closes on %s', async (_name, dismiss) => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    await waitFor(() => expect(screen.getByTestId('disclosure-popover')).toBeTruthy());
+
+    dismiss();
+
+    await waitFor(() => expect(screen.queryByTestId('disclosure-popover')).toBeNull());
+  });
 });
