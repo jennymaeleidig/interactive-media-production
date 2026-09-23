@@ -23,6 +23,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ChatBlock, ChatRequest, ChatResponse } from '../lib/chat-turn.mjs';
 import { CHAT_BLOCKS } from '../lib/chat-blocks.mjs';
+import { groupBlocks } from '../lib/types';
 // Side-effect import: the engine installs its whole public surface as
 // `window.__flockChatEngine`. Read live so a stale test cannot pass against a
 // captured function if the module stops installing it.
@@ -126,6 +127,49 @@ describe('advancing the conversation', () => {undefined
       text('bot', CLOSING),
       FLOCK_LINK,
     ]);
+  });
+});
+
+describe('the append-only turn flow', () => {
+  /** The turn-flow contract the shell's reuse ledger stands on: a turn only
+   * appends to the conversation log, so a run's id hit there is the same run
+   * and its parts can never grow. Locked here, at the engine seam, because the
+   * shell's length check is sound only while the engine holds this side of it.
+   * The walk covers the hub, both branches, the email gate's restart, and
+   * completion — every way the authored tree can answer a turn. */
+  it('only ever appends, so no run is extended and no id moves', async () => {
+    const turns: ChatResponse[] = [await start()];
+    for (const label of [
+      'Support',
+      'Get a Demo',
+      'Maybe later',
+      'What can you help me with?',
+      'Support',
+      "That's all for now",
+    ]) {
+      const pending = turns.at(-1)!.turn.options;
+      const index = pending?.find((option) => option.text === label)?.index;
+      if (index === undefined) throw new Error(`no pending option ${JSON.stringify(label)}`);
+      turns.push(await turn({ type: 'option', optionIndex: index }));
+    }
+    expect(turns.at(-1)!.state.complete).toBe(true);
+
+    for (let i = 1; i < turns.length; i += 1) {
+      const previous = turns[i - 1].turn.blocks;
+      const next = turns[i].turn.blocks;
+      // The sequence grew by appending: the earlier log is a value-prefix.
+      expect(next.slice(0, previous.length), `turn ${i}`).toEqual(previous);
+      // Log-derived ids, in order, survive the turn; only new ones append.
+      const beforeIds = groupBlocks(previous).map((message) => message.id);
+      const afterIds = groupBlocks(next).map((message) => message.id);
+      expect(afterIds.slice(0, beforeIds.length), `turn ${i} ids`).toEqual(beforeIds);
+      // And no surviving run grew: same id, same parts.
+      const lengths = new Map(groupBlocks(previous).map((message) => [message.id, message.parts.length]));
+      for (const run of groupBlocks(next)) {
+        const prior = lengths.get(run.id);
+        if (prior !== undefined) expect(run.parts.length, `turn ${i} run ${run.id}`).toBe(prior);
+      }
+    }
   });
 });
 

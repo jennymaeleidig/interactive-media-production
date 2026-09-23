@@ -7,14 +7,22 @@
 // is the client-side engine at `window.__flockChatEngine`, which
 // `/chat/runtime.js` installs. It maps `bot`/`me` to `assistant`/`user` and
 // groups a turn's blocks into one message per speaker-run, so the renderer never
-// sees a `who`.
+// sees a `who`. A message's id comes out of that grouping as the log position
+// of the run's first block, and this hook's ledger reuses the message object
+// for every run the transcript already holds — so a memoized bubble bails, the
+// DOM element survives the turn, and the per-turn price is the new bubble
+// alone. The engine still answers with the whole block sequence every time
+// (the turn contract); the sharing lives entirely in this one mapping.
 //
 // A reply is withheld behind a typing beat read at `WORDS_PER_MINUTE` (the
 // export above), so the transcript shows the typing dots for as long as the
-// reply would take to compose and lands short replies quickly.
+// reply would take to compose and lands short replies quickly. What a reply
+// weighs is declared per block type in the inventory's contract terms
+// (`CHAT_BLOCK_TERMS`); this hook owns only the clock.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/types';
@@ -46,15 +54,20 @@ export const WORDS_PER_MINUTE = 2400;
 /** Milliseconds one word takes at the pace above. */
 const MS_PER_WORD = 60_000 / WORDS_PER_MINUTE;
 
-/** The typing beat: the reply's word count (five characters to the word) read
- * at `WORDS_PER_MINUTE`, with a floor so even a one-word reply reads as a
- * turn rather than a flicker. */
+/** The composing weight of a block sequence, in characters: every block
+ * contributes what its type declares in the inventory's contract terms. A type
+ * with no declared weight is an inventory defect the inventory tests catch —
+ * this hook has no type switch of its own to silently default. */
+function composingChars(blocks: readonly ChatBlock[]): number {
+  return blocks.reduce((sum, block) => sum + CHAT_BLOCK_TERMS[block.type].beat(block), 0);
+}
+
+/** The typing beat: the sequence's composing weight (five characters to the
+ * word) read at `WORDS_PER_MINUTE`, with a floor so even a one-word reply
+ * reads as a turn rather than a flicker. Used for the whole reply's hold and,
+ * per message, for the figure its own landing freezes. */
 function typingDelay(blocks: readonly ChatBlock[]): number {
-  const chars = blocks.reduce(
-    (sum, block) => sum + (block.type === 'text' ? block.text.length : block.type === 'link' ? block.label.length : 0),
-    0,
-  );
-  return Math.max(400, Math.round((chars / 5) * MS_PER_WORD));
+  return Math.max(400, Math.round((composingChars(blocks) / 5) * MS_PER_WORD));
 }
 
 /** The engine global, if the runtime has run. */
@@ -95,39 +108,44 @@ export function useDialogue(): Dialogue {
   // chips inert even in the tick before `isTyping` flips — a fast double-click
   // must not queue a second turn behind the first.
   const pending = useRef(false);
-  // Each message's stamp, by id, kept across turns. The engine answers with the
-  // whole block sequence every time, so without this ledger every land would
-  // re-stamp the entire transcript with the latest turn's figures — the
-  // greeting's timer would drift every time a new message arrived. Only a
-  // message's first landing gets a stamp; it never changes after that.
-  const stamps = useRef(new Map<string, Pick<ChatMessage, 'at' | 'beatMs' | 'loadMs'>>());
+  // The transcript's ledger, by message id, kept across turns. The engine
+  // answers with the whole block sequence every time, so this ledger is what
+  // makes replacing cheap — the structural sharing in the one mapping: a run
+  // the transcript already holds is reused as the very same object, its
+  // landing stamp (time, beat, load) frozen at first sight and its object
+  // identity kept, so the memoized bubble bails out and the DOM element
+  // survives the turn. Only a genuinely new run is built and stamped here.
+  // The key is the log position of the run's first block, and the log is
+  // append-only within a session, so an id hit is the same run by contract.
+  const stamps = useRef(new Map<string, ChatMessage>());
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   /** The engine's answer, applied as the shell's next state. It returns the
-   * whole block sequence, so this replaces rather than merges. A turn lands
+   * whole block sequence, so this replaces rather than merges — reusing, from
+   * the ledger, every message the transcript already holds. A turn lands
    * behind a typing beat proportional to its size (`beat`, the default); the
    * opening turn lands at once, under the page's loading spinner instead. */
   const apply = useCallback((res: ChatResponse, beat = true) => {
     const started = performance.now();
     const land = () => {
-      // The turn's real engine time; each newly landing bubble adds its own
-      // beat — its own characters at the piece's pace — so every figure is a
-      // measure of that one message alone, frozen at its first landing.
+      // The turn's real engine time, measured once per land; each newly
+      // landing bubble adds its own beat — its declared content weight at the
+      // piece's pace — so every figure is a measure of that one message
+      // alone, frozen at its first landing.
       const engineMs = Math.round(performance.now() - started);
       pending.current = false;
       setMessages(
-        groupBlocks(res.turn.blocks).map((message) => {
-          const stamped = stamps.current.get(message.id);
-          if (stamped) return { ...message, ...stamped };
-          const chars = message.parts.reduce(
-            (sum, block) =>
-              sum + (block.type === 'text' ? block.text.length : block.type === 'link' ? block.label.length : 0),
-            0,
-          );
-          const ownBeat = Math.max(400, Math.round((chars / 5) * MS_PER_WORD));
-          const fresh = { at: new Date(), beatMs: ownBeat, loadMs: engineMs + ownBeat };
-          stamps.current.set(message.id, fresh);
-          return { ...message, ...fresh };
+        groupBlocks(res.turn.blocks).map((run) => {
+          const kept = stamps.current.get(run.id);
+          // The reuse: same object, stamps and all. Runs cannot grow under the
+          // append-only turn flow — the engine seam locks that contract ("the
+          // append-only turn flow") — so the length check is a defect guard,
+          // not a path: a same-length id hit is the same run.
+          if (kept && kept.parts.length === run.parts.length) return kept;
+          const ownBeat = typingDelay(run.parts);
+          const fresh: ChatMessage = { ...run, at: new Date(), beatMs: ownBeat, loadMs: engineMs + ownBeat };
+          stamps.current.set(run.id, fresh);
+          return fresh;
         }),
       );
       setOptions(res.turn.options ?? []);
@@ -198,7 +216,8 @@ export function useDialogue(): Dialogue {
     }
     pending.current = false;
     // A fresh conversation: every bubble is genuinely new again, so the old
-    // stamps are dropped with the transcript they belonged to.
+    // ledger — objects and stamps alike — is dropped with the transcript it
+    // belonged to.
     stamps.current.clear();
     api
       .reset()

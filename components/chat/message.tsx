@@ -20,7 +20,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Mark } from '@/components/brand/mark';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { cn } from '@/lib/utils';
@@ -159,16 +159,28 @@ export function LoadTimer({ message }: { message: ChatMessageType }) {
   );
 }
 
-/** One speaker-run: the parts, in order, inside one bubble. */
-export function Message({
+/** One speaker-run: the parts, in order, inside one bubble.
+ *
+ * Memoized, so a turn that appends costs the new bubble alone: the dialogue
+ * hook's ledger hands back the same message object for every run the
+ * transcript already holds, and the grouping props are value-comparable
+ * primitives — booleans and a string, never a fresh object per render — so
+ * the shallow compare bails the bubble out and React touches neither its
+ * fiber nor its DOM element. A bubble is remounted only if its key changes,
+ * and keys are log positions (`groupBlocks`), stable across turns, resumes,
+ * and grouping rework. */
+export const Message = memo(function Message({
   message,
   className,
-  grouping = {},
+  continues = false,
+  continued = false,
 }: {
   message: ChatMessageType;
   className?: string;
-  /** Whether a same-speaker bubble sits above or below, so the shared corners square off. */
-  grouping?: { continues?: boolean; continued?: boolean };
+  /** Whether a same-speaker bubble sits above or below, so the shared corners
+   * square off. Primitives, deliberately: the memo bails on them by value. */
+  continues?: boolean;
+  continued?: boolean;
 }) {
   const user = message.role === 'user';
   const reduceMotion = useReducedMotion();
@@ -178,16 +190,17 @@ export function Message({
         // A continued bubble holds the column open with nothing in it, so a run's
         // bubbles stay aligned under the one mark.
         <div aria-hidden="true" className="w-7 shrink-0">
-          {grouping.continues ? null : <AssistantMark />}
+          {continues ? null : <AssistantMark />}
         </div>
       )}
       <div
         className={cn(
           'font-serif relative flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
           user ? 'bg-bubble-me' : 'bg-bubble-bot',
-          grouping.continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
-          grouping.continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
+          continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
+          continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
         )}
+        data-message-id={message.id}
         data-role={message.role}
         data-testid={`message-${message.role}`}
       >
@@ -205,4 +218,4 @@ export function Message({
       </div>
     </div>
   );
-}
+});

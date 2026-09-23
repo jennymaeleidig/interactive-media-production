@@ -193,6 +193,73 @@ describe('the mounted shell', () => {
   });
 });
 
+describe('transcript identity', () => {
+  /** Every bubble's log-derived id, in transcript order, read off the DOM. */
+  const domIds = () =>
+    [...document.querySelectorAll('[data-message-id]')].map((element) => element.getAttribute('data-message-id'));
+
+  /** A bubble element, found by its text and its role's test id. */
+  const bubbleFor = (text: string, role: 'assistant' | 'user') =>
+    screen.getByText(text).closest(`[data-testid="message-${role}"]`);
+
+  it('keeps the exact bubble elements as turns append', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    const greeting = bubbleFor(GREETING, 'assistant');
+    expect(greeting).toBeTruthy();
+
+    // The reply is held behind its typing beat; while it is, the transcript is
+    // untouched — the greeting bubble is still the very element it was.
+    fireEvent.click(screen.getByText('Support'));
+    await screen.findByTestId('typing-indicator');
+    expect(bubbleFor(GREETING, 'assistant')).toBe(greeting);
+
+    await screen.findByText(/You can reach our support team/);
+    const echo = bubbleFor('Support', 'user');
+    expect(echo).toBeTruthy();
+
+    fireEvent.click(screen.getByText("That's all for now"));
+    await screen.findByText(/Thanks for stopping by/);
+    // Both earlier bubbles are the same elements after the closing turn: the
+    // transcript grew, it did not redraw.
+    expect(bubbleFor(GREETING, 'assistant')).toBe(greeting);
+    expect(bubbleFor('Support', 'user')).toBe(echo);
+  });
+
+  it('keeps log-derived ids stable as turns append', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    const before = domIds();
+    expect(before.length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByText('Support'));
+    await screen.findByText(/You can reach our support team/);
+
+    const after = domIds();
+    // The earlier transcript keeps its ids, in order, and the turn appends new
+    // ones; no id is ever reused for a different bubble.
+    expect(after.slice(0, before.length)).toEqual(before);
+    expect(new Set(after).size).toBe(after.length);
+    expect(after.length).toBeGreaterThan(before.length);
+  });
+
+  it('keeps log-derived ids across a reload-resume of the persisted session', async () => {
+    const first = render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByText('Support'));
+    await screen.findByText(/You can reach our support team/);
+    const before = domIds();
+    first.unmount();
+
+    render(<ChatShell />);
+    await screen.findByText(/You can reach our support team/);
+
+    // A returning viewer finds the transcript they left: same ids, in the same
+    // order, whatever regrouped them in between.
+    expect(domIds()).toEqual(before);
+  });
+});
+
 describe('block grouping', () => {
   it('keeps consecutive same-speaker text in one bubble', () => {
     const grouped = groupBlocks([
@@ -218,10 +285,27 @@ describe('block grouping', () => {
     expect(grouped[0].parts).toHaveLength(1);
     expect(grouped[1].parts).toHaveLength(1);
   });
+
+  it('derives each id from the log position of the run’s first block', () => {
+    const log: ChatBlock[] = [
+      { who: 'bot', type: 'text', text: 'one' },
+      { who: 'bot', type: 'text', text: 'two' },
+      { who: 'bot', type: 'text', text: 'three' },
+    ];
+    const today = groupBlocks(log);
+    expect(today.map((message) => message.id)).toEqual(['run-0']);
+
+    // A grouping rework cuts the run in two: the surviving run keeps its id —
+    // it is the position in the log, not the place in the render order — and
+    // the new run takes the log position of its own first block. A returning
+    // viewer's transcript is not reshuffled by grouping logic changing.
+    const reworked = groupBlocks(log.map((block, index) => (index === 2 ? { ...block, newMessage: true } : block)));
+    expect(reworked.map((message) => message.id)).toEqual(['run-0', 'run-2']);
+  });
 });
 
 describe('the block adapters', () => {
-  const message = (parts: ChatBlock[]): ChatMessage => ({ id: 'test', role: 'assistant', parts });
+  const message = (parts: ChatBlock[]): ChatMessage => ({ id: 'test', role: 'assistant', parts, at: new Date() });
 
   it('has an adapter entry for every block type in the locked vocabulary', () => {
     for (const type of CHAT_BLOCK_TYPES) {

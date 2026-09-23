@@ -102,7 +102,8 @@ export function Messages({
                 ) : null}
                 <Message
                   className={cn(index === 0 ? null : continues ? SAME_SPEAKER : BETWEEN_SPEAKERS)}
-                  grouping={{ continues, continued }}
+                  continued={continued}
+                  continues={continues}
                   message={message}
                 />
               </Fragment>

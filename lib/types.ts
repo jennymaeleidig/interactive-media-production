@@ -16,7 +16,9 @@ type ChatRole = 'assistant' | 'user';
  * landed in the transcript (stamped at grouping time, so the shell can draw
  * iMessage-style time separators between turns that arrive far apart), and —
  * for the dev-only load timer — the beat it was held behind (`beatMs`) and
- * the time it actually took to arrive (`loadMs`). */
+ * the time it actually took to arrive (`loadMs`). The id is the log position
+ * of the run's first block (`groupBlocks`), so identity survives turns,
+ * resumes, and grouping rework. */
 export interface ChatMessage {
   id: string;
   role: ChatRole;
@@ -28,16 +30,23 @@ export interface ChatMessage {
 
 /** Group a flat, ordered block sequence into one message per speaker-run. A
  * block that sets `newMessage` cuts the run, so one speaker can send several
- * bubbles in a turn (ticket 08's grouping, with an authored boundary). */
+ * bubbles in a turn (ticket 08's grouping, with an authored boundary).
+ *
+ * A message's id is the position in the conversation log of the run's first
+ * block. The sequence is the log — append-only and persisted in the session —
+ * so ids survive turns, a reload-resume, and any rework of this grouping:
+ * runs that survive keep their identity, and only genuinely new runs take new
+ * ids. Render order names nothing here. */
 export function groupBlocks(blocks: readonly ChatBlock[]): ChatMessage[] {
   const messages: ChatMessage[] = [];
-  for (const block of blocks) {
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index];
     const role: ChatRole = block.who === 'me' ? 'user' : 'assistant';
     const last = messages.at(-1);
     if (last && last.role === role && !block.newMessage) {
       last.parts.push(block);
     } else {
-      messages.push({ id: `${role}-${messages.length}`, role, parts: [block], at: new Date() });
+      messages.push({ id: `run-${index}`, role, parts: [block], at: new Date() });
     }
   }
   return messages;
