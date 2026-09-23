@@ -12,11 +12,18 @@ import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
 type ChatRole = 'assistant' | 'user';
 
-/** One speaker-run: a role and the blocks it renders, in order. */
+/** One speaker-run: a role, the blocks it renders, in order, the moment it
+ * landed in the transcript (stamped at grouping time, so the shell can draw
+ * iMessage-style time separators between turns that arrive far apart), and —
+ * for the dev-only load timer — the beat it was held behind (`beatMs`) and
+ * the time it actually took to arrive (`loadMs`). */
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   parts: ChatBlock[];
+  at: Date;
+  beatMs?: number;
+  loadMs?: number;
 }
 
 /** Group a flat, ordered block sequence into one message per speaker-run. A
@@ -30,7 +37,7 @@ export function groupBlocks(blocks: readonly ChatBlock[]): ChatMessage[] {
     if (last && last.role === role && !block.newMessage) {
       last.parts.push(block);
     } else {
-      messages.push({ id: `${role}-${messages.length}`, role, parts: [block] });
+      messages.push({ id: `${role}-${messages.length}`, role, parts: [block], at: new Date() });
     }
   }
   return messages;

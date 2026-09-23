@@ -25,10 +25,10 @@ import { shippedAsset } from './seam-harness';
 const GREETING =
   'Hey there! I’m Flock, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?';
 
-// Replies land behind a typing beat sized from the reply's length (see
+// Replies land behind a typing beat read at `WORDS_PER_MINUTE` (see
 // `use-dialogue`), so the suite's async waits get a ceiling above the longest
-// beat rather than the 1s default.
-configure({ asyncUtilTimeout: 4000 });
+// authored reply's beat rather than the 1s default.
+configure({ asyncUtilTimeout: 40_000 });
 
 beforeAll(() => {
   // jsdom has no layout engine; the transcript's autoscroll library observes

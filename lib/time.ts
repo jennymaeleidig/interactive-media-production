@@ -16,3 +16,13 @@ export function dayLabel(at: Date): string {
   const minutes = String(at.getMinutes()).padStart(2, '0');
   return `Today, ${hour}:${minutes} ${hours < 12 ? 'am' : 'pm'}`;
 }
+
+/** The stamp on a gap divider inside the transcript (iMessage's re-entry
+ * separator): the clock time alone — the day was already named above, and is
+ * named again below only if the calendar actually turns. */
+export function timeLabel(at: Date): string {
+  const hours = at.getHours();
+  const hour = hours % 12 === 0 ? 12 : hours % 12;
+  const minutes = String(at.getMinutes()).padStart(2, '0');
+  return `${hour}:${minutes} ${hours < 12 ? 'am' : 'pm'}`;
+}

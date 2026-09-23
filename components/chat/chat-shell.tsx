@@ -22,7 +22,7 @@ export function ChatShell() {
     <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-ground">
       <Header onReset={reset} />
       <Messages isLoading={isLoading} isTyping={isTyping} messages={messages} />
-      <Composer onSelect={sendOption} options={options} />
+      <Composer disabled={isTyping} onSelect={sendOption} options={options} />
     </div>
   );
 }

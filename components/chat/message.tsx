@@ -20,6 +20,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { Mark } from '@/components/brand/mark';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { cn } from '@/lib/utils';
@@ -135,6 +136,29 @@ export function AssistantMark() {
   );
 }
 
+/** The dev-only load timer: how long this one message took — its own typing
+ * beat plus the engine's time, never cumulative across the turn — rendered as
+ * a small chrome tag under the bubble's trailing corner. Absolutely
+ * positioned, so it changes nothing about the transcript's layout. Like the
+ * disclosure's reset control, it exists only when the dev server serves the
+ * page (`NODE_ENV=development`, inlined by Next into the client bundle); a
+ * built page never carries it. */
+export function LoadTimer({ message }: { message: ChatMessageType }) {
+  const [debug] = useState(() => process.env.NODE_ENV === 'development');
+  // The viewer's own turns land instantly by construction — the timer only
+  // says anything about the assistant's composing, so user bubbles carry none.
+  if (!debug || message.role === 'user' || message.beatMs === undefined || message.loadMs === undefined) return null;
+  return (
+    <span
+      className="font-chrome absolute top-full right-0 pt-0.5 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
+      data-testid="load-timer"
+      title={`beat ${message.beatMs}ms · actual load ${message.loadMs}ms`}
+    >
+      {message.loadMs}ms
+    </span>
+  );
+}
+
 /** One speaker-run: the parts, in order, inside one bubble. */
 export function Message({
   message,
@@ -159,7 +183,7 @@ export function Message({
       )}
       <div
         className={cn(
-          'font-serif flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
+          'font-serif relative flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
           user ? 'bg-bubble-me' : 'bg-bubble-bot',
           grouping.continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
           grouping.continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
@@ -177,6 +201,7 @@ export function Message({
             <BlockPart block={part} />
           </motion.div>
         ))}
+        <LoadTimer message={message} />
       </div>
     </div>
   );

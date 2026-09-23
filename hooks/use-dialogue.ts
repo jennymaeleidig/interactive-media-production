@@ -9,9 +9,9 @@
 // groups a turn's blocks into one message per speaker-run, so the renderer never
 // sees a `who`.
 //
-// A reply is withheld behind a typing beat sized from its own length, so the
-// transcript shows the typing dots for as long as a long reply would take to
-// compose and lands short replies quickly.
+// A reply is withheld behind a typing beat read at `WORDS_PER_MINUTE` (the
+// export above), so the transcript shows the typing dots for as long as the
+// reply would take to compose and lands short replies quickly.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -37,15 +37,24 @@ export interface Dialogue {
 
 type Engine = NonNullable<Window['__flockChatEngine']>;
 
-/** The typing beat, sized from the reply's own length: a floor so short replies
- * still read as a turn, a per-character slope so longer authored replies hold
- * the dots longer, and a cap so no viewer waits out a wall of text. */
+/** The pace the typing beat is sized to, in words per minute: the delay is
+ * the reply's word count read off this clock, so a short reply lands fast and
+ * a long one holds the dots proportionally longer. Tune this one number to
+ * retune every beat in the piece. */
+export const WORDS_PER_MINUTE = 2400;
+
+/** Milliseconds one word takes at the pace above. */
+const MS_PER_WORD = 60_000 / WORDS_PER_MINUTE;
+
+/** The typing beat: the reply's word count (five characters to the word) read
+ * at `WORDS_PER_MINUTE`, with a floor so even a one-word reply reads as a
+ * turn rather than a flicker. */
 function typingDelay(blocks: readonly ChatBlock[]): number {
   const chars = blocks.reduce(
     (sum, block) => sum + (block.type === 'text' ? block.text.length : block.type === 'link' ? block.label.length : 0),
     0,
   );
-  return Math.min(2400, 450 + chars * 9);
+  return Math.max(400, Math.round((chars / 5) * MS_PER_WORD));
 }
 
 /** The engine global, if the runtime has run. */
@@ -82,6 +91,16 @@ export function useDialogue(): Dialogue {
   const [isLoading, setIsLoading] = useState(true);
   // The pending reply, held back until its typing beat has played.
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // True from `sendOption` until the reply lands: the guard that makes the
+  // chips inert even in the tick before `isTyping` flips — a fast double-click
+  // must not queue a second turn behind the first.
+  const pending = useRef(false);
+  // Each message's stamp, by id, kept across turns. The engine answers with the
+  // whole block sequence every time, so without this ledger every land would
+  // re-stamp the entire transcript with the latest turn's figures — the
+  // greeting's timer would drift every time a new message arrived. Only a
+  // message's first landing gets a stamp; it never changes after that.
+  const stamps = useRef(new Map<string, Pick<ChatMessage, 'at' | 'beatMs' | 'loadMs'>>());
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   /** The engine's answer, applied as the shell's next state. It returns the
@@ -89,8 +108,28 @@ export function useDialogue(): Dialogue {
    * behind a typing beat proportional to its size (`beat`, the default); the
    * opening turn lands at once, under the page's loading spinner instead. */
   const apply = useCallback((res: ChatResponse, beat = true) => {
+    const started = performance.now();
     const land = () => {
-      setMessages(groupBlocks(res.turn.blocks));
+      // The turn's real engine time; each newly landing bubble adds its own
+      // beat — its own characters at the piece's pace — so every figure is a
+      // measure of that one message alone, frozen at its first landing.
+      const engineMs = Math.round(performance.now() - started);
+      pending.current = false;
+      setMessages(
+        groupBlocks(res.turn.blocks).map((message) => {
+          const stamped = stamps.current.get(message.id);
+          if (stamped) return { ...message, ...stamped };
+          const chars = message.parts.reduce(
+            (sum, block) =>
+              sum + (block.type === 'text' ? block.text.length : block.type === 'link' ? block.label.length : 0),
+            0,
+          );
+          const ownBeat = Math.max(400, Math.round((chars / 5) * MS_PER_WORD));
+          const fresh = { at: new Date(), beatMs: ownBeat, loadMs: engineMs + ownBeat };
+          stamps.current.set(message.id, fresh);
+          return { ...message, ...fresh };
+        }),
+      );
       setOptions(res.turn.options ?? []);
       setIsTyping(false);
       setIsLoading(false);
@@ -131,12 +170,17 @@ export function useDialogue(): Dialogue {
   const sendOption = useCallback(
     (option: ChatOption) => {
       const api = engine();
-      if (!api) return;
+      // One turn at a time: a press while a reply is pending — whether the
+      // typing dots are up or the answer is still in flight — is dropped.
+      if (!api || pending.current) return;
+      pending.current = true;
       api
         .turn({ type: 'option', optionIndex: option.index })
         .then(apply)
         .catch(() => {
-          // As above: nothing in-frame can act on it.
+          // As above: nothing in-frame can act on it. The guard must lift,
+          // or the piece would dead-end on a rejected turn.
+          pending.current = false;
         });
     },
     [apply],
@@ -152,6 +196,10 @@ export function useDialogue(): Dialogue {
       clearTimeout(timer.current);
       timer.current = null;
     }
+    pending.current = false;
+    // A fresh conversation: every bubble is genuinely new again, so the old
+    // stamps are dropped with the transcript they belonged to.
+    stamps.current.clear();
     api
       .reset()
       .then((res) => apply(res, false))

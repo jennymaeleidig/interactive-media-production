@@ -51,3 +51,14 @@ references:
     notes: >
       License: Unknown. Source of the directional reveal the disclosure tooltip
       uses to land from below its button. Read rather than vendored.
+  - type: software
+    title: 'Flowbite - Tailwind CSS Horizontal Line (HR)'
+    authors:
+      - name: Themesberg
+    url: 'https://github.com/themesberg/flowbite/blob/main/content/typography/hr.md'
+    notes: >
+      MIT. The "HR with text" separator pattern (a rule with a label set in a
+      gap it opens) is adapted for the transcript's time dividers; see the
+      citation block in components/chat/messages.tsx. Drawn as line-text-line
+      rather than Flowbite's absolute positioning; the classes are this repo's
+      own tokens.
