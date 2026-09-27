@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Interface-shape seam: the drift guard ticket 11 asked for.
+// Interface-shape seam: the drift guard between the two published halves.
 //
 // The React shell ships in the page's own Next bundle and the engine ships as
 // `/chat/runtime.js`, so the two halves are one deploy but two files. This seam

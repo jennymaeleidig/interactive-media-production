@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Chat shell seam: the surface the viewer sees, mounted in a real DOM (jsdom)
 // against the exact engine bytes the host serves at `/chat/runtime.js`. The
-// React shell itself ships in the page's own bundle (ticket 11), so this seam
+// React shell itself ships in the page's own bundle, so this seam
 // mounts the shell components directly and drives them through the engine the
 // runtime installs on `window`.
 //

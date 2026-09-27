@@ -161,7 +161,7 @@ const BLOCK_COMMAND = /^block\s+"([^"]+)"(?:\s+(new|join))?\s*$/;
 /**
  * Resolve one command into a block, or null when the command is not a block.
  * An id the inventory does not name degrades to a designed unknown block, so an
- * authoring typo costs its own block and never the turn (ticket 01's containment
+ * authoring typo costs its own block and never the turn (the containment
  * contract). Remote URLs come from the inventory, never from the command text.
  *
  * A trailing `new` opens a fresh bubble for this block; the default (`join`)

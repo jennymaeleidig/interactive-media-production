@@ -3,7 +3,7 @@
 // The block renderer: one adapter per block type, dispatched by `type`, inside
 // one bubble per speaker-run.
 //
-// This table is the seam ticket 01 settled. Adding a block type is one entry
+// This table is the seam. Adding a block type is one entry
 // here and touches nothing else — not the transcript, not the engine, not the
 // dialogue format. `BLOCK_ADAPTERS` is exported so the seam can inject a
 // throwing adapter and prove containment: a throwing adapter degrades to the

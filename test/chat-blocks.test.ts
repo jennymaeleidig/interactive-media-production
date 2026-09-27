@@ -84,7 +84,7 @@ describe('the block inventory', () => {
     expect([...allowedSources()].sort()).toEqual([...declared].sort());
   });
 
-  it('ships no frames yet, so the allowlist is empty (ticket 10)', () => {
+  it('ships no frames yet, so the allowlist is empty', () => {
     expect([...allowedSources()]).toEqual([]);
     expect(Object.values(CHAT_BLOCKS).some((payload) => payload.type === 'frame')).toBe(false);
   });

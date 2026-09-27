@@ -2,7 +2,7 @@
 //
 // `docs/share.md` is the share kit: the prose that travels with the link when it
 // is pasted. This module is the same string in code, so the prose and the served
-// `<head>` cannot drift. The split is deliberate (ticket 09): `<title>` stays in
+// `<head>` cannot drift. The split is deliberate: `<title>` stays in
 // costume — the tab is part of the performance — while `og:title`,
 // `og:description` and the meta description go honest, because an unfurl is
 // fetched outside the frame and survives a browser warning.
@@ -17,7 +17,7 @@ export const HONEST_DESCRIPTION =
   'An artwork, not Flock Safety. If your browser warns, use Details → proceed in Chrome; in Firefox or Zen, turn off deceptive-content blocking.';
 
 /**
- * The disclosure's first-view sentence, pinned (ticket 04): non-affiliation and
+ * The disclosure's first-view sentence, pinned: non-affiliation and
  * the artwork statement in one plain sentence, out of character.
  */
 export const DISCLOSURE_SENTENCE = "This is not Flock Safety; it's an artwork.";

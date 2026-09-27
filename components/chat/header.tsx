@@ -2,8 +2,7 @@
 
 // The floating capsule header: wordmark and the `?`. It is always visible —
 // the live site fades its header in on scroll, and that is deliberately not
-// mirrored, because here the transcript scrolls rather than the page (ticket
-// 06).
+// mirrored, because here the transcript scrolls rather than the page.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { Wordmark } from '@/components/brand/wordmark';

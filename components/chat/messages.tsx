@@ -1,7 +1,7 @@
 'use client';
 
 // The transcript: the viewer's scroll surface, pinned to the bottom as blocks
-// arrive (the template's `use-stick-to-bottom` mechanics, which ticket 02 keeps).
+// arrive (the template's `use-stick-to-bottom` mechanics, which the shell keeps).
 // A run of bubbles from one speaker groups like a message thread: tightened
 // spacing and squared corners where two bubbles meet, so the run reads as one
 // turn and a speaker change reads as a break. Adapted from vercel/chatbot

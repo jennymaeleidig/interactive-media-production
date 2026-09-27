@@ -1,7 +1,7 @@
 // The one attribute of the template's four runtime dependencies the shell needs
 // back: a theme provider.
 //
-// The piece has exactly one light ground and never changes it (ticket 06), so
+// The piece has exactly one light ground and never changes it, so
 // the provider is pinned to light rather than following the system — otherwise a
 // dark-mode extension could invert a surface Flock's identity fixes.
 //

@@ -10,8 +10,7 @@ No one assumes this exposure: not the repository, not its tooling, not any futur
 
 The response to the risk is preventive and reactive only — reduce signals, report false positives,
 and wait out caches. It is never evasion. Cloaking, serving different content to reviewers or
-crawlers, and defeating `frame-ancestors` are all out of scope, with the reasoning recorded on the
-map at `.scratch/flock-chatbot/map.md`.
+crawlers, and defeating `frame-ancestors` are all out of scope; see the reasoning above.
 
 ## Consequences
 

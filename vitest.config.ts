@@ -38,7 +38,7 @@ export default defineConfig({
       {
         test: { name: 'chat-blocks', include: ['test/chat-blocks.test.ts'] },
       },
-      // The drift guard ticket 11 asked for: the published runtime's one surface
+      // The drift guard: the published runtime's one surface
       // matches what the shell calls.
       {
         test: {

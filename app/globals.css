@@ -2,13 +2,13 @@
  * The piece's one authoring stylesheet.
  *
  * Two token layers, per `docs/brand.md`: the homepage-derived surface values the
- * full-viewport prototype settled (the later authority, ticket 06), and Flock's
+ * full-viewport prototype settled (the later authority), and Flock's
  * raw green/grey ramp re-exported under its own names so fidelity stays diffable
  * against the brand reference. No red exists in the palette — nothing may read
  * as an error state the piece does not have.
  *
- * The typefaces are Flock's, vendored under `public/fonts/` by decision (ticket
- * 03); they are commercial faces licensed to Flock Group Inc, no rights are
+ * The typefaces are Flock's, vendored under `public/fonts/` by deliberate
+ * decision; they are commercial faces licensed to Flock Group Inc, no rights are
  * claimed here, and this file carries no license stamp because of it.
  */
 @import "tailwindcss";

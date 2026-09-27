@@ -3,7 +3,7 @@
 // The path stays `/legal/privacy-policy` and it stays short, but the framing
 // changes: a conventional policy would be close to a contradiction for a piece
 // that collects nothing, so this page states what is *not* collected as part of
-// the work (ticket 04). The facts survive; the voice stops pretending to be
+// the work. The facts survive; the voice stops pretending to be
 // corporate legal copy.
 //
 // SPDX-License-Identifier: CC0-1.0

@@ -4,9 +4,8 @@
  * geometry. Inline SVG, like the wordmark, so the page requests no image.
  *
  * The mark is a trademark of Flock Group Inc, used here as part of a
- * knowingly-recorded reproduction (docs/adr/0001-reproduce-flock-brand-identity.md,
- * docs/adr/0002-accept-impersonation-risk.md); no rights are claimed, which is
- * why this file carries no license stamp.
+ * knowingly-recorded reproduction (docs/adr/0002-accept-impersonation-risk.md);
+ * no rights are claimed, which is why this file carries no license stamp.
  */
 export function MarkPaths() {
   return (

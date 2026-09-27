@@ -16,8 +16,8 @@ One authoring file: `app/globals.css`. Tailwind v4's CSS-first `@theme` block ca
   be diffed against the research table mechanically — `--color--green-1` … `--color--green-8`,
   `--color--grey-1` … `--color--grey-8`, `--color--flock`, `--color--white`.
 
-There is no separate `tokens.css`. Ticket 02 already made `globals.css` the home for the template's
-`@theme` tokens; these share it.
+There is no separate `tokens.css`. `globals.css` is the home for the template's `@theme` tokens;
+these share it.
 
 ## Colour
 

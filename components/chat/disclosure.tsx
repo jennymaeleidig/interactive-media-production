@@ -13,8 +13,8 @@
 // the one session reset, a debug fixture builders use to drop the persisted
 // session; a built page never renders it. The bypass
 // path is deliberately absent: it lives in the share kit,
-// because a viewer who meets the interstitial never reaches this page (ticket
-// 09). The wording is declared once in `lib/share.ts`; `test/copy.test.ts` locks
+// because a viewer who meets the interstitial never reaches this page. The
+// wording is declared once in `lib/share.ts`; `test/copy.test.ts` locks
 // it. The prose is Denton — Flock's serif, the disclosure's own voice — while
 // everything the viewer can operate inside it stays in the chrome's Book
 // (`docs/brand.md`).

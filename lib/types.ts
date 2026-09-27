@@ -4,7 +4,7 @@
 // declaration), and the shell imports `ChatBlock`/`ChatOption` from there
 // directly. This module only narrows the sequence for the renderer: a
 // `ChatMessage` is a speaker-run — consecutive blocks with the same `who`
-// grouped into one bubble (ticket 08) — and its part switch is the adapter
+// grouped into one bubble — and its part switch is the adapter
 // table, keyed by `ChatBlock['type']`.
 //
 // SPDX-License-Identifier: CC0-1.0
@@ -30,7 +30,7 @@ export interface ChatMessage {
 
 /** Group a flat, ordered block sequence into one message per speaker-run. A
  * block that sets `newMessage` cuts the run, so one speaker can send several
- * bubbles in a turn (ticket 08's grouping, with an authored boundary).
+ * bubbles in a turn (grouping, with an authored boundary).
  *
  * A message's id is the position in the conversation log of the run's first
  * block. The sequence is the log — append-only and persisted in the session —
