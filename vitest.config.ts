@@ -42,7 +42,7 @@ export default defineConfig({
       // The transcript's grouping and row layout: pure, so it runs without a DOM.
       {
         resolve: { alias: { '@': root } },
-        test: { name: 'chat-pure', include: ['test/transcript.test.ts', 'test/turn-plan.test.ts'] },
+        test: { name: 'chat-pure', include: ['test/transcript.test.ts', 'test/turn-plan.test.ts', 'test/session-store.test.ts'] },
       },
       // The drift guard: the published runtime's one surface
       // matches what the shell calls.

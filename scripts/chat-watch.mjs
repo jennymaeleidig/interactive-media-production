@@ -39,6 +39,8 @@ const MODULES = [
   path.join(ROOT, 'scripts', 'chat-engine.mjs'),
   path.join(ROOT, 'lib', 'chat-blocks.mjs'),
   path.join(ROOT, 'lib', 'chat-turn.mjs'),
+  path.join(ROOT, 'lib', 'engine-reach.mjs'),
+  path.join(ROOT, 'lib', 'session-store.mjs'),
 ];
 
 /** A dialogue file a rebuild reads. */

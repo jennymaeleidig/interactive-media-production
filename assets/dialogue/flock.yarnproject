@@ -1,22 +1,36 @@
 {
-  "projectFileVersion": 4,
-  "sourceFiles": [
-    "**/*.yarn"
-  ],
-  "baseLanguage": "en",
-  "definitions": "./definitions.ysls.json",
-  "projectName": "flock-chat-script",
-  "authorName": [
-    "JennyLeidig"
-  ],
-  "editorOptions": {
-    "yarnScriptEditor": {
-      "characters": [
-        {
-          "name": "cam",
-          "colour": "#4c8962"
+    "projectFileVersion": 4,
+    "sourceFiles": [
+        "**/*.yarn"
+    ],
+    "baseLanguage": "en",
+    "definitions": "./definitions.ysls.json",
+    "projectName": "flock-chat-script",
+    "authorName": [
+        "JennyLeidig"
+    ],
+    "editorOptions": {
+        "yarnScriptEditor": {
+            "characters": [
+                {
+                    "name": "cam",
+                    "colour": "#4c8962"
+                }
+            ],
+            "projectGraphPositions": {
+                "core.yarn": {
+                    "x": -1076,
+                    "y": -52
+                },
+                "products.yarn": {
+                    "x": 962,
+                    "y": 12
+                },
+                "trust.yarn": {
+                    "x": 962,
+                    "y": 747
+                }
+            }
         }
-      ]
     }
-  }
 }

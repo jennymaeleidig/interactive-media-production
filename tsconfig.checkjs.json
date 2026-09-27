@@ -25,6 +25,7 @@
     "scripts/chat-watch.mjs",
     "scripts/chat-assets.mjs",
     "lib/engine-reach.mjs",
+    "lib/session-store.mjs",
     "test/artifact.mjs",
     "scripts/globals.d.ts"
   ]

@@ -12,6 +12,7 @@
   "nodes": {
     "Start": {
       "headers": {
+        "position": "18,12",
         "title": "Start"
       },
       "instructions": [
@@ -145,6 +146,7 @@
     },
     "demo": {
       "headers": {
+        "position": "12,687",
         "title": "demo"
       },
       "instructions": [
@@ -205,11 +207,12 @@
         }
       ],
       "sourceFile": "core.yarn",
-      "startLine": 92,
+      "startLine": 96,
       "title": "demo"
     },
     "end": {
       "headers": {
+        "position": "292,687",
         "title": "end"
       },
       "instructions": [
@@ -226,11 +229,12 @@
         }
       ],
       "sourceFile": "core.yarn",
-      "startLine": 107,
+      "startLine": 112,
       "title": "end"
     },
     "general": {
       "headers": {
+        "position": "79,237",
         "title": "general"
       },
       "instructions": [
@@ -247,11 +251,12 @@
         }
       ],
       "sourceFile": "core.yarn",
-      "startLine": 80,
+      "startLine": 82,
       "title": "general"
     },
     "hub": {
       "headers": {
+        "position": "79,462",
         "title": "hub"
       },
       "instructions": [
@@ -381,11 +386,12 @@
         }
       ],
       "sourceFile": "core.yarn",
-      "startLine": 62,
+      "startLine": 63,
       "title": "hub"
     },
     "privacy": {
       "headers": {
+        "position": "72,12",
         "title": "privacy"
       },
       "instructions": [
@@ -494,6 +500,7 @@
     },
     "privacy_access": {
       "headers": {
+        "position": "12,237",
         "title": "privacy_access"
       },
       "instructions": [
@@ -518,11 +525,12 @@
         }
       ],
       "sourceFile": "trust.yarn",
-      "startLine": 37,
+      "startLine": 40,
       "title": "privacy_access"
     },
     "privacy_facial": {
       "headers": {
+        "position": "852,237",
         "title": "privacy_facial"
       },
       "instructions": [
@@ -547,11 +555,12 @@
         }
       ],
       "sourceFile": "trust.yarn",
-      "startLine": 29,
+      "startLine": 31,
       "title": "privacy_facial"
     },
     "privacy_myths": {
       "headers": {
+        "position": "292,237",
         "title": "privacy_myths"
       },
       "instructions": [
@@ -576,11 +585,12 @@
         }
       ],
       "sourceFile": "trust.yarn",
-      "startLine": 45,
+      "startLine": 49,
       "title": "privacy_myths"
     },
     "privacy_retention": {
       "headers": {
+        "position": "572,237",
         "title": "privacy_retention"
       },
       "instructions": [
@@ -605,11 +615,12 @@
         }
       ],
       "sourceFile": "trust.yarn",
-      "startLine": 21,
+      "startLine": 22,
       "title": "privacy_retention"
     },
     "products": {
       "headers": {
+        "position": "122,12",
         "title": "products"
       },
       "instructions": [
@@ -698,6 +709,7 @@
     },
     "products_911": {
       "headers": {
+        "position": "572,462",
         "title": "products_911"
       },
       "instructions": [
@@ -714,11 +726,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 109,
+      "startLine": 121,
       "title": "products_911"
     },
     "products_audio": {
       "headers": {
+        "position": "1412,462",
         "title": "products_audio"
       },
       "instructions": [
@@ -735,11 +748,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 75,
+      "startLine": 82,
       "title": "products_audio"
     },
     "products_cameras": {
       "headers": {
+        "position": "1192,237",
         "title": "products_cameras"
       },
       "instructions": [
@@ -840,11 +854,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 20,
+      "startLine": 21,
       "title": "products_cameras"
     },
     "products_das": {
       "headers": {
+        "position": "2532,462",
         "title": "products_das"
       },
       "instructions": [
@@ -861,11 +876,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 89,
+      "startLine": 98,
       "title": "products_das"
     },
     "products_dfr": {
       "headers": {
+        "position": "2252,462",
         "title": "products_dfr"
       },
       "instructions": [
@@ -890,11 +906,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 81,
+      "startLine": 89,
       "title": "products_dfr"
     },
     "products_drones": {
       "headers": {
+        "position": "2285,237",
         "title": "products_drones"
       },
       "instructions": [
@@ -955,11 +972,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 33,
+      "startLine": 35,
       "title": "products_drones"
     },
     "products_freeform": {
       "headers": {
+        "position": "292,462",
         "title": "products_freeform"
       },
       "instructions": [
@@ -976,11 +994,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 115,
+      "startLine": 128,
       "title": "products_freeform"
     },
     "products_lpr": {
       "headers": {
+        "position": "1692,462",
         "title": "products_lpr"
       },
       "instructions": [
@@ -1005,11 +1024,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 55,
+      "startLine": 59,
       "title": "products_lpr"
     },
     "products_os": {
       "headers": {
+        "position": "12,462",
         "title": "products_os"
       },
       "instructions": [
@@ -1026,11 +1046,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 103,
+      "startLine": 114,
       "title": "products_os"
     },
     "products_platform": {
       "headers": {
+        "position": "852,462",
         "title": "products_platform"
       },
       "instructions": [
@@ -1055,11 +1076,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 95,
+      "startLine": 105,
       "title": "products_platform"
     },
     "products_software": {
       "headers": {
+        "position": "72,237",
         "title": "products_software"
       },
       "instructions": [
@@ -1160,11 +1182,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 42,
+      "startLine": 45,
       "title": "products_software"
     },
     "products_trailers": {
       "headers": {
+        "position": "1132,462",
         "title": "products_trailers"
       },
       "instructions": [
@@ -1181,11 +1204,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 69,
+      "startLine": 75,
       "title": "products_trailers"
     },
     "products_video": {
       "headers": {
+        "position": "1972,462",
         "title": "products_video"
       },
       "instructions": [
@@ -1202,11 +1226,12 @@
         }
       ],
       "sourceFile": "products.yarn",
-      "startLine": 63,
+      "startLine": 68,
       "title": "products_video"
     },
     "support": {
       "headers": {
+        "position": "572,687",
         "title": "support"
       },
       "instructions": [
@@ -1223,7 +1248,7 @@
         }
       ],
       "sourceFile": "core.yarn",
-      "startLine": 86,
+      "startLine": 89,
       "title": "support"
     }
   },

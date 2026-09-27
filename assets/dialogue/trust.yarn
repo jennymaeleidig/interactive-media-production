@@ -5,6 +5,7 @@
 // and the authoring rules for the whole tree are at the top of core.yarn.
 
 title: privacy
+position: 72,12
 ---
 // src: https://www.flocksafety.com/trust
 Cam: Safety is a fundamental right. Public safety technology affects real people and neighborhoods, so Flock builds clear limits into the product, keeps decisions with local agencies, and records system use so it can be reviewed.
@@ -19,6 +20,7 @@ Cam: Safety is a fundamental right. Public safety technology affects real people
   <<jump privacy_myths>>
 ===
 title: privacy_retention
+position: 572,237
 ---
 // src: https://www.flocksafety.com/trust/data-privacy
 Cam: Your local agency controls who can access the information, and images and footage are deleted automatically after a set period.
@@ -27,6 +29,7 @@ Cam: In most communities that's 7 days unless local law says otherwise, and ever
 <<jump hub>>
 ===
 title: privacy_facial
+position: 852,237
 ---
 // src: https://www.flocksafety.com/trust/data-privacy and /faq
 Cam: No. The system does not use facial recognition, and it does not collect biometric data or driver information.
@@ -35,6 +38,7 @@ Cam: Searches are based on vehicle details, not people, so it cannot identify so
 <<jump hub>>
 ===
 title: privacy_access
+position: 12,237
 ---
 // src: https://www.flocksafety.com/legal/data-ownership
 Cam: You own your data, and Flock cannot and does not sell it.
@@ -43,6 +47,7 @@ Cam: Nothing is shared unless your organization turns sharing on, and there is n
 <<jump hub>>
 ===
 title: privacy_myths
+position: 292,237
 ---
 // src: https://www.flocksafety.com/trust/myths-facts
 Cam: Is LPR mass surveillance? No. It is used for specific public safety investigations under rules set by your local agency.

@@ -41,6 +41,7 @@
 //     Privacy & safety are the four branches.
 
 title: Start
+position: 18,12
 ---
 // ADAPTED from the observed greeting: the name is the piece's, the rest is
 // verbatim. The greeting carries the general beat as a first-contact offer and
@@ -60,6 +61,7 @@ Cam: Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do y
   <<jump support>>
 ===
 title: hub
+position: 79,462
 ---
 // The return gate. Every spoke lands here, and it is the same five chips every
 // time it is reached — no first-return variant. `#newmessage` keeps the
@@ -78,18 +80,21 @@ Cam: Is there anything else I can help you with today? #newmessage
   <<jump end>>
 ===
 title: general
+position: 79,237
 ---
 // OBSERVED (s10). The old fixture's "What can you help me with?" answer.
 Cam: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
 <<jump hub>>
 ===
 title: support
+position: 572,687
 ---
 // OBSERVED (s10) — the phone number and address are Flock's, verbatim.
 Cam: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?
 <<jump hub>>
 ===
 title: demo
+position: 12,687
 ---
 // src: https://www.flocksafety.com/book-a-demo
 Cam: A demo walks you through the Flock Difference: the largest public-private safety network, technology that's always up-to-date, and privacy-first accountability.
@@ -105,6 +110,7 @@ Cam: I'd be happy to help you book a demo! Could you please provide your email a
   <<jump hub>>
 ===
 title: end
+position: 292,687
 ---
 // OBSERVED (s10) closing. The link block opens its own bubble after it; the
 // inventory holds the href.
