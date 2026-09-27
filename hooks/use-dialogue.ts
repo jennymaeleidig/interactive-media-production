@@ -24,11 +24,9 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
-import { MIN_TYPING_BEAT_MS, msPerChar, TYPING_WORDS_PER_MINUTE } from '@/lib/pacing';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
-import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
+import { planTurn, typingDelay } from '@/lib/turn-plan';
 
 /** The host page's one runtime script; the hook waits for it on a cold load. */
 const RUNTIME_SRC = '/chat/runtime.js';
@@ -52,23 +50,6 @@ export interface Dialogue {
 }
 
 type Engine = NonNullable<Window['__flockChatEngine']>;
-
-/** The composing weight of a block sequence, in characters: every block
- * contributes what its type declares in the inventory's contract terms. A type
- * with no declared weight is an inventory defect the inventory tests catch —
- * this hook has no type switch of its own to silently default. */
-function composingChars(blocks: readonly ChatBlock[]): number {
-  return blocks.reduce((sum, block) => sum + CHAT_BLOCK_TERMS[block.type].beat(block), 0);
-}
-
-/** The typing beat: the sequence's composing weight (five characters to the
- * word) read at `TYPING_WORDS_PER_MINUTE`, with a floor so even a one-word
- * message reads as a turn rather than a flicker. Applied per speaker-run, so
- * every bubble — and the figure its own landing freezes — is sized by its own
- * content alone. */
-function typingDelay(blocks: readonly ChatBlock[]): number {
-  return Math.max(MIN_TYPING_BEAT_MS, Math.round(composingChars(blocks) * msPerChar(TYPING_WORDS_PER_MINUTE)));
-}
 
 /** Whether the viewer has asked the system to reduce motion. Read live, at the
  * moment a reply would be held, so a changed setting is honored without making
@@ -176,46 +157,31 @@ export function useDialogue(): Dialogue {
       }
     };
 
-    // What this turn appends, split where the viewer's echo ends: the echo is
-    // the viewer's own turn — nothing to compose — so it lands now, and only
-    // the reply holds the dots. The reply's beat is the reply's weight alone,
-    // never the conversation's.
-    const appended = res.turn.blocks.slice(logLength.current);
-    let echo = 0;
-    while (echo < appended.length && appended[echo].who === 'me') echo += 1;
-    const reply = appended.slice(echo);
-
-    if (!beat || reply.length === 0 || prefersReducedMotion()) {
-      land(res.turn.blocks.length, true);
+    // The schedule is pure (`lib/turn-plan.ts`); this executes it. Reduced
+    // motion, or a turn that appends no reply, collapses to one immediate step.
+    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, {
+      hold: beat && !prefersReducedMotion(),
+    });
+    const immediate = steps.length === 1 && steps[0].beatMs === 0;
+    if (immediate) {
+      land(steps[0].through, true);
       return;
     }
-    if (echo > 0) land(logLength.current + echo, false);
-
-    // The reply lands one speaker-run at a time, each behind its own typing
-    // beat: a reply authored as several `#newmessage` bubbles arrives as
-    // several messages, the dots holding between them — never as one block.
-    // The runs are the grouping's own, so the boundary the renderer cuts a
-    // bubble at is the boundary the clock pauses at. The end offsets are
-    // absolute log positions, so each land hands `groupBlocks` the prefix it
-    // expects and the ledger keeps every run already shown.
-    const base = logLength.current + echo;
-    const ends: number[] = [];
-    for (const run of groupBlocks(reply)) ends.push((ends.at(-1) ?? base) + run.parts.length);
+    if (echoEnd !== null) land(echoEnd, false);
 
     setIsTyping(true);
     if (timer.current) clearTimeout(timer.current);
-    let step = 0;
+    let index = 0;
     const next = () => {
-      const from = step === 0 ? base : ends[step - 1];
-      const through = ends[step];
-      const last = step === ends.length - 1;
+      const step = steps[index];
+      const last = index === steps.length - 1;
       timer.current = setTimeout(() => {
-        land(through, last);
+        land(step.through, last);
         if (!last) {
-          step += 1;
+          index += 1;
           next();
         }
-      }, typingDelay(res.turn.blocks.slice(from, through)));
+      }, step.beatMs);
     };
     next();
   }, []);
