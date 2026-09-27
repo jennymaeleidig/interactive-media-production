@@ -30,7 +30,7 @@ import { msPerChar, TYPEWRITER_WORDS_PER_MINUTE } from '@/lib/pacing';
 import { cn } from '@/lib/utils';
 import { ExternalLinkIcon } from './icons';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
-import type { ChatMessage as ChatMessageType } from '@/lib/types';
+import type { ChatMessage as ChatMessageType } from '@/lib/transcript';
 
 /** The authored remote sources, frozen once from the inventory. */
 const ALLOWED_SOURCES = allowedSources();

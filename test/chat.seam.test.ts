@@ -31,7 +31,7 @@ import { compileSource } from 'yarnspinner-typescript';
 import { loadYarnProject } from 'yarnspinner-typescript/node';
 import type { ChatBlock, ChatRequest, ChatResponse } from '../lib/chat-turn.mjs';
 import { CHAT_BLOCKS } from '../lib/chat-blocks.mjs';
-import { groupBlocks } from '../lib/types';
+import { groupBlocks } from '../lib/transcript';
 // Side-effect import: the engine installs its whole public surface as
 // `window.__flockChatEngine`. Read live so a stale test cannot pass against a
 // captured function if the module stops installing it.

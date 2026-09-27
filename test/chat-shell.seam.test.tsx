@@ -17,8 +17,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { ChatShell } from '@/components/chat/chat-shell';
 import { BLOCK_ADAPTERS, Message } from '@/components/chat/message';
 import { CHAT_BLOCK_TYPES } from '@/lib/chat-turn.mjs';
-import { groupBlocks } from '@/lib/types';
-import type { ChatMessage } from '@/lib/types';
+import type { ChatMessage } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { shippedAsset } from './seam-harness';
 
@@ -247,50 +246,6 @@ describe('transcript identity', () => {
     // A returning viewer finds the transcript they left: same ids, in the same
     // order, whatever regrouped them in between.
     expect(domIds()).toEqual(before);
-  });
-});
-
-describe('block grouping', () => {
-  it('keeps consecutive same-speaker text in one bubble', () => {
-    const grouped = groupBlocks([
-      { who: 'bot', type: 'text', text: 'one' },
-      { who: 'bot', type: 'text', text: 'two' },
-    ]);
-    expect(grouped).toHaveLength(1);
-    expect(grouped[0].parts).toHaveLength(2);
-  });
-
-  it('cuts a new bubble at a newMessage boundary', () => {
-    const grouped = groupBlocks([
-      { who: 'bot', type: 'text', text: 'Thanks for stopping by — take care!' },
-      {
-        who: 'bot',
-        type: 'link',
-        href: 'https://www.flocksafety.com/',
-        label: 'Flock Safety',
-        newMessage: true,
-      },
-    ]);
-    expect(grouped).toHaveLength(2);
-    expect(grouped[0].parts).toHaveLength(1);
-    expect(grouped[1].parts).toHaveLength(1);
-  });
-
-  it('derives each id from the log position of the run’s first block', () => {
-    const log: ChatBlock[] = [
-      { who: 'bot', type: 'text', text: 'one' },
-      { who: 'bot', type: 'text', text: 'two' },
-      { who: 'bot', type: 'text', text: 'three' },
-    ];
-    const today = groupBlocks(log);
-    expect(today.map((message) => message.id)).toEqual(['run-0']);
-
-    // A grouping rework cuts the run in two: the surviving run keeps its id —
-    // it is the position in the log, not the place in the render order — and
-    // the new run takes the log position of its own first block. A returning
-    // viewer's transcript is not reshuffled by grouping logic changing.
-    const reworked = groupBlocks(log.map((block, index) => (index === 2 ? { ...block, newMessage: true } : block)));
-    expect(reworked.map((message) => message.id)).toEqual(['run-0', 'run-2']);
   });
 });
 

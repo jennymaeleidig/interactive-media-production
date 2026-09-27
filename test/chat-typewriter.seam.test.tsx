@@ -13,7 +13,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Message } from '@/components/chat/message';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
-import type { ChatMessage } from '@/lib/types';
+import type { ChatMessage } from '@/lib/transcript';
 
 const message = (parts: ChatBlock[]): ChatMessage => ({ id: 'test', role: 'assistant', parts, at: new Date() });
 

@@ -7,24 +7,17 @@
 // turn and a speaker change reads as a break. Adapted from vercel/chatbot
 // (Apache-2.0); see ../NOTICE.md.
 //
-// The day divider opens it, as the reference widget's does. Like iMessage, a
-// divider also re-enters mid-log when the conversation resumes after a lull:
-// any gap between consecutive bubbles past `TIME_GAP_MS` gets a time stamp, and
-// a calendar-day change gets the full day stamp again.
+// The layout rule — grouping, the day/lull dividers, the corner flags — lives in
+// `lib/transcript.ts`; this component is the map from its rows to JSX.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { Fragment } from 'react';
 import { StickToBottom } from 'use-stick-to-bottom';
+import { transcriptRows, type ChatMessage } from '@/lib/transcript';
 import { cn } from '@/lib/utils';
-import { dayLabel, timeLabel } from '@/lib/time';
-import type { ChatMessage } from '@/lib/types';
 import { Message } from './message';
 import { Loading } from './loading';
 import { TypingIndicator } from './typing-indicator';
-
-/** The lull that puts a time stamp back in the log — iMessage's observed
- * threshold, roughly fifteen minutes. Tune this to retune the separators. */
-export const TIME_GAP_MS = 15 * 60 * 1000;
 
 /** The gap between one speaker's bubble and another's. */
 const BETWEEN_SPEAKERS = 'mt-5';
@@ -40,28 +33,7 @@ export function Messages({
   isTyping?: boolean;
   isLoading?: boolean;
 }) {
-  /** One bubble, plus the divider (if any) that goes above it. The first
-   * bubble always opens under the day stamp; later bubbles get one when the
-   * lull past them crosses `TIME_GAP_MS` or the calendar day turns. */
-  const rows = (() => {
-    const out: { message: ChatMessage; divider: string | null }[] = [];
-    let previous: ChatMessage | undefined;
-    for (const message of messages) {
-      let divider: string | null = null;
-      if (previous === undefined) {
-        divider = dayLabel(message.at);
-      } else {
-        const gap = message.at.getTime() - previous.at.getTime();
-        const newDay =
-          message.at.getMonth() !== previous.at.getMonth() || message.at.getDate() !== previous.at.getDate();
-        if (newDay) divider = dayLabel(message.at);
-        else if (gap >= TIME_GAP_MS) divider = timeLabel(message.at);
-      }
-      out.push({ message, divider });
-      previous = message;
-    }
-    return out;
-  })();
+  const rows = transcriptRows(messages);
 
   return (
     <StickToBottom
@@ -74,10 +46,7 @@ export function Messages({
         {isLoading && messages.length === 0 ? (
           <Loading />
         ) : (
-          rows.map(({ message, divider }, index) => {
-            const next = rows[index + 1]?.message;
-            const continued = next !== undefined && next.role === message.role;
-            const continues = index > 0 && rows[index - 1].message.role === message.role && divider === null;
+          rows.map(({ message, divider, continues, continued }, index) => {
             return (
               <Fragment key={message.id}>
                 {divider ? (

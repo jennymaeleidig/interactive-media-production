@@ -11,6 +11,7 @@ export default defineConfig({
       // The shipped engine keeps its one session in `localStorage`, so the
       // engine seam runs in jsdom — the same DOM the shell seam mounts.
       {
+        resolve: { alias: { '@': root } },
         test: {
           name: 'chat-engine-seam',
           include: ['test/chat.seam.test.ts'],
@@ -37,6 +38,11 @@ export default defineConfig({
       },
       {
         test: { name: 'chat-blocks', include: ['test/chat-blocks.test.ts'] },
+      },
+      // The transcript's grouping and row layout: pure, so it runs without a DOM.
+      {
+        resolve: { alias: { '@': root } },
+        test: { name: 'chat-pure', include: ['test/transcript.test.ts'] },
       },
       // The drift guard: the published runtime's one surface
       // matches what the shell calls.

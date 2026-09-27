@@ -28,7 +28,7 @@ import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
 import { MIN_TYPING_BEAT_MS, msPerChar, TYPING_WORDS_PER_MINUTE } from '@/lib/pacing';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
-import { groupBlocks, type ChatMessage } from '@/lib/types';
+import { groupBlocks, type ChatMessage } from '@/lib/transcript';
 
 /** The host page's one runtime script; the hook waits for it on a cold load. */
 const RUNTIME_SRC = '/chat/runtime.js';
