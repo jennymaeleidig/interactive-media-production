@@ -27,7 +27,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import { acquireEngine, currentEngine } from '@/lib/engine-reach.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
-import { planTurn } from '@/lib/turn-plan';
+import { planTurn, typingDelay } from '@/lib/turn-plan';
 
 export interface Dialogue {
   messages: ChatMessage[];
@@ -97,15 +97,13 @@ export function useDialogue(): Dialogue {
    * every reply when the viewer prefers reduced motion. */
   const apply = useCallback((res: ChatResponse, beat = true) => {
     const started = performance.now();
-    /** Land the log through `through` blocks. `heldFor` is the beat the newly
-     * landing run was held behind — the plan's step for a reply, `0` for the
-     * echo, the opening turn, or reduced motion. The final land takes the
-     * turn's choice set in and brings the dots down; the echo's land does
-     * neither. */
-    const land = (through: number, final: boolean, heldFor: number) => {
-      // The turn's real engine time, plus the beat just this run was held
-      // behind, so every figure measures that one message alone, frozen at its
-      // first landing.
+    /** Land the log through `through` blocks. The final land takes the turn's
+     * choice set in and brings the dots down; the echo's land does neither. */
+    const land = (through: number, final: boolean) => {
+      // The turn's real engine time, measured once per land. Each newly landing
+      // bubble also records its own composing weight, read off its parts, so the
+      // dev timer shows a message's beat even when the hold was skipped — the
+      // opening turn, a resume, or reduced motion all land without one.
       const engineMs = Math.round(performance.now() - started);
       setMessages(
         groupBlocks(res.turn.blocks.slice(0, through)).map((run) => {
@@ -115,7 +113,8 @@ export function useDialogue(): Dialogue {
           // append-only turn flow") — so the length check is a defect guard,
           // not a path: a same-length id hit is the same run.
           if (kept && kept.parts.length === run.parts.length) return kept;
-          const fresh: ChatMessage = { ...run, at: new Date(), timing: { beatMs: heldFor, loadMs: engineMs + heldFor } };
+          const ownBeat = typingDelay(run.parts);
+          const fresh: ChatMessage = { ...run, at: new Date(), timing: { beatMs: ownBeat, loadMs: engineMs + ownBeat } };
           stamps.current.set(run.id, fresh);
           return fresh;
         }),
@@ -137,10 +136,10 @@ export function useDialogue(): Dialogue {
     });
     const immediate = steps.length === 1 && steps[0].beatMs === 0;
     if (immediate) {
-      land(steps[0].through, true, 0);
+      land(steps[0].through, true);
       return;
     }
-    if (echoEnd !== null) land(echoEnd, false, 0);
+    if (echoEnd !== null) land(echoEnd, false);
 
     setIsTyping(true);
     if (timer.current) clearTimeout(timer.current);
@@ -149,7 +148,7 @@ export function useDialogue(): Dialogue {
       const step = steps[index];
       const last = index === steps.length - 1;
       timer.current = setTimeout(() => {
-        land(step.through, last, step.beatMs);
+        land(step.through, last);
         if (!last) {
           index += 1;
           next();
