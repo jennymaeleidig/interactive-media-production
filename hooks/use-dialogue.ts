@@ -36,6 +36,9 @@ export interface Dialogue {
   sendOption: (option: ChatOption) => void;
   /** True while a reply is held behind its typing beat. */
   isTyping: boolean;
+  /** True from the press until the reply's last line has finished typing: the
+   * composer stays inert across the reveal, not only while the dots are up. */
+  busy: boolean;
   /** True until the opening turn lands: the page shows its loading spinner. */
   isLoading: boolean;
   /** True once the conversation has run out of content: the last landed turn
@@ -51,6 +54,9 @@ export function useDialogue(): Dialogue {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [options, setOptions] = useState<ChatOption[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  // True from the press until the reply's last line has finished typing: the
+  // composer stays inert across the reveal too, not only while the dots are up.
+  const [busy, setBusy] = useState(false);
   // True until the opening `start` turn lands: the page shows the loading
   // spinner for this, not the typing bubble — a session resuming or opening is
   // the page loading, not the character composing a reply.
@@ -90,8 +96,14 @@ export function useDialogue(): Dialogue {
    * `engineMs` is the turn's own engine time, measured by the caller, so the
    * dev timer's figure is the same for every message in the turn. */
   const apply = useCallback((res: ChatResponse, hold = true, engineMs = 0) => {
+    /** The turn is over: nothing is composing and the chips are live again. */
+    const finish = () => {
+      pending.current = false;
+      setBusy(false);
+      setIsTyping(false);
+    };
     /** Land the log through `through` blocks. The final land takes the turn's
-     * choice set in and brings the dots down; the echo's land does neither. */
+     * choice set in; the echo's land does not. */
     const land = (through: number, final: boolean) => {
       setMessages(
         groupBlocks(res.turn.blocks.slice(0, through)).map((run) => {
@@ -120,10 +132,8 @@ export function useDialogue(): Dialogue {
         }),
       );
       if (final) {
-        pending.current = false;
         logLength.current = res.turn.blocks.length;
         setOptions(res.turn.options ?? []);
-        setIsTyping(false);
         setIsLoading(false);
         setComplete(res.state.complete);
       }
@@ -135,6 +145,7 @@ export function useDialogue(): Dialogue {
     const immediate = steps.length === 1 && steps[0].beatMs === 0;
     if (immediate) {
       land(steps[0].through, true);
+      finish();
       return;
     }
     if (echoEnd !== null) land(echoEnd, false);
@@ -150,9 +161,14 @@ export function useDialogue(): Dialogue {
       setIsTyping(true);
       timer.current = setTimeout(() => {
         land(step.through, last);
-        if (last) return;
+        // The line types with the dots down; the chips stay inert until it is
+        // done, so a choice cannot cut the reveal off.
         setIsTyping(false);
         timer.current = setTimeout(() => {
+          if (last) {
+            finish();
+            return;
+          }
           index += 1;
           next();
         }, step.revealMs);
@@ -192,6 +208,9 @@ export function useDialogue(): Dialogue {
       // typing dots are up or the answer is still in flight — is dropped.
       if (!api || pending.current) return;
       pending.current = true;
+      // The chips go inert for the whole turn, reveal included, not just while
+      // the dots are up.
+      setBusy(true);
       const requestedAt = performance.now();
       api
         .turn({ type: 'option', optionIndex: option.index })
@@ -229,5 +248,5 @@ export function useDialogue(): Dialogue {
       });
   }, [apply]);
 
-  return { messages, options, sendOption, isTyping, isLoading, complete, reset };
+  return { messages, options, sendOption, isTyping, busy, isLoading, complete, reset };
 }

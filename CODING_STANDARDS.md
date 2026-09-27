@@ -42,7 +42,8 @@ re-render or reload replays the reveal. The viewer's own line is never composed
 for them, and one message never lands on top of a line still typing: the turn
 plan gives each step its own composing beat and reveal, and the reveal runs
 with the dots down, so the next message starts loading only after the line
-above has finished typing.
+above has finished typing. The composer stays inert for the whole turn — beat
+and reveal alike — so a choice can never cut a line off mid-type.
 
 Tests that need a short clock dial `lib/pacing` and stub `typewriter-effect`;
 they never reintroduce an animation gate. The one motion-adjacent preference

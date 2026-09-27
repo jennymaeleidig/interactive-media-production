@@ -69,6 +69,14 @@ const GREETING =
 // piece's typing pace.
 configure({ asyncUtilTimeout: 40_000 });
 
+/** Press a chip once it is live. The composer stays inert through a reply's
+ * reveal, so a press that races the typewriter would be dropped. */
+async function press(text: string) {
+  const chip = await screen.findByText(text);
+  await waitFor(() => expect(chip.closest('button')?.disabled).toBe(false));
+  fireEvent.click(chip);
+}
+
 beforeAll(() => {
   // jsdom has no layout engine; the transcript's autoscroll library observes
   // resize. A no-op observer is the whole stub it needs.
@@ -163,7 +171,7 @@ describe('the mounted shell', () => {
     await screen.findByText(GREETING);
     fireEvent.click(screen.getByText('Support'));
     await screen.findByText(/You can reach our support team/);
-    fireEvent.click(await screen.findByText("That's all for now"));
+    await press("That's all for now");
     // The end turn is two bubbles too: the sign-off lands, then the link.
     await screen.findByText('Flock Safety');
     expect(screen.getAllByTestId('message-assistant')).toHaveLength(5);
@@ -198,7 +206,7 @@ describe('the mounted shell', () => {
       await screen.findByText(GREETING);
       fireEvent.click(screen.getByText('Support'));
       await screen.findByText(/You can reach our support team/);
-      fireEvent.click(await screen.findByText("That's all for now"));
+      await press("That's all for now");
       await screen.findByText('Flock Safety');
     } finally {
       spy.mockRestore();
@@ -211,7 +219,7 @@ describe('the mounted shell', () => {
     await screen.findByText(GREETING);
     fireEvent.click(screen.getByText('Support'));
     await screen.findByText(/You can reach our support team/);
-    fireEvent.click(await screen.findByText("That's all for now"));
+    await press("That's all for now");
     await screen.findByText('Flock Safety');
     const linkBubble = screen.getByText('Flock Safety').closest('[data-testid="message-assistant"]');
     expect(linkBubble?.textContent).not.toContain('Thanks for stopping by');
@@ -243,7 +251,7 @@ describe('transcript identity', () => {
     const echo = bubbleFor('Support', 'user');
     expect(echo).toBeTruthy();
 
-    fireEvent.click(await screen.findByText("That's all for now"));
+    await press("That's all for now");
     await screen.findByText(/Thanks for stopping by/);
     // Both earlier bubbles are the same elements after the closing turn: the
     // transcript grew, it did not redraw.
