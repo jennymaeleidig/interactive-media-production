@@ -21,8 +21,12 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { memo, useState } from 'react';
+// Citation: Tameem Safi — typewriter-effect (v2.22.0) [MIT]
+// Source: https://github.com/tameemsafi/typewriterjs
+import Typewriter from 'typewriter-effect';
 import { Mark } from '@/components/brand/mark';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
+import { msPerChar, TYPEWRITER_WORDS_PER_MINUTE } from '@/lib/pacing';
 import { cn } from '@/lib/utils';
 import { ExternalLinkIcon } from './icons';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
@@ -50,7 +54,23 @@ export function UnknownBlock({ reason }: { reason: string }) {
 type AdapterProps = { block: ChatBlock };
 
 function TextPart({ block }: AdapterProps) {
-  return <p className={prose}>{(block as Extract<ChatBlock, { type: 'text' }>).text}</p>;
+  const text = (block as Extract<ChatBlock, { type: 'text' }>).text;
+  const reduceMotion = useReducedMotion();
+  // The line types itself out at its own pace (`TYPEWRITER_WORDS_PER_MINUTE`,
+  // `lib/pacing`), cursorless — the reveal is the arrival, so no cursor is
+  // left blinking behind it. Reduced motion gets the whole line at once.
+  if (reduceMotion) return <p className={prose}>{text}</p>;
+  return (
+    <p className={prose}>
+      <Typewriter
+        component="span"
+        onInit={(writer) => {
+          writer.typeString(text).start();
+        }}
+        options={{ cursor: '', delay: msPerChar(TYPEWRITER_WORDS_PER_MINUTE), skipAddStyles: true }}
+      />
+    </p>
+  );
 }
 
 /** The viewer's own turn: the bubble already carries it, so the part is empty. */
@@ -138,11 +158,11 @@ export function AssistantMark() {
 
 /** The dev-only load timer: how long this one message took — its own typing
  * beat plus the engine's time, never cumulative across the turn — rendered as
- * a small chrome tag under the bubble's trailing corner. Absolutely
- * positioned, so it changes nothing about the transcript's layout. Like the
- * disclosure's reset control, it exists only when the dev server serves the
- * page (`NODE_ENV=development`, inlined by Next into the client bundle); a
- * built page never carries it. */
+ * a small chrome tag under the bubble's trailing corner. It rides in the
+ * message's own column, in flow, so a message that lands after it can never
+ * cover it; it exists only when the dev server serves the page
+ * (`NODE_ENV=development`, inlined by Next into the client bundle), so a
+ * built page carries neither the tag nor its line. */
 export function LoadTimer({ message }: { message: ChatMessageType }) {
   const [debug] = useState(() => process.env.NODE_ENV === 'development');
   // The viewer's own turns land instantly by construction — the timer only
@@ -150,7 +170,7 @@ export function LoadTimer({ message }: { message: ChatMessageType }) {
   if (!debug || message.role === 'user' || message.beatMs === undefined || message.loadMs === undefined) return null;
   return (
     <span
-      className="font-chrome absolute top-full right-0 pt-0.5 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
+      className="font-chrome self-end pt-0.5 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
       data-testid="load-timer"
       title={`beat ${message.beatMs}ms · actual load ${message.loadMs}ms`}
     >
@@ -193,27 +213,32 @@ export const Message = memo(function Message({
           {continues ? null : <AssistantMark />}
         </div>
       )}
-      <div
-        className={cn(
-          'font-serif relative flex max-w-[85%] flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
-          user ? 'bg-bubble-me' : 'bg-bubble-bot',
-          continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
-          continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
-        )}
-        data-message-id={message.id}
-        data-role={message.role}
-        data-testid={`message-${message.role}`}
-      >
-        {message.parts.map((part, index) => (
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-            key={`${message.id}-${index}`}
-            transition={reduceMotion ? { duration: 0 } : { delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <BlockPart block={part} />
-          </motion.div>
-        ))}
+      {/* The bubble and its dev timer share a column: the tag holds its own
+          line under the bubble's trailing corner, so a message that lands
+          above it can never cover it. */}
+      <div className={cn('flex min-w-0 max-w-[85%] flex-col', user ? 'items-end' : 'items-start')}>
+        <div
+          className={cn(
+            'font-serif flex flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
+            user ? 'bg-bubble-me' : 'bg-bubble-bot',
+            continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
+            continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
+          )}
+          data-message-id={message.id}
+          data-role={message.role}
+          data-testid={`message-${message.role}`}
+        >
+          {message.parts.map((part, index) => (
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              key={`${message.id}-${index}`}
+              transition={reduceMotion ? { duration: 0 } : { delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <BlockPart block={part} />
+            </motion.div>
+          ))}
+        </div>
         <LoadTimer message={message} />
       </div>
     </div>

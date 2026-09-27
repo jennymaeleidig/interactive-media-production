@@ -1,0 +1,52 @@
+// The Privacy & safety flow: the trust menu and its four topics. Every topic
+// lands on `hub` (core.yarn), which asks the "anything else" question.
+//
+// The provenance markers (OBSERVED / ADAPTED / AUTHORED), the `// src:` rule,
+// and the authoring rules for the whole tree are at the top of core.yarn.
+
+title: privacy
+---
+// src: https://www.flocksafety.com/trust
+Cam: Safety is a fundamental right. Public safety technology affects real people and neighborhoods, so Flock builds clear limits into the product, keeps decisions with local agencies, and records system use so it can be reviewed.
+<<block "flock-trust" join>>
+-> Data & retention
+  <<jump privacy_retention>>
+-> Facial recognition
+  <<jump privacy_facial>>
+-> Who can access it
+  <<jump privacy_access>>
+-> Myths & facts
+  <<jump privacy_myths>>
+===
+title: privacy_retention
+---
+// src: https://www.flocksafety.com/trust/data-privacy
+Cam: Your local agency controls who can access the information, and images and footage are deleted automatically after a set period.
+// src: https://www.flocksafety.com/trust/data-privacy and /legal/lpr-policy
+Cam: In most communities that's 7 days unless local law says otherwise, and every search is tied to a specific user and recorded in a log. #newmessage
+<<jump hub>>
+===
+title: privacy_facial
+---
+// src: https://www.flocksafety.com/trust/data-privacy and /faq
+Cam: No. The system does not use facial recognition, and it does not collect biometric data or driver information.
+// src: https://www.flocksafety.com/trust/data-privacy
+Cam: Searches are based on vehicle details, not people, so it cannot identify someone by their face. #newmessage
+<<jump hub>>
+===
+title: privacy_access
+---
+// src: https://www.flocksafety.com/legal/data-ownership
+Cam: You own your data, and Flock cannot and does not sell it.
+// src: https://www.flocksafety.com/trust/data-privacy and /legal/data-ownership
+Cam: Nothing is shared unless your organization turns sharing on, and there is no public database — no public browsing, no open access. #newmessage
+<<jump hub>>
+===
+title: privacy_myths
+---
+// src: https://www.flocksafety.com/trust/myths-facts
+Cam: Is LPR mass surveillance? No. It is used for specific public safety investigations under rules set by your local agency.
+// src: https://www.flocksafety.com/ and https://www.flocksafety.com/faq
+Cam: Flock has also reduced its recommended default data retention from 30 days to 7 days, expanded audit requirements and proactive monitoring to detect misuse, and made multi-factor authentication mandatory for every customer. #newmessage
+<<jump hub>>
+===

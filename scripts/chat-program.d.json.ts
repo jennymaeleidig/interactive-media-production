@@ -1,7 +1,7 @@
 // The compiled Yarn program's type, beside the generated JSON it describes.
 //
 // `chat-program.json` is built by `scripts/build-chat-runtime.mjs` from
-// `dialogue/flock.yarn`; `resolveJsonModule` would infer its over-literal JSON
+// `dialogue/*.yarn`; `resolveJsonModule` would infer its over-literal JSON
 // shape, which is not the runtime's `Program`. TypeScript resolves
 // `./chat-program.json` to this declaration (`foo.d.json.ts`), so
 // `scripts/chat-engine.mjs` — under `checkJs` — imports the loader's own type

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "commands": [
+    {
+      "yarnName": "block",
+      "documentation": "Resolve an id against the block inventory (`lib/chat-blocks.mjs`) and render it in the current bubble, or in a new one.",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "documentation": "A block id the inventory names."
+        },
+        {
+          "name": "placement",
+          "type": "string",
+          "documentation": "`join` keeps the block in the bubble it follows (the default); `new` cuts a new one.",
+          "defaultValue": "join"
+        }
+      ]
+    }
+  ]
+}

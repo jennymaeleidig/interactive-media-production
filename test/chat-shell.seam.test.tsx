@@ -23,11 +23,11 @@ import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { shippedAsset } from './seam-harness';
 
 const GREETING =
-  'Hey there! I’m Flock, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?';
+  'Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?';
 
-// Replies land behind a typing beat read at `WORDS_PER_MINUTE` (see
-// `use-dialogue`), so the suite's async waits get a ceiling above the longest
-// authored reply's beat rather than the 1s default.
+// The suite asks for reduced motion (see `setup-jsdom`), so replies land at
+// once; this is headroom over the async engine turn, not a wait on the piece's
+// typing pace.
 configure({ asyncUtilTimeout: 40_000 });
 
 beforeAll(() => {
@@ -59,19 +59,6 @@ describe('the mounted shell', () => {
     expect(chips.getByText('What can you help me with?')).toBeTruthy();
     expect(chips.getByText('Get a Demo')).toBeTruthy();
     expect(chips.getByText('Support')).toBeTruthy();
-  });
-
-  it('loads the opening turn under the page spinner, and replies under the typing bubble', async () => {
-    render(<ChatShell />);
-    // The page opens on the classic spinner, not the typing bubble.
-    expect(screen.getByTestId('chat-loading')).toBeTruthy();
-    await screen.findByText(GREETING);
-    expect(screen.queryByTestId('chat-loading')).toBeNull();
-
-    // A chip's reply shows the typing bubble, carrying the assistant mark.
-    fireEvent.click(screen.getByText('Support'));
-    const typing = await screen.findByTestId('typing-indicator');
-    expect(within(typing).getByTestId('assistant-mark')).toBeTruthy();
   });
 
   it('starts over from the disclosure, with no history carried', async () => {
@@ -112,23 +99,6 @@ describe('the mounted shell', () => {
     expect(await screen.findByText(/You can reach our support team/)).toBeTruthy();
   });
 
-  it('lands the viewer’s echo at once, and holds only the reply behind its beat', async () => {
-    render(<ChatShell />);
-    await screen.findByText(GREETING);
-    fireEvent.click(screen.getByText('Support'));
-
-    // While the dots are up, the viewer's own turn is already in the
-    // transcript — a message send reads as sent, not as queued behind the
-    // answer it provokes. (The chip is still up too, greyed, so the lookup
-    // stays inside the transcript's log.)
-    await screen.findByTestId('typing-indicator');
-    const transcript = within(screen.getByRole('log'));
-    expect(transcript.getByText('Support').closest('[data-testid="message-user"]')).toBeTruthy();
-
-    // and the reply follows, behind the beat the dots were holding.
-    await screen.findByText(/You can reach our support team/);
-  });
-
   it('keeps the send glyph present but inert', async () => {
     render(<ChatShell />);
     await screen.findByText(GREETING);
@@ -154,11 +124,10 @@ describe('the mounted shell', () => {
     await screen.findByText(GREETING);
     fireEvent.click(screen.getByText('Support'));
     await screen.findByText(/You can reach our support team/);
-    fireEvent.click(screen.getByText("That's all for now"));
-    await screen.findByText(/Thanks for stopping by/);
-    // The closing turn is two assistant bubbles in one run, cut by `newMessage`:
-    // four assistant bubbles, three runs, three marks.
-    expect(screen.getAllByTestId('message-assistant')).toHaveLength(4);
+    fireEvent.click(await screen.findByText("That's all for now"));
+    // The end turn is two bubbles too: the sign-off lands, then the link.
+    await screen.findByText('Flock Safety');
+    expect(screen.getAllByTestId('message-assistant')).toHaveLength(5);
     expect(screen.getAllByTestId('assistant-mark')).toHaveLength(3);
   });
 
@@ -190,8 +159,8 @@ describe('the mounted shell', () => {
       await screen.findByText(GREETING);
       fireEvent.click(screen.getByText('Support'));
       await screen.findByText(/You can reach our support team/);
-      fireEvent.click(screen.getByText("That's all for now"));
-      await screen.findByText(/Thanks for stopping by/);
+      fireEvent.click(await screen.findByText("That's all for now"));
+      await screen.findByText('Flock Safety');
     } finally {
       spy.mockRestore();
     }
@@ -203,8 +172,8 @@ describe('the mounted shell', () => {
     await screen.findByText(GREETING);
     fireEvent.click(screen.getByText('Support'));
     await screen.findByText(/You can reach our support team/);
-    fireEvent.click(screen.getByText("That's all for now"));
-    await screen.findByText(/Thanks for stopping by/);
+    fireEvent.click(await screen.findByText("That's all for now"));
+    await screen.findByText('Flock Safety');
     const linkBubble = screen.getByText('Flock Safety').closest('[data-testid="message-assistant"]');
     expect(linkBubble?.textContent).not.toContain('Thanks for stopping by');
   });
@@ -215,9 +184,10 @@ describe('transcript identity', () => {
   const domIds = () =>
     [...document.querySelectorAll('[data-message-id]')].map((element) => element.getAttribute('data-message-id'));
 
-  /** A bubble element, found by its text and its role's test id. */
+  /** A bubble element, found by its text inside the transcript. Scoped to the
+   * log because a chip can carry the same label the bubble it sent does. */
   const bubbleFor = (text: string, role: 'assistant' | 'user') =>
-    screen.getByText(text).closest(`[data-testid="message-${role}"]`);
+    within(screen.getByRole('log')).getByText(text).closest(`[data-testid="message-${role}"]`);
 
   it('keeps the exact bubble elements as turns append', async () => {
     render(<ChatShell />);
@@ -225,17 +195,16 @@ describe('transcript identity', () => {
     const greeting = bubbleFor(GREETING, 'assistant');
     expect(greeting).toBeTruthy();
 
-    // The reply is held behind its typing beat; while it is, the transcript is
-    // untouched — the greeting bubble is still the very element it was.
+    // The reply lands and the greeting bubble survives it: the transcript
+    // grows, it does not redraw.
     fireEvent.click(screen.getByText('Support'));
-    await screen.findByTestId('typing-indicator');
+    await screen.findByText(/You can reach our support team/);
     expect(bubbleFor(GREETING, 'assistant')).toBe(greeting);
 
-    await screen.findByText(/You can reach our support team/);
     const echo = bubbleFor('Support', 'user');
     expect(echo).toBeTruthy();
 
-    fireEvent.click(screen.getByText("That's all for now"));
+    fireEvent.click(await screen.findByText("That's all for now"));
     await screen.findByText(/Thanks for stopping by/);
     // Both earlier bubbles are the same elements after the closing turn: the
     // transcript grew, it did not redraw.
@@ -265,6 +234,10 @@ describe('transcript identity', () => {
     await screen.findByText(GREETING);
     fireEvent.click(screen.getByText('Support'));
     await screen.findByText(/You can reach our support team/);
+    // The hub question is its own bubble after the reply; wait for it, or the
+    // first transcript could be captured mid-turn and the resumed one, which
+    // lands whole, would not match.
+    await screen.findByText('Is there anything else I can help you with today?');
     const before = domIds();
     first.unmount();
 

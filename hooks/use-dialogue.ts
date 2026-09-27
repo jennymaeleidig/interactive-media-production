@@ -1,6 +1,6 @@
 'use client';
 
-// The one CC0 hook replacing the template's `useChat` (ticket 02, ticket 11).
+// The one CC0 hook replacing the template's `useChat`.
 //
 // It keeps the `useChat`-shaped surface the vendored components expect
 // (`messages`, `options`, `sendMessage`-shaped `sendOption`) but its only caller
@@ -14,15 +14,18 @@
 // alone. The engine still answers with the whole block sequence every time
 // (the turn contract); the sharing lives entirely in this one mapping.
 //
-// A reply is withheld behind a typing beat read at `WORDS_PER_MINUTE` (the
-// export above), so the transcript shows the typing dots for as long as the
-// reply would take to compose and lands short replies quickly. What a reply
-// weighs is declared per block type in the inventory's contract terms
-// (`CHAT_BLOCK_TERMS`); this hook owns only the clock.
+// A reply is withheld behind a typing beat read at `TYPING_WORDS_PER_MINUTE`
+// (`lib/pacing`, the piece's one tuning surface), so the transcript shows the
+// typing dots for as long as the reply would take to compose and lands short replies quickly. A reply
+// authored as several bubbles lands as several messages — one speaker-run at
+// a time, the dots holding between them — so each beat is that one message's
+// own. What a message weighs is declared per block type in the inventory's
+// contract terms (`CHAT_BLOCK_TERMS`); this hook owns only the clock.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
+import { MIN_TYPING_BEAT_MS, msPerChar, TYPING_WORDS_PER_MINUTE } from '@/lib/pacing';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/types';
@@ -39,20 +42,16 @@ export interface Dialogue {
   isTyping: boolean;
   /** True until the opening turn lands: the page shows its loading spinner. */
   isLoading: boolean;
+  /** True once the conversation has run out of content: the last landed turn
+   * carried no pending choice set (`res.state.complete`). The shell has no
+   * viewer-facing use for it yet — it is the mechanism a restart affordance
+   * reads when the piece grows one (the engine's `reset` is the restart). */
+  complete: boolean;
   /** Forget the conversation and open a fresh one at the greeting. */
   reset: () => void;
 }
 
 type Engine = NonNullable<Window['__flockChatEngine']>;
-
-/** The pace the typing beat is sized to, in words per minute: the delay is
- * the reply's word count read off this clock, so a short reply lands fast and
- * a long one holds the dots proportionally longer. Tune this one number to
- * retune every beat in the piece. */
-export const WORDS_PER_MINUTE = 2400;
-
-/** Milliseconds one word takes at the pace above. */
-const MS_PER_WORD = 60_000 / WORDS_PER_MINUTE;
 
 /** The composing weight of a block sequence, in characters: every block
  * contributes what its type declares in the inventory's contract terms. A type
@@ -63,11 +62,19 @@ function composingChars(blocks: readonly ChatBlock[]): number {
 }
 
 /** The typing beat: the sequence's composing weight (five characters to the
- * word) read at `WORDS_PER_MINUTE`, with a floor so even a one-word reply
- * reads as a turn rather than a flicker. Used for the whole reply's hold and,
- * per message, for the figure its own landing freezes. */
+ * word) read at `TYPING_WORDS_PER_MINUTE`, with a floor so even a one-word
+ * message reads as a turn rather than a flicker. Applied per speaker-run, so
+ * every bubble — and the figure its own landing freezes — is sized by its own
+ * content alone. */
 function typingDelay(blocks: readonly ChatBlock[]): number {
-  return Math.max(400, Math.round((composingChars(blocks) / 5) * MS_PER_WORD));
+  return Math.max(MIN_TYPING_BEAT_MS, Math.round(composingChars(blocks) * msPerChar(TYPING_WORDS_PER_MINUTE)));
+}
+
+/** Whether the viewer has asked the system to reduce motion. Read live, at the
+ * moment a reply would be held, so a changed setting is honored without making
+ * `apply` unstable — and a stable `apply` keeps the opening turn to one run. */
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 }
 
 /** The engine global, if the runtime has run. */
@@ -102,6 +109,9 @@ export function useDialogue(): Dialogue {
   // spinner for this, not the typing bubble — a session resuming or opening is
   // the page loading, not the character composing a reply.
   const [isLoading, setIsLoading] = useState(true);
+  // Whether the conversation has run out of content: surfaced so a control can
+  // tell a finished conversation from a live one (see `Dialogue.complete`).
+  const [complete, setComplete] = useState(false);
   // The pending reply, held back until its typing beat has played.
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // True from `sendOption` until the reply lands: the guard that makes the
@@ -128,9 +138,10 @@ export function useDialogue(): Dialogue {
   /** The engine's answer, applied as the shell's next state. It returns the
    * whole block sequence, so this replaces rather than merges — reusing, from
    * the ledger, every message the transcript already holds. The viewer's echo
-   * lands at once; the reply is held behind a typing beat proportional to its
-   * own declared weight. The opening turn lands at once, under the page's
-   * loading spinner instead. */
+   * lands at once; the reply lands one speaker-run at a time, each held behind
+   * a typing beat proportional to that run's own declared weight. The opening
+   * turn lands at once, under the page's loading spinner instead, and so does
+   * every reply when the viewer prefers reduced motion. */
   const apply = useCallback((res: ChatResponse, beat = true) => {
     const started = performance.now();
     /** Land the log through `through` blocks. The final land takes the turn's
@@ -161,6 +172,7 @@ export function useDialogue(): Dialogue {
         setOptions(res.turn.options ?? []);
         setIsTyping(false);
         setIsLoading(false);
+        setComplete(res.state.complete);
       }
     };
 
@@ -173,14 +185,39 @@ export function useDialogue(): Dialogue {
     while (echo < appended.length && appended[echo].who === 'me') echo += 1;
     const reply = appended.slice(echo);
 
-    if (!beat || reply.length === 0) {
+    if (!beat || reply.length === 0 || prefersReducedMotion()) {
       land(res.turn.blocks.length, true);
       return;
     }
     if (echo > 0) land(logLength.current + echo, false);
+
+    // The reply lands one speaker-run at a time, each behind its own typing
+    // beat: a reply authored as several `#newmessage` bubbles arrives as
+    // several messages, the dots holding between them — never as one block.
+    // The runs are the grouping's own, so the boundary the renderer cuts a
+    // bubble at is the boundary the clock pauses at. The end offsets are
+    // absolute log positions, so each land hands `groupBlocks` the prefix it
+    // expects and the ledger keeps every run already shown.
+    const base = logLength.current + echo;
+    const ends: number[] = [];
+    for (const run of groupBlocks(reply)) ends.push((ends.at(-1) ?? base) + run.parts.length);
+
     setIsTyping(true);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => land(res.turn.blocks.length, true), typingDelay(reply));
+    let step = 0;
+    const next = () => {
+      const from = step === 0 ? base : ends[step - 1];
+      const through = ends[step];
+      const last = step === ends.length - 1;
+      timer.current = setTimeout(() => {
+        land(through, last);
+        if (!last) {
+          step += 1;
+          next();
+        }
+      }, typingDelay(res.turn.blocks.slice(from, through)));
+    };
+    next();
   }, []);
 
   useEffect(() => {
@@ -250,5 +287,5 @@ export function useDialogue(): Dialogue {
       });
   }, [apply]);
 
-  return { messages, options, sendOption, isTyping, isLoading, reset };
+  return { messages, options, sendOption, isTyping, isLoading, complete, reset };
 }

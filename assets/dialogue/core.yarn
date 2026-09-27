@@ -1,0 +1,113 @@
+// Cam's script — the spine: the greeting, the return hub, the general and
+// support answers, the demo ask, and the closing.
+//
+// The tree is three files, all compiled by the one project (`flock.yarnproject`
+// globs `**/*.yarn`), so node titles are shared across them:
+//
+//   core.yarn      Start, hub, general, support, demo, end   (this file)
+//   products.yarn  the Products & offerings flow
+//   trust.yarn     the Privacy & safety flow
+//
+// Provenance, marked on every Cam line:
+//
+//   OBSERVED  transcribed verbatim from the one observed Qualified session
+//             (s9 greeting, s10 general + support, s12 demo ask, closing).
+//   ADAPTED   an OBSERVED string whose speaker name changed to the piece's own
+//             character (the greeting — the one deliberate deviation, see
+//             CONTEXT.md "Cam").
+//   AUTHORED  written for the piece. Every AUTHORED claim carries
+//             `// src: <url>` naming the Flock page it comes from, and an
+//             AUTHORED line never says something no source says
+//             (docs/adr/0002-accept-impersonation-risk.md).
+//
+// Authoring rules, all of them load-bearing, for every file in the tree:
+//
+//   * One option set per node. A reload re-enters the node at its top
+//     (chat-engine.mjs `restore`), so a second set in one node would re-offer
+//     the first chips after a reload. `test/chat.seam.test.ts` guards this.
+//   * Node titles are letters, digits and underscores only — the compiler
+//     rejects anything else (YS0027), so branches read `products_lpr`.
+//   * A `//` comment BETWEEN options silently drops every option after it.
+//     Keep comments at the node top.
+//   * `#newmessage` at the end of a line ends the bubble there: one reply can
+//     land as several messages (chat-engine.mjs reads the tag off the line).
+//   * ` ~ ` inside an option's text splits the viewer's echo into bubbles; the
+//     chip itself shows the first segment only.
+//   * `<<block "id">>` resolves against the block inventory
+//     (lib/chat-blocks.mjs) — never a URL here. The bare form joins the current
+//     bubble, `new` opens its own.
+//   * Flows: Start greets, every spoke lands on `hub` and its "anything else"
+//     line, `end` closes. Support, Products & offerings, Get a Demo, and
+//     Privacy & safety are the four branches.
+
+title: Start
+---
+// ADAPTED from the observed greeting: the name is the piece's, the rest is
+// verbatim. The greeting carries the general beat as a first-contact offer and
+// no exit chip — the exit belongs to the hub.
+<<declare $demoRequested = false>>
+Cam: Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?
+-> What can you help me with?
+  <<jump general>>
+-> Products & offerings
+  <<jump products>>
+-> Get a Demo
+  <<set $demoRequested = true>>
+  <<jump demo>>
+-> Privacy & safety
+  <<jump privacy>>
+-> Support
+  <<jump support>>
+===
+title: hub
+---
+// The return gate. Every spoke lands here, and it is the same five chips every
+// time it is reached — no first-return variant. `#newmessage` keeps the
+// follow-up question out of the beat's bubble.
+Cam: Is there anything else I can help you with today? #newmessage
+-> Products & offerings
+  <<jump products>>
+-> Get a Demo
+  <<set $demoRequested = true>>
+  <<jump demo>>
+-> Privacy & safety
+  <<jump privacy>>
+-> Support
+  <<jump support>>
+-> That's all for now ~ talk soon
+  <<jump end>>
+===
+title: general
+---
+// OBSERVED (s10). The old fixture's "What can you help me with?" answer.
+Cam: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
+<<jump hub>>
+===
+title: support
+---
+// OBSERVED (s10) — the phone number and address are Flock's, verbatim.
+Cam: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?
+<<jump hub>>
+===
+title: demo
+---
+// src: https://www.flocksafety.com/book-a-demo
+Cam: A demo walks you through the Flock Difference: the largest public-private safety network, technology that's always up-to-date, and privacy-first accountability.
+// src: https://www.flocksafety.com/book-a-demo. The link joins this bubble; the
+// inventory holds the href, so a destination is one edit in lib/chat-blocks.mjs.
+Cam: Everything connected, with no silos. #newmessage
+<<block "flock-demo" join>>
+// OBSERVED (s12) — the email gate. The piece never collects the address and the
+// booker opens nowhere: "Maybe later" is the only way on, and it returns to the
+// hub rather than re-greeting (CONTEXT.md "Email gate").
+Cam: I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further. #newmessage
+-> Maybe later
+  <<jump hub>>
+===
+title: end
+---
+// OBSERVED (s10) closing. The link block opens its own bubble after it; the
+// inventory holds the href.
+Cam: Thanks for stopping by — take care!
+<<block "flock-home" new>>
+===

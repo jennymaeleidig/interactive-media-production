@@ -62,3 +62,13 @@ references:
       citation block in components/chat/messages.tsx. Drawn as line-text-line
       rather than Flowbite's absolute positioning; the classes are this repo's
       own tokens.
+  - type: software
+    title: 'typewriter-effect'
+    authors:
+      - family-names: Safi
+        given-names: Tameem
+    version: '2.22.0'
+    url: 'https://github.com/tameemsafi/typewriterjs'
+    notes: >
+      MIT. The cursorless per-character reveal of a landed assistant line; used
+      as the package ships, configured in components/chat/message.tsx.

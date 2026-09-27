@@ -26,12 +26,12 @@ export default defineConfig({
         resolve: { alias: { '@': root } },
         test: {
           name: 'chat-shell-seam',
-          include: ['test/chat-shell.seam.test.tsx'],
+          include: ['test/chat-shell.seam.test.tsx', 'test/chat-typewriter.seam.test.tsx'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
-          // Each turn lands behind a typing beat read at `WORDS_PER_MINUTE`
-          // (see `use-dialogue`), so a multi-chip scenario stacks several
-          // proportionally sized beats inside one test.
+          // The suite runs the piece's reduced-motion path (see
+          // `test/setup-jsdom.ts`), which lands replies at once — so this is
+          // headroom for the engine's async turns, not for typed pacing.
           testTimeout: 90_000,
         },
       },

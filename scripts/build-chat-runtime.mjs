@@ -4,7 +4,8 @@
 // the same reason: the browser cannot compile Yarn and cannot resolve a module
 // graph, so neither step can happen on the page.
 //
-//   1. `scripts/chat-program.json` — `dialogue/flock.yarn` compiled once, at
+//   1. `scripts/chat-program.json` — the `assets/dialogue/*.yarn` tree compiled
+//      once, at
 //      build time, with the Node loader (`yarnspinner-typescript/node`). Keys
 //      are sorted recursively so the bytes are a function of the source alone.
 //   2. `scripts/chat-runtime.js` — `scripts/chat-engine.mjs` bundled by
@@ -61,15 +62,27 @@ function stableKeys(value) {
 }
 
 /**
- * Compile `dialogue/flock.yarn` into the deterministic program JSON, including
+ * Compile the `assets/dialogue/*.yarn` tree into the deterministic program JSON,
+ * including
  * its trailing newline.
  * @returns {string}
  */
 function compileProgram() {
-  const project = loadYarnProject(PROJECT_FILE);
-  if (!project.program) {
-    const problems = project.diagnostics.map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`).join('\n');
-    throw new Error(`assets/dialogue/flock.yarn failed to compile:\n${problems}`);
+  // `validateCommands` is opt-in in the port: upstream emits `YS0060`
+  // (unknown command) and `YS0061` (wrong parameter count) from its language
+  // server, not its compiler, so the default path warns about nothing. The
+  // piece opts in — the custom `<<block>>` is declared in
+  // `assets/dialogue/definitions.ysls.json`, named by the project file — so a
+  // command typo fails this build rather than reaching the editor alone.
+  const project = loadYarnProject(PROJECT_FILE, { validateCommands: true });
+  const commandProblems = project.diagnostics.filter(
+    (diagnostic) => diagnostic.code === 'YS0060' || diagnostic.code === 'YS0061',
+  );
+  if (!project.program || commandProblems.length > 0) {
+    const problems = (commandProblems.length > 0 ? commandProblems : project.diagnostics)
+      .map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`)
+      .join('\n');
+    throw new Error(`the dialogue sources failed to compile:\n${problems}`);
   }
   return `${JSON.stringify(stableKeys(project.program), null, 2)}\n`;
 }
@@ -108,6 +121,20 @@ export async function buildChatRuntime() {
   return { program, runtime: await bundleRuntime(program) };
 }
 
+/**
+ * Compile and write both generated files. The compile happens in memory first,
+ * so a source that fails to compile throws before either file is touched — a
+ * watcher can keep running with the last good bytes still in place. Returns
+ * what was written so a caller can report its size.
+ * @returns {Promise<{ program: string, runtime: string }>}
+ */
+export async function writeChatRuntime() {
+  const { program, runtime } = await buildChatRuntime();
+  writeFileSync(PROGRAM_FILE, program, 'utf8');
+  writeFileSync(RUNTIME_FILE, runtime, 'utf8');
+  return { program, runtime };
+}
+
 /** The committed bytes, or null when the file is absent. @param {string} file */
 function committed(file) {
   try {
@@ -118,8 +145,8 @@ function committed(file) {
 }
 
 async function main() {
-  const { program, runtime } = await buildChatRuntime();
   if (process.argv.includes('--check')) {
+    const { program, runtime } = await buildChatRuntime();
     /** The generated files, and the bytes they must match. */
     const generated = [
       ['scripts/chat-program.json', PROGRAM_FILE, program],
@@ -134,8 +161,7 @@ async function main() {
     console.log(`chat sources and committed bytes agree (${program.length} + ${runtime.length} bytes)`);
     return;
   }
-  writeFileSync(PROGRAM_FILE, program, 'utf8');
-  writeFileSync(RUNTIME_FILE, runtime, 'utf8');
+  const { program, runtime } = await writeChatRuntime();
   console.log(`chat-program.json: ${program.length} bytes`);
   console.log(`chat-runtime.js:   ${runtime.length} bytes`);
 }

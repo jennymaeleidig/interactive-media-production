@@ -1,8 +1,22 @@
 {
   "projectFileVersion": 4,
-  "projectName": "FlockChatMimic",
   "sourceFiles": [
-    "*.yarn"
+    "**/*.yarn"
   ],
-  "baseLanguage": "en"
+  "baseLanguage": "en",
+  "definitions": "./definitions.ysls.json",
+  "projectName": "flock-chat-script",
+  "authorName": [
+    "JennyLeidig"
+  ],
+  "editorOptions": {
+    "yarnScriptEditor": {
+      "characters": [
+        {
+          "name": "cam",
+          "colour": "#4c8962"
+        }
+      ]
+    }
+  }
 }

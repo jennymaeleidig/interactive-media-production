@@ -149,6 +149,13 @@ function open(vars) {
  * one. `join` is the spelled-out default. The placement is the author's call per
  * command, so the same block can sit in a run or stand alone.
  */
+/** The authored line tag that ends a reply's bubble at that line:
+ * `Cam: First half. #newmessage` starts a fresh bubble for this line, the text
+ * counterpart of `<<block "id" new>>`. Read off the line event's tags, which the
+ * runtime already carries, so it is stateless and ordering-safe; Yarn strips the
+ * tag from the spoken text. */
+const NEW_MESSAGE_TAG = 'newmessage';
+
 const BLOCK_COMMAND = /^block\s+"([^"]+)"(?:\s+(new|join))?\s*$/;
 
 /**
@@ -192,7 +199,14 @@ function sweep(dialogue) {
   let complete = false;
   for (const event of runUntilCompleteEvents(dialogue)) {
     if (event.type === 'line') {
-      blocks.push({ who: 'bot', type: 'text', text: event.text });
+      blocks.push({
+        who: 'bot',
+        type: 'text',
+        text: event.text,
+        // `#newmessage` on the line cuts the bubble before it, exactly as the
+        // `new` placement on a block command does.
+        ...(event.tags?.includes(NEW_MESSAGE_TAG) ? { newMessage: true } : {}),
+      });
     } else if (event.type === 'command') {
       const block = blockFromCommand(event.command);
       if (block) blocks.push(block);
