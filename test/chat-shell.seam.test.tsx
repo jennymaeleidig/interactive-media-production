@@ -52,19 +52,20 @@ vi.mock('typewriter-effect', async () => {
   };
 });
 
-vi.mock('@/lib/pacing', () => ({
-  TYPING_WORDS_PER_MINUTE: 400,
+vi.mock('@/lib/pacing', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/pacing')>()),
+  // Only the two levers that decide speed are shortened; the constants and the
+  // words-per-minute names come from the real module, so they cannot drift.
   MIN_TYPING_BEAT_MS: 1,
-  TYPEWRITER_WORDS_PER_MINUTE: 400,
   msPerChar: () => 0.1,
 }));
 
 const GREETING =
   'Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?';
 
-// The suite asks for reduced motion (see `setup-jsdom`), so replies land at
-// once; this is headroom over the async engine turn, not a wait on the piece's
-// typing pace.
+// The suite runs the piece's motion, but on the short clock the mocks install
+// (below), so this is headroom over the async engine turn, not a wait on the
+// piece's typing pace.
 configure({ asyncUtilTimeout: 40_000 });
 
 beforeAll(() => {

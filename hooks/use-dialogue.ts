@@ -86,18 +86,13 @@ export function useDialogue(): Dialogue {
    * the ledger, every message the transcript already holds. The viewer's echo
    * lands at once; the reply lands one speaker-run at a time, each held behind
    * a typing beat proportional to that run's own declared weight. The opening
-   * turn lands at once, under the page's loading spinner instead, and so does
-   * every reply when the viewer prefers reduced motion. */
-  const apply = useCallback((res: ChatResponse, beat = true) => {
-    const started = performance.now();
+   * turn — and a reset — lands at once, under the page's loading spinner.
+   * `engineMs` is the turn's own engine time, measured by the caller, so the
+   * dev timer's figure is the same for every message in the turn. */
+  const apply = useCallback((res: ChatResponse, hold = true, engineMs = 0) => {
     /** Land the log through `through` blocks. The final land takes the turn's
      * choice set in and brings the dots down; the echo's land does neither. */
     const land = (through: number, final: boolean) => {
-      // The turn's real engine time, measured once per land. Each newly landing
-      // bubble also records its own composing weight, read off its parts, so the
-      // dev timer shows a message's beat even when the hold was skipped — the
-      // opening turn, a resume, or reduced motion all land without one.
-      const engineMs = Math.round(performance.now() - started);
       setMessages(
         groupBlocks(res.turn.blocks.slice(0, through)).map((run) => {
           const kept = stamps.current.get(run.id);
@@ -106,8 +101,16 @@ export function useDialogue(): Dialogue {
           // append-only turn flow") — so the length check is a defect guard,
           // not a path: a same-length id hit is the same run.
           if (kept && kept.parts.length === run.parts.length) return kept;
-          const ownBeat = typingDelay(run.parts);
-          const fresh: ChatMessage = { ...run, at: new Date(), timing: { beatMs: ownBeat, loadMs: engineMs + ownBeat } };
+          // The dev timer's two numbers, per message: its own composing weight
+          // (the hold it would be given, read off its parts), and that weight
+          // plus the turn's engine time. `engineMs` is the turn's, not this
+          // land's, so a later message never inherits an earlier one's hold.
+          const composingMs = typingDelay(run.parts);
+          const fresh: ChatMessage = {
+            ...run,
+            at: new Date(),
+            timing: { composingMs, elapsedMs: engineMs + composingMs },
+          };
           stamps.current.set(run.id, fresh);
           return fresh;
         }),
@@ -122,11 +125,9 @@ export function useDialogue(): Dialogue {
       }
     };
 
-    // The schedule is pure (`lib/turn-plan.ts`); this executes it. Reduced
-    // motion, or a turn that appends no reply, collapses to one immediate step.
-    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, {
-      hold: beat,
-    });
+    // The schedule is pure (`lib/turn-plan.ts`); this executes it. A turn that
+    // appends no reply, or is not held, collapses to one immediate step.
+    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, { hold });
     const immediate = steps.length === 1 && steps[0].beatMs === 0;
     if (immediate) {
       land(steps[0].through, true);
@@ -182,9 +183,10 @@ export function useDialogue(): Dialogue {
       // typing dots are up or the answer is still in flight — is dropped.
       if (!api || pending.current) return;
       pending.current = true;
+      const requestedAt = performance.now();
       api
         .turn({ type: 'option', optionIndex: option.index })
-        .then(apply)
+        .then((res) => apply(res, true, Math.round(performance.now() - requestedAt)))
         .catch(() => {
           // As above: nothing in-frame can act on it. The guard must lift,
           // or the piece would dead-end on a rejected turn.

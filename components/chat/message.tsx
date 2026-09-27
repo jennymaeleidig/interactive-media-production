@@ -154,8 +154,8 @@ export function AssistantMark() {
   );
 }
 
-/** The dev-only load timer: how long this one message took — its own typing
- * beat plus the engine's time, never cumulative across the turn — rendered as
+/** The dev-only load timer: how long this one message took — its own composing
+ * weight plus the turn's engine time, never cumulative across the turn — rendered as
  * a small chrome tag under the bubble's trailing corner. It rides in the
  * message's own column, in flow, so a message that lands after it can never
  * cover it; it exists only when the dev server serves the page
@@ -170,9 +170,9 @@ export function LoadTimer({ message }: { message: ChatMessageType }) {
     <span
       className="font-chrome self-end pt-0.5 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
       data-testid="load-timer"
-      title={`beat ${message.timing.beatMs}ms · actual load ${message.timing.loadMs}ms`}
+      title={`composing ${message.timing.composingMs}ms · elapsed ${message.timing.elapsedMs}ms`}
     >
-      {message.timing.loadMs}ms
+      {message.timing.elapsedMs}ms
     </span>
   );
 }

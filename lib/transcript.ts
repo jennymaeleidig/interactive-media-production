@@ -22,13 +22,13 @@ export type ChatRole = 'assistant' | 'user';
  * threshold, roughly fifteen minutes. Tune this to retune the separators. */
 export const TIME_GAP_MS = 15 * 60 * 1000;
 
-/** The dev-only load timer for one run: the message's own composing beat — the
- * hold it would be given — and the time it took to arrive, that beat plus the
- * engine's. The hook's ledger stamps it as a run lands, even when a resume or
- * reduced motion skipped the hold; the grouping never sets it. */
+/** The dev-only load timer for one run: its own composing weight — the hold it
+ * would be given — and that weight plus the turn's engine time. The hook's
+ * ledger stamps it as a run lands, even when a resume or an opening turn lands
+ * without a hold; the grouping never sets it. */
 export interface MessageTiming {
-  beatMs: number;
-  loadMs: number;
+  composingMs: number;
+  elapsedMs: number;
 }
 
 /** One speaker-run: a role, the blocks it renders, in order, the moment it
