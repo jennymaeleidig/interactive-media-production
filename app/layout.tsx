@@ -2,13 +2,14 @@
 //
 // `<title>` stays in costume; the unfurl tags go honest (`lib/share.ts`), because
 // the preview is the only out-of-frame carrier that survives a browser warning.
-// The chat runtime is declared once, by the path `scripts/chat-assets.mjs`
-// publishes; the React shell itself ships in this page's own bundle.
+// The chat runtime is declared once, by `lib/engine-reach.mjs`; the React shell
+// itself ships in this page's own bundle.
 //
 // SPDX-License-Identifier: CC0-1.0
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
+import { RUNTIME_PATH } from '@/lib/engine-reach.mjs';
 import { HONEST_DESCRIPTION, HONEST_FIRST_SENTENCE } from '@/lib/share';
 import './globals.css';
 
@@ -40,7 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link as="font" crossOrigin="anonymous" href="/fonts/Sohne-Book.woff2" rel="preload" type="font/woff2" />
         <link as="font" crossOrigin="anonymous" href="/fonts/Denim-Bold.woff2" rel="preload" type="font/woff2" />
         {/* The engine, and the only file /chat/ publishes. */}
-        <script defer src="/chat/runtime.js" />
+        <script defer src={RUNTIME_PATH} />
       </body>
     </html>
   );

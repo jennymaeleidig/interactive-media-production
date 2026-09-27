@@ -11,10 +11,11 @@
 // SPDX-License-Identifier: CC0-1.0
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { ChatResponse } from '../lib/chat-turn.mjs';
+import { RUNTIME_PATH } from '../lib/engine-reach.mjs';
 import { shippedAsset } from './seam-harness';
 
 beforeAll(() => {
-  (window as unknown as { eval: (source: string) => void }).eval(shippedAsset('/chat/runtime.js'));
+  (window as unknown as { eval: (source: string) => void }).eval(shippedAsset(RUNTIME_PATH));
 });
 
 describe('the engine the shell calls', () => {

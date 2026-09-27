@@ -24,6 +24,7 @@
     "scripts/build-chat-runtime.mjs",
     "scripts/chat-watch.mjs",
     "scripts/chat-assets.mjs",
+    "lib/engine-reach.mjs",
     "test/artifact.mjs",
     "scripts/globals.d.ts"
   ]

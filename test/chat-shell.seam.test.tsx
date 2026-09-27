@@ -16,6 +16,7 @@ import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChatShell } from '@/components/chat/chat-shell';
 import { BLOCK_ADAPTERS, Message } from '@/components/chat/message';
+import { RUNTIME_PATH } from '@/lib/engine-reach.mjs';
 import { CHAT_BLOCK_TYPES } from '@/lib/chat-turn.mjs';
 import type { ChatMessage } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
@@ -39,7 +40,7 @@ beforeAll(() => {
   }
   (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = ResizeObserverStub;
   Element.prototype.scrollTo = () => {};
-  (window as unknown as { eval: (source: string) => void }).eval(shippedAsset('/chat/runtime.js'));
+  (window as unknown as { eval: (source: string) => void }).eval(shippedAsset(RUNTIME_PATH));
 });
 
 beforeEach(() => {

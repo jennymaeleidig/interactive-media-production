@@ -11,14 +11,10 @@ declare global {
     /**
      * The client-side dialogue engine, assigned by the bundle the host page
      * serves (`scripts/chat-runtime.js`). The vendored React shell calls it
-     * through its `useDialogue` hook; there is no server to call. See
-     * `scripts/chat-engine.mjs`.
+     * through its `useDialogue` hook; there is no server to call. Its shape is
+     * declared once in `lib/engine-reach.mjs`, which also reads it back.
      */
-    __flockChatEngine?: {
-      turn(request: ChatRequest): Promise<ChatResponse>;
-      /** Forget the session and return the fresh opening turn. */
-      reset(): Promise<ChatResponse>;
-    };
+    __flockChatEngine?: import('../lib/engine-reach.mjs').Engine;
   }
 
   /** One client turn: the shell sends it, the client engine answers it. */

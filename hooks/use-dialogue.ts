@@ -25,11 +25,9 @@
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
+import { acquireEngine, currentEngine } from '@/lib/engine-reach.mjs';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
 import { planTurn, typingDelay } from '@/lib/turn-plan';
-
-/** The host page's one runtime script; the hook waits for it on a cold load. */
-const RUNTIME_SRC = '/chat/runtime.js';
 
 export interface Dialogue {
   messages: ChatMessage[];
@@ -49,37 +47,11 @@ export interface Dialogue {
   reset: () => void;
 }
 
-type Engine = NonNullable<Window['__flockChatEngine']>;
-
 /** Whether the viewer has asked the system to reduce motion. Read live, at the
  * moment a reply would be held, so a changed setting is honored without making
  * `apply` unstable — and a stable `apply` keeps the opening turn to one run. */
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-}
-
-/** The engine global, if the runtime has run. */
-function engine(): Engine | undefined {
-  return typeof window === 'undefined' ? undefined : window.__flockChatEngine;
-}
-
-/**
- * The runtime is a deferred script in the host page, so on a cold load the shell
- * can mount before it has run. Wait for that script rather than erroring on a
- * race the visitor cannot see or fix.
- */
-function engineReady(): Promise<Engine | undefined> {
-  const running = engine();
-  if (running || typeof document === 'undefined') return Promise.resolve(running);
-  const script = document.querySelector<HTMLScriptElement>(`script[src="${RUNTIME_SRC}"]`);
-  if (!script) return Promise.resolve(undefined);
-  return new Promise((resolve) => {
-    const settle = () => resolve(engine());
-    script.addEventListener('load', settle, { once: true });
-    script.addEventListener('error', settle, { once: true });
-    // It may have loaded between the lookup above and the listener attaching.
-    if (engine()) settle();
-  });
 }
 
 export function useDialogue(): Dialogue {
@@ -188,7 +160,7 @@ export function useDialogue(): Dialogue {
 
   useEffect(() => {
     let cancelled = false;
-    engineReady()
+    acquireEngine()
       .then((api) => {
         if (cancelled || !api) return;
         // `start` opens this page's session: the engine resumes the live one or
@@ -212,7 +184,7 @@ export function useDialogue(): Dialogue {
 
   const sendOption = useCallback(
     (option: ChatOption) => {
-      const api = engine();
+      const api = currentEngine();
       // One turn at a time: a press while a reply is pending — whether the
       // typing dots are up or the answer is still in flight — is dropped.
       if (!api || pending.current) return;
@@ -233,7 +205,7 @@ export function useDialogue(): Dialogue {
    * way the page's own opening turn lands. Any reply held behind a typing
    * beat is discarded with the conversation it belonged to. */
   const reset = useCallback(() => {
-    const api = engine();
+    const api = currentEngine();
     if (!api) return;
     if (timer.current) {
       clearTimeout(timer.current);

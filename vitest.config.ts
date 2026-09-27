@@ -49,7 +49,7 @@ export default defineConfig({
       {
         test: {
           name: 'chat-interface',
-          include: ['test/chat-interface.test.ts'],
+          include: ['test/chat-interface.test.ts', 'test/engine-reach.test.ts'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
         },

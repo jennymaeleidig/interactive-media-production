@@ -15,6 +15,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { RUNTIME_PATH } from '../lib/engine-reach.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -28,7 +29,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 /** @type {readonly ChatAsset[]} */
 export const CHAT_ASSETS = [
   {
-    path: '/chat/runtime.js',
+    path: RUNTIME_PATH,
     source: 'scripts/chat-runtime.js',
     contentType: 'text/javascript; charset=utf-8',
   },
