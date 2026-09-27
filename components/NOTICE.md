@@ -27,7 +27,7 @@ storage, and the SWR history/model hooks. Nothing is stubbed.
 
 All four of the template's client runtime dependencies are taken, each doing the
 job it did there: `use-stick-to-bottom` pins the transcript, `framer-motion`
-runs the block rise (with `useReducedMotion`), `next-themes` pins the one ground
+runs the block rise, `next-themes` pins the one ground
 Flock's identity fixes, and `lucide-react` supplies the send glyph.
 
 ## Licensing

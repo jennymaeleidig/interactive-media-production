@@ -23,6 +23,23 @@ is derived from viewer input. The ADR holds the full reasoning and consequences.
   `SPDX-License-Identifier` line, no CC0 stamp. The repository's own code stays CC0; these assets are
   the opposite case and must not inherit it.
 
+## Motion
+
+**Motion is the piece, not an accommodation.** The work is interactive media —
+closer to a video game than a document — and its timing, typing, and
+transitions are part of the design, not decoration layered over it. The
+reduced-motion preference is therefore deliberately not consulted:
+
+- No `prefers-reduced-motion` media query, and no `motion-reduce:` utility
+  variant.
+- No `useReducedMotion` (framer-motion) or equivalent hook gates an animation.
+- The dialogue's typing beats and the typewriter reveal always run.
+
+Tests that need a short clock dial `lib/pacing` and stub `typewriter-effect`;
+they never reintroduce an animation gate. The one motion-adjacent preference
+that is still honored is `prefers-reduced-transparency`, which affects
+legibility over the frosted chrome rather than the piece's timing.
+
 ## Repo hygiene
 
 - **Nothing a build produces is committed** — `out/`, `.next/`, `.tmp/` stay

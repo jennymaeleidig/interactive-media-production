@@ -218,10 +218,11 @@
  * triangle. Adapted by Jenny Leidig on 2026-09-20: transform and opacity only
  * (a margin costs layout on every frame), the dink a clipped triangle though it
  * carries no border here — a hairline would separate the two shapes the fill is
- * meant to merge — and the whole reveal gated behind `prefers-reduced-motion`.
+ * meant to merge — and the reveal always on, motion being the piece's
+ * (`CODING_STANDARDS.md`).
  *
- * A class and not utilities because pseudo-elements, the `@supports` fallback
- * and the motion gate have no utility spelling.
+ * A class and not utilities because pseudo-elements and the `@supports`
+ * fallback have no utility spelling.
  */
 /* Frosted chrome, shared by the header capsule and the composer tray: the
    transcript scrolls beneath both, and the blur is what keeps them floating
@@ -328,10 +329,8 @@
     }
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .tooltip {
-      animation: tooltip-land 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
+  .tooltip {
+    animation: tooltip-land 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }
 

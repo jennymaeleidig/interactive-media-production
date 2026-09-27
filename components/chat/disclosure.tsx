@@ -63,7 +63,7 @@ export function Disclosure({ onReset }: { onReset?: () => void }) {
       <button
         aria-expanded={open}
         aria-label="What is this?"
-        className="font-chrome flex h-7 w-7 cursor-pointer items-center justify-center rounded-pill border border-edge text-sm text-capsule-content transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-ground active:scale-[0.96] motion-reduce:transition-none"
+        className="font-chrome flex h-7 w-7 cursor-pointer items-center justify-center rounded-pill border border-edge text-sm text-capsule-content transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-ground active:scale-[0.96]"
         data-testid="disclosure-toggle"
         id={toggleId}
         onClick={() => (open ? close() : setOpen(true))}

@@ -33,12 +33,12 @@ export function Composer({
         <div className="flex flex-1 flex-wrap gap-2" data-testid="chip-row">
           {/* The chips speak in the serif — the same voice as the bubbles they
               answer, not the chrome's Book. The press is a quiet scale on the
-              minimal curve; the motion-reduce viewer gets a colour shift only. */}
+              minimal curve. */}
           {options.map((option) => (
             <button
               aria-disabled={disabled || undefined}
               className={cn(
-                'font-serif rounded-chip bg-chip px-4 py-2 text-left text-base text-chip-content transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-chip-hover active:scale-[0.98] motion-reduce:transition-none',
+                'font-serif rounded-chip bg-chip px-4 py-2 text-left text-base text-chip-content transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-chip-hover active:scale-[0.98]',
                 // Greyed out while a reply composes: no hover lift, no press,
                 // and the cursor admits it.
                 disabled && 'cursor-not-allowed bg-chip-hover opacity-50 hover:bg-chip-hover active:scale-100',

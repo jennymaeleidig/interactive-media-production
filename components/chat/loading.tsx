@@ -11,7 +11,7 @@
 export function Loading() {
   return (
     <div className="flex w-full flex-1 items-center justify-center py-40" data-testid="chat-loading" role="status" aria-label="Loading the conversation">
-      <div className="border-edge border-t-content size-8 animate-spin rounded-full border-[3px] motion-reduce:animate-none" />
+      <div className="border-edge border-t-content size-8 animate-spin rounded-full border-[3px]" />
     </div>
   );
 }

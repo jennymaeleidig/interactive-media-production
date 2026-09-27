@@ -51,9 +51,9 @@ export function typingDelay(blocks: readonly ChatBlock[]): number {
 }
 
 /** Plan one turn. `hold` is whether replies are withheld behind their beat at
- * all — the hook folds `prefers-reduced-motion` into it. When `hold` is false,
- * or the turn appends no reply, the plan is a single immediate step over the
- * whole log, so the caller lands it synchronously. */
+ * all — the opening turn and a reset are not. When `hold` is false, or the turn
+ * appends no reply, the plan is a single immediate step over the whole log, so
+ * the caller lands it synchronously. */
 export function planTurn(
   prevLogLength: number,
   blocks: readonly ChatBlock[],

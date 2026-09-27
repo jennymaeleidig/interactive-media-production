@@ -30,9 +30,9 @@ export default defineConfig({
           include: ['test/chat-shell.seam.test.tsx', 'test/chat-typewriter.seam.test.tsx'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
-          // The suite runs the piece's reduced-motion path (see
-          // `test/setup-jsdom.ts`), which lands replies at once — so this is
-          // headroom for the engine's async turns, not for typed pacing.
+          // The suite runs the piece's real motion (see `test/setup-jsdom.ts`):
+          // replies hold for their beat and lines type themselves out, so this is
+          // headroom for the engine's async turns plus that pacing.
           testTimeout: 90_000,
         },
       },

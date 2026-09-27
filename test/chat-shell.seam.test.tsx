@@ -22,6 +22,43 @@ import type { ChatMessage } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import { shippedAsset } from './seam-harness';
 
+// The suite runs the piece's real motion, but two things would make this seam
+// take minutes, and neither is what it is here to pin:
+//
+// - the reveal: `typewriter-effect` advances one character per animation frame
+//   (~16ms), so a 110-character greeting alone costs ~1.8s of every test. The
+//   real reveal is covered at the `Message` level in
+//   `test/chat-typewriter.seam.test.tsx`; here the package renders the line at
+//   once.
+// - the beats: a 190-character reply holds ~5.7s at the piece's pace. The
+//   clocks are pinned by `test/turn-plan.test.ts`; here they are near-instant.
+//
+// Both leave the same animation path under test — only its clock is short.
+vi.mock('typewriter-effect', async () => {
+  const React = await import('react');
+  return {
+    default: ({ component = 'span', onInit }: { component?: string; onInit?: (writer: unknown) => void }) => {
+      let typed = '';
+      const writer = {
+        typeString: (text: string) => {
+          typed = text;
+          return writer;
+        },
+        start: () => writer,
+      };
+      onInit?.(writer);
+      return React.createElement(component, null, typed);
+    },
+  };
+});
+
+vi.mock('@/lib/pacing', () => ({
+  TYPING_WORDS_PER_MINUTE: 400,
+  MIN_TYPING_BEAT_MS: 1,
+  TYPEWRITER_WORDS_PER_MINUTE: 400,
+  msPerChar: () => 0.1,
+}));
+
 const GREETING =
   'Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do you have about Flock’s offerings today?';
 
@@ -259,7 +296,7 @@ describe('the block adapters', () => {
     }
   });
 
-  it('renders text, link and the designed fallback', () => {
+  it('renders text, link and the designed fallback', async () => {
     render(
       <Message
         message={message([
@@ -269,7 +306,7 @@ describe('the block adapters', () => {
         ])}
       />,
     );
-    expect(screen.getByText('hello')).toBeTruthy();
+    expect(await screen.findByText('hello')).toBeTruthy();
     const link = screen.getByText('Flock Safety').closest('a');
     expect(link?.getAttribute('href')).toBe('https://www.flocksafety.com/');
     // Inline link, not a button: it carries the open-in-new-tab glyph itself.

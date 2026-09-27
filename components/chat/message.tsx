@@ -18,7 +18,7 @@
 // adapter can render anything yet; both stay as capability.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { memo, useState } from 'react';
 // Citation: Tameem Safi — typewriter-effect (v2.22.0) [MIT]
@@ -55,11 +55,9 @@ type AdapterProps = { block: ChatBlock };
 
 function TextPart({ block }: AdapterProps) {
   const text = (block as Extract<ChatBlock, { type: 'text' }>).text;
-  const reduceMotion = useReducedMotion();
   // The line types itself out at its own pace (`TYPEWRITER_WORDS_PER_MINUTE`,
-  // `lib/pacing`), cursorless — the reveal is the arrival, so no cursor is
-  // left blinking behind it. Reduced motion gets the whole line at once.
-  if (reduceMotion) return <p className={prose}>{text}</p>;
+  // `lib/pacing`), cursorless — the reveal is the arrival, so no cursor is left
+  // blinking behind it. Always on: motion is the piece (`CODING_STANDARDS.md`).
   return (
     <p className={prose}>
       <Typewriter
@@ -203,7 +201,6 @@ export const Message = memo(function Message({
   continued?: boolean;
 }) {
   const user = message.role === 'user';
-  const reduceMotion = useReducedMotion();
   return (
     <div className={cn('flex w-full gap-2', user ? 'justify-end' : 'justify-start', className)}>
       {user ? null : (
@@ -231,9 +228,9 @@ export const Message = memo(function Message({
           {message.parts.map((part, index) => (
             <motion.div
               animate={{ opacity: 1, y: 0 }}
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 12 }}
               key={`${message.id}-${index}`}
-              transition={reduceMotion ? { duration: 0 } : { delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
               <BlockPart block={part} />
             </motion.div>

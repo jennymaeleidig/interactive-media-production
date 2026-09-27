@@ -47,13 +47,6 @@ export interface Dialogue {
   reset: () => void;
 }
 
-/** Whether the viewer has asked the system to reduce motion. Read live, at the
- * moment a reply would be held, so a changed setting is honored without making
- * `apply` unstable — and a stable `apply` keeps the opening turn to one run. */
-function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-}
-
 export function useDialogue(): Dialogue {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [options, setOptions] = useState<ChatOption[]>([]);
@@ -132,7 +125,7 @@ export function useDialogue(): Dialogue {
     // The schedule is pure (`lib/turn-plan.ts`); this executes it. Reduced
     // motion, or a turn that appends no reply, collapses to one immediate step.
     const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, {
-      hold: beat && !prefersReducedMotion(),
+      hold: beat,
     });
     const immediate = steps.length === 1 && steps[0].beatMs === 0;
     if (immediate) {
