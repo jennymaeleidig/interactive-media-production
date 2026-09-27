@@ -167,14 +167,14 @@ export function LoadTimer({ message }: { message: ChatMessageType }) {
   const [debug] = useState(() => process.env.NODE_ENV === 'development');
   // The viewer's own turns land instantly by construction — the timer only
   // says anything about the assistant's composing, so user bubbles carry none.
-  if (!debug || message.role === 'user' || message.beatMs === undefined || message.loadMs === undefined) return null;
+  if (!debug || message.role === 'user' || message.timing === undefined) return null;
   return (
     <span
       className="font-chrome self-end pt-0.5 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
       data-testid="load-timer"
-      title={`beat ${message.beatMs}ms · actual load ${message.loadMs}ms`}
+      title={`beat ${message.timing.beatMs}ms · actual load ${message.timing.loadMs}ms`}
     >
-      {message.loadMs}ms
+      {message.timing.loadMs}ms
     </span>
   );
 }

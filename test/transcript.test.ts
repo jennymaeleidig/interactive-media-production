@@ -81,14 +81,15 @@ describe('laying messages out as rows', () => {
     ]);
   });
 
-  it('breaks a run at a divider: the bubble below a lull does not continue', () => {
+  it('breaks a run at a divider in both directions', () => {
     const rows = transcriptRows([
       message('run-0', 'assistant', at(1, 12, 0)),
       message('run-2', 'assistant', at(1, 12, TIME_GAP_MS / 60_000)),
     ]);
     expect(rows[1].divider).toBe('12:15 pm');
     expect(rows[1].continues).toBe(false);
-    // The row above still points down at its same-speaker neighbour.
-    expect(rows[0].continued).toBe(true);
+    // The divider breaks the run both ways: the row above does not point down
+    // into the bubble below it either.
+    expect(rows[0].continued).toBe(false);
   });
 });

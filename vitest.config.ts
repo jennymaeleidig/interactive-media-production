@@ -14,7 +14,7 @@ export default defineConfig({
         resolve: { alias: { '@': root } },
         test: {
           name: 'chat-engine-seam',
-          include: ['test/chat.seam.test.ts'],
+          include: ['test/chat.seam.test.ts', 'test/engine-injection.test.ts'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
         },

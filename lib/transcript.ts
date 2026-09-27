@@ -16,26 +16,33 @@
 import { dayLabel, timeLabel } from '@/lib/time';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
-type ChatRole = 'assistant' | 'user';
+export type ChatRole = 'assistant' | 'user';
 
 /** The lull that puts a time stamp back in the log — iMessage's observed
  * threshold, roughly fifteen minutes. Tune this to retune the separators. */
 export const TIME_GAP_MS = 15 * 60 * 1000;
 
+/** The dev-only load timer for one run: the beat it was held behind and the
+ * time it actually took to arrive. The hook's ledger stamps it as a run lands;
+ * the grouping never sets it, so a run the transcript has not timed carries
+ * none and the timer renders nothing. */
+export interface MessageTiming {
+  beatMs: number;
+  loadMs: number;
+}
+
 /** One speaker-run: a role, the blocks it renders, in order, the moment it
  * landed in the transcript (stamped at grouping time, so the shell can draw
- * iMessage-style time separators between turns that arrive far apart), and —
- * for the dev-only load timer — the beat it was held behind (`beatMs`) and
- * the time it actually took to arrive (`loadMs`). The id is the log position
- * of the run's first block (`groupBlocks`), so identity survives turns,
- * resumes, and grouping rework. */
+ * iMessage-style time separators between turns that arrive far apart), and its
+ * `timing` — set only by the hook's ledger, for the dev-only load timer. The id
+ * is the log position of the run's first block (`groupBlocks`), so identity
+ * survives turns, resumes, and grouping rework. */
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   parts: ChatBlock[];
   at: Date;
-  beatMs?: number;
-  loadMs?: number;
+  timing?: MessageTiming;
 }
 
 /** One laid-out message: the message itself, the divider that goes above it
@@ -47,7 +54,7 @@ export interface TranscriptRow {
   divider: string | null;
   /** A same-speaker bubble sits directly above, with no divider between. */
   continues: boolean;
-  /** A same-speaker bubble sits directly below. */
+  /** A same-speaker bubble sits directly below, with no divider between. */
   continued: boolean;
 }
 
@@ -78,8 +85,8 @@ export function groupBlocks(blocks: readonly ChatBlock[]): ChatMessage[] {
 /** Lay a message sequence out as rows. The first bubble always opens under the
  * day stamp; a later bubble gets a day stamp when the calendar turns, or a
  * clock stamp when the lull past it crosses `TIME_GAP_MS`. Corner flags pair a
- * run's bubbles: a divider between two same-speaker bubbles breaks the run, so
- * the one below does not continue the one above. */
+ * run's bubbles: a divider between two same-speaker bubbles breaks the run in
+ * both directions — neither bubble points at the other. */
 export function transcriptRows(messages: readonly ChatMessage[]): TranscriptRow[] {
   const rows: TranscriptRow[] = messages.map((message, index) => {
     const previous = messages[index - 1];
@@ -96,7 +103,8 @@ export function transcriptRows(messages: readonly ChatMessage[]): TranscriptRow[
     return { message, divider, continues, continued: false };
   });
   for (let index = 0; index < rows.length - 1; index += 1) {
-    rows[index].continued = rows[index + 1].message.role === rows[index].message.role;
+    rows[index].continued =
+      rows[index + 1].divider === null && rows[index + 1].message.role === rows[index].message.role;
   }
   return rows;
 }
