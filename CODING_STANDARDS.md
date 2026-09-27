@@ -39,8 +39,10 @@ Motion is scoped to **arrival, never to render**. A message types itself out
 only when it lands in a live turn (the hook stamps it `fresh`); a restored
 transcript — the opening turn, a resume, a remount — renders whole, so no
 re-render or reload replays the reveal. The viewer's own line is never composed
-for them, and one message never lands on top of a line still typing: the
-turn plan floors each hold at the previous message's reveal.
+for them, and one message never lands on top of a line still typing: the turn
+plan gives each step its own composing beat and reveal, and the reveal runs
+with the dots down, so the next message starts loading only after the line
+above has finished typing.
 
 Tests that need a short clock dial `lib/pacing` and stub `typewriter-effect`;
 they never reintroduce an animation gate. The one motion-adjacent preference

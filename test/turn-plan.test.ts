@@ -36,7 +36,7 @@ describe('planning a turn', () => {
   it('holds a lone reply behind its own weight, with no echo step', () => {
     const plan = planTurn(0, [cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 1, beatMs: typingDelay([cam(LONG)]) }]);
+    expect(plan.steps).toEqual([{ through: 1, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
   });
 
   it('lands the echo first and holds only the reply', () => {
@@ -44,39 +44,40 @@ describe('planning a turn', () => {
     // the reply it produced.
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBe(2);
-    expect(plan.steps).toEqual([{ through: 3, beatMs: typingDelay([cam(LONG)]) }]);
+    expect(plan.steps).toEqual([{ through: 3, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
   });
 
   it('releases a multi-message reply one message at a time, each offset absolute', () => {
     const plan = planTurn(0, [me('Get a Demo'), cam(LONG), cut('And a sign-off.')], { hold: true });
     expect(plan.echoEnd).toBe(1);
     expect(plan.steps).toEqual([
-      { through: 2, beatMs: typingDelay([cam(LONG)]) },
-      // The follow-up's own weight is the floor; the long line it lands over
-      // types itself out over a longer reveal, so it waits that out.
-      { through: 3, beatMs: Math.max(typingDelay([cut('And a sign-off.')]), revealDelay([cam(LONG)])) },
+      { through: 2, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
+      {
+        through: 3,
+        beatMs: typingDelay([cut('And a sign-off.')]),
+        revealMs: revealDelay([cut('And a sign-off.')]),
+      },
     ]);
   });
 
-  it('holds a short follow-up behind the previous line’s reveal, so only one typewriter runs', () => {
-    const plan = planTurn(0, [me('Support'), cam(LONG), cut(SHORT)], { hold: true });
-    const [first, second] = plan.steps;
-    expect(first.beatMs).toBe(typingDelay([cam(LONG)]));
-    // `Ok.` composes quickly, but it must not land on the long line above it.
-    expect(second.beatMs).toBe(revealDelay([cam(LONG)]));
-    expect(second.beatMs).toBeGreaterThan(typingDelay([cut(SHORT)]));
+  it('gives each step its own beat and reveal, so the next dots follow the line above', () => {
+    const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG), cut(SHORT)], { hold: true });
+    expect(plan.steps).toEqual([
+      { through: 3, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
+      { through: 4, beatMs: typingDelay([cut(SHORT)]), revealMs: revealDelay([cut(SHORT)]) },
+    ]);
   });
 
   it('lands everything in one step when the reply is not held', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: false });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 3, beatMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, revealMs: 0 }]);
   });
 
   it('lands everything at once when the turn appends no reply', () => {
     // The viewer's own line with nothing behind it: there is nothing to compose.
     const plan = planTurn(1, [cam('greeting'), me('Support')], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 2, beatMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0 }]);
   });
 });

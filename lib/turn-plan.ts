@@ -19,10 +19,13 @@ import { groupBlocks } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
 /** One land: everything up to and including the absolute log offset `through`
- * is shown, after a hold of `beatMs`. A zero beat lands at once. */
+ * is shown, after a hold of `beatMs`. A zero beat lands at once. `revealMs` is
+ * how long the message that lands here takes to type itself out, so the caller
+ * can keep the next message's composing dots down until it is done. */
 export interface TurnStep {
   through: number;
   beatMs: number;
+  revealMs: number;
 }
 
 /** A turn's schedule. `echoEnd` is the absolute offset after the viewer's echo,
@@ -55,7 +58,10 @@ export function typingDelay(blocks: readonly ChatBlock[]): number {
  * pace is the slower of `TYPEWRITER_WORDS_PER_MINUTE` and a frame; the schedule
  * reads it to keep the next message from landing on a line still typing. */
 export function revealDelay(blocks: readonly ChatBlock[]): number {
-  return Math.ceil(composingChars(blocks) * Math.max(msPerChar(TYPEWRITER_WORDS_PER_MINUTE), FRAME_MS));
+  const perChar = Math.max(msPerChar(TYPEWRITER_WORDS_PER_MINUTE), FRAME_MS);
+  // One frame of margin: the wrapper queues its setup events before the first
+  // character, so the line finishes a frame or so past a pure per-character read.
+  return Math.ceil(composingChars(blocks) * perChar) + FRAME_MS;
 }
 
 /** Plan one turn. `hold` is whether replies are withheld behind their beat at
@@ -73,7 +79,7 @@ export function planTurn(
   const reply = appended.slice(echo);
 
   if (!hold || reply.length === 0) {
-    return { echoEnd: null, steps: [{ through: blocks.length, beatMs: 0 }] };
+    return { echoEnd: null, steps: [{ through: blocks.length, beatMs: 0, revealMs: 0 }] };
   }
 
   // The reply lands one message at a time: a reply authored as several
@@ -84,16 +90,18 @@ export function planTurn(
   const ends: number[] = [];
   for (const run of groupBlocks(reply)) ends.push((ends.at(-1) ?? base) + run.parts.length);
 
-  // Each message holds for its own composing weight — but a short follow-up
-  // must also wait out the line above it: `beatMs` is the weight, floored at
-  // the previous message's reveal, so only one typewriter ever runs.
-  let previousReveal = 0;
-  const steps = ends.map((through, index) => {
-    const start = index === 0 ? base : ends[index - 1];
-    const beatMs = Math.max(typingDelay(blocks.slice(start, through)), previousReveal);
-    previousReveal = revealDelay(blocks.slice(start, through));
-    return { through, beatMs };
-  });
-
-  return { echoEnd: echo > 0 ? base : null, steps };
+  // Each message holds for its own composing weight, then types itself out; the
+  // caller keeps the next message's dots down until that reveal is done, so the
+  // dots always follow the line above and only one typewriter runs at a time.
+  return {
+    echoEnd: echo > 0 ? base : null,
+    steps: ends.map((through, index) => {
+      const start = index === 0 ? base : ends[index - 1];
+      return {
+        through,
+        beatMs: typingDelay(blocks.slice(start, through)),
+        revealMs: revealDelay(blocks.slice(start, through)),
+      };
+    }),
+  };
 }

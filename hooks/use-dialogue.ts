@@ -139,18 +139,23 @@ export function useDialogue(): Dialogue {
     }
     if (echoEnd !== null) land(echoEnd, false);
 
-    setIsTyping(true);
     if (timer.current) clearTimeout(timer.current);
     let index = 0;
     const next = () => {
       const step = steps[index];
       const last = index === steps.length - 1;
+      // The dots hold for this message's composing weight, then it lands. The
+      // line above must finish typing before the next dots appear, so a line
+      // types itself out with no dots under it and only one typewriter runs.
+      setIsTyping(true);
       timer.current = setTimeout(() => {
         land(step.through, last);
-        if (!last) {
+        if (last) return;
+        setIsTyping(false);
+        timer.current = setTimeout(() => {
           index += 1;
           next();
-        }
+        }, step.revealMs);
       }, step.beatMs);
     };
     next();
