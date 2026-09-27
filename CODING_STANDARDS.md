@@ -35,6 +35,13 @@ reduced-motion preference is therefore deliberately not consulted:
 - No `useReducedMotion` (framer-motion) or equivalent hook gates an animation.
 - The dialogue's typing beats and the typewriter reveal always run.
 
+Motion is scoped to **arrival, never to render**. A message types itself out
+only when it lands in a live turn (the hook stamps it `fresh`); a restored
+transcript — the opening turn, a resume, a remount — renders whole, so no
+re-render or reload replays the reveal. The viewer's own line is never composed
+for them, and one message never lands on top of a line still typing: the
+turn plan floors each hold at the previous message's reveal.
+
 Tests that need a short clock dial `lib/pacing` and stub `typewriter-effect`;
 they never reintroduce an animation gate. The one motion-adjacent preference
 that is still honored is `prefers-reduced-transparency`, which affects

@@ -51,13 +51,17 @@ export function UnknownBlock({ reason }: { reason: string }) {
   );
 }
 
-type AdapterProps = { block: ChatBlock };
+type AdapterProps = { block: ChatBlock; animate?: boolean };
 
-function TextPart({ block }: AdapterProps) {
+function TextPart({ block, animate = false }: AdapterProps) {
   const text = (block as Extract<ChatBlock, { type: 'text' }>).text;
+  // The viewer's own line is never composed for them: it lands as log, whole.
+  // Only a fresh message types itself out — a restored transcript (the opening
+  // turn, a resume, a remount) renders whole, so the reveal never replays.
+  if (block.who === 'me' || !animate) return <p className={prose}>{text}</p>;
   // The line types itself out at its own pace (`TYPEWRITER_WORDS_PER_MINUTE`,
   // `lib/pacing`), cursorless — the reveal is the arrival, so no cursor is left
-  // blinking behind it. Always on: motion is the piece (`CODING_STANDARDS.md`).
+  // blinking behind it. Motion is the piece (`CODING_STANDARDS.md`).
   return (
     <p className={prose}>
       <Typewriter
@@ -131,12 +135,12 @@ export const BLOCK_ADAPTERS: Record<ChatBlock['type'] | 'failed', (props: Adapte
 };
 
 /** Render one block through its adapter, containing any throw. */
-export function BlockPart({ block }: AdapterProps) {
+export function BlockPart({ block, animate }: AdapterProps) {
   const adapter = BLOCK_ADAPTERS[block.type] ?? BLOCK_ADAPTERS.unknown;
   try {
-    return <>{adapter({ block })}</>;
+    return <>{adapter({ block, animate })}</>;
   } catch {
-    return BLOCK_ADAPTERS.failed({ block });
+    return BLOCK_ADAPTERS.failed({ block, animate });
   }
 }
 
@@ -232,7 +236,7 @@ export const Message = memo(function Message({
               key={`${message.id}-${index}`}
               transition={{ delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
-              <BlockPart block={part} />
+              <BlockPart animate={message.fresh === true} block={part} />
             </motion.div>
           ))}
         </div>

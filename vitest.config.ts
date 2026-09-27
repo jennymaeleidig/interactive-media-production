@@ -27,7 +27,7 @@ export default defineConfig({
         resolve: { alias: { '@': root } },
         test: {
           name: 'chat-shell-seam',
-          include: ['test/chat-shell.seam.test.tsx', 'test/chat-typewriter.seam.test.tsx'],
+          include: ['test/chat-shell.seam.test.tsx', 'test/chat-typewriter.seam.test.tsx', 'test/chat-reveal.seam.test.tsx'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
           // The suite runs the piece's real motion (see `test/setup-jsdom.ts`):

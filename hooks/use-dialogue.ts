@@ -109,6 +109,10 @@ export function useDialogue(): Dialogue {
           const fresh: ChatMessage = {
             ...run,
             at: new Date(),
+            // Only a live turn's lands type themselves out; the opening turn
+            // and a reset land `hold: false`, so a restored transcript renders
+            // whole and a remount cannot replay the reveal.
+            fresh: hold,
             timing: { composingMs, elapsedMs: engineMs + composingMs },
           };
           stamps.current.set(run.id, fresh);

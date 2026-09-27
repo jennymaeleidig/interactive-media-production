@@ -23,6 +23,13 @@ export const MIN_TYPING_BEAT_MS = 750;
  * so the reveal can be retuned without touching the hold. */
 export const TYPEWRITER_WORDS_PER_MINUTE = 800;
 
+/** One animation frame at 60Hz. The reveal advances at most one character per
+ * frame (`typewriter-effect` is rAF-driven), so a per-character delay below
+ * this is inert and the true reveal pace is the slower of the two. The
+ * schedule reads the reveal through this floor, so it waits out a line that is
+ * still typing rather than landing the next one on top of it. */
+export const FRAME_MS = 1000 / 60;
+
 /** Milliseconds one character takes on a clock read in words per minute. */
 export function msPerChar(wordsPerMinute: number): number {
   return 60_000 / (wordsPerMinute * CHARS_PER_WORD);

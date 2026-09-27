@@ -36,12 +36,16 @@ export interface MessageTiming {
  * iMessage-style time separators between turns that arrive far apart), and its
  * `timing` — set only by the hook's ledger, for the dev-only load timer. The id
  * is the log position of the run's first block (`groupBlocks`), so identity
- * survives turns, resumes, and grouping rework. */
+ * survives turns, resumes, and grouping rework. `fresh` is stamped by the same
+ * ledger: true only for a message that landed in a live, held turn (a reply the
+ * viewer is watching arrive), so a restored transcript — the opening turn, a
+ * resume, a remount — renders whole and never replays its reveal. */
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   parts: ChatBlock[];
   at: Date;
+  fresh?: boolean;
   timing?: MessageTiming;
 }
 

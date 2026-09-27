@@ -12,7 +12,7 @@ import { Message } from '@/components/chat/message';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import type { ChatMessage } from '@/lib/transcript';
 
-const message = (parts: ChatBlock[]): ChatMessage => ({ id: 'test', role: 'assistant', parts, at: new Date() });
+const message = (parts: ChatBlock[]): ChatMessage => ({ id: 'test', role: 'assistant', parts, at: new Date(), fresh: true });
 
 describe('the animated reveal', () => {
   it('draws a landed line through the typewriter, cursorless', async () => {

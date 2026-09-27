@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
-import { MIN_TYPING_BEAT_MS, msPerChar, TYPING_WORDS_PER_MINUTE } from '@/lib/pacing';
+import { FRAME_MS, MIN_TYPING_BEAT_MS, msPerChar, TYPING_WORDS_PER_MINUTE, TYPEWRITER_WORDS_PER_MINUTE } from '@/lib/pacing';
 import { groupBlocks } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
@@ -50,6 +50,14 @@ export function typingDelay(blocks: readonly ChatBlock[]): number {
   return Math.max(MIN_TYPING_BEAT_MS, Math.round(composingChars(blocks) * msPerChar(TYPING_WORDS_PER_MINUTE)));
 }
 
+/** The reveal: the wall time a landed message's line takes to type itself out.
+ * The reveal advances at most one character per animation frame, so its true
+ * pace is the slower of `TYPEWRITER_WORDS_PER_MINUTE` and a frame; the schedule
+ * reads it to keep the next message from landing on a line still typing. */
+export function revealDelay(blocks: readonly ChatBlock[]): number {
+  return Math.ceil(composingChars(blocks) * Math.max(msPerChar(TYPEWRITER_WORDS_PER_MINUTE), FRAME_MS));
+}
+
 /** Plan one turn. `hold` is whether replies are withheld behind their beat at
  * all — the opening turn and a reset are not. When `hold` is false, or the turn
  * appends no reply, the plan is a single immediate step over the whole log, so
@@ -76,11 +84,16 @@ export function planTurn(
   const ends: number[] = [];
   for (const run of groupBlocks(reply)) ends.push((ends.at(-1) ?? base) + run.parts.length);
 
-  return {
-    echoEnd: echo > 0 ? base : null,
-    steps: ends.map((through, index) => ({
-      through,
-      beatMs: typingDelay(blocks.slice(index === 0 ? base : ends[index - 1], through)),
-    })),
-  };
+  // Each message holds for its own composing weight — but a short follow-up
+  // must also wait out the line above it: `beatMs` is the weight, floored at
+  // the previous message's reveal, so only one typewriter ever runs.
+  let previousReveal = 0;
+  const steps = ends.map((through, index) => {
+    const start = index === 0 ? base : ends[index - 1];
+    const beatMs = Math.max(typingDelay(blocks.slice(start, through)), previousReveal);
+    previousReveal = revealDelay(blocks.slice(start, through));
+    return { through, beatMs };
+  });
+
+  return { echoEnd: echo > 0 ? base : null, steps };
 }

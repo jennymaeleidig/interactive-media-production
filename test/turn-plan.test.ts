@@ -7,7 +7,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { composingChars, planTurn, typingDelay } from '../lib/turn-plan';
+import { composingChars, planTurn, revealDelay, typingDelay } from '../lib/turn-plan';
 import { MIN_TYPING_BEAT_MS } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
@@ -52,8 +52,19 @@ describe('planning a turn', () => {
     expect(plan.echoEnd).toBe(1);
     expect(plan.steps).toEqual([
       { through: 2, beatMs: typingDelay([cam(LONG)]) },
-      { through: 3, beatMs: typingDelay([cut('And a sign-off.')]) },
+      // The follow-up's own weight is the floor; the long line it lands over
+      // types itself out over a longer reveal, so it waits that out.
+      { through: 3, beatMs: Math.max(typingDelay([cut('And a sign-off.')]), revealDelay([cam(LONG)])) },
     ]);
+  });
+
+  it('holds a short follow-up behind the previous line’s reveal, so only one typewriter runs', () => {
+    const plan = planTurn(0, [me('Support'), cam(LONG), cut(SHORT)], { hold: true });
+    const [first, second] = plan.steps;
+    expect(first.beatMs).toBe(typingDelay([cam(LONG)]));
+    // `Ok.` composes quickly, but it must not land on the long line above it.
+    expect(second.beatMs).toBe(revealDelay([cam(LONG)]));
+    expect(second.beatMs).toBeGreaterThan(typingDelay([cut(SHORT)]));
   });
 
   it('lands everything in one step when the reply is not held', () => {

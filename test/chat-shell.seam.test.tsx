@@ -54,9 +54,10 @@ vi.mock('typewriter-effect', async () => {
 
 vi.mock('@/lib/pacing', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/pacing')>()),
-  // Only the two levers that decide speed are shortened; the constants and the
+  // Only the levers that decide speed are shortened; the constants and the
   // words-per-minute names come from the real module, so they cannot drift.
   MIN_TYPING_BEAT_MS: 1,
+  FRAME_MS: 0.1,
   msPerChar: () => 0.1,
 }));
 
