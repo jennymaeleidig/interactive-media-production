@@ -21,7 +21,9 @@ turn contract stays in-process ([0004](0004-turn-contract-in-process.md)).
 
 - No lead capture, analytics, or viewer identifiers anywhere in the codebase; a PR that adds a
   fetch, form, or telemetry departs from this record and needs a new one.
-- `localStorage['flock-chat-state']` is the single persistence point, owned by the engine.
+- `localStorage['flock-chat-state']` is the engine's single persistence point. Superseded in part by
+  [0006](0006-persist-viewer-settings.md), which adds `flock-chat-settings` — a viewer preference, not
+  session state — as a second key.
 - The network allowlist is hand-authored; a block type that computes a URL from viewer input
   cannot be merged without overturning this decision.
 - `CODING_STANDARDS.md` states the rule as the one invariant everything serves; this record

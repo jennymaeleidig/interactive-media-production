@@ -26,8 +26,10 @@ import { memo, useState } from 'react';
 import Typewriter from 'typewriter-effect';
 import { Mark } from '@/components/brand/mark';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
-import { msPerChar, TYPEWRITER_WORDS_PER_MINUTE } from '@/lib/pacing';
+import { msPerChar } from '@/lib/pacing';
+import { getSettings } from '@/lib/settings';
 import { cn } from '@/lib/utils';
+import { speakLine } from '@/lib/voice';
 import { ExternalLinkIcon } from './icons';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import type { ChatMessage as ChatMessageType } from '@/lib/transcript';
@@ -59,17 +61,20 @@ function TextPart({ block, animate = false }: AdapterProps) {
   // Only a fresh message types itself out — a restored transcript (the opening
   // turn, a resume, a remount) renders whole, so the reveal never replays.
   if (block.who === 'me' || !animate) return <p className={prose}>{text}</p>;
-  // The line types itself out at its own pace (`TYPEWRITER_WORDS_PER_MINUTE`,
-  // `lib/pacing`), cursorless — the reveal is the arrival, so no cursor is left
-  // blinking behind it. Motion is the piece (`CODING_STANDARDS.md`).
+  // The line types itself out at the viewer's typing speed (`lib/settings`),
+  // cursorless — the reveal is the arrival, so no cursor is left blinking behind
+  // it. Motion is the piece (`CODING_STANDARDS.md`). The voice (`lib/voice`)
+  // starts with the reveal; the typing is the clock, so the voice is stopped when
+  // the line has finished typing, never the reverse.
   return (
     <p className={prose}>
       <Typewriter
         component="span"
         onInit={(writer) => {
+          speakLine(text);
           writer.typeString(text).start();
         }}
-        options={{ cursor: '', delay: msPerChar(TYPEWRITER_WORDS_PER_MINUTE), skipAddStyles: true }}
+        options={{ cursor: '', delay: msPerChar(getSettings().revealWordsPerMinute), skipAddStyles: true }}
       />
     </p>
   );

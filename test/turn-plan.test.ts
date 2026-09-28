@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import { composingChars, planTurn, revealDelay, typingDelay } from '../lib/turn-plan';
-import { MIN_TYPING_BEAT_MS } from '../lib/pacing';
+import { MIN_TYPING_BEAT_MS, msPerChar, type Pacing } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', type: 'text', text });
@@ -79,5 +79,14 @@ describe('planning a turn', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support')], { hold: true });
     expect(plan.echoEnd).toBeNull();
     expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0 }]);
+  });
+
+  it('reads the pacing it is handed, not the module constants', () => {
+    const slower: Pacing = { composingWordsPerMinute: 100, minimumBeatMs: 0, revealWordsPerMinute: 100 };
+    expect(typingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));
+    expect(revealDelay([cam(LONG)], slower)).toBeGreaterThan(revealDelay([cam(LONG)]));
+    // A slower reveal types the same line for longer, so the next message waits longer.
+    const plan = planTurn(0, [cam(LONG)], { hold: true, pacing: slower });
+    expect(plan.steps[0].revealMs).toBe(revealDelay([cam(LONG)], slower));
   });
 });

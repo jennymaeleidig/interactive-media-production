@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
-import { FRAME_MS, MIN_TYPING_BEAT_MS, msPerChar, TYPING_WORDS_PER_MINUTE, TYPEWRITER_WORDS_PER_MINUTE } from '@/lib/pacing';
+import { DEFAULT_PACING, FRAME_MS, msPerChar, type Pacing, revealMsPerChar } from '@/lib/pacing';
 import { groupBlocks } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
@@ -49,19 +49,21 @@ export function composingChars(blocks: readonly ChatBlock[]): number {
  * message reads as a turn rather than a flicker. Applied per message, so every
  * bubble — and the figure its own landing freezes — is sized by its own content
  * alone. */
-export function typingDelay(blocks: readonly ChatBlock[]): number {
-  return Math.max(MIN_TYPING_BEAT_MS, Math.round(composingChars(blocks) * msPerChar(TYPING_WORDS_PER_MINUTE)));
+export function typingDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAULT_PACING): number {
+  return Math.max(pacing.minimumBeatMs, Math.round(composingChars(blocks) * msPerChar(pacing.composingWordsPerMinute)));
 }
 
-/** The reveal: the wall time a landed message's line takes to type itself out.
- * The reveal advances at most one character per animation frame, so its true
- * pace is the slower of `TYPEWRITER_WORDS_PER_MINUTE` and a frame; the schedule
- * reads it to keep the next message from landing on a line still typing. */
-export function revealDelay(blocks: readonly ChatBlock[]): number {
-  const perChar = Math.max(msPerChar(TYPEWRITER_WORDS_PER_MINUTE), FRAME_MS);
-  // One frame of margin: the wrapper queues its setup events before the first
-  // character, so the line finishes a frame or so past a pure per-character read.
-  return Math.ceil(composingChars(blocks) * perChar) + FRAME_MS;
+/** The wall time a landed message holds before the next one may start: the
+ * typing reveal, plus a frame of margin. The typing is the turn's clock — the
+ * voice is bounded by it, not the reverse: when the line has finished typing the
+ * voice is stopped (`lib/voice.ts`), so a voice slower than the reveal simply
+ * does not finish every letter. */
+export function revealDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAULT_PACING): number {
+  // The reveal advances at most one character per animation frame, so its true
+  // pace is floored. One frame of margin: the wrapper queues its setup events
+  // before the first character, so a line finishes a frame or so past a pure
+  // per-character read.
+  return Math.ceil(composingChars(blocks) * revealMsPerChar(pacing.revealWordsPerMinute)) + FRAME_MS;
 }
 
 /** Plan one turn. `hold` is whether replies are withheld behind their beat at
@@ -71,7 +73,7 @@ export function revealDelay(blocks: readonly ChatBlock[]): number {
 export function planTurn(
   prevLogLength: number,
   blocks: readonly ChatBlock[],
-  { hold }: { hold: boolean },
+  { hold, pacing = DEFAULT_PACING }: { hold: boolean; pacing?: Pacing },
 ): TurnPlan {
   const appended = blocks.slice(prevLogLength);
   let echo = 0;
@@ -99,8 +101,8 @@ export function planTurn(
       const start = index === 0 ? base : ends[index - 1];
       return {
         through,
-        beatMs: typingDelay(blocks.slice(start, through)),
-        revealMs: revealDelay(blocks.slice(start, through)),
+        beatMs: typingDelay(blocks.slice(start, through), pacing),
+        revealMs: revealDelay(blocks.slice(start, through), pacing),
       };
     }),
   };

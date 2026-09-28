@@ -1,0 +1,18 @@
+animalese.wav — the Animal Crossing–style villager-speech sample library
+=========================================================================
+
+Copied verbatim from animalese-web v0.1.0
+(https://github.com/stefanlegg/animalese-web), a Web Audio rewrite of Acedio's
+animalese.js.
+
+  Citation: Josh Simmons — animalese.js (2014) [MIT code; audio CC BY 4.0]
+  Source:   https://github.com/Acedio/animalese.js
+  Citation: Stefan Legg — animalese-web (v0.1.0) [MIT]
+  Source:   https://github.com/stefanlegg/animalese-web
+  Accessed: 2026-09-27
+
+The recording is licensed Creative Commons Attribution 4.0 International
+(CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+
+The library code that plays it is MIT. This repo self-hosts the sample so the
+page issues no third-party request; see lib/voice.ts and CITATION.cff.

@@ -27,7 +27,7 @@ export default defineConfig({
         resolve: { alias: { '@': root } },
         test: {
           name: 'chat-shell-seam',
-          include: ['test/chat-shell.seam.test.tsx', 'test/chat-typewriter.seam.test.tsx', 'test/chat-reveal.seam.test.tsx'],
+          include: ['test/chat-shell.seam.test.tsx', 'test/chat-typewriter.seam.test.tsx', 'test/chat-reveal.seam.test.tsx', 'test/voice.seam.test.tsx'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
           // The suite runs the piece's real motion (see `test/setup-jsdom.ts`):
@@ -37,12 +37,22 @@ export default defineConfig({
         },
       },
       {
+        esbuild: { jsx: 'automatic' },
+        resolve: { alias: { '@': root } },
+        test: {
+          name: 'chat-settings',
+          include: ['test/settings.test.ts', 'test/voice-volume.test.tsx'],
+          environment: 'jsdom',
+          setupFiles: ['test/setup-jsdom.ts'],
+        },
+      },
+      {
         test: { name: 'chat-blocks', include: ['test/chat-blocks.test.ts'] },
       },
       // The transcript's grouping and row layout: pure, so it runs without a DOM.
       {
         resolve: { alias: { '@': root } },
-        test: { name: 'chat-pure', include: ['test/transcript.test.ts', 'test/turn-plan.test.ts', 'test/session-store.test.ts'] },
+        test: { name: 'chat-pure', include: ['test/transcript.test.ts', 'test/turn-plan.test.ts', 'test/session-store.test.ts', 'test/voice-levers.test.ts'] },
       },
       // The drift guard: the published runtime's one surface
       // matches what the shell calls.

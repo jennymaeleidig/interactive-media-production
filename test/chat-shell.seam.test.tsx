@@ -55,10 +55,13 @@ vi.mock('typewriter-effect', async () => {
 vi.mock('@/lib/pacing', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/pacing')>()),
   // Only the levers that decide speed are shortened; the constants and the
-  // words-per-minute names come from the real module, so they cannot drift.
+  // words-per-minute names come from the real module, so they cannot drift. The
+  // reveal schedule reads `revealMsPerChar`, not `msPerChar`, so both are
+  // shortened — a mock that misses one leaves the suite waiting on a real clock.
   MIN_TYPING_BEAT_MS: 1,
   FRAME_MS: 0.1,
   msPerChar: () => 0.1,
+  revealMsPerChar: () => 0.1,
 }));
 
 const GREETING =
@@ -134,6 +137,39 @@ describe('the mounted shell', () => {
     await screen.findByText(GREETING);
     fireEvent.click(screen.getByTestId('disclosure-toggle'));
     expect(screen.queryByTestId('reset-button')).toBeNull();
+  });
+
+  it('keeps the settings when the conversation starts over', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    const volume = screen.getByTestId('setting-volume') as HTMLInputElement;
+    fireEvent.change(volume, { target: { value: '0.3' } });
+    expect(volume.value).toBe('0.3');
+
+    fireEvent.click(screen.getByTestId('reset-button'));
+    await waitFor(() => expect(screen.getAllByText(GREETING)).toHaveLength(1));
+
+    // The conversation is gone; the preference is not (ADR 0006).
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    expect((screen.getByTestId('setting-volume') as HTMLInputElement).value).toBe('0.3');
+    vi.unstubAllEnvs();
+  });
+
+  it('lands back on the settings page when the popover is dismissed and reopened', async () => {
+    render(<ChatShell />);
+    await screen.findByText(GREETING);
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    fireEvent.click(screen.getByTestId('disclosure-tab-about'));
+    expect(screen.getByTestId('disclosure-about')).toBeTruthy();
+
+    // Escape closes it, and reopening has to land on Settings — the default page
+    // a viewer expects, not wherever the last visit left off.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(screen.getByTestId('disclosure-toggle'));
+    expect(screen.getByTestId('disclosure-settings')).toBeTruthy();
+    expect(screen.queryByTestId('disclosure-about')).toBeNull();
   });
 
   it('advances only by chips, with no text input anywhere', async () => {
@@ -362,13 +398,18 @@ describe('the block adapters', () => {
 });
 
 describe('the disclosure', () => {
-  it('is present from first paint and opens on tap', async () => {
+  it('is present from first paint and opens on Settings', async () => {
     render(<ChatShell />);
     await screen.findByText(GREETING);
     const toggle = screen.getByTestId('disclosure-toggle');
     expect(screen.queryByTestId('disclosure-popover')).toBeNull();
     fireEvent.click(toggle);
     await waitFor(() => expect(screen.getByTestId('disclosure-popover')).toBeTruthy());
+    // Settings is the default page — the accessibility surface comes first.
+    expect(screen.getByTestId('disclosure-settings')).toBeTruthy();
+    expect(screen.queryByText("This is not Flock Safety; it's an artwork.")).toBeNull();
+    // About carries the plain sentence.
+    fireEvent.click(screen.getByTestId('disclosure-tab-about'));
     expect(screen.getByText("This is not Flock Safety; it's an artwork.")).toBeTruthy();
   });
 

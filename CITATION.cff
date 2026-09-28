@@ -72,3 +72,24 @@ references:
     notes: >
       MIT. The cursorless per-character reveal of a landed assistant line; used
       as the package ships, configured in components/chat/message.tsx.
+  - type: software
+    title: 'animalese-web'
+    authors:
+      - family-names: Legg
+        given-names: Stefan
+    version: '0.1.0'
+    url: 'https://github.com/stefanlegg/animalese-web'
+    notes: >
+      MIT. The Web Audio engine that speaks a fresh line as it types — one
+      synthesized sound per character, at the reveal's pace and pitch. A rewrite
+      of Acedio's animalese.js; see the citation block in lib/voice.ts.
+  - type: software
+    title: 'animalese.js'
+    authors:
+      - family-names: Simmons
+        given-names: Josh
+    url: 'https://github.com/Acedio/animalese.js'
+    notes: >
+      MIT code; animalese.wav CC BY 4.0. The original Animal Crossing villager
+      speech synthesizer and its sample library. The recording is self-hosted at
+      public/audio/animalese.wav; see public/audio/NOTICE.txt.

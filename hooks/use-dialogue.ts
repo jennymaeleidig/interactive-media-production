@@ -26,7 +26,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import { acquireEngine, currentEngine } from '@/lib/engine-reach.mjs';
+import { stopVoice } from '@/lib/voice';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
+import { getSettings } from '@/lib/settings';
 import { planTurn, typingDelay } from '@/lib/turn-plan';
 
 export interface Dialogue {
@@ -117,7 +119,7 @@ export function useDialogue(): Dialogue {
           // (the hold it would be given, read off its parts), and that weight
           // plus the turn's engine time. `engineMs` is the turn's, not this
           // land's, so a later message never inherits an earlier one's hold.
-          const composingMs = typingDelay(run.parts);
+          const composingMs = typingDelay(run.parts, getSettings());
           const fresh: ChatMessage = {
             ...run,
             at: new Date(),
@@ -141,7 +143,7 @@ export function useDialogue(): Dialogue {
 
     // The schedule is pure (`lib/turn-plan.ts`); this executes it. A turn that
     // appends no reply, or is not held, collapses to one immediate step.
-    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, { hold });
+    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, { hold, pacing: getSettings() });
     const immediate = steps.length === 1 && steps[0].beatMs === 0;
     if (immediate) {
       land(steps[0].through, true);
@@ -165,6 +167,9 @@ export function useDialogue(): Dialogue {
         // done, so a choice cannot cut the reveal off.
         setIsTyping(false);
         timer.current = setTimeout(() => {
+          // The line has finished typing, which is the turn's clock: stop its
+          // voice rather than holding the next message on a slower voice.
+          stopVoice();
           if (last) {
             finish();
             return;
@@ -234,6 +239,8 @@ export function useDialogue(): Dialogue {
       clearTimeout(timer.current);
       timer.current = null;
     }
+    // The reveal the timer was holding is abandoned, so its voice is too.
+    stopVoice();
     pending.current = false;
     // A fresh conversation: every bubble is genuinely new again, so the old
     // ledger — objects, stamps, and the log length — is dropped with the
