@@ -12,11 +12,11 @@ import {
   ANIMALESE_PITCH_RANGE,
   ANIMALESE_VOLUME,
   ANIMALESE_WORDS_PER_MINUTE,
+  COMPOSING_WORDS_PER_MINUTE,
   FRAME_MS,
-  MIN_TYPING_BEAT_MS,
+  MIN_COMPOSING_BEAT_MS,
   msPerChar,
-  TYPING_WORDS_PER_MINUTE,
-  TYPEWRITER_WORDS_PER_MINUTE,
+  REVEAL_WORDS_PER_MINUTE,
 } from '@/lib/pacing';
 import {
   DEFAULT_SETTINGS,
@@ -38,10 +38,10 @@ describe('the settings store', () => {
   it("starts at the piece's own tuning", () => {
     expect(DEFAULT_SETTINGS).toEqual({
       basePitch: ANIMALESE_BASE_PITCH,
-      composingWordsPerMinute: TYPING_WORDS_PER_MINUTE,
-      minimumBeatMs: MIN_TYPING_BEAT_MS,
+      composingWordsPerMinute: COMPOSING_WORDS_PER_MINUTE,
+      minimumBeatMs: MIN_COMPOSING_BEAT_MS,
       pitchRange: ANIMALESE_PITCH_RANGE,
-      revealWordsPerMinute: TYPEWRITER_WORDS_PER_MINUTE,
+      revealWordsPerMinute: REVEAL_WORDS_PER_MINUTE,
       voiceWordsPerMinute: ANIMALESE_WORDS_PER_MINUTE,
       volume: ANIMALESE_VOLUME,
     });
@@ -86,7 +86,7 @@ describe('the settings store', () => {
 
   it('caps the reveal lever at the fastest safe pace, never in a dead zone', () => {
     const control = SETTING_CONTROLS.find((entry) => entry.key === 'revealWordsPerMinute');
-    expect(control?.max).toBe(TYPEWRITER_WORDS_PER_MINUTE);
+    expect(control?.max).toBe(REVEAL_WORDS_PER_MINUTE);
     // The ceiling sits just under a frame, so the typewriter reliably advances
     // one character per frame; a value at the frame itself would tip into the
     // two-frame cliff and type at half speed.

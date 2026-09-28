@@ -14,9 +14,10 @@
 // alone. The engine still answers with the whole block sequence every time
 // (the turn contract); the sharing lives entirely in this one mapping.
 //
-// A reply is withheld behind a typing beat read at `TYPING_WORDS_PER_MINUTE`
-// (`lib/pacing`, the piece's one tuning surface), so the transcript shows the
-// typing dots for as long as the reply would take to compose and lands short replies quickly. A reply
+// A reply is withheld behind a composing beat read at
+// `COMPOSING_WORDS_PER_MINUTE` (`lib/pacing`, the piece's one tuning surface),
+// so the transcript shows the typing dots for as long as the reply would take to
+// compose and lands short replies quickly. A reply
 // authored as several bubbles lands as several messages — one speaker-run at
 // a time, the dots holding between them — so each beat is that one message's
 // own. What a message weighs is declared per block type in the inventory's
@@ -29,7 +30,7 @@ import { acquireEngine, currentEngine } from '@/lib/engine-reach.mjs';
 import { stopVoice } from '@/lib/voice';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
 import { getSettings } from '@/lib/settings';
-import { planTurn, typingDelay } from '@/lib/turn-plan';
+import { composingDelay, planTurn } from '@/lib/turn-plan';
 
 export interface Dialogue {
   messages: ChatMessage[];
@@ -119,7 +120,7 @@ export function useDialogue(): Dialogue {
           // (the hold it would be given, read off its parts), and that weight
           // plus the turn's engine time. `engineMs` is the turn's, not this
           // land's, so a later message never inherits an earlier one's hold.
-          const composingMs = typingDelay(run.parts, getSettings());
+          const composingMs = composingDelay(run.parts, getSettings());
           const fresh: ChatMessage = {
             ...run,
             at: new Date(),

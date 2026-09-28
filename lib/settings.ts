@@ -24,7 +24,7 @@ import {
   ANIMALESE_WORDS_PER_MINUTE,
   DEFAULT_PACING,
   type Pacing,
-  TYPEWRITER_WORDS_PER_MINUTE,
+  REVEAL_WORDS_PER_MINUTE,
 } from '@/lib/pacing';
 import { localStorageStore, resilientStore, type SessionStore } from '@/lib/session-store.mjs';
 
@@ -96,7 +96,7 @@ export const SETTING_CONTROLS: readonly SettingControl[] = [
     label: 'Typing speed',
     hint: 'How fast a line types itself out, up to one character per animation frame.',
     min: 100,
-    max: TYPEWRITER_WORDS_PER_MINUTE,
+    max: REVEAL_WORDS_PER_MINUTE,
     step: 10,
     unit: 'wpm',
   },

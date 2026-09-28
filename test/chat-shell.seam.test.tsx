@@ -58,7 +58,7 @@ vi.mock('@/lib/pacing', async (importOriginal) => ({
   // words-per-minute names come from the real module, so they cannot drift. The
   // reveal schedule reads `revealMsPerChar`, not `msPerChar`, so both are
   // shortened — a mock that misses one leaves the suite waiting on a real clock.
-  MIN_TYPING_BEAT_MS: 1,
+  MIN_COMPOSING_BEAT_MS: 1,
   FRAME_MS: 0.1,
   msPerChar: () => 0.1,
   revealMsPerChar: () => 0.1,

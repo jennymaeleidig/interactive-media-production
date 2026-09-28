@@ -44,12 +44,12 @@ export function composingChars(blocks: readonly ChatBlock[]): number {
   return blocks.reduce((sum, block) => sum + CHAT_BLOCK_TERMS[block.type].beat(block), 0);
 }
 
-/** The typing beat: the sequence's composing weight (five characters to the
- * word) read at `TYPING_WORDS_PER_MINUTE`, with a floor so even a one-word
+/** The composing beat: the sequence's composing weight (five characters to the
+ * word) read at `COMPOSING_WORDS_PER_MINUTE`, with a floor so even a one-word
  * message reads as a turn rather than a flicker. Applied per message, so every
  * bubble — and the figure its own landing freezes — is sized by its own content
  * alone. */
-export function typingDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAULT_PACING): number {
+export function composingDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAULT_PACING): number {
   return Math.max(pacing.minimumBeatMs, Math.round(composingChars(blocks) * msPerChar(pacing.composingWordsPerMinute)));
 }
 
@@ -101,7 +101,7 @@ export function planTurn(
       const start = index === 0 ? base : ends[index - 1];
       return {
         through,
-        beatMs: typingDelay(blocks.slice(start, through), pacing),
+        beatMs: composingDelay(blocks.slice(start, through), pacing),
         revealMs: revealDelay(blocks.slice(start, through), pacing),
       };
     }),

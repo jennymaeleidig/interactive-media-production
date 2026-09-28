@@ -14,11 +14,11 @@ const CHARS_PER_WORD = 5;
 /** The composing clock, in words per minute: the dots hold for a run's own
  * weight read off this pace, so a short message holds briefly and a long one
  * proportionally longer. Tune this one number to retune every beat. */
-export const TYPING_WORDS_PER_MINUTE = 400;
+export const COMPOSING_WORDS_PER_MINUTE = 400;
 
 /** A floor under every composing beat, so even a one-word message reads as a
  * pause rather than a flicker. */
-export const MIN_TYPING_BEAT_MS = 750;
+export const MIN_COMPOSING_BEAT_MS = 750;
 
 /** One animation frame at 60Hz. The reveal advances at most one character per
  * frame (`typewriter-effect` is rAF-driven), so a per-character delay below
@@ -27,14 +27,14 @@ export const MIN_TYPING_BEAT_MS = 750;
  * is still typing rather than landing the next one on top of it. */
 export const FRAME_MS = 1000 / 60;
 
-/** The typewriter clock, in words per minute: the pace a landed line's own
+/** The reveal clock, in words per minute: the pace a landed line's own
  * characters appear at, at its fastest. The requested delay sits just under a
  * frame, so the rAF-driven typewriter advances one character per frame and no
  * faster — a value at or above the frame is the same speed, so this is also the
  * reveal lever's ceiling (`lib/settings`) and the control has no dead zone.
  * Deliberately separate from the composing clock above, so the reveal can be
  * retuned without touching the hold; retune it down to slow the reveal. */
-export const TYPEWRITER_WORDS_PER_MINUTE = 800;
+export const REVEAL_WORDS_PER_MINUTE = 800;
 
 /** The pacing levers a turn schedule reads, as a value: the composing clock, the
  * reveal clock, and the floor under a beat. `lib/turn-plan.ts` takes this rather
@@ -53,10 +53,10 @@ export function msPerChar(wordsPerMinute: number): number {
 
 /** The reveal's true pace, in milliseconds per character: the typewriter
  * advances at most one character per frame, so a per-character delay below a
- * frame is inert and the real pace is the slower of `TYPEWRITER_WORDS_PER_MINUTE`
+ * frame is inert and the real pace is the slower of `REVEAL_WORDS_PER_MINUTE`
  * and a frame. The turn schedule (`lib/turn-plan.ts`) waits a still-typing line
  * out on it rather than landing the next one on top of it. */
-export function revealMsPerChar(wordsPerMinute: number = TYPEWRITER_WORDS_PER_MINUTE): number {
+export function revealMsPerChar(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
   return Math.max(msPerChar(wordsPerMinute), FRAME_MS);
 }
 
@@ -86,7 +86,7 @@ export const ANIMALESE_WORDS_PER_MINUTE = 160;
  * is the turn's clock; the voice is its own and is stopped when the typing
  * stops, so a voice slower than the reveal simply does not finish every letter. */
 export const DEFAULT_PACING: Pacing = {
-  composingWordsPerMinute: TYPING_WORDS_PER_MINUTE,
-  minimumBeatMs: MIN_TYPING_BEAT_MS,
-  revealWordsPerMinute: TYPEWRITER_WORDS_PER_MINUTE,
+  composingWordsPerMinute: COMPOSING_WORDS_PER_MINUTE,
+  minimumBeatMs: MIN_COMPOSING_BEAT_MS,
+  revealWordsPerMinute: REVEAL_WORDS_PER_MINUTE,
 };

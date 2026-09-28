@@ -7,8 +7,8 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { composingChars, planTurn, revealDelay, typingDelay } from '../lib/turn-plan';
-import { MIN_TYPING_BEAT_MS, msPerChar, type Pacing } from '../lib/pacing';
+import { composingChars, planTurn, revealDelay, composingDelay } from '../lib/turn-plan';
+import { MIN_COMPOSING_BEAT_MS, msPerChar, type Pacing } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', type: 'text', text });
@@ -24,11 +24,11 @@ describe('the beat clock', () => {
   });
 
   it('floors even the shortest message so it reads as a turn', () => {
-    expect(typingDelay([cam(SHORT)])).toBe(MIN_TYPING_BEAT_MS);
+    expect(composingDelay([cam(SHORT)])).toBe(MIN_COMPOSING_BEAT_MS);
   });
 
   it('grows past the floor with the content', () => {
-    expect(typingDelay([cam(LONG)])).toBeGreaterThan(MIN_TYPING_BEAT_MS);
+    expect(composingDelay([cam(LONG)])).toBeGreaterThan(MIN_COMPOSING_BEAT_MS);
   });
 });
 
@@ -36,7 +36,7 @@ describe('planning a turn', () => {
   it('holds a lone reply behind its own weight, with no echo step', () => {
     const plan = planTurn(0, [cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 1, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
+    expect(plan.steps).toEqual([{ through: 1, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
   });
 
   it('lands the echo first and holds only the reply', () => {
@@ -44,17 +44,17 @@ describe('planning a turn', () => {
     // the reply it produced.
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBe(2);
-    expect(plan.steps).toEqual([{ through: 3, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
+    expect(plan.steps).toEqual([{ through: 3, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
   });
 
   it('releases a multi-message reply one message at a time, each offset absolute', () => {
     const plan = planTurn(0, [me('Get a Demo'), cam(LONG), cut('And a sign-off.')], { hold: true });
     expect(plan.echoEnd).toBe(1);
     expect(plan.steps).toEqual([
-      { through: 2, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
+      { through: 2, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
       {
         through: 3,
-        beatMs: typingDelay([cut('And a sign-off.')]),
+        beatMs: composingDelay([cut('And a sign-off.')]),
         revealMs: revealDelay([cut('And a sign-off.')]),
       },
     ]);
@@ -63,8 +63,8 @@ describe('planning a turn', () => {
   it('gives each step its own beat and reveal, so the next dots follow the line above', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG), cut(SHORT)], { hold: true });
     expect(plan.steps).toEqual([
-      { through: 3, beatMs: typingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
-      { through: 4, beatMs: typingDelay([cut(SHORT)]), revealMs: revealDelay([cut(SHORT)]) },
+      { through: 3, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
+      { through: 4, beatMs: composingDelay([cut(SHORT)]), revealMs: revealDelay([cut(SHORT)]) },
     ]);
   });
 
@@ -83,7 +83,7 @@ describe('planning a turn', () => {
 
   it('reads the pacing it is handed, not the module constants', () => {
     const slower: Pacing = { composingWordsPerMinute: 100, minimumBeatMs: 0, revealWordsPerMinute: 100 };
-    expect(typingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));
+    expect(composingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));
     expect(revealDelay([cam(LONG)], slower)).toBeGreaterThan(revealDelay([cam(LONG)]));
     // A slower reveal types the same line for longer, so the next message waits longer.
     const plan = planTurn(0, [cam(LONG)], { hold: true, pacing: slower });
