@@ -49,7 +49,7 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
         {/* Set clear of the corner rather than over it: the bubble's squared
             bottom-left corner has to stay visible, and the mark's own column
             ends where the bubble begins. */}
-        <span aria-hidden="true" className="absolute -bottom-1 -left-6">
+        <span aria-hidden="true" className="absolute -bottom-2 -left-5">
           <CharacterMark character={character} compact />
         </span>
       </div>
