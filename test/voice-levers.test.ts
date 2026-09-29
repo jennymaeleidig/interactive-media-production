@@ -48,10 +48,10 @@ describe('the voice lever', () => {
 });
 
 describe('the pace presets', () => {
-  it('names five ascending presets, each with its own multiplier', () => {
-    expect(PACE_PRESETS).toEqual(['slowest', 'slow', 'normal', 'fast', 'fastest']);
+  it('names three ascending presets, each with its own multiplier', () => {
+    expect(PACE_PRESETS).toEqual(['slowest', 'slow', 'normal']);
     const multipliers = PACE_PRESETS.map((preset) => PACE_PRESET_MULTIPLIERS[preset]);
-    // Five names, five distinct values: no two dramatic beats are secretly the
+    // Three names, three distinct values: no two dramatic beats are secretly the
     // same, and the order is the speed order.
     expect(new Set(multipliers).size).toBe(PACE_PRESETS.length);
     expect(multipliers).toEqual([...multipliers].sort((a, b) => a - b));
@@ -69,8 +69,8 @@ describe('the pace presets', () => {
 
   it('scales a slower preset to a longer per-character time than a faster one', () => {
     const slowest = revealMsPerChar(revealWordsForPreset(400, 'slowest'));
-    const fastest = revealMsPerChar(revealWordsForPreset(400, 'fastest'));
-    expect(slowest).toBeGreaterThan(fastest);
+    const normal = revealMsPerChar(revealWordsForPreset(400, 'normal'));
+    expect(slowest).toBeGreaterThan(normal);
   });
 
   it('treats an unknown or absent preset as normal', () => {

@@ -16,6 +16,7 @@ import {
   PACE_PRESETS,
   REVEAL_CEILING_WORDS_PER_MINUTE,
   REVEAL_FLOOR_WORDS_PER_MINUTE,
+  revealMsPerChar,
   revealWordsForPreset,
 } from '@/lib/pacing';
 
@@ -71,6 +72,20 @@ describe('the cast', () => {
         expect(pace, `${character.id}: ${preset}`).toBeGreaterThanOrEqual(REVEAL_FLOOR_WORDS_PER_MINUTE);
         expect(pace, `${character.id}: ${preset}`).toBeLessThanOrEqual(REVEAL_CEILING_WORDS_PER_MINUTE);
       }
+    }
+  });
+
+  it('gives every preset its own frame step for every character, so none is a dead label', () => {
+    // The reveal is frame-quantized, so two presets can be "distinct" in the
+    // requested number and identical in wall time. This is the check that the
+    // closed vocabulary is exactly as large as the frame can distinguish.
+    for (const character of Object.values(CHAT_CHARACTERS)) {
+      const resting = character.paceWordsPerMinute;
+      if (resting === undefined) continue;
+      const steps = PACE_PRESETS.map((preset) =>
+        revealMsPerChar(revealWordsForPreset(resting, preset)),
+      );
+      expect(new Set(steps).size, character.id).toBe(PACE_PRESETS.length);
     }
   });
 

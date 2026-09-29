@@ -77,7 +77,7 @@ describe('the character seam', () => {
       text: 'wait now',
       segments: [
         { text: 'wait ', pace: 'slowest' },
-        { text: 'now', pace: 'fastest' },
+        { text: 'now', pace: 'slow' },
       ],
     };
     render(<Message message={message([block], { speaker: 'cam' })} />);
@@ -87,7 +87,7 @@ describe('the character seam', () => {
     // The second stretch changes the delay before its text is queued, so the two
     // stretches really type at two paces. The value is the requested delay, not
     // the frame-rounded step the schedule reads.
-    const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fastest'));
+    const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'slow'));
     expect(writer.changeDelay).toHaveBeenCalledWith(expected);
     // The voice gets the whole line and the speaker, once; the typewriter's
     // completion event is where it is stopped.

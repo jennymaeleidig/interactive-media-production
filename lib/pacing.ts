@@ -28,10 +28,12 @@ export const COMPOSING_WORDS_PER_MINUTE = 400;
 export const MIN_COMPOSING_BEAT_MS = 750;
 
 /** One animation frame at 60Hz. The reveal advances at most one character per
- * frame (`typewriter-effect` is rAF-driven), so a per-character delay below
- * this is inert and the true reveal pace is the slower of the clock and a frame.
- * The schedule reads the reveal through this floor, so it waits out a line that
- * is still typing rather than landing the next one on top of it. */
+ * frame, and only on a frame strictly past the requested delay, so a delay of
+ * *less than* one frame still takes two frames and the reveal's true pace is the
+ * requested delay rounded **up** to the next frame — not the slower of the clock
+ * and one frame. The schedule reads the reveal through that step
+ * (`revealMsPerChar`), so it waits out a line that is still typing rather than
+ * landing the next one on top of it. */
 export const FRAME_MS = 1000 / 60;
 
 /** The piece's own reveal clock, in words per minute: the resting pace a landed
@@ -46,10 +48,12 @@ export const REVEAL_WORDS_PER_MINUTE = 400;
  * is a guard on the arithmetic rather than a pace either one is meant to hit. */
 export const REVEAL_FLOOR_WORDS_PER_MINUTE = 120;
 
-/** The ceiling on any character's reveal pace: the frame-bound pace, above which
- * a faster clock cannot advance any faster (`typewriter-effect` is rAF-driven)
- * and would leave `fastest` a dead label. Derived from `FRAME_MS`, so it is a
- * consequence of the frame and not an independent knob. */
+/** The ceiling on any character's reveal pace. It is the frame bound read as a
+ * clock: a delay of one frame is the fastest any *positive* delay can be before
+ * the strict `>` comparison costs a second frame, so this is where a faster
+ * request stops changing the step. It is not the one-frame pace — that needs a
+ * zero delay and is not reachable by a preset. Derived from `FRAME_MS`, so it is
+ * a consequence of the frame and not an independent knob. */
 export const REVEAL_CEILING_WORDS_PER_MINUTE = Math.floor(60_000 / (FRAME_MS * CHARS_PER_WORD));
 
 // The closed pace vocabulary — the five authored preset names and what each
@@ -60,7 +64,7 @@ export { PACE_MARKER, PACE_PRESETS, PACE_PRESET_MULTIPLIERS } from '@/lib/pace-p
 import { PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
 
 /** A pace override's preset name: one of `PACE_PRESETS`. */
-export type PacePreset = 'slowest' | 'slow' | 'normal' | 'fast' | 'fastest';
+export type PacePreset = 'slowest' | 'slow' | 'normal';
 
 /** The pacing levers a turn schedule reads, as a value: the composing clock, the
  * reveal clock, and the floor under a beat. `lib/turn-plan.ts` takes this rather
@@ -110,19 +114,21 @@ export function revealDelayMs(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE):
 /** The wall time one typed character actually takes at a requested delay: the
  * rAF typewriter advances at most one queued character per animation frame, and
  * only on a frame whose elapsed time is strictly past the delay, so a character
- * lands on the first frame boundary at or after `delayMs`. A delay of one frame
- * is therefore two frames of wall time, and this is the true step — not
- * `max(delay, frame)`. */
+ * lands on the first frame boundary strictly after `delayMs`. At a delay that is
+ * exactly a frame multiple that is the *next* multiple (a one-frame delay costs
+ * two frames), which is why this is `floor(delay / frame) + 1` and not
+ * `ceil(delay / frame)` — the two differ at exactly that boundary. */
 export function typewriterStepMs(delayMs: number): number {
-  return Math.ceil(delayMs / FRAME_MS) * FRAME_MS;
+  return (Math.floor(delayMs / FRAME_MS + 1e-9) + 1) * FRAME_MS;
 }
 
 /** The reveal's true pace, in milliseconds per character: what the rAF
- * typewriter achieves at `revealDelayMs`, i.e. the requested delay rounded up to
- * a whole animation frame. The turn schedule (`lib/turn-plan.ts`) waits a
- * still-typing line out on it rather than landing the next one on top of it, and
- * the voice — stopped when the line has finished typing (`lib/voice.ts`) — is
- * never cut early. */
+ * typewriter achieves at `revealDelayMs`, i.e. the requested delay carried to the
+ * next whole animation frame (strictly next, so one frame of delay is two frames
+ * of wall time). The turn schedule (`lib/turn-plan.ts`) waits a still-typing line
+ * out on it rather than landing the next one on top of it, and the voice —
+ * stopped when the line has finished typing (`lib/voice.ts`) — is never cut
+ * early. */
 export function revealMsPerChar(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
   return typewriterStepMs(revealDelayMs(wordsPerMinute));
 }

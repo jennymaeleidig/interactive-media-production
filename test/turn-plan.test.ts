@@ -106,13 +106,13 @@ describe('the paced reveal', () => {
   });
 
   it('types an authored line in preset stretches, and the schedule sums them', () => {
-    const block = paced([{ text: 'aa', pace: 'slowest' }, { text: 'bb', pace: 'fastest' }]);
+    const block = paced([{ text: 'aa', pace: 'slowest' }, { text: 'bb', pace: 'normal' }]);
     const slow = revealMsPerChar(revealWordsForPreset(400, 'slowest'));
-    const fast = revealMsPerChar(revealWordsForPreset(400, 'fastest'));
+    const quick = revealMsPerChar(revealWordsForPreset(400, 'normal'));
     // Two opening events plus the first stretch, the changeDelay event at the
     // first stretch's pace, then the second stretch — every char at its own
     // frame-rounded step, not its requested delay.
-    expect(revealDelay([block])).toBe(Math.ceil(5 * slow + 2 * fast) + FRAME_MS);
+    expect(revealDelay([block])).toBe(Math.ceil(5 * slow + 2 * quick) + FRAME_MS);
     // The slow stretch makes the whole line hold longer than the same characters
     // read at one pace — the override is real, not decorative.
     expect(revealDelay([block])).toBeGreaterThan(revealDelay([cam('aabb')]));

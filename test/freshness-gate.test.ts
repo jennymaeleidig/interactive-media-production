@@ -37,4 +37,11 @@ describe('the freshness gate', () => {
   it('fails an undeclared pace preset, naming the value', () => {
     expect(() => validateDialogue(program('Cam: slow [pace=nonsense]down[/pace]'))).toThrow(/nonsense.*is not a declared preset/);
   });
+
+  it('fails a retired preset name, so a dropped label cannot creep back in', () => {
+    // `fast` and `fastest` were retired because the frame-quantized reveal cannot
+    // make them distinct from `normal` (`lib/pace-presets.mjs`). A script that
+    // still writes one is a build failure, not a silent normal.
+    expect(() => validateDialogue(program('Cam: [pace=fastest]go[/pace]'))).toThrow(/fastest.*is not a declared preset/);
+  });
 });
