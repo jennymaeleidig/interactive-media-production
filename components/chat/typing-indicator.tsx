@@ -10,11 +10,11 @@
 // own length, so longer authored turns read as "still typing" rather than
 // popping in after a fixed beat.
 //
-// The composing character is named without a position jump: the mark rides at
-// the very offset the landed bubble's own mark uses, on the same disc, with only
-// the glyph inside it minified — so when the message lands the disc does not move
-// at all and only the glyph changes scale. The `role="status"` label reads the
-// character's display name to assistive tech.
+// The composing character is named without a position jump, and without a second
+// mark to keep in step: the indicator borrows the landed mark outright and hangs
+// it at the landed mark's own offset, so nothing about the mark changes as the
+// message arrives. The `role="status"` label reads the character's display name
+// to assistive tech.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
@@ -68,13 +68,12 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
             transition={{ duration: 1.1, ease: 'easeInOut', repeat: Infinity, delay: dot * 0.22 }}
           />
         ))}
-        {/* The landed bubble's own disc, at the landed bubble's own offset, with
-            the glyph inside it minified: the mark does not move when the message
-            lands, only the glyph changes scale. Set clear of the corner rather
-            than over it, so the bubble's squared bottom-left corner stays
+        {/* The landed mark itself, at the landed mark's own offset: the mark does
+            not change in any way when the message lands. Set clear of the corner
+            rather than over it, so the bubble's squared bottom-left corner stays
             visible. */}
         <span aria-hidden="true" className="absolute -bottom-2 -left-9">
-          <CharacterMark character={character} minifiedIcon />
+          <CharacterMark character={character} />
         </span>
       </div>
     </motion.div>

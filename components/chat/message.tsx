@@ -228,33 +228,21 @@ export function BlockPart({ block, animate }: BlockProps) {
   }
 }
 
-/** One character's mark on its disc, set on the last bubble of a run — the
- * reference widget's own placement, moved to the bubble's bottom-left corner
- * for parity with the composing bubble — or, with a minified glyph, just off the
- * typing indicator's corner. Both uses ride the same disc at the same offset, so
- * the mark's footprint is identical before and after a message lands and only the
- * glyph inside it changes scale. The image is a local, self-hosted asset
+/** One character's mark on its disc: the reference widget's own placement, moved
+ * to the bubble's bottom-left corner — or, hung the same way at the same offset,
+ * just off the typing indicator's corner. There is no separate composing mark: the
+ * indicator borrows this one outright, so the mark's footprint is identical before
+ * and after a message lands. The image is a local, self-hosted asset
  * (`lib/chat-characters.mjs`), so the page requests no third party; its alt is
- * the character's display name, so the mark names its speaker to assistive tech.
- * Exported for the typing indicator, which borrows the same mark. */
-export function CharacterMark({
-  character,
-  minifiedIcon = false,
-}: {
-  character: Character;
-  minifiedIcon?: boolean;
-}) {
+ * the character's display name, so the mark names its speaker to assistive tech. */
+export function CharacterMark({ character }: { character: Character }) {
   return (
     <span
       className="bg-content flex size-7 shrink-0 items-center justify-center rounded-full"
       data-testid={`character-mark-${character.id}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        alt={character.mark.alt}
-        className={minifiedIcon ? 'h-2.5 w-auto' : 'h-4 w-auto'}
-        src={character.mark.src}
-      />
+      <img alt={character.mark.alt} className="h-4 w-auto" src={character.mark.src} />
     </span>
   );
 }

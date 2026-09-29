@@ -180,12 +180,12 @@ describe('the character seam', () => {
     expect(screen.getByTestId('character-mark-cam')).toBeTruthy();
   });
 
-  it('sets the composing mark on the landed mark’s own disc, at its own offset', () => {
+  it('draws the composing mark as the landed mark, exactly', () => {
     // The spec asks the composing character to be named "without a position jump
-    // when the message lands", so the mark's footprint has to be identical either
-    // side of the hand-off: the same disc, hung at the same offset, with only the
-    // glyph inside it minified. A test rather than a comment, because the two
-    // offsets live in two files and a drift between them is invisible in review.
+    // when the message lands", and there is no reason for the composing mark to
+    // differ at all: it is the landed mark outright, hung at the landed mark's own
+    // offset. A test rather than a comment, because the offset lives in two files
+    // and a drift between them is invisible in review.
     render(
       <>
         <Message message={message([{ who: 'bot', speaker: 'flock', type: 'text', text: 'one' }], { speaker: 'flock' })} />
@@ -194,10 +194,8 @@ describe('the character seam', () => {
     );
     const landed = within(screen.getByTestId('message-assistant')).getByTestId('character-mark-flock');
     const composing = within(screen.getByTestId('typing-indicator')).getByTestId('character-mark-flock');
-    // The disc, and the span that hangs it off the bubble.
-    expect(composing.className).toBe(landed.className);
+    // The whole mark — disc, offset span and glyph — not just its classes.
+    expect(composing.outerHTML).toBe(landed.outerHTML);
     expect(composing.parentElement?.className).toBe(landed.parentElement?.className);
-    // And the one thing that is meant to differ: the glyph inside the disc.
-    expect(composing.querySelector('img')?.className).not.toBe(landed.querySelector('img')?.className);
   });
 });
