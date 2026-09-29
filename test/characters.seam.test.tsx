@@ -118,6 +118,28 @@ describe('the character seam', () => {
     expect(screen.getByText('landed')).toBeTruthy();
   });
 
+  it('anchors the run’s mark to its last bubble, not its first', () => {
+    // The mark sits at the foot of the run so it meets the composing bubble that
+    // follows, rather than floating beside the run's opening bubble.
+    const first = message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'one' }], {
+      id: 'first',
+      speaker: 'cam',
+    });
+    const last = message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'two' }], {
+      id: 'last',
+      speaker: 'cam',
+    });
+    render(
+      <>
+        <Message continues={false} continued message={first} />
+        <Message continues continued={false} message={last} />
+      </>,
+    );
+    const bubbles = screen.getAllByTestId('message-assistant');
+    expect(bubbles[0].querySelector('[data-testid^="character-mark-"]')).toBeNull();
+    expect(bubbles[1].querySelector('[data-testid^="character-mark-"]')).not.toBeNull();
+  });
+
   it('attributes the typing indicator to the character composing', () => {
     const { rerender } = render(<TypingIndicator speaker="flock" />);
     expect(screen.getByTestId('typing-indicator').getAttribute('aria-label')).toBe('Flock is typing');

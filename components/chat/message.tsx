@@ -185,7 +185,7 @@ export function BlockPart({ block, animate }: BlockProps) {
   }
 }
 
-/** One character's mark on its disc, set on the first bubble of a run — the
+/** One character's mark on its disc, set on the last bubble of a run — the
  * reference widget's own placement, moved to the bubble's bottom-left corner
  * for parity with the composing bubble — or minified just off the typing
  * indicator's corner. The image is a local, self-hosted asset
@@ -287,13 +287,15 @@ export const Message = memo(function Message({
               <BlockPart animate={message.fresh === true} block={part} />
             </motion.div>
           ))}
-          {user || continues ? null : (
+          {user || continued ? null : (
             // The mark hangs on the bubble's own box rather than in the column
             // above it, so it sits at the bubble's bottom-left corner — level
-            // with the composing bubble's mark — and the dev timer below the
-            // bubble cannot drag it down. `-left-9` is the reserved column plus
-            // its gap, so the disc lands exactly in the column with its usual
-            // 8px clear of the bubble's edge.
+            // with the composing bubble's mark, which the run's last bubble
+            // meets — and the dev timer below the bubble cannot drag it down.
+            // `-left-9` is the reserved column plus its gap, so the disc lands
+            // exactly in the column with its usual 8px clear of the bubble's
+            // edge; anchoring the run's *last* bubble puts the mark at the foot
+            // of the run, where the next speaker's turn begins.
             <span className="absolute -bottom-2 -left-9">
               <CharacterMark character={characterFor(message.speaker)} />
             </span>
