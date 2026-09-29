@@ -11,9 +11,10 @@
 // popping in after a fixed beat.
 //
 // The composing character is named twice without a position jump: the mark
-// rides the bubble's bottom-left corner, minified, so the moment the message
-// lands the full-size mark appears in the run's usual left column, and the
-// `role="status"` label reads the character's display name to assistive tech.
+// rides just off the bubble's bottom-left corner, minified, so the moment the
+// message lands the full-size mark appears in the run's usual left column, and
+// the `role="status"` label reads the character's display name to assistive
+// tech.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
@@ -32,9 +33,9 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
       role="status"
       aria-label={`${character.name} is typing`}
     >
-      {/* The mark's column is reserved but empty: the composing character rides
-          the bubble's corner instead, and the dots still start where every
-          landed bubble does. */}
+      {/* The mark's column is reserved but empty: the composing character sits
+          just off the bubble's corner instead, and the dots still start where
+          every landed bubble does. */}
       <div aria-hidden="true" className="w-7 shrink-0" />
       <div className="bg-bubble-bot text-bubble-content relative flex max-w-[85%] items-center gap-1.5 rounded-card rounded-bl-none px-4 py-3.5">
         {[0, 1, 2].map((dot) => (
@@ -45,7 +46,10 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
             transition={{ duration: 1.1, ease: 'easeInOut', repeat: Infinity, delay: dot * 0.22 }}
           />
         ))}
-        <span aria-hidden="true" className="absolute -bottom-1 -left-1">
+        {/* Set clear of the corner rather than over it: the bubble's squared
+            bottom-left corner has to stay visible, and the mark's own column
+            ends where the bubble begins. */}
+        <span aria-hidden="true" className="absolute -bottom-1 -left-6">
           <CharacterMark character={character} compact />
         </span>
       </div>

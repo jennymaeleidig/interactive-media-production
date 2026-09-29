@@ -196,12 +196,12 @@ export function CharacterMark({ character, compact = false }: { character: Chara
     <span
       className={cn(
         'flex shrink-0 items-center justify-center rounded-full bg-content',
-        compact ? 'size-5' : 'size-7',
+        compact ? 'size-4' : 'size-7',
       )}
       data-testid={`character-mark-${character.id}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img alt={character.mark.alt} className={compact ? 'h-3 w-auto' : 'h-4 w-auto'} src={character.mark.src} />
+      <img alt={character.mark.alt} className={compact ? 'h-2.5 w-auto' : 'h-4 w-auto'} src={character.mark.src} />
     </span>
   );
 }
