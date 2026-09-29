@@ -20,8 +20,7 @@
 // compose and lands short replies quickly. The dots wait a beat behind the
 // viewer's own line before they appear (`COMPOSING_LEAD_MS`), so the turn reads
 // as a reply forming rather than the echo and the wait arriving as one event. A
-// reply
-// authored as several bubbles lands as several messages — one speaker-run at
+// reply authored as several bubbles lands as several messages — one speaker-run at
 // a time, the dots holding between them — so each beat is that one message's
 // own. What a message weighs is declared per block type in the inventory's
 // contract terms (`CHAT_BLOCK_TERMS`); this hook owns only the clock.

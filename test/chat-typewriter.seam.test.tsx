@@ -39,4 +39,17 @@ describe('the animated reveal', () => {
     render(<Message message={message([block])} />);
     expect(await screen.findByText('abcde')).toBeTruthy();
   });
+
+  it('keeps a line that has already typed when its bubble re-renders', async () => {
+    // The real symptom, through the real library: `typewriter-effect` rebuilds its
+    // instance whenever its options fail a deep comparison, and a rebuilt instance
+    // blanks the wrapper without ever calling `onInit` — the line is erased and
+    // nothing types it again. Re-rendering the same bubble is exactly what a later
+    // bubble joining the run does (`components/chat/message.tsx`).
+    const line = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
+    const { rerender } = render(<Message message={message([line('first line')])} />);
+    expect(await screen.findByText('first line')).toBeTruthy();
+    rerender(<Message message={message([line('first line'), line('second line')])} />);
+    expect(screen.getByText('first line')).toBeTruthy();
+  });
 });

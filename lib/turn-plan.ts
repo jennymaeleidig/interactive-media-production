@@ -18,6 +18,7 @@ import { characterFor } from '@/lib/chat-characters.mjs';
 import {
   DEFAULT_PACING,
   FRAME_MS,
+  COMPOSING_EXIT_MS,
   msPerChar,
   revealCharsPerStep,
   revealDelayMs,
@@ -45,9 +46,10 @@ export interface TurnStep {
   leadMs: number;
   /** The wait after this step's dots come down, before its message lands: long
    * enough for the composing bubble's exit to finish and for the bubble to leave
-   * the transcript, so the reply never pops in under a fading placeholder. A
-   * frame of slack is added to the animation's own length, because the exit does
-   * not start until the frame after the dots' dismissal commits. */
+   * the transcript, so the reply never pops in under a fading placeholder. It is
+   * read from `COMPOSING_EXIT_MS`, the same constant the indicator builds its exit
+   * transition from, plus a frame of slack — the exit does not start until the
+   * frame after the dots' dismissal commits. */
   exitMs: number;
 }
 
@@ -185,7 +187,7 @@ export function planTurn(
         // The lead belongs to the turn's first land, and only when the viewer's
         // own line landed with it.
         leadMs: index === 0 && echo > 0 ? pacing.composingLeadMs : 0,
-        exitMs: pacing.composingExitMs + FRAME_MS,
+        exitMs: COMPOSING_EXIT_MS + FRAME_MS,
       };
     }),
   };

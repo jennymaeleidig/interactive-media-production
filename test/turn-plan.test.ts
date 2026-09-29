@@ -133,12 +133,13 @@ describe('planning a turn', () => {
     expect(plan.steps.every((step) => step.exitMs === EXIT)).toBe(true);
     const immediate = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: false });
     expect(immediate.steps[0].exitMs).toBe(0);
-    // And, like the lead, it is the caller's to dial.
+    // And, being the indicator's own animation length, it is not a pacing lever:
+    // a substituted `Pacing` cannot move the wait out from under the transition.
     const quick = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], {
       hold: true,
-      pacing: { ...DEFAULT_PACING, composingExitMs: 0 },
+      pacing: { ...DEFAULT_PACING, minimumBeatMs: 0, composingWordsPerMinute: 10_000 },
     });
-    expect(quick.steps[0].exitMs).toBe(FRAME_MS);
+    expect(quick.steps[0].exitMs).toBe(EXIT);
   });
 
   it('lands everything in one step when the reply is not held', () => {
@@ -159,7 +160,6 @@ describe('planning a turn', () => {
       composingWordsPerMinute: 100,
       minimumBeatMs: 0,
       composingLeadMs: 0,
-      composingExitMs: 0,
       revealWordsPerMinute: 100,
     };
     expect(composingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));

@@ -20,10 +20,10 @@
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { memo, useMemo, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 // Citation: Tameem Safi — typewriter-effect (v2.22.0) [MIT]
 // Source: https://github.com/tameemsafi/typewriterjs
-import Typewriter from 'typewriter-effect';
+import Typewriter, { type Options } from 'typewriter-effect';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { characterFor, type Character } from '@/lib/chat-characters.mjs';
 import { splitIntoSteps } from '@/lib/pacing';
@@ -74,9 +74,12 @@ type BlockProps = { block: ChatBlock; animate?: boolean };
  *
  * Building the object once closes that hole structurally rather than by
  * convention: nothing added to it later can make its identity drift, because
- * there is only ever one. The splitter reads the step handle when it runs, so it
- * does not need rebuilding either. The props are mount-only by design — a landed
- * part is keyed by its index and never changes. */
+ * there is only ever one. It is held in a ref rather than a `useMemo`, because a
+ * memo is only a hint — React is allowed to discard a cached value, which is
+ * precisely the drift this exists to prevent — while a ref is stable for the life
+ * of the component. The splitter reads the step handle when it runs, so it does
+ * not need rebuilding either. The props are mount-only by design — a landed part
+ * is keyed by its index and never changes. */
 const Reveal = function Reveal({
   text,
   speaker,
@@ -88,15 +91,16 @@ const Reveal = function Reveal({
   runs: RevealRun[];
   charsPerStep: StepRef;
 }) {
-  const options = useMemo(
-    () => ({
+  const cache = useRef<Partial<Options> | null>(null);
+  if (cache.current === null) {
+    cache.current = {
       cursor: '',
       delay: runs[0]?.delayMs,
       skipAddStyles: true,
       stringSplitter: (value: string) => splitIntoSteps(value, charsPerStep.current),
-    }),
-    [],
-  );
+    };
+  }
+  const options = cache.current;
   return (
     <Typewriter
       component="span"
