@@ -29,10 +29,17 @@ export const MIN_COMPOSING_BEAT_MS = 750;
 
 /** The pause between the viewer's own line landing and the composing dots
  * appearing. Long enough that the turn reads as a reply forming rather than the
- * echo and the wait arriving as one event; short enough not to feel like a
- * stall. It is charged only to a turn that actually echoed a viewer block, so a
- * turn with nothing to wait behind raises its dots at once. */
-export const COMPOSING_LEAD_MS = 250;
+ * echo and the wait arriving as one event. It is charged only to a turn that
+ * actually echoed a viewer block, so a turn with nothing to wait behind raises
+ * its dots at once. */
+export const COMPOSING_LEAD_MS = 750;
+
+/** How long the composing dots take to leave. The schedule holds the reply back
+ * for this long after the dots come down, so the composing bubble's exit is
+ * finished — and the bubble is gone from the transcript — before the reply pops
+ * in. The two animations never share the screen; the typing indicator's exit
+ * transition is built from this one number, so they cannot drift apart. */
+export const COMPOSING_EXIT_MS = 200;
 
 /** One animation frame at 60Hz. The reveal advances at most one character per
  * frame, and only on a frame strictly past the requested delay, so a delay of
@@ -87,6 +94,7 @@ export interface Pacing {
   revealWordsPerMinute: number;
   minimumBeatMs: number;
   composingLeadMs: number;
+  composingExitMs: number;
 }
 
 /** Milliseconds one character takes on a clock read in words per minute. */
@@ -211,5 +219,6 @@ export const DEFAULT_PACING: Pacing = {
   composingWordsPerMinute: COMPOSING_WORDS_PER_MINUTE,
   minimumBeatMs: MIN_COMPOSING_BEAT_MS,
   composingLeadMs: COMPOSING_LEAD_MS,
+  composingExitMs: COMPOSING_EXIT_MS,
   revealWordsPerMinute: REVEAL_WORDS_PER_MINUTE,
 };

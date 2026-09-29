@@ -43,6 +43,12 @@ export interface TurnStep {
    * so the dots wait a beat behind it rather than arriving on top of it; later
    * steps already wait out the line above through `revealMs`. */
   leadMs: number;
+  /** The wait after this step's dots come down, before its message lands: long
+   * enough for the composing bubble's exit to finish and for the bubble to leave
+   * the transcript, so the reply never pops in under a fading placeholder. A
+   * frame of slack is added to the animation's own length, because the exit does
+   * not start until the frame after the dots' dismissal commits. */
+  exitMs: number;
 }
 
 /** A turn's schedule. `echoEnd` is the absolute offset after the viewer's echo,
@@ -154,7 +160,7 @@ export function planTurn(
   const reply = appended.slice(echo);
 
   if (!hold || reply.length === 0) {
-    return { echoEnd: null, steps: [{ through: blocks.length, beatMs: 0, revealMs: 0, leadMs: 0 }] };
+    return { echoEnd: null, steps: [{ through: blocks.length, beatMs: 0, revealMs: 0, leadMs: 0, exitMs: 0 }] };
   }
 
   // The reply lands one message at a time: a reply authored as several
@@ -179,6 +185,7 @@ export function planTurn(
         // The lead belongs to the turn's first land, and only when the viewer's
         // own line landed with it.
         leadMs: index === 0 && echo > 0 ? pacing.composingLeadMs : 0,
+        exitMs: pacing.composingExitMs + FRAME_MS,
       };
     }),
   };

@@ -45,9 +45,7 @@ export function Messages({
       resize="smooth"
       role="log"
     >
-      {/* `relative` is what the composing wait anchors to while it pops out of
-          the flow below. */}
-      <StickToBottom.Content className="relative mx-auto flex w-full max-w-3xl flex-col px-5 pt-28 pb-8">
+      <StickToBottom.Content className="mx-auto flex w-full max-w-3xl flex-col px-5 pt-28 pb-8">
         {isLoading && messages.length === 0 ? (
           <Loading />
         ) : (
@@ -89,13 +87,11 @@ export function Messages({
             ])}
           </AnimatePresence>
         )}
-        {/* `popLayout` takes the dots out of the flow the moment the reply
-            lands, so the message takes the slot at once instead of the
-            transcript holding both and collapsing a beat later. The wait still
-            slides out; it just no longer pushes anything around while it does.
-            The land and `isTyping: false` are one batched update
-            (`use-dialogue`), so without this the two are both in flow. */}
-        <AnimatePresence mode="popLayout">
+        {/* The dots leave the transcript when their exit finishes, and the reply
+            does not land until then (`use-dialogue` waits `TurnStep.exitMs`), so
+            the two are never in the flow at once and nothing is pushed around
+            while the placeholder leaves. */}
+        <AnimatePresence>
           {isTyping ? <TypingIndicator key="typing" speaker={typingSpeaker} /> : null}
         </AnimatePresence>
       </StickToBottom.Content>

@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import { composingChars, planTurn, revealDelay, composingDelay, revealRuns, revealWordsPerMinuteFor } from '../lib/turn-plan';
-import { COMPOSING_LEAD_MS, DEFAULT_PACING, FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealCharsPerStep, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
+import { COMPOSING_EXIT_MS, COMPOSING_LEAD_MS, DEFAULT_PACING, FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealCharsPerStep, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
@@ -18,6 +18,11 @@ const me = (text: string): ChatBlock => ({ who: 'me', type: 'text', text });
 
 const LONG = 'A reply long enough that its weight clears the composing floor and would be held.';
 const SHORT = 'Ok.';
+
+/** Every step that raises the dots waits their exit out before its message lands:
+ * the exit animation's own length, plus a frame of slack for the commit that
+ * starts it. */
+const EXIT = COMPOSING_EXIT_MS + FRAME_MS;
 
 describe('the beat clock', () => {
   it('weighs a sequence by the characters its types contribute', () => {
@@ -38,7 +43,13 @@ describe('planning a turn', () => {
     const plan = planTurn(0, [cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBeNull();
     expect(plan.steps).toEqual([
-      { through: 1, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]), leadMs: 0 },
+      {
+        through: 1,
+        beatMs: composingDelay([cam(LONG)]),
+        revealMs: revealDelay([cam(LONG)]),
+        leadMs: 0,
+        exitMs: EXIT,
+      },
     ]);
   });
 
@@ -53,6 +64,7 @@ describe('planning a turn', () => {
         beatMs: composingDelay([cam(LONG)]),
         revealMs: revealDelay([cam(LONG)]),
         leadMs: COMPOSING_LEAD_MS,
+        exitMs: EXIT,
       },
     ]);
   });
@@ -66,12 +78,14 @@ describe('planning a turn', () => {
         beatMs: composingDelay([cam(LONG)]),
         revealMs: revealDelay([cam(LONG)]),
         leadMs: COMPOSING_LEAD_MS,
+        exitMs: EXIT,
       },
       {
         through: 3,
         beatMs: composingDelay([cut('And a sign-off.')]),
         revealMs: revealDelay([cut('And a sign-off.')]),
         leadMs: 0,
+        exitMs: EXIT,
       },
     ]);
   });
@@ -84,8 +98,15 @@ describe('planning a turn', () => {
         beatMs: composingDelay([cam(LONG)]),
         revealMs: revealDelay([cam(LONG)]),
         leadMs: COMPOSING_LEAD_MS,
+        exitMs: EXIT,
       },
-      { through: 4, beatMs: composingDelay([cut(SHORT)]), revealMs: revealDelay([cut(SHORT)]), leadMs: 0 },
+      {
+        through: 4,
+        beatMs: composingDelay([cut(SHORT)]),
+        revealMs: revealDelay([cut(SHORT)]),
+        leadMs: 0,
+        exitMs: EXIT,
+      },
     ]);
   });
 
@@ -103,17 +124,34 @@ describe('planning a turn', () => {
     expect(brisk.steps[0].leadMs).toBe(40);
   });
 
+  it('waits the dots’ exit out before landing, on every step that raised them', () => {
+    // The reply must not pop in under a placeholder that is still leaving, so
+    // each step carries the exit wait; the immediate lands raise no dots and so
+    // carry none.
+    const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG), cut(SHORT)], { hold: true });
+    expect(plan.steps.length).toBeGreaterThan(0);
+    expect(plan.steps.every((step) => step.exitMs === EXIT)).toBe(true);
+    const immediate = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: false });
+    expect(immediate.steps[0].exitMs).toBe(0);
+    // And, like the lead, it is the caller's to dial.
+    const quick = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], {
+      hold: true,
+      pacing: { ...DEFAULT_PACING, composingExitMs: 0 },
+    });
+    expect(quick.steps[0].exitMs).toBe(FRAME_MS);
+  });
+
   it('lands everything in one step when the reply is not held', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: false });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, revealMs: 0, leadMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, revealMs: 0, leadMs: 0, exitMs: 0 }]);
   });
 
   it('lands everything at once when the turn appends no reply', () => {
     // The viewer's own line with nothing behind it: there is nothing to compose.
     const plan = planTurn(1, [cam('greeting'), me('Support')], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0, leadMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0, leadMs: 0, exitMs: 0 }]);
   });
 
   it('reads the pacing it is handed, and the speaker’s own reveal pace', () => {
@@ -121,6 +159,7 @@ describe('planning a turn', () => {
       composingWordsPerMinute: 100,
       minimumBeatMs: 0,
       composingLeadMs: 0,
+      composingExitMs: 0,
       revealWordsPerMinute: 100,
     };
     expect(composingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));

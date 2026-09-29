@@ -173,22 +173,26 @@ export function useDialogue(): Dialogue {
       setTypingSpeaker(landing && landing.who === 'bot' ? landing.speaker : null);
       setIsTyping(true);
       timer.current = setTimeout(() => {
-        land(step.through, last);
-        // The line types with the dots down; the chips stay inert until it is
-        // done, so a choice cannot cut the reveal off.
+        // The dots come down first and the message waits their exit out, so the
+        // composing bubble is finished and gone before the reply pops in.
         setIsTyping(false);
         timer.current = setTimeout(() => {
-          // The line has finished typing — the typewriter's own completion
-          // stopped its voice (`components/chat/message.tsx`) — so the turn can
-          // move on. Waiting on the schedule here would cut a voice whose line is
-          // still typing, which is the bug this order avoids.
-          if (last) {
-            finish();
-            return;
-          }
-          index += 1;
-          next();
-        }, step.revealMs);
+          land(step.through, last);
+          // The line types with the dots down; the chips stay inert until it is
+          // done, so a choice cannot cut the reveal off.
+          timer.current = setTimeout(() => {
+            // The line has finished typing — the typewriter's own completion
+            // stopped its voice (`components/chat/message.tsx`) — so the turn can
+            // move on. Waiting on the schedule here would cut a voice whose line is
+            // still typing, which is the bug this order avoids.
+            if (last) {
+              finish();
+              return;
+            }
+            index += 1;
+            next();
+          }, step.revealMs);
+        }, step.exitMs);
       }, step.beatMs);
     };
     // The dots wait out the first step's lead — the beat the viewer's own line

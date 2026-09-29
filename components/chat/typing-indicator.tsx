@@ -18,6 +18,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
+import { COMPOSING_EXIT_MS } from '@/lib/pacing';
 import { characterFor, DEFAULT_CHARACTER_ID } from '@/lib/chat-characters.mjs';
 import { CharacterMark } from './message';
 
@@ -36,7 +37,14 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
       aria-label={`${character.name} is typing`}
       className="mt-5 flex w-full justify-start gap-2"
       data-testid="typing-indicator"
-      exit={{ opacity: 0, y: 12 }}
+      exit={{
+        opacity: 0,
+        y: 12,
+        // The departure is a fixed tween, not the arrival's spring: the schedule
+        // holds the reply back for exactly `COMPOSING_EXIT_MS`, so the exit has
+        // to be over by then rather than still settling.
+        transition: { duration: COMPOSING_EXIT_MS / 1000, ease: 'easeIn' },
+      }}
       initial={{ opacity: 0, y: 16 }}
       role="status"
       transition={{
