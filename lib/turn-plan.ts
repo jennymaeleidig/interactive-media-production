@@ -38,6 +38,11 @@ export interface TurnStep {
   through: number;
   beatMs: number;
   revealMs: number;
+  /** The pause after the previous land, before this step's dots go up. It is
+   * charged to the turn's first step when the turn echoed the viewer's own line,
+   * so the dots wait a beat behind it rather than arriving on top of it; later
+   * steps already wait out the line above through `revealMs`. */
+  leadMs: number;
 }
 
 /** A turn's schedule. `echoEnd` is the absolute offset after the viewer's echo,
@@ -149,7 +154,7 @@ export function planTurn(
   const reply = appended.slice(echo);
 
   if (!hold || reply.length === 0) {
-    return { echoEnd: null, steps: [{ through: blocks.length, beatMs: 0, revealMs: 0 }] };
+    return { echoEnd: null, steps: [{ through: blocks.length, beatMs: 0, revealMs: 0, leadMs: 0 }] };
   }
 
   // The reply lands one message at a time: a reply authored as several
@@ -171,6 +176,9 @@ export function planTurn(
         through,
         beatMs: composingDelay(blocks.slice(start, through), pacing),
         revealMs: revealDelay(blocks.slice(start, through), pacing),
+        // The lead belongs to the turn's first land, and only when the viewer's
+        // own line landed with it.
+        leadMs: index === 0 && echo > 0 ? pacing.composingLeadMs : 0,
       };
     }),
   };

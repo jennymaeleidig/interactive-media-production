@@ -27,6 +27,13 @@ export const COMPOSING_WORDS_PER_MINUTE = 400;
  * pause rather than a flicker. */
 export const MIN_COMPOSING_BEAT_MS = 750;
 
+/** The pause between the viewer's own line landing and the composing dots
+ * appearing. Long enough that the turn reads as a reply forming rather than the
+ * echo and the wait arriving as one event; short enough not to feel like a
+ * stall. It is charged only to a turn that actually echoed a viewer block, so a
+ * turn with nothing to wait behind raises its dots at once. */
+export const COMPOSING_LEAD_MS = 250;
+
 /** One animation frame at 60Hz. The reveal advances at most one character per
  * frame, and only on a frame strictly past the requested delay, so a delay of
  * *less than* one frame still takes two frames and the reveal's true pace is the
@@ -70,14 +77,16 @@ import { PACE_PRESET_CHARS, PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.m
 export type PacePreset = 'slow' | 'normal' | 'fast';
 
 /** The pacing levers a turn schedule reads, as a value: the composing clock, the
- * reveal clock, and the floor under a beat. `lib/turn-plan.ts` takes this rather
- * than reaching for the module constants, so the piece's tuning is one
- * substitution; the reveal override per character and per `[pace=...]` marker
- * layers on top of `revealWordsPerMinute` (`lib/turn-plan.ts`). */
+ * reveal clock, the floor under a beat, and the lead the dots wait out behind the
+ * viewer's own line. `lib/turn-plan.ts` takes this rather than reaching for the
+ * module constants, so the piece's tuning is one substitution; the reveal
+ * override per character and per `[pace=...]` marker layers on top of
+ * `revealWordsPerMinute` (`lib/turn-plan.ts`). */
 export interface Pacing {
   composingWordsPerMinute: number;
   revealWordsPerMinute: number;
   minimumBeatMs: number;
+  composingLeadMs: number;
 }
 
 /** Milliseconds one character takes on a clock read in words per minute. */
@@ -201,5 +210,6 @@ export const ANIMALESE_WORDS_PER_MINUTE = 160;
 export const DEFAULT_PACING: Pacing = {
   composingWordsPerMinute: COMPOSING_WORDS_PER_MINUTE,
   minimumBeatMs: MIN_COMPOSING_BEAT_MS,
+  composingLeadMs: COMPOSING_LEAD_MS,
   revealWordsPerMinute: REVEAL_WORDS_PER_MINUTE,
 };

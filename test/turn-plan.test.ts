@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import { composingChars, planTurn, revealDelay, composingDelay, revealRuns, revealWordsPerMinuteFor } from '../lib/turn-plan';
-import { FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealCharsPerStep, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
+import { COMPOSING_LEAD_MS, DEFAULT_PACING, FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealCharsPerStep, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
@@ -37,26 +37,41 @@ describe('planning a turn', () => {
   it('holds a lone reply behind its own weight, with no echo step', () => {
     const plan = planTurn(0, [cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 1, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
+    expect(plan.steps).toEqual([
+      { through: 1, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]), leadMs: 0 },
+    ]);
   });
 
-  it('lands the echo first and holds only the reply', () => {
+  it('lands the echo first and holds only the reply, whose dots wait behind it', () => {
     // The log already holds the greeting; the turn is the viewer's choice plus
     // the reply it produced.
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: true });
     expect(plan.echoEnd).toBe(2);
-    expect(plan.steps).toEqual([{ through: 3, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) }]);
+    expect(plan.steps).toEqual([
+      {
+        through: 3,
+        beatMs: composingDelay([cam(LONG)]),
+        revealMs: revealDelay([cam(LONG)]),
+        leadMs: COMPOSING_LEAD_MS,
+      },
+    ]);
   });
 
   it('releases a multi-message reply one message at a time, each offset absolute', () => {
     const plan = planTurn(0, [me('Get a Demo'), cam(LONG), cut('And a sign-off.')], { hold: true });
     expect(plan.echoEnd).toBe(1);
     expect(plan.steps).toEqual([
-      { through: 2, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
+      {
+        through: 2,
+        beatMs: composingDelay([cam(LONG)]),
+        revealMs: revealDelay([cam(LONG)]),
+        leadMs: COMPOSING_LEAD_MS,
+      },
       {
         through: 3,
         beatMs: composingDelay([cut('And a sign-off.')]),
         revealMs: revealDelay([cut('And a sign-off.')]),
+        leadMs: 0,
       },
     ]);
   });
@@ -64,26 +79,50 @@ describe('planning a turn', () => {
   it('gives each step its own beat and reveal, so the next dots follow the line above', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG), cut(SHORT)], { hold: true });
     expect(plan.steps).toEqual([
-      { through: 3, beatMs: composingDelay([cam(LONG)]), revealMs: revealDelay([cam(LONG)]) },
-      { through: 4, beatMs: composingDelay([cut(SHORT)]), revealMs: revealDelay([cut(SHORT)]) },
+      {
+        through: 3,
+        beatMs: composingDelay([cam(LONG)]),
+        revealMs: revealDelay([cam(LONG)]),
+        leadMs: COMPOSING_LEAD_MS,
+      },
+      { through: 4, beatMs: composingDelay([cut(SHORT)]), revealMs: revealDelay([cut(SHORT)]), leadMs: 0 },
     ]);
+  });
+
+  it('charges the dot lead only to the step behind an echo that actually landed', () => {
+    // A reply with no viewer line before it has nothing to wait behind, so the
+    // dots go up at once rather than after a beat for a message that never came.
+    const noEcho = planTurn(0, [cam(LONG)], { hold: true });
+    expect(noEcho.steps.every((step) => step.leadMs === 0)).toBe(true);
+    // And it is the schedule's input, not a constant: a caller that dials the
+    // pacing dials the lead too.
+    const brisk = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], {
+      hold: true,
+      pacing: { ...DEFAULT_PACING, composingLeadMs: 40 },
+    });
+    expect(brisk.steps[0].leadMs).toBe(40);
   });
 
   it('lands everything in one step when the reply is not held', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: false });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, revealMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, revealMs: 0, leadMs: 0 }]);
   });
 
   it('lands everything at once when the turn appends no reply', () => {
     // The viewer's own line with nothing behind it: there is nothing to compose.
     const plan = planTurn(1, [cam('greeting'), me('Support')], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0, leadMs: 0 }]);
   });
 
   it('reads the pacing it is handed, and the speaker’s own reveal pace', () => {
-    const slower: Pacing = { composingWordsPerMinute: 100, minimumBeatMs: 0, revealWordsPerMinute: 100 };
+    const slower: Pacing = {
+      composingWordsPerMinute: 100,
+      minimumBeatMs: 0,
+      composingLeadMs: 0,
+      revealWordsPerMinute: 100,
+    };
     expect(composingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));
     // The reveal pace belongs to the character, not the settings: Flock rests
     // slower than Cam (fewer words per minute), so the same line types for longer

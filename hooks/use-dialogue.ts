@@ -17,7 +17,10 @@
 // A reply is withheld behind a composing beat read at
 // `COMPOSING_WORDS_PER_MINUTE` (`lib/pacing`, the piece's one tuning surface),
 // so the transcript shows the typing dots for as long as the reply would take to
-// compose and lands short replies quickly. A reply
+// compose and lands short replies quickly. The dots wait a beat behind the
+// viewer's own line before they appear (`COMPOSING_LEAD_MS`), so the turn reads
+// as a reply forming rather than the echo and the wait arriving as one event. A
+// reply
 // authored as several bubbles lands as several messages — one speaker-run at
 // a time, the dots holding between them — so each beat is that one message's
 // own. What a message weighs is declared per block type in the inventory's
@@ -188,7 +191,13 @@ export function useDialogue(): Dialogue {
         }, step.revealMs);
       }, step.beatMs);
     };
-    next();
+    // The dots wait out the first step's lead — the beat the viewer's own line
+    // gets to settle before the reply starts composing — and the steps then run
+    // back to back. The lead is zero on a turn that echoed no viewer block, and
+    // zero on every step after the first, which already waits out the line above
+    // through its reveal.
+    if (steps[0].leadMs > 0) timer.current = setTimeout(next, steps[0].leadMs);
+    else next();
   }, []);
 
   useEffect(() => {
