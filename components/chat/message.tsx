@@ -20,7 +20,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { memo, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 // Citation: Tameem Safi — typewriter-effect (v2.22.0) [MIT]
 // Source: https://github.com/tameemsafi/typewriterjs
 import Typewriter from 'typewriter-effect';
@@ -57,12 +57,19 @@ export function UnknownBlock({ reason }: { reason: string }) {
  * adapters can read the current step while the typewriter's splitter runs. */
 type StepRef = { current: number };
 
-type AdapterProps = { block: ChatBlock; animate?: boolean; charsPerStep: StepRef };
+type AdapterProps = {
+  block: ChatBlock;
+  animate?: boolean;
+  charsPerStep: StepRef;
+  /** One step's worth of text, as the typewriter's `stringSplitter`. It must keep
+   * the same identity for the life of the block — see `BlockPart`. */
+  splitStep: (text: string) => string[];
+};
 
 /** What a caller gives `BlockPart`: it owns the step handle itself. */
 type BlockProps = { block: ChatBlock; animate?: boolean };
 
-function TextPart({ block, animate = false, charsPerStep }: AdapterProps) {
+function TextPart({ block, animate = false, charsPerStep, splitStep }: AdapterProps) {
   const typed = block as Extract<ChatBlock, { type: 'text' }>;
   // The viewer's own line is never composed for them: it lands as log, whole.
   // Only a fresh message types itself out — a restored transcript (the opening
@@ -112,7 +119,7 @@ function TextPart({ block, animate = false, charsPerStep }: AdapterProps) {
             cursor: '',
             delay: runs[0]?.delayMs,
             skipAddStyles: true,
-            stringSplitter: (text) => splitIntoSteps(text, charsPerStep.current),
+            stringSplitter: splitStep,
           }}
         />
       </span>
@@ -188,8 +195,16 @@ export function BlockPart({ block, animate }: BlockProps) {
   // per frame, so a `fast` run packs several characters into each entry rather
   // than asking for an unreachably short delay.
   const charsPerStep = useRef(1);
+  // The splitter is built once and reads the step handle at type time, so it can
+  // serve every run without being rebuilt. That identity is load-bearing:
+  // `typewriter-effect` deep-compares its options and, when they differ, swaps in
+  // a new instance — whose constructor blanks the wrapper and whose update path
+  // never re-runs `onInit`. A fresh splitter each render would therefore erase a
+  // line the moment its bubble re-rendered, which happens as soon as a later
+  // bubble joins the run.
+  const splitStep = useCallback((text: string) => splitIntoSteps(text, charsPerStep.current), []);
   const adapter = BLOCK_ADAPTERS[block.type] ?? BLOCK_ADAPTERS.unknown;
-  const props = { block, animate, charsPerStep };
+  const props = { block, animate, charsPerStep, splitStep };
   try {
     return <>{adapter(props)}</>;
   } catch {

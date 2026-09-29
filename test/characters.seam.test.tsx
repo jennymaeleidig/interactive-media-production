@@ -19,12 +19,18 @@ const writer = vi.hoisted(() => ({
   callFunction: vi.fn(),
 }));
 const { speakLine, stopVoice } = vi.hoisted(() => ({ speakLine: vi.fn(() => 1), stopVoice: vi.fn() }));
+/** The options the reveal last handed the typewriter, so their identity across
+ * renders is assertable — the library rebuilds itself when they change. */
+const lastOptions = vi.hoisted(() => ({
+  current: null as null | { stringSplitter?: (text: string) => string[] },
+}));
 
 vi.mock('typewriter-effect', async () => {
   const { useEffect } = await import('react');
   return {
-    default: ({ onInit }: { onInit?: (typewriter: unknown) => void }) => {
+    default: ({ onInit, options }: { onInit?: (typewriter: unknown) => void; options?: typeof lastOptions.current }) => {
       useEffect(() => {
+        if (options) lastOptions.current = options;
         onInit?.(writer);
       }, []);
       return <span data-testid="tw" />;
@@ -138,6 +144,24 @@ describe('the character seam', () => {
     const bubbles = screen.getAllByTestId('message-assistant');
     expect(bubbles[0].querySelector('[data-testid^="character-mark-"]')).toBeNull();
     expect(bubbles[1].querySelector('[data-testid^="character-mark-"]')).not.toBeNull();
+  });
+
+  it('keeps the typewriter’s options stable when a bubble regroups', () => {
+    // `typewriter-effect` deep-compares its options and, when they differ, builds
+    // a new instance: its constructor blanks the wrapper and its update path
+    // never re-runs `onInit`, so the line would stay blank for good. A fresh
+    // `stringSplitter` closure each render did exactly that as soon as a later
+    // bubble joined the run. One splitter, read through a ref, is the fix.
+    const block: ChatBlock = { who: 'bot', speaker: 'cam', type: 'text', text: 'wait' };
+    const at = new Date();
+    const one = (): ChatMessage => ({ id: 'one', role: 'assistant', parts: [block], at, fresh: true });
+
+    const { rerender } = render(<Message continued={false} message={one()} />);
+    const first = lastOptions.current?.stringSplitter;
+    expect(first).toBeTypeOf('function');
+
+    rerender(<Message continued message={one()} />);
+    expect(lastOptions.current?.stringSplitter).toBe(first);
   });
 
   it('attributes the typing indicator to the character composing', () => {
