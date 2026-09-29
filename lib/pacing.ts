@@ -52,12 +52,14 @@ export const REVEAL_FLOOR_WORDS_PER_MINUTE = 120;
  * bound read as a clock: a delay of one frame is the fastest any positive delay
  * can be before the strict `>` comparison costs a second frame, so this is where
  * a shorter delay stops changing the step. It is not the ceiling on the reveal
- * itself — a preset that packs several characters per step (`fast`) outruns it,
- * because the queue entry, not the clock, is what grows. Derived from `FRAME_MS`,
- * so it is a consequence of the frame and not an independent knob. */
-export const REVEAL_CEILING_WORDS_PER_MINUTE = Math.floor(60_000 / (FRAME_MS * CHARS_PER_WORD));
+ * itself — a preset that packs several characters per step (`fast`) reaches it
+ * exactly, because the queue entry, not the clock, is what grows. Derived from
+ * `FRAME_MS`, so it is a consequence of the frame and not an independent knob;
+ * `round`, not `floor`, so floating-point noise in the frame cannot shave a word
+ * off the bound. */
+export const REVEAL_CEILING_WORDS_PER_MINUTE = Math.round(60_000 / (FRAME_MS * CHARS_PER_WORD));
 
-// The closed pace vocabulary — the five authored preset names and what each
+// The closed pace vocabulary — the three authored preset names and what each
 // multiplies a character's resting pace by — lives in `lib/pace-presets.mjs`,
 // because the build's freshness gate runs in Node and cannot import this
 // TypeScript. Re-exported here so the levers read as one table.
@@ -116,17 +118,35 @@ export function revealCharsPerStep(preset?: string): number {
     : 1;
 }
 
+/** A step size held to at least one whole character, so a bad value can never
+ * make a step of zero and loop the splitter forever. */
+function stepSize(charsPerStep: number): number {
+  return Number.isFinite(charsPerStep) && charsPerStep >= 1 ? Math.floor(charsPerStep) : 1;
+}
+
 /** One line's text in the pieces one typewriter step reveals: a run types as
  * whole steps of `charsPerStep` characters, and a tail shorter than a step types
  * as its own step. The renderer hands each piece to `typewriter-effect` through
  * its `stringSplitter`, so one queue entry (one frame's work) types a whole
- * step. */
+ * step. Steps are cut by code point, never by UTF-16 code unit, so a `fast` step
+ * cannot split an astral character into two lone surrogates. */
 export function splitIntoSteps(text: string, charsPerStep: number): string[] {
-  if (!Number.isFinite(charsPerStep) || charsPerStep <= 1) return text === '' ? [] : text.split('');
-  const size = Math.floor(charsPerStep);
+  const size = stepSize(charsPerStep);
+  if (size <= 1) return Array.from(text);
+  const characters = Array.from(text);
   const steps: string[] = [];
-  for (let index = 0; index < text.length; index += size) steps.push(text.slice(index, index + size));
+  for (let index = 0; index < characters.length; index += size) {
+    steps.push(characters.slice(index, index + size).join(''));
+  }
   return steps;
+}
+
+/** How many typewriter steps a run of `text` costs at `charsPerStep`: whole
+ * steps plus a short tail's own. The schedule (`lib/turn-plan.ts`) reads this
+ * rather than `text.length`, so it counts exactly the steps `splitIntoSteps`
+ * queues — code points, not code units. */
+export function stepsFor(text: string, charsPerStep: number): number {
+  return Math.ceil(Array.from(text).length / stepSize(charsPerStep));
 }
 
 /** The per-character delay asked of `typewriter-effect`, in milliseconds: the
@@ -159,7 +179,7 @@ export function revealMsPerChar(
   wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE,
   charsPerStep: number = 1,
 ): number {
-  const perStep = Number.isFinite(charsPerStep) && charsPerStep >= 1 ? charsPerStep : 1;
+  const perStep = stepSize(charsPerStep);
   return typewriterStepMs(revealDelayMs(wordsPerMinute)) / perStep;
 }
 

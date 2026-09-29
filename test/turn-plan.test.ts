@@ -121,27 +121,28 @@ describe('the paced reveal', () => {
   it('rides a fast stretch two characters per step, so the whole run halves', () => {
     const [run] = revealRuns(paced([{ text: 'abcd', pace: 'fast' }]));
     expect(run.charsPerStep).toBe(2);
-    // Same wall time per step as normal, but two characters ride it.
-    expect(run.stepMs).toBe(revealMsPerChar(revealWordsForPreset(400, 'normal')));
-    expect(run.msPerChar).toBe(run.stepMs / 2);
+    // `fast` keeps `normal`'s requested delay; the step is what halves, because
+    // two characters ride the same wall time.
+    expect(run.delayMs).toBe(revealDelayMs(revealWordsForPreset(400, 'normal')));
+    const normalStep = revealMsPerChar(revealWordsForPreset(400, 'normal'));
+    const fast = revealMsPerChar(revealWordsForPreset(400, 'fast'), run.charsPerStep);
+    expect(fast).toBe(normalStep / 2);
     // Four characters at two per step is two steps, after the two opening events.
-    const fast = paced([{ text: 'abcd', pace: 'fast' }]);
-    expect(revealDelay([fast])).toBe(Math.ceil(2 * run.stepMs + 2 * run.stepMs) + FRAME_MS);
-    // An odd tail is still its own step, so the schedule never under-waits it.
+    const even = paced([{ text: 'abcd', pace: 'fast' }]);
+    expect(revealDelay([even])).toBe(Math.ceil(2 * normalStep + 2 * normalStep) + FRAME_MS);
+    // A tail shorter than a step still costs its own step, so the schedule never
+    // under-waits it.
     const odd = paced([{ text: 'abc', pace: 'fast' }]);
-    expect(revealDelay([odd])).toBe(Math.ceil(2 * run.stepMs + 2 * run.stepMs) + FRAME_MS);
+    expect(revealDelay([odd])).toBe(Math.ceil(2 * normalStep + 2 * normalStep) + FRAME_MS);
   });
 
   it('leaves a line without a segment at the speaker’s resting pace', () => {
     const runs = revealRuns(cam('plain'));
     expect(runs).toHaveLength(1);
     expect(runs[0].text).toBe('plain');
-    // The requested delay is what the typewriter is handed; the step is the
-    // frame-rounded wall time the schedule reads, and an unmarked line rides one
-    // character per step.
+    // The requested delay is what the typewriter is handed; an unmarked line
+    // rides one character per step.
     expect(runs[0].delayMs).toBe(revealDelayMs(revealWordsPerMinuteFor(cam('plain'))));
-    expect(runs[0].stepMs).toBe(revealMsPerChar(revealWordsPerMinuteFor(cam('plain'))));
     expect(runs[0].charsPerStep).toBe(1);
-    expect(runs[0].stepMs).toBeGreaterThan(runs[0].delayMs);
   });
 });

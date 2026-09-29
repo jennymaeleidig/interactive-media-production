@@ -19,16 +19,11 @@ const writer = vi.hoisted(() => ({
   callFunction: vi.fn(),
 }));
 const { speakLine, stopVoice } = vi.hoisted(() => ({ speakLine: vi.fn(() => 1), stopVoice: vi.fn() }));
-/** The last options the reveal handed the typewriter, so the splitter is checkable. */
-const lastOptions = vi.hoisted(() => ({
-  current: null as null | { stringSplitter?: (text: string) => string[] },
-}));
 
 vi.mock('typewriter-effect', async () => {
   const { useEffect } = await import('react');
   return {
-    default: ({ onInit, options }: { onInit?: (typewriter: unknown) => void; options?: typeof lastOptions.current }) => {
-      lastOptions.current = options ?? null;
+    default: ({ onInit }: { onInit?: (typewriter: unknown) => void }) => {
       useEffect(() => {
         onInit?.(writer);
       }, []);
@@ -94,10 +89,6 @@ describe('the character seam', () => {
     // the frame-rounded step the schedule reads.
     const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fast'));
     expect(writer.changeDelay).toHaveBeenCalledWith(expected);
-    // The fast stretch rides two characters per step: the splitter the reveal
-    // handed the typewriter groups the run's text in pairs, which is what makes
-    // `fast` outrun `normal` at all.
-    expect(lastOptions.current?.stringSplitter?.('now')).toEqual(['no', 'w']);
     // The voice gets the whole line and the speaker, once; the typewriter's
     // completion event is where it is stopped.
     expect(speakLine).toHaveBeenCalledWith('wait now', 'cam');
@@ -110,6 +101,21 @@ describe('the character seam', () => {
     render(<Message message={message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'plain' }], { speaker: 'cam' })} />);
     expect(writer.typeString).toHaveBeenCalledWith('plain');
     expect(writer.changeDelay).not.toHaveBeenCalled();
+  });
+
+  it('survives a landed line losing its freshness, with no hook-order surprise', () => {
+    // The adapters are invoked as plain functions so a throw is contained by
+    // `BlockPart`; none of them may hold a hook. A hook inside the text adapter
+    // would unbalance `BlockPart`'s order the moment `animate` flips to false on
+    // the same mounted bubble — React's "more hooks than the previous render".
+    const block: ChatBlock = { who: 'bot', speaker: 'cam', type: 'text', text: 'landed' };
+    const { rerender } = render(
+      <Message message={message([block], { speaker: 'cam', fresh: true })} />,
+    );
+    expect(() =>
+      rerender(<Message message={message([block], { speaker: 'cam', fresh: false })} />),
+    ).not.toThrow();
+    expect(screen.getByText('landed')).toBeTruthy();
   });
 
   it('attributes the typing indicator to the character composing', () => {

@@ -23,6 +23,7 @@ import {
   revealDelayMs,
   revealMsPerChar,
   revealWordsForPreset,
+  stepsFor,
   typewriterStepMs,
   type Pacing,
 } from '@/lib/pacing';
@@ -76,17 +77,15 @@ export function revealWordsPerMinuteFor(block: ChatBlock, pacing: Pacing = DEFAU
 }
 
 /** One stretch of a line's reveal: the text, the per-step delay to hand the
- * typewriter (`delayMs`), how many characters ride one step (`charsPerStep`),
- * the wall time one step actually costs once the rAF loop rounds the delay up to
- * a frame (`stepMs`), and the resulting per-character pace (`msPerChar`). A
- * caller driving the typewriter uses `delayMs` and `charsPerStep`; the schedule
- * sums `stepMs`, because that is what really elapses. */
+ * typewriter (`delayMs`), and how many characters ride one step
+ * (`charsPerStep`). The delay is what the typewriter is *requested*; what it
+ * achieves is derived (`typewriterStepMs`), because the step — not the requested
+ * delay — is what really elapses. A caller driving the typewriter uses these two
+ * fields; the schedule derives the step. */
 export interface RevealRun {
   text: string;
   delayMs: number;
   charsPerStep: number;
-  stepMs: number;
-  msPerChar: number;
 }
 
 /** A landed block's typed runs. A text block is split at its parse-time
@@ -99,10 +98,11 @@ export function revealRuns(block: ChatBlock, pacing: Pacing = DEFAULT_PACING): R
   const segments = block.segments && block.segments.length > 0 ? block.segments : [{ text: block.text }];
   return segments.map((segment) => {
     const pace = revealWordsForPreset(base, segment.pace);
-    const delayMs = revealDelayMs(pace);
-    const charsPerStep = revealCharsPerStep(segment.pace);
-    const stepMs = typewriterStepMs(delayMs);
-    return { text: segment.text, delayMs, charsPerStep, stepMs, msPerChar: stepMs / charsPerStep };
+    return {
+      text: segment.text,
+      delayMs: revealDelayMs(pace),
+      charsPerStep: revealCharsPerStep(segment.pace),
+    };
   });
 }
 
@@ -125,10 +125,10 @@ export function revealDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAU
     // The typewriter's queue opens with its own two events before the first
     // character, and each later run prepends a `changeDelay` that itself costs a
     // step at the previous run's pace.
-    total += 2 * runs[0].stepMs;
+    total += 2 * typewriterStepMs(runs[0].delayMs);
     runs.forEach((run, index) => {
-      if (index > 0) total += runs[index - 1].stepMs;
-      total += run.stepMs * Math.ceil(run.text.length / run.charsPerStep);
+      if (index > 0) total += typewriterStepMs(runs[index - 1].delayMs);
+      total += typewriterStepMs(run.delayMs) * stepsFor(run.text, run.charsPerStep);
     });
   }
   return Math.ceil(total) + FRAME_MS;

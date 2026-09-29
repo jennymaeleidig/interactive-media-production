@@ -72,6 +72,14 @@ describe('the cast', () => {
         const pace = revealWordsForPreset(resting, preset);
         expect(pace, `${character.id}: ${preset}`).toBeGreaterThanOrEqual(REVEAL_FLOOR_WORDS_PER_MINUTE);
         expect(pace, `${character.id}: ${preset}`).toBeLessThanOrEqual(REVEAL_CEILING_WORDS_PER_MINUTE);
+        // The requested pace is only half the story: what a viewer sees is the
+        // frame-rounded wall time, and `fast` reaches a higher clock by riding
+        // two characters per step. Reading the effective pace back out of
+        // milliseconds-per-character is what proves the band really holds —
+        // 5 characters to the word, so 60_000 ms / msPerChar chars a minute.
+        const effective = 12_000 / revealMsPerChar(pace, revealCharsPerStep(preset));
+        expect(effective, `${character.id}: ${preset} effective`).toBeGreaterThanOrEqual(REVEAL_FLOOR_WORDS_PER_MINUTE);
+        expect(effective, `${character.id}: ${preset} effective`).toBeLessThanOrEqual(REVEAL_CEILING_WORDS_PER_MINUTE);
       }
     }
   });

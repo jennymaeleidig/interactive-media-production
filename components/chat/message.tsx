@@ -53,9 +53,16 @@ export function UnknownBlock({ reason }: { reason: string }) {
   );
 }
 
-type AdapterProps = { block: ChatBlock; animate?: boolean };
+/** The reveal's step-size handle: a mutable box `BlockPart` owns so the hookless
+ * adapters can read the current step while the typewriter's splitter runs. */
+type StepRef = { current: number };
 
-function TextPart({ block, animate = false }: AdapterProps) {
+type AdapterProps = { block: ChatBlock; animate?: boolean; charsPerStep: StepRef };
+
+/** What a caller gives `BlockPart`: it owns the step handle itself. */
+type BlockProps = { block: ChatBlock; animate?: boolean };
+
+function TextPart({ block, animate = false, charsPerStep }: AdapterProps) {
   const typed = block as Extract<ChatBlock, { type: 'text' }>;
   // The viewer's own line is never composed for them: it lands as log, whole.
   // Only a fresh message types itself out — a restored transcript (the opening
@@ -69,11 +76,6 @@ function TextPart({ block, animate = false }: AdapterProps) {
   // the typing is the clock, so the voice is stopped when the line has finished
   // typing, never the reverse.
   const runs = revealRuns(typed);
-  // The reveal rides one queue entry per frame, so a `fast` run packs several
-  // characters into each entry rather than asking for an unreachably short
-  // delay. The splitter reads this ref when `typeString` runs, so it is set to the
-  // run's own step right before that run is queued.
-  const charsPerStep = useRef(runs[0]?.charsPerStep ?? 1);
   return (
     <p className={prose}>
       <Typewriter
@@ -166,12 +168,20 @@ export const BLOCK_ADAPTERS: Record<ChatBlock['type'] | 'failed', (props: Adapte
 };
 
 /** Render one block through its adapter, containing any throw. */
-export function BlockPart({ block, animate }: AdapterProps) {
+export function BlockPart({ block, animate }: BlockProps) {
+  // The adapters are invoked as plain functions so a throw is contained here and
+  // degrades to the designed fallback — and that means none of them may hold a
+  // hook. The reveal's step handle lives here for that reason and is passed down;
+  // `TextPart` sets it as it queues each run. The reveal rides one queue entry
+  // per frame, so a `fast` run packs several characters into each entry rather
+  // than asking for an unreachably short delay.
+  const charsPerStep = useRef(1);
   const adapter = BLOCK_ADAPTERS[block.type] ?? BLOCK_ADAPTERS.unknown;
+  const props = { block, animate, charsPerStep };
   try {
-    return <>{adapter({ block, animate })}</>;
+    return <>{adapter(props)}</>;
   } catch {
-    return BLOCK_ADAPTERS.failed({ block, animate });
+    return BLOCK_ADAPTERS.failed(props);
   }
 }
 

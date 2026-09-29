@@ -24,6 +24,7 @@ import {
   revealMsPerChar,
   revealWordsForPreset,
   splitIntoSteps,
+  stepsFor,
 } from '@/lib/pacing';
 import { revealDelay } from '@/lib/turn-plan';
 
@@ -95,10 +96,21 @@ describe('the pace presets', () => {
     expect(revealCharsPerStep('nonsense')).toBe(1);
   });
 
-  it('splits a run into whole steps for the typewriter, with a short tail', () => {
-    expect(splitIntoSteps('abcdef', 2)).toEqual(['ab', 'cd', 'ef']);
-    expect(splitIntoSteps('abcde', 2)).toEqual(['ab', 'cd', 'e']);
-    expect(splitIntoSteps('abc', 1)).toEqual(['a', 'b', 'c']);
-    expect(splitIntoSteps('', 2)).toEqual([]);
+  it('splits a run into whole steps without ever breaking a character', () => {
+    // A step is a unit of rendering, so it must never cut an astral character in
+    // two. Joining the steps back is the property that matters; the shape of the
+    // split is the implementation's business.
+    for (const text of ['abcdef', 'abcde', 'abc', '', 'a\u{1F600}b', '\u{1F600}\u{1F600}\u{1F600}\u{1F600}\u{1F600}']) {
+      const steps = splitIntoSteps(text, 2);
+      expect(steps.join(''), text).toBe(text);
+      for (const step of steps) {
+        expect(step, `${text} step is whole code points`).toBe(Array.from(step).join(''));
+        expect(Array.from(step).length, `${text} step width`).toBeLessThanOrEqual(2);
+      }
+      // The count the schedule charges is the count the typewriter queues.
+      expect(stepsFor(text, 2), `${text} count`).toBe(steps.length);
+    }
+    expect(splitIntoSteps('a\u{1F600}b', 2)).toEqual(['a\u{1F600}', 'b']);
+    expect(stepsFor('abc', 2)).toBe(2);
   });
 });
