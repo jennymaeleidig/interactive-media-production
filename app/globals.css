@@ -250,22 +250,6 @@
       background-color: var(--color-chrome);
     }
   }
-
-  /* The reveal's height guard (`components/chat/message.tsx`). A landed line
-     types itself out into a paragraph that is otherwise empty — and therefore
-     zero-height — until the first character arrives, so the bubble would grow a
-     line at a time and shove the transcript around under the viewer. The
-     finished line is drawn here instead, as generated content, which holds the
-     box open at its final size from the first frame. It is generated rather
-     than a second text node on purpose: the DOM keeps one copy of the line, so
-     no screen reader, text selection, or query ever sees two. */
-  .reveal-ghost {
-    visibility: hidden;
-  }
-
-  .reveal-ghost::before {
-    content: attr(data-reveal);
-  }
 }
 
 @layer components {

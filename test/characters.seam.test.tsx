@@ -29,8 +29,12 @@ vi.mock('typewriter-effect', async () => {
   const { useEffect } = await import('react');
   return {
     default: ({ onInit, options }: { onInit?: (typewriter: unknown) => void; options?: typeof lastOptions.current }) => {
+      // The last options rendered: captured every render, because the library's
+      // own update path reads the current prop, not the mount-time one.
       useEffect(() => {
         if (options) lastOptions.current = options;
+      });
+      useEffect(() => {
         onInit?.(writer);
       }, []);
       return <span data-testid="tw" />;
@@ -146,22 +150,24 @@ describe('the character seam', () => {
     expect(bubbles[1].querySelector('[data-testid^="character-mark-"]')).not.toBeNull();
   });
 
-  it('keeps the typewriter’s options stable when a bubble regroups', () => {
+  it('keeps the typewriter’s whole options object equal when a bubble regroups', () => {
     // `typewriter-effect` deep-compares its options and, when they differ, builds
-    // a new instance: its constructor blanks the wrapper and its update path
-    // never re-runs `onInit`, so the line would stay blank for good. A fresh
-    // `stringSplitter` closure each render did exactly that as soon as a later
-    // bubble joined the run. One splitter, read through a ref, is the fix.
+    // a new instance: the constructor blanks the wrapper and the update path
+    // never re-runs `onInit`, so the line would stay blank for good. The reveal
+    // therefore builds its options exactly once. `toEqual` compares functions by
+    // reference, so this is what the library's `isEqual` sees — and it fails as
+    // soon as any option is given a fresh identity per render.
     const block: ChatBlock = { who: 'bot', speaker: 'cam', type: 'text', text: 'wait' };
     const at = new Date();
     const one = (): ChatMessage => ({ id: 'one', role: 'assistant', parts: [block], at, fresh: true });
 
     const { rerender } = render(<Message continued={false} message={one()} />);
-    const first = lastOptions.current?.stringSplitter;
-    expect(first).toBeTypeOf('function');
+    const before = lastOptions.current;
+    expect(before?.stringSplitter).toBeTypeOf('function');
 
     rerender(<Message continued message={one()} />);
-    expect(lastOptions.current?.stringSplitter).toBe(first);
+    expect(lastOptions.current).toEqual(before);
+    expect(lastOptions.current?.stringSplitter).toBe(before?.stringSplitter);
   });
 
   it('attributes the typing indicator to the character composing', () => {
