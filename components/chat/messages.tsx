@@ -29,12 +29,16 @@ export function Messages({
   isTyping = false,
   isLoading = false,
   typingSpeaker,
+  onRevealEnd,
 }: {
   messages: ChatMessage[];
   isTyping?: boolean;
   isLoading?: boolean;
   /** The character composing the reply the dots wait on (`use-dialogue`). */
   typingSpeaker?: string;
+  /** A fresh land's reveal has ended, identified by message id. Threaded from
+   * the dialogue hook down to the reveal adapter (`lib/reveal.ts`). */
+  onRevealEnd?: (id: string) => void;
 }) {
   const rows = transcriptRows(messages);
 
@@ -83,6 +87,7 @@ export function Messages({
                 continues={continues}
                 key={message.id}
                 message={message}
+                onRevealEnd={onRevealEnd}
               />,
             ])}
           </AnimatePresence>

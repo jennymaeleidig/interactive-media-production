@@ -16,12 +16,18 @@ import { Header } from './header';
 import { Messages } from './messages';
 
 export function ChatShell() {
-  const { messages, options, sendOption, isTyping, typingSpeaker, busy, isLoading, reset } = useDialogue();
+  const { messages, options, sendOption, isTyping, typingSpeaker, busy, isLoading, onRevealEnd, reset } = useDialogue();
 
   return (
     <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-ground">
       <Header onReset={reset} />
-      <Messages isLoading={isLoading} isTyping={isTyping} messages={messages} typingSpeaker={typingSpeaker ?? undefined} />
+      <Messages
+        isLoading={isLoading}
+        isTyping={isTyping}
+        messages={messages}
+        onRevealEnd={onRevealEnd}
+        typingSpeaker={typingSpeaker ?? undefined}
+      />
       <Composer disabled={busy || isLoading} onSelect={sendOption} options={options} />
     </div>
   );

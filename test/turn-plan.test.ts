@@ -7,13 +7,14 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
-import { composingChars, planTurn, revealDelay, composingDelay, revealRuns, revealWordsPerMinuteFor } from '../lib/turn-plan';
-import { COMPOSING_EXIT_MS, COMPOSING_LEAD_MS, DEFAULT_PACING, FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealCharsPerStep, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
+import { composingChars, planTurn, composingDelay } from '../lib/turn-plan';
+import { COMPOSING_EXIT_MS, COMPOSING_LEAD_MS, DEFAULT_PACING, FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, type Pacing } from '../lib/pacing';
+import { muteRevealHoldMs } from '../lib/reveal';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
 const cut = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text, newMessage: true });
-const flock = (text: string): ChatBlock => ({ who: 'bot', speaker: 'flock', type: 'text', text });
+const link = (label: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'link', href: 'https://example.test/', label });
 const me = (text: string): ChatBlock => ({ who: 'me', type: 'text', text });
 
 const LONG = 'A reply long enough that its weight clears the composing floor and would be held.';
@@ -46,7 +47,7 @@ describe('planning a turn', () => {
       {
         through: 1,
         beatMs: composingDelay([cam(LONG)]),
-        revealMs: revealDelay([cam(LONG)]),
+        holdMs: 0,
         leadMs: 0,
         exitMs: EXIT,
       },
@@ -62,7 +63,7 @@ describe('planning a turn', () => {
       {
         through: 3,
         beatMs: composingDelay([cam(LONG)]),
-        revealMs: revealDelay([cam(LONG)]),
+        holdMs: 0,
         leadMs: COMPOSING_LEAD_MS,
         exitMs: EXIT,
       },
@@ -76,38 +77,56 @@ describe('planning a turn', () => {
       {
         through: 2,
         beatMs: composingDelay([cam(LONG)]),
-        revealMs: revealDelay([cam(LONG)]),
+        holdMs: 0,
         leadMs: COMPOSING_LEAD_MS,
         exitMs: EXIT,
       },
       {
         through: 3,
         beatMs: composingDelay([cut('And a sign-off.')]),
-        revealMs: revealDelay([cut('And a sign-off.')]),
+        holdMs: 0,
         leadMs: 0,
         exitMs: EXIT,
       },
     ]);
   });
 
-  it('gives each step its own beat and reveal, so the next dots follow the line above', () => {
+  it('gives each step its own beat, so the next dots follow the line above', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG), cut(SHORT)], { hold: true });
     expect(plan.steps).toEqual([
       {
         through: 3,
         beatMs: composingDelay([cam(LONG)]),
-        revealMs: revealDelay([cam(LONG)]),
+        holdMs: 0,
         leadMs: COMPOSING_LEAD_MS,
         exitMs: EXIT,
       },
       {
         through: 4,
         beatMs: composingDelay([cut(SHORT)]),
-        revealMs: revealDelay([cut(SHORT)]),
+        holdMs: 0,
         leadMs: 0,
         exitMs: EXIT,
       },
     ]);
+  });
+
+  it('waits a mute land out for its content weight, since it has no typewriter', () => {
+    // A link, an image, or a frame never types, so its step cannot be awaited by
+    // a reveal end. It carries a hold read from its own declared weight instead,
+    // so it does not land instantly.
+    const plan = planTurn(0, [link('Open the docs')], { hold: true });
+    expect(plan.steps[0].holdMs).toBe(muteRevealHoldMs([link('Open the docs')]));
+    expect(plan.steps[0].holdMs).toBeGreaterThan(0);
+  });
+
+  it('gives a typecapable land a zero hold, because it is awaited by event', () => {
+    // A step whose blocks include a bot text block types itself out, so the hook
+    // awaits the reveal's end rather than a hold. A link beside the text rides
+    // the same land and does not add one.
+    const plan = planTurn(0, [link('Open the docs'), cam(LONG)], { hold: true });
+    expect(plan.steps).toHaveLength(1);
+    expect(plan.steps[0].holdMs).toBe(0);
   });
 
   it('charges the dot lead only to the step behind an echo that actually landed', () => {
@@ -145,17 +164,17 @@ describe('planning a turn', () => {
   it('lands everything in one step when the reply is not held', () => {
     const plan = planTurn(1, [cam('greeting'), me('Support'), cam(LONG)], { hold: false });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, revealMs: 0, leadMs: 0, exitMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 3, beatMs: 0, holdMs: 0, leadMs: 0, exitMs: 0 }]);
   });
 
   it('lands everything at once when the turn appends no reply', () => {
     // The viewer's own line with nothing behind it: there is nothing to compose.
     const plan = planTurn(1, [cam('greeting'), me('Support')], { hold: true });
     expect(plan.echoEnd).toBeNull();
-    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, revealMs: 0, leadMs: 0, exitMs: 0 }]);
+    expect(plan.steps).toEqual([{ through: 2, beatMs: 0, holdMs: 0, leadMs: 0, exitMs: 0 }]);
   });
 
-  it('reads the pacing it is handed, and the speaker’s own reveal pace', () => {
+  it('reads the composing pacing it is handed', () => {
     const slower: Pacing = {
       composingWordsPerMinute: 100,
       minimumBeatMs: 0,
@@ -163,64 +182,7 @@ describe('planning a turn', () => {
       revealWordsPerMinute: 100,
     };
     expect(composingDelay([cam(LONG)], slower)).toBe(Math.round(LONG.length * msPerChar(100)));
-    // The reveal pace belongs to the character, not the settings: Flock rests
-    // slower than Cam (fewer words per minute), so the same line types for longer
-    // and the next message waits longer. A character that declares no pace
-    // inherits `DEFAULT_PACING`.
-    expect(revealWordsPerMinuteFor(flock(LONG))).toBeLessThan(revealWordsPerMinuteFor(cam(LONG)));
-    expect(revealDelay([flock(LONG)])).toBeGreaterThan(revealDelay([cam(LONG)]));
     const plan = planTurn(0, [cam(LONG)], { hold: true, pacing: slower });
-    expect(plan.steps[0].revealMs).toBe(revealDelay([cam(LONG)], slower));
-  });
-});
-
-describe('the paced reveal', () => {
-  const paced = (segments: { text: string; pace?: string }[]): ChatBlock => ({
-    who: 'bot',
-    speaker: 'cam',
-    type: 'text',
-    text: segments.map((segment) => segment.text).join(''),
-    segments,
-  });
-
-  it('types an authored line in preset stretches, and the schedule sums them', () => {
-    const block = paced([{ text: 'aa', pace: 'slow' }, { text: 'bb', pace: 'normal' }]);
-    const slow = revealMsPerChar(revealWordsForPreset(400, 'slow'), revealCharsPerStep('slow'));
-    const quick = revealMsPerChar(revealWordsForPreset(400, 'normal'), revealCharsPerStep('normal'));
-    // Two opening events plus the first stretch, the changeDelay event at the
-    // first stretch's pace, then the second stretch — every char at its own
-    // frame-rounded step, not its requested delay.
-    expect(revealDelay([block])).toBe(Math.ceil(5 * slow + 2 * quick) + FRAME_MS);
-    // The slow stretch makes the whole line hold longer than the same characters
-    // read at one pace — the override is real, not decorative.
-    expect(revealDelay([block])).toBeGreaterThan(revealDelay([cam('aabb')]));
-  });
-
-  it('rides a fast stretch two characters per step, so the whole run halves', () => {
-    const [run] = revealRuns(paced([{ text: 'abcd', pace: 'fast' }]));
-    expect(run.charsPerStep).toBe(2);
-    // `fast` keeps `normal`'s requested delay; the step is what halves, because
-    // two characters ride the same wall time.
-    expect(run.delayMs).toBe(revealDelayMs(revealWordsForPreset(400, 'normal')));
-    const normalStep = revealMsPerChar(revealWordsForPreset(400, 'normal'));
-    const fast = revealMsPerChar(revealWordsForPreset(400, 'fast'), run.charsPerStep);
-    expect(fast).toBe(normalStep / 2);
-    // Four characters at two per step is two steps, after the two opening events.
-    const even = paced([{ text: 'abcd', pace: 'fast' }]);
-    expect(revealDelay([even])).toBe(Math.ceil(2 * normalStep + 2 * normalStep) + FRAME_MS);
-    // A tail shorter than a step still costs its own step, so the schedule never
-    // under-waits it.
-    const odd = paced([{ text: 'abc', pace: 'fast' }]);
-    expect(revealDelay([odd])).toBe(Math.ceil(2 * normalStep + 2 * normalStep) + FRAME_MS);
-  });
-
-  it('leaves a line without a segment at the speaker’s resting pace', () => {
-    const runs = revealRuns(cam('plain'));
-    expect(runs).toHaveLength(1);
-    expect(runs[0].text).toBe('plain');
-    // The requested delay is what the typewriter is handed; an unmarked line
-    // rides one character per step.
-    expect(runs[0].delayMs).toBe(revealDelayMs(revealWordsPerMinuteFor(cam('plain'))));
-    expect(runs[0].charsPerStep).toBe(1);
+    expect(plan.steps[0].beatMs).toBe(composingDelay([cam(LONG)], slower));
   });
 });

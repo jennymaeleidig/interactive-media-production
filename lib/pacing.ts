@@ -5,9 +5,9 @@
 // shortest hold, how fast a landed line types itself out, the closed vocabulary
 // of authored pace overrides, and the voice that speaks as it does. Every clock
 // reads the same shape — words per minute, five characters to the word — so the
-// speeds are directly comparable. The typing is the turn's clock: a line is held
-// for exactly as long as it takes to type, and its voice is stopped when the
-// typing stops (`lib/turn-plan.ts`, `lib/voice.ts`).
+// speeds are directly comparable. The typing is the turn's clock: a line's
+// reveal reports its own end (`lib/reveal.ts`), and its voice is stopped when the
+// typing stops (`lib/voice.ts`).
 //
 // The dialog's two clocks are deliberately separate. The composing clock decides
 // how long the dots hold before a reply lands, and belongs to the viewer's
@@ -47,9 +47,9 @@ export const COMPOSING_EXIT_MS = 200;
  * frame, and only on a frame strictly past the requested delay, so a delay of
  * *less than* one frame still takes two frames and the reveal's true pace is the
  * requested delay rounded **up** to the next frame — not the slower of the clock
- * and one frame. The schedule reads the reveal through that step
- * (`revealMsPerChar`), so it waits out a line that is still typing rather than
- * landing the next one on top of it. */
+ * and one frame. `revealMsPerChar` reads a line through that step, so the hold a
+ * mute land is waited out for and the queue's own step size stay in step with
+ * what the typewriter really achieves. */
 export const FRAME_MS = 1000 / 60;
 
 /** The piece's own reveal clock, in words per minute: the resting pace a landed
@@ -90,7 +90,7 @@ export type PacePreset = 'slow' | 'normal' | 'fast';
  * viewer's own line. `lib/turn-plan.ts` takes this rather than reaching for the
  * module constants, so the piece's tuning is one substitution; the reveal
  * override per character and per `[pace=...]` marker layers on top of
- * `revealWordsPerMinute` (`lib/turn-plan.ts`). */
+ * `revealWordsPerMinute` (`lib/reveal.ts`). */
 export interface Pacing {
   composingWordsPerMinute: number;
   revealWordsPerMinute: number;
@@ -160,8 +160,8 @@ export function splitIntoSteps(text: string, charsPerStep: number): string[] {
 }
 
 /** How many typewriter steps a run of `text` costs at `charsPerStep`: whole
- * steps plus a short tail's own. The schedule (`lib/turn-plan.ts`) reads this
- * rather than `text.length`, so it counts exactly the steps `splitIntoSteps`
+ * steps plus a short tail's own. The reveal's queue reads the same step size
+ * (`revealCharsPerStep`), so a count derived here matches what the typewriter
  * queues — code points, not code units. */
 export function stepsFor(text: string, charsPerStep: number): number {
   return Math.ceil(Array.from(text).length / stepSize(charsPerStep));
@@ -190,9 +190,9 @@ export function typewriterStepMs(delayMs: number): number {
  * whole animation frame, strictly next, so one frame of delay is two frames of
  * wall time), divided by how many characters one step carries. One step takes the
  * same wall time whatever it holds, so a two-character step is twice the pace.
- * The turn schedule (`lib/turn-plan.ts`) waits a still-typing line out on it
- * rather than landing the next one on top of it, and the voice — stopped when the
- * line has finished typing (`lib/voice.ts`) — is never cut early. */
+ * The turn plan reads it to wait a mute land out for its content weight
+ * (`lib/turn-plan.ts`), and the voice — stopped by its line's own reveal end
+ * (`lib/voice.ts`) — is never cut early. */
 export function revealMsPerChar(
   wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE,
   charsPerStep: number = 1,

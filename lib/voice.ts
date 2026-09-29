@@ -17,6 +17,11 @@
 // will not let through before a gesture stays silent rather than throwing; the
 // reveal is the message either way.
 //
+// A line's voice is a handle: `speakLine` returns it and the line stops it when
+// its own typing ends. The integer token behind the handle is private to this
+// module, so the "typing is the clock" rule lives here and neither the renderer
+// nor the dialogue hook carries a token.
+//
 // Two nodes sit in series between the library's output and the speakers: an
 // envelope that fades each line in at its start and out at its cut, and the
 // master gain that carries the volume knob. A hard start or stop is a step in
@@ -53,11 +58,18 @@ let engine: Animalese | null = null;
 let loading: Promise<void> | null = null;
 let active: SpeechHandle | null = null;
 /** The line the voice belongs to. `speakLine` claims a fresh token per line, and
- * `stopVoice(token)` is a no-op for a token that is no longer live — so a line
+ * a handle's stop is a no-op for a token that is no longer live — so a line
  * that finished typing after a newer line had already started cannot cut the
  * newer line's voice. Zero means nothing is live. */
 let activeToken = 0;
 let nextToken = 0;
+
+/** A line's voice, as the line holds it. `stop` ends the voice the handle was
+ * created for; it is a no-op once a newer line has claimed the voice, so a late
+ * completion cannot silence its successor. */
+export interface VoiceHandle {
+  stop(): void;
+}
 /** The pending stop of an outgoing line, held until its fade has landed. */
 let stopTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -111,16 +123,17 @@ function ensureVoice(): { context: AudioContext; engine: Animalese; fade: GainNo
 }
 
 /** Speak one line in the speaking character's own voice, from the first
- * character, and return the token that names it. Called when a fresh line's
+ * character, and return the handle that stops it. Called when a fresh line's
  * typewriter starts; a line still speaking is faded out first, since only one
  * line types at a time (the turn schedule guarantees it, but a remount need not).
- * The caller passes the token back to `stopVoice` when its own typing ends, so a
- * superseded line cannot stop the line that replaced it. */
-export function speakLine(text: string, speaker: string): number {
+ * The line stops the handle when its own typing ends, so a superseded line
+ * cannot stop the line that replaced it. */
+export function speakLine(text: string, speaker: string): VoiceHandle {
   const token = (nextToken += 1);
   activeToken = token;
+  const handle = { stop: () => stopToken(token) };
   const voice = ensureVoice();
-  if (!voice) return token;
+  if (!voice) return handle;
   const { context, engine, gain } = voice;
   const { volume } = getSettings();
   // The pitch pair belongs to the character (`lib/chat-characters.mjs`), so two
@@ -152,7 +165,7 @@ export function speakLine(text: string, speaker: string): number {
   void context.resume().catch(() => undefined);
   // The first line waits for the samples; afterwards `loading` has settled.
   void (loading ?? Promise.resolve()).then(start, () => undefined);
-  return token;
+  return handle;
 }
 
 /** Fade the active speech and stop its sources once the ramp has landed. Leaves
@@ -175,17 +188,16 @@ function cutActive(): void {
   }, VOICE_FADE_S * 1000);
 }
 
-/** Cut a line's voice off now. The typing is the turn's clock, so the line's own
- * typewriter calls this — with the token `speakLine` returned — the moment it has
- * finished typing: a voice slower than the reveal stops there rather than talking
- * over the next message, and the voice is never cut before the typing it belongs
- * to is done. A token that is not the live one is ignored, so a late completion
- * cannot silence the line that replaced it; no token is a forced stop (a reset),
- * which also cancels a line still waiting for its samples. The cut is a fade, not
- * a stop — the sources are stopped only once the ramp has landed, so the waveform
- * is never severed mid-sample. A no-op when nothing is speaking. */
-export function stopVoice(token?: number): void {
-  if (token !== undefined && token !== activeToken) return;
+/** Cut a line's voice off now, when its handle is stopped. The typing is the
+ * turn's clock, so the line stops its own voice the moment it has finished
+ * typing: a voice slower than the reveal stops there rather than talking over
+ * the next message, and the voice is never cut before the typing it belongs to
+ * is done. A token that is not the live one is ignored, so a late completion
+ * cannot silence the line that replaced it. The cut is a fade, not a stop — the
+ * sources are stopped only once the ramp has landed, so the waveform is never
+ * severed mid-sample. A no-op when nothing is speaking. */
+function stopToken(token: number): void {
+  if (token !== activeToken) return;
   activeToken = 0;
   cutActive();
 }

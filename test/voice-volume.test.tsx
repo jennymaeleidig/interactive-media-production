@@ -58,7 +58,7 @@ vi.mock('animalese-web', () => ({ Animalese: fake.Animalese }));
 import { characterFor } from '@/lib/chat-characters.mjs';
 import { ANIMALESE_WORDS_PER_MINUTE, msPerChar } from '@/lib/pacing';
 import { resetSettings, updateSettings } from '@/lib/settings';
-import { speakLine, stopVoice } from '@/lib/voice';
+import { speakLine } from '@/lib/voice';
 
 /** The options the library was last asked to speak with. */
 const lastOptions = () =>
@@ -97,12 +97,12 @@ describe('the voice and the character', () => {
     await waitFor(() => expect(fake.speak).toHaveBeenCalledTimes(2));
 
     const handle = fake.speak.mock.results.at(-1)?.value as unknown as { stop: () => void };
-    // The first line's typewriter finishes later: its token is no longer live, so
-    // its stop is ignored and the second line keeps speaking.
-    stopVoice(stale);
+    // The first line's typewriter finishes later: its handle is no longer live,
+    // so its stop is ignored and the second line keeps speaking.
+    stale.stop();
     expect(handle.stop).not.toHaveBeenCalled();
 
-    stopVoice(fresh);
+    fresh.stop();
     await waitFor(() => expect(handle.stop).toHaveBeenCalled());
   });
 
@@ -118,7 +118,7 @@ describe('the voice and the character', () => {
   });
 
   it('fades a line in at its start and out before cutting it', async () => {
-    speakLine('hello there', 'cam');
+    const line = speakLine('hello there', 'cam');
     await waitFor(() => expect(fake.speak).toHaveBeenCalled());
     // Two nodes in series: the envelope first, the volume knob's master second.
     const envelope = fake.gains[0];
@@ -128,7 +128,7 @@ describe('the voice and the character', () => {
     expect(envelope.gain.linearRampToValueAtTime).toHaveBeenCalledWith(1, expect.any(Number));
 
     const handle = fake.speak.mock.results.at(-1)?.value as unknown as { stop: () => void };
-    stopVoice();
+    line.stop();
     // Exit: ramp to silence first, and only stop the sources once it has landed —
     // stopping first would sever the waveform mid-sample, the click this removes.
     expect(handle.stop).not.toHaveBeenCalled();

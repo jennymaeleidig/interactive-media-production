@@ -18,7 +18,10 @@ const writer = vi.hoisted(() => ({
   typeString: vi.fn(),
   callFunction: vi.fn(),
 }));
-const { speakLine, stopVoice } = vi.hoisted(() => ({ speakLine: vi.fn(() => 1), stopVoice: vi.fn() }));
+const { speakLine, stop } = vi.hoisted(() => {
+  const stop = vi.fn();
+  return { speakLine: vi.fn(() => ({ stop })), stop };
+});
 /** The options the reveal last handed the typewriter, so their identity across
  * renders is assertable — the library rebuilds itself when they change. */
 const lastOptions = vi.hoisted(() => ({
@@ -41,7 +44,7 @@ vi.mock('typewriter-effect', async () => {
     },
   };
 });
-vi.mock('@/lib/voice', () => ({ speakLine, stopVoice }));
+vi.mock('@/lib/voice', () => ({ speakLine }));
 
 import { Message } from '@/components/chat/message';
 import { TypingIndicator } from '@/components/chat/typing-indicator';
@@ -99,12 +102,13 @@ describe('the character seam', () => {
     // the frame-rounded step the schedule reads.
     const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fast'));
     expect(writer.changeDelay).toHaveBeenCalledWith(expected);
-    // The voice gets the whole line and the speaker, once; the typewriter's
-    // completion event is where it is stopped.
+    // The voice gets the whole line and the speaker, once; the reveal's end is
+    // where it is stopped.
     expect(speakLine).toHaveBeenCalledWith('wait now', 'cam');
     expect(writer.callFunction).toHaveBeenCalledTimes(1);
+    expect(stop).not.toHaveBeenCalled();
     (writer.callFunction.mock.calls[0]?.[0] as () => void)();
-    expect(stopVoice).toHaveBeenCalledWith(1);
+    expect(stop).toHaveBeenCalledTimes(1);
   });
 
   it('does not change the delay for a line with one unmarked stretch', () => {

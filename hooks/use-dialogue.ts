@@ -25,11 +25,17 @@
 // own. What a message weighs is declared per block type in the inventory's
 // contract terms (`CHAT_BLOCK_TERMS`); this hook owns only the clock.
 //
+// The turn's advance is an event, not a forecast: after a land the hook awaits
+// that land's reveal (`lib/reveal.ts`), threaded back here by message id from
+// the reveal adapter. A land with nothing to type is waited out for its content
+// weight instead. A generation token scopes every in-flight wait to one
+// conversation, so a restart abandons the old reveal rather than landing it into
+// the new transcript.
+//
 // SPDX-License-Identifier: CC0-1.0
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import { acquireEngine, currentEngine } from '@/lib/engine-reach.mjs';
-import { stopVoice } from '@/lib/voice';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
 import { composingDelay, planTurn } from '@/lib/turn-plan';
 
@@ -53,6 +59,10 @@ export interface Dialogue {
    * viewer-facing use for it yet — it is the mechanism a restart affordance
    * reads when the piece grows one (the engine's `reset` is the restart). */
   complete: boolean;
+  /** A fresh land's reveal has ended, identified by message id. The shell
+   * threads this down through the transcript to the reveal adapter; the hook
+   * resumes the turn's wait on it. Stable, so the transcript's memo bails. */
+  onRevealEnd: (id: string) => void;
   /** Forget the conversation and open a fresh one at the greeting. */
   reset: () => void;
 }
@@ -78,6 +88,15 @@ export function useDialogue(): Dialogue {
   // chips inert even in the tick before `isTyping` flips — a fast double-click
   // must not queue a second turn behind the first.
   const pending = useRef(false);
+  // The in-flight waits, so a reset can release them: a timer's resolver and a
+  // reveal's resolver. Releasing lets the abandoned turn observe its generation
+  // and stop, rather than leaking a suspended async chain.
+  const waiting = useRef(new Set<() => void>());
+  // The reveal ends the hook is awaiting, by message id (`lib/reveal.ts`).
+  const revealWaiters = useRef(new Map<string, () => void>());
+  // The conversation generation: bumped by a reset, so an in-flight wait from
+  // the old conversation never lands into the new one.
+  const generation = useRef(0);
   // The transcript's ledger, by message id, kept across turns. The engine
   // answers with the whole block sequence every time, so this ledger is what
   // makes replacing cheap — the structural sharing in the one mapping: a run
@@ -93,17 +112,50 @@ export function useDialogue(): Dialogue {
   // reply — can be told from the log the transcript already shows. One turn
   // at a time (`pending`), so it never goes stale.
   const logLength = useRef(0);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  /** Resolve every in-flight wait. A wait that is released sees its generation
+   * is stale and stops; this only lets it wake up to notice. */
+  const releaseWaits = useCallback(() => {
+    for (const resolve of waiting.current) resolve();
+    waiting.current.clear();
+    for (const resolve of revealWaiters.current.values()) resolve();
+    revealWaiters.current.clear();
+  }, []);
+
+  /** A fresh land's reveal has ended: resume the turn's wait for that message.
+   * A message the hook was not awaiting (a mute land, the viewer's own line) is
+   * simply not found here, and the callback stays harmless. */
+  const onRevealEnd = useCallback((id: string) => {
+    const resolve = revealWaiters.current.get(id);
+    if (!resolve) return;
+    revealWaiters.current.delete(id);
+    resolve();
+  }, []);
+
+  useEffect(() => {
+    const waits = waiting.current;
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+      generation.current += 1;
+      for (const resolve of waits) resolve();
+      waits.clear();
+      for (const resolve of revealWaiters.current.values()) resolve();
+      revealWaiters.current.clear();
+    };
+  }, []);
 
   /** The engine's answer, applied as the shell's next state. It returns the
    * whole block sequence, so this replaces rather than merges — reusing, from
    * the ledger, every message the transcript already holds. The viewer's echo
    * lands at once; the reply lands one speaker-run at a time, each held behind
-   * a typing beat proportional to that run's own declared weight. The opening
-   * turn — and a reset — lands at once, under the page's loading spinner.
-   * `engineMs` is the turn's own engine time, measured by the caller, so the
-   * dev timer's figure is the same for every message in the turn. */
+   * a typing beat proportional to that run's own declared weight, and the turn
+   * advances when that run's reveal reports its end. The opening turn — and a
+   * reset — lands at once, under the page's loading spinner. `engineMs` is the
+   * turn's own engine time, measured by the caller, so the dev timer's figure is
+   * the same for every message in the turn. */
   const apply = useCallback((res: ChatResponse, hold = true, engineMs = 0) => {
+    const captured = generation.current;
+    const stale = () => captured !== generation.current;
     /** The turn is over: nothing is composing and the chips are live again. */
     const finish = () => {
       pending.current = false;
@@ -112,40 +164,41 @@ export function useDialogue(): Dialogue {
       setTypingSpeaker(null);
     };
     /** Land the log through `through` blocks. The final land takes the turn's
-     * choice set in; the echo's land does not. */
-    const land = (through: number, final: boolean) => {
-      setMessages(
-        groupBlocks(res.turn.blocks.slice(0, through)).map((run) => {
-          const kept = stamps.current.get(run.id);
-          // The reuse: same object, stamps and all. Runs cannot grow under the
-          // append-only turn flow — the engine seam locks that contract ("the
-          // append-only turn flow") — so the length check is a defect guard,
-          // not a path: a same-length id hit is the same run.
-          if (kept && kept.parts.length === run.parts.length) return kept;
-          // The dev timer's two numbers, per message: its own composing weight
-          // (the hold it would be given, read off its parts), and that weight
-          // plus the turn's engine time. `engineMs` is the turn's, not this
-          // land's, so a later message never inherits an earlier one's hold.
-          const composingMs = composingDelay(run.parts);
-          const fresh: ChatMessage = {
-            ...run,
-            at: new Date(),
-            // Only a live turn's lands type themselves out; the opening turn
-            // and a reset land `hold: false`, so a restored transcript renders
-            // whole and a remount cannot replay the reveal.
-            fresh: hold,
-            timing: { composingMs, elapsedMs: engineMs + composingMs },
-          };
-          stamps.current.set(run.id, fresh);
-          return fresh;
-        }),
-      );
+     * choice set in; the echo's land does not. Returns the id of the run that
+     * landed last, which is the message whose reveal the caller may await. */
+    const land = (through: number, final: boolean): string | null => {
+      const runs = groupBlocks(res.turn.blocks.slice(0, through)).map((run) => {
+        const kept = stamps.current.get(run.id);
+        // The reuse: same object, stamps and all. Runs cannot grow under the
+        // append-only turn flow — the engine seam locks that contract ("the
+        // append-only turn flow") — so the length check is a defect guard,
+        // not a path: a same-length id hit is the same run.
+        if (kept && kept.parts.length === run.parts.length) return kept;
+        // The dev timer's two numbers, per message: its own composing weight
+        // (the hold it would be given, read off its parts), and that weight
+        // plus the turn's engine time. `engineMs` is the turn's, not this
+        // land's, so a later message never inherits an earlier one's hold.
+        const composingMs = composingDelay(run.parts);
+        const fresh: ChatMessage = {
+          ...run,
+          at: new Date(),
+          // Only a live turn's lands type themselves out; the opening turn
+          // and a reset land `hold: false`, so a restored transcript renders
+          // whole and a remount cannot replay the reveal.
+          fresh: hold,
+          timing: { composingMs, elapsedMs: engineMs + composingMs },
+        };
+        stamps.current.set(run.id, fresh);
+        return fresh;
+      });
+      setMessages(runs);
       if (final) {
         logLength.current = res.turn.blocks.length;
         setOptions(res.turn.options ?? []);
         setIsLoading(false);
         setComplete(res.state.complete);
       }
+      return runs.at(-1)?.id ?? null;
     };
 
     // The schedule is pure (`lib/turn-plan.ts`); this executes it. A turn that
@@ -160,47 +213,62 @@ export function useDialogue(): Dialogue {
     if (echoEnd !== null) land(echoEnd, false);
 
     if (timer.current) clearTimeout(timer.current);
-    let index = 0;
-    const next = () => {
-      const step = steps[index];
-      const last = index === steps.length - 1;
-      // The dots hold for this message's composing weight, then it lands. The
-      // line above must finish typing before the next dots appear, so a line
-      // types itself out with no dots under it and only one typewriter runs.
-      // The dots are attributed to the speaker of the message about to land.
-      const landing = res.turn.blocks[step.through - 1];
-      setTypingSpeaker(landing && landing.who === 'bot' ? landing.speaker : null);
-      setIsTyping(true);
-      timer.current = setTimeout(() => {
+    /** Wait `ms`, registering the resolver so a reset can release it. */
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        const done = () => {
+          waiting.current.delete(done);
+          resolve();
+        };
+        waiting.current.add(done);
+        timer.current = setTimeout(done, ms);
+      });
+    /** Wait for the reveal of the message with `id` to report its end. */
+    const awaitReveal = (id: string) =>
+      new Promise<void>((resolve) => {
+        revealWaiters.current.set(id, resolve);
+      });
+
+    const run = async () => {
+      for (let index = 0; index < steps.length; index += 1) {
+        if (stale()) return;
+        const step = steps[index];
+        const last = index === steps.length - 1;
+        // The dots wait out the first step's lead — the beat the viewer's own
+        // line gets to settle before the reply starts composing. The lead is
+        // zero on a turn that echoed no viewer block, and zero on every step
+        // after the first.
+        if (step.leadMs > 0) await wait(step.leadMs);
+        if (stale()) return;
+        // The dots are attributed to the speaker of the message about to land,
+        // and they hold for its composing weight. The line above has already
+        // finished (this step was not reached until it did), so only one
+        // typewriter runs at a time.
+        const landing = res.turn.blocks[step.through - 1];
+        setTypingSpeaker(landing && landing.who === 'bot' ? landing.speaker : null);
+        setIsTyping(true);
+        await wait(step.beatMs);
+        if (stale()) return;
         // The dots come down first and the message waits their exit out, so the
         // composing bubble is finished and gone before the reply pops in.
         setIsTyping(false);
-        timer.current = setTimeout(() => {
-          land(step.through, last);
-          // The line types with the dots down; the chips stay inert until it is
-          // done, so a choice cannot cut the reveal off.
-          timer.current = setTimeout(() => {
-            // The line has finished typing — the typewriter's own completion
-            // stopped its voice (`components/chat/message.tsx`) — so the turn can
-            // move on. Waiting on the schedule here would cut a voice whose line is
-            // still typing, which is the bug this order avoids.
-            if (last) {
-              finish();
-              return;
-            }
-            index += 1;
-            next();
-          }, step.revealMs);
-        }, step.exitMs);
-      }, step.beatMs);
+        await wait(step.exitMs);
+        if (stale()) return;
+        const landedId = land(step.through, last);
+        // The turn advances on the reveal's own end, not on a forecast: a land
+        // that types itself out is awaited by event, a land with nothing to
+        // type is waited out for its content weight. Chips stay inert across
+        // both, so a choice cannot cut the reveal off.
+        if (step.holdMs > 0) await wait(step.holdMs);
+        else if (landedId !== null) await awaitReveal(landedId);
+        if (stale()) return;
+        if (last) {
+          finish();
+          return;
+        }
+      }
     };
-    // The dots wait out the first step's lead — the beat the viewer's own line
-    // gets to settle before the reply starts composing — and the steps then run
-    // back to back. The lead is zero on a turn that echoed no viewer block, and
-    // zero on every step after the first, which already waits out the line above
-    // through its reveal.
-    if (steps[0].leadMs > 0) timer.current = setTimeout(next, steps[0].leadMs);
-    else next();
+    void run();
   }, []);
 
   useEffect(() => {
@@ -252,16 +320,18 @@ export function useDialogue(): Dialogue {
 
   /** Start over: drop the session and land the fresh greeting at once, the
    * way the page's own opening turn lands. Any reply held behind a typing
-   * beat is discarded with the conversation it belonged to. */
+   * beat is abandoned with the conversation it belonged to: its generation is
+   * bumped, so a superseded wait never lands, and the reveal it was awaiting is
+   * released (the unmounting bubble reports its end too). */
   const reset = useCallback(() => {
     const api = currentEngine();
     if (!api) return;
+    releaseWaits();
+    generation.current += 1;
     if (timer.current) {
       clearTimeout(timer.current);
       timer.current = null;
     }
-    // The reveal the timer was holding is abandoned, so its voice is too.
-    stopVoice();
     pending.current = false;
     // A fresh conversation: every bubble is genuinely new again, so the old
     // ledger — objects, stamps, and the log length — is dropped with the
@@ -274,7 +344,7 @@ export function useDialogue(): Dialogue {
       .catch(() => {
         // As above: nothing in-frame can act on it.
       });
-  }, [apply]);
+  }, [apply, releaseWaits]);
 
-  return { messages, options, sendOption, isTyping, typingSpeaker, busy, isLoading, complete, reset };
+  return { messages, options, sendOption, isTyping, typingSpeaker, busy, isLoading, complete, onRevealEnd, reset };
 }

@@ -20,6 +20,7 @@
 import { motion } from 'framer-motion';
 import { COMPOSING_EXIT_MS } from '@/lib/pacing';
 import { characterFor, DEFAULT_CHARACTER_ID } from '@/lib/chat-characters.mjs';
+import { BubbleFrame } from './bubble-frame';
 import { CharacterMark } from './message';
 
 /** The composing bubble and the mark of whoever is composing: the wait is
@@ -55,11 +56,18 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
         opacity: { duration: 0.2, ease: 'easeOut' },
       }}
     >
-      {/* The mark's column is reserved but empty: the composing character sits
-          just off the bubble's corner instead, and the dots still start where
-          every landed bubble does. */}
-      <div aria-hidden="true" className="w-7 shrink-0" />
-      <div className="bg-bubble-bot text-bubble-content relative flex max-w-[85%] items-center gap-1.5 rounded-card rounded-bl-none px-4 py-3.5">
+      {/* The frame both bubbles share: the reserved mark column, the bubble box
+          with the shape the landed bubble will have, and the mark anchored to
+          the bubble's own corner. There is no separate composing mark — it is
+          the landed mark outright, at the landed mark's own offset — and the
+          bubble's squared bottom-left corner matches the landed bubble's, so
+          the mark does not move when the message lands. */}
+      <BubbleFrame
+        className="flex items-center gap-1.5 px-4 py-3.5"
+        continued
+        mark={<CharacterMark character={character} />}
+        role="assistant"
+      >
         {[0, 1, 2].map((dot) => (
           <motion.span
             animate={{ opacity: [0.4, 1, 0.4] }}
@@ -68,14 +76,7 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
             transition={{ duration: 1.1, ease: 'easeInOut', repeat: Infinity, delay: dot * 0.22 }}
           />
         ))}
-        {/* The landed mark itself, at the landed mark's own offset: the mark does
-            not change in any way when the message lands. Set clear of the corner
-            rather than over it, so the bubble's squared bottom-left corner stays
-            visible. */}
-        <span aria-hidden="true" className="absolute -bottom-2 -left-9">
-          <CharacterMark character={character} />
-        </span>
-      </div>
+      </BubbleFrame>
     </motion.div>
   );
 }
