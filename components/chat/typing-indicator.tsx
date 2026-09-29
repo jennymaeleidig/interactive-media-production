@@ -10,11 +10,11 @@
 // own length, so longer authored turns read as "still typing" rather than
 // popping in after a fixed beat.
 //
-// The composing character is named twice without a position jump: the mark
-// rides just off the bubble's bottom-left corner, minified, so the moment the
-// message lands the full-size mark appears on the landed bubble's own
-// bottom-left corner, in the same column, and the `role="status"` label reads
-// the character's display name to assistive tech.
+// The composing character is named without a position jump: the mark rides at
+// the very offset the landed bubble's own mark uses, on the same disc, with only
+// the glyph inside it minified — so when the message lands the disc does not move
+// at all and only the glyph changes scale. The `role="status"` label reads the
+// character's display name to assistive tech.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
@@ -68,11 +68,13 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
             transition={{ duration: 1.1, ease: 'easeInOut', repeat: Infinity, delay: dot * 0.22 }}
           />
         ))}
-        {/* Set clear of the corner rather than over it: the bubble's squared
-            bottom-left corner has to stay visible, and the mark's own column
-            ends where the bubble begins. */}
-        <span aria-hidden="true" className="absolute -bottom-2 -left-5">
-          <CharacterMark character={character} compact />
+        {/* The landed bubble's own disc, at the landed bubble's own offset, with
+            the glyph inside it minified: the mark does not move when the message
+            lands, only the glyph changes scale. Set clear of the corner rather
+            than over it, so the bubble's squared bottom-left corner stays
+            visible. */}
+        <span aria-hidden="true" className="absolute -bottom-2 -left-9">
+          <CharacterMark character={character} minifiedIcon />
         </span>
       </div>
     </motion.div>

@@ -9,7 +9,7 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 
 /** The typewriter's writer API, captured so the reveal's calls are assertable. */
 const writer = vi.hoisted(() => ({
@@ -178,5 +178,26 @@ describe('the character seam', () => {
     rerender(<TypingIndicator />);
     expect(screen.getByTestId('typing-indicator').getAttribute('aria-label')).toBe('Cam is typing');
     expect(screen.getByTestId('character-mark-cam')).toBeTruthy();
+  });
+
+  it('sets the composing mark on the landed mark’s own disc, at its own offset', () => {
+    // The spec asks the composing character to be named "without a position jump
+    // when the message lands", so the mark's footprint has to be identical either
+    // side of the hand-off: the same disc, hung at the same offset, with only the
+    // glyph inside it minified. A test rather than a comment, because the two
+    // offsets live in two files and a drift between them is invisible in review.
+    render(
+      <>
+        <Message message={message([{ who: 'bot', speaker: 'flock', type: 'text', text: 'one' }], { speaker: 'flock' })} />
+        <TypingIndicator speaker="flock" />
+      </>,
+    );
+    const landed = within(screen.getByTestId('message-assistant')).getByTestId('character-mark-flock');
+    const composing = within(screen.getByTestId('typing-indicator')).getByTestId('character-mark-flock');
+    // The disc, and the span that hangs it off the bubble.
+    expect(composing.className).toBe(landed.className);
+    expect(composing.parentElement?.className).toBe(landed.parentElement?.className);
+    // And the one thing that is meant to differ: the glyph inside the disc.
+    expect(composing.querySelector('img')?.className).not.toBe(landed.querySelector('img')?.className);
   });
 });
