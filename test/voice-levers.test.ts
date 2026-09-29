@@ -16,11 +16,14 @@ import {
   FRAME_MS,
   msPerChar,
   PACE_PRESETS,
+  PACE_PRESET_CHARS,
   PACE_PRESET_MULTIPLIERS,
   REVEAL_CEILING_WORDS_PER_MINUTE,
   REVEAL_FLOOR_WORDS_PER_MINUTE,
+  revealCharsPerStep,
   revealMsPerChar,
   revealWordsForPreset,
+  splitIntoSteps,
 } from '@/lib/pacing';
 import { revealDelay } from '@/lib/turn-plan';
 
@@ -48,14 +51,20 @@ describe('the voice lever', () => {
 });
 
 describe('the pace presets', () => {
-  it('names three ascending presets, each with its own multiplier', () => {
-    expect(PACE_PRESETS).toEqual(['slowest', 'slow', 'normal']);
-    const multipliers = PACE_PRESETS.map((preset) => PACE_PRESET_MULTIPLIERS[preset]);
-    // Three names, three distinct values: no two dramatic beats are secretly the
-    // same, and the order is the speed order.
-    expect(new Set(multipliers).size).toBe(PACE_PRESETS.length);
-    expect(multipliers).toEqual([...multipliers].sort((a, b) => a - b));
+  /** The wall time one character really takes at a preset, for a resting pace. */
+  const paceOf = (base: number, preset: string): number =>
+    revealMsPerChar(revealWordsForPreset(base, preset), revealCharsPerStep(preset));
+
+  it('names three presets, slow to fast, and every one changes the reveal', () => {
+    expect(PACE_PRESETS).toEqual(['slow', 'normal', 'fast']);
+    for (const preset of PACE_PRESETS) {
+      expect(PACE_PRESET_MULTIPLIERS[preset], preset).toBeGreaterThan(0);
+      expect(revealCharsPerStep(preset), preset).toBeGreaterThanOrEqual(1);
+    }
+    // `normal` is the character's own pace; `fast` is quicker by riding more
+    // characters on each step, which is the only lever that can outrun it.
     expect(PACE_PRESET_MULTIPLIERS.normal).toBe(1);
+    expect(PACE_PRESET_CHARS.fast).toBeGreaterThan(PACE_PRESET_CHARS.normal);
   });
 
   it('lands every preset inside the readable band, so none is inert or a crawl', () => {
@@ -63,18 +72,33 @@ describe('the pace presets', () => {
       const pace = revealWordsForPreset(400, preset);
       expect(pace, preset).toBeGreaterThanOrEqual(REVEAL_FLOOR_WORDS_PER_MINUTE);
       expect(pace, preset).toBeLessThanOrEqual(REVEAL_CEILING_WORDS_PER_MINUTE);
-      expect(revealMsPerChar(pace), preset).toBeGreaterThanOrEqual(FRAME_MS);
+      expect(paceOf(400, preset), preset).toBeGreaterThan(0);
     }
   });
 
-  it('scales a slower preset to a longer per-character time than a faster one', () => {
-    const slowest = revealMsPerChar(revealWordsForPreset(400, 'slowest'));
-    const normal = revealMsPerChar(revealWordsForPreset(400, 'normal'));
-    expect(slowest).toBeGreaterThan(normal);
+  it('makes slow slower, normal the resting pace, and fast genuinely faster', () => {
+    // Both characters, because the point of the vocabulary is that each name is
+    // real on whoever speaks the line, not just on the brisker one.
+    for (const base of [400, 300]) {
+      const slow = paceOf(base, 'slow');
+      const normal = paceOf(base, 'normal');
+      const fast = paceOf(base, 'fast');
+      expect(slow, `slow > normal at ${base} wpm`).toBeGreaterThan(normal);
+      expect(fast, `fast < normal at ${base} wpm`).toBeLessThan(normal);
+    }
   });
 
   it('treats an unknown or absent preset as normal', () => {
     expect(revealWordsForPreset(400)).toBe(400);
     expect(revealWordsForPreset(400, 'nonsense')).toBe(400);
+    expect(revealCharsPerStep(undefined)).toBe(revealCharsPerStep('normal'));
+    expect(revealCharsPerStep('nonsense')).toBe(1);
+  });
+
+  it('splits a run into whole steps for the typewriter, with a short tail', () => {
+    expect(splitIntoSteps('abcdef', 2)).toEqual(['ab', 'cd', 'ef']);
+    expect(splitIntoSteps('abcde', 2)).toEqual(['ab', 'cd', 'e']);
+    expect(splitIntoSteps('abc', 1)).toEqual(['a', 'b', 'c']);
+    expect(splitIntoSteps('', 2)).toEqual([]);
   });
 });

@@ -19,24 +19,23 @@ line attributes itself by name; the runtime parses the prefix into a `speaker` a
 carries that id, so the mark, the pitch, and the resting pace follow the line's speaker.
 
 The author may **scale** a character's resting pace over a range of a line with the inline marker
-`[pace=<preset>]…[/pace]`. The vocabulary is closed to three presets — slowest, slow, normal —
-declared in `lib/pace-presets.mjs` as multipliers, and the build's freshness gate fails a value
-outside it. The name is `pace`, not Yarn Spinner's own `speed`, because the runtime treats
-marker names as opaque and `speed` carries numeric semantics in the engine's Unity dialogue view;
-the collision would be harmless in code and expensive in reading.
+`[pace=<preset>]…[/pace]`. The vocabulary is closed to three presets — slow, normal, fast —
+declared in `lib/pace-presets.mjs`, and the build's freshness gate fails a value outside it. The
+name is `pace`, not Yarn Spinner's own `speed`, because the runtime treats marker names as opaque
+and `speed` carries numeric semantics in the engine's Unity dialogue view; the collision would be
+harmless in code and expensive in reading.
 
-The vocabulary is three and not five because the reveal is drawn by a requestAnimationFrame
-typewriter that advances at most one character per frame **and only on a frame strictly past the
-requested delay**. A positive delay below one frame therefore still costs two frames, so the real
-per-character step is the requested delay carried to the strictly-next frame, and a character's
-effective pace lands on whole-frame steps: 2 frames = 360 wpm, 3 = 240, 4 = 180, 5 = 144. The pace
-above which a faster clock cannot advance faster is that two-frame step, and Cam's resting 400 wpm
-already sits past it — so on Cam a `fast` or `fastest` preset would be a label that changed the
-requested number and not the wall-clock typing at all. Rather than ship two dead labels, the
-vocabulary keeps the three presets that are distinct for both characters: `normal` is the resting
-pace, and `slow` (×0.7) and `slowest` (×0.5) are genuinely slower, landing on 4/3/2 frames for Cam
-and 5/4/3 for Flock. This is the spec's own stated fallback — a smaller vocabulary rather than a
-return to a saturated default.
+Each preset is real on every character. `normal` is the character's resting pace. `slow` widens
+the per-character delay. `fast` is quicker because it **rides two characters on each typewriter
+step**, not because it asks for a shorter delay. That distinction is forced by the reveal's
+drawing: it is a requestAnimationFrame typewriter that processes at most one queue entry per frame
+**and only on a frame strictly past the requested delay**. A positive delay below one frame
+therefore still costs two frames, so the delay can never buy a step faster than two frames and any
+"faster" preset written as a shorter delay collapses into `normal` — on Cam, whose 400 wpm resting
+pace already sits in the two-frame step, no shorter delay can beat it at all. The one lever a frame
+can carry more of is the step itself: the library's `stringSplitter` is what turns one queue entry
+into several characters, so `fast` types at twice `normal`'s characters per second while every
+character still passes through the same frame clock.
 
 The viewer's Settings collapse to the one lever only they can decide: **volume** — the accessibility
 affordance. The `Pacing` shape a turn schedule reads collapses with them: the composing clock and
@@ -54,8 +53,8 @@ stored preference.
   record; 0006's rule still holds: settings are never sent anywhere, and no request reads them.
 - The turn schedule waits a line out on the frame-rounded step, not the requested delay
   (`revealMsPerChar`), and a line's voice is stopped by its typewriter's own completion event rather
-  than by a timer, so the voice ends with the typing it belongs to. The same frame bound is what
-  caps the preset vocabulary above.
+  than by a timer, so the voice ends with the typing it belongs to. The step is also why `fast` is a
+  step size rather than a shorter delay.
 - Adding a character is one entry in `lib/chat-characters.mjs`, one mark under `public/marks/`, and
   one Yarn name — no turn-contract change, because the contract carries a `speaker` string.
 - `npm run chat:check` fails an undeclared speaker or an undeclared preset before the runtime

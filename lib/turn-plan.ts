@@ -19,6 +19,7 @@ import {
   DEFAULT_PACING,
   FRAME_MS,
   msPerChar,
+  revealCharsPerStep,
   revealDelayMs,
   revealMsPerChar,
   revealWordsForPreset,
@@ -74,15 +75,18 @@ export function revealWordsPerMinuteFor(block: ChatBlock, pacing: Pacing = DEFAU
   return pacing.revealWordsPerMinute;
 }
 
-/** One stretch of a line's reveal: the text, the per-character delay to hand the
- * typewriter (`delayMs`), and the wall time that delay actually costs once the
- * rAF loop rounds it up to a frame (`stepMs`). A caller driving the typewriter
- * uses `delayMs`; the schedule sums `stepMs`, because that is what really
- * elapses. */
+/** One stretch of a line's reveal: the text, the per-step delay to hand the
+ * typewriter (`delayMs`), how many characters ride one step (`charsPerStep`),
+ * the wall time one step actually costs once the rAF loop rounds the delay up to
+ * a frame (`stepMs`), and the resulting per-character pace (`msPerChar`). A
+ * caller driving the typewriter uses `delayMs` and `charsPerStep`; the schedule
+ * sums `stepMs`, because that is what really elapses. */
 export interface RevealRun {
   text: string;
   delayMs: number;
+  charsPerStep: number;
   stepMs: number;
+  msPerChar: number;
 }
 
 /** A landed block's typed runs. A text block is split at its parse-time
@@ -95,19 +99,21 @@ export function revealRuns(block: ChatBlock, pacing: Pacing = DEFAULT_PACING): R
   const segments = block.segments && block.segments.length > 0 ? block.segments : [{ text: block.text }];
   return segments.map((segment) => {
     const pace = revealWordsForPreset(base, segment.pace);
-    return { text: segment.text, delayMs: revealDelayMs(pace), stepMs: revealMsPerChar(pace) };
+    const delayMs = revealDelayMs(pace);
+    const charsPerStep = revealCharsPerStep(segment.pace);
+    const stepMs = typewriterStepMs(delayMs);
+    return { text: segment.text, delayMs, charsPerStep, stepMs, msPerChar: stepMs / charsPerStep };
   });
 }
 
 /** The wall time a landed message holds before the next one may start. The
  * typing is the turn's clock — the next message must not land until this line has
  * finished, and the voice is bounded by the same moment — so this is an upper
- * bound on the typewriter's real run: each character at its own run's `stepMs`,
- * the two opening events (clear, then cursor) and each run boundary's
- * `changeDelay` event at one step apiece, and a frame of margin. The requested
- * `delayMs` would underestimate by a whole frame per character whenever the
- * delay is not already a frame multiple, which is the bug this models away. A
- * non-text block types in whole at the speaker's resting pace. */
+ * bound on the typewriter's real run: the two opening events (clear, then cursor)
+ * at the first run's step, each run boundary's `changeDelay` event at the
+ * previous run's step, and each run's characters in whole steps of `charsPerStep`
+ * at its own step. A non-text block types in whole at the speaker's resting
+ * pace. */
 export function revealDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAULT_PACING): number {
   let total = 0;
   for (const block of blocks) {
@@ -117,12 +123,12 @@ export function revealDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAU
       continue;
     }
     // The typewriter's queue opens with its own two events before the first
-    // character, and each later run prepends a `changeDelay` that itself waits a
+    // character, and each later run prepends a `changeDelay` that itself costs a
     // step at the previous run's pace.
     total += 2 * runs[0].stepMs;
     runs.forEach((run, index) => {
-      if (index > 0) total += typewriterStepMs(runs[index - 1].delayMs);
-      total += run.text.length * run.stepMs;
+      if (index > 0) total += runs[index - 1].stepMs;
+      total += run.stepMs * Math.ceil(run.text.length / run.charsPerStep);
     });
   }
   return Math.ceil(total) + FRAME_MS;

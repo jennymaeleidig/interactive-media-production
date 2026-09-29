@@ -25,4 +25,18 @@ describe('the animated reveal', () => {
     expect(await screen.findByText('hello there')).toBeTruthy();
     expect(container.textContent).not.toContain('|');
   });
+
+  it('types a fast stretch through the real splitter, two characters at a time', async () => {
+    // The real library applies `stringSplitter`, so this is the one place that
+    // proves a `fast` run really rides two characters on one queue entry.
+    const block: ChatBlock = {
+      who: 'bot',
+      speaker: 'cam',
+      type: 'text',
+      text: 'abcde',
+      segments: [{ text: 'abcde', pace: 'fast' }],
+    };
+    render(<Message message={message([block])} />);
+    expect(await screen.findByText('abcde')).toBeTruthy();
+  });
 });

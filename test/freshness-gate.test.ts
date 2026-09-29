@@ -24,6 +24,7 @@ const program = (...lines: string[]): Program =>
 describe('the freshness gate', () => {
   it('passes a line spoken by a declared character, with a declared preset', () => {
     expect(() => validateDialogue(program('Cam: hello', 'Flock: hi there', 'Cam: [pace=slow]wait[/pace] now'))).not.toThrow();
+    expect(() => validateDialogue(program('Cam: [pace=fast]go[/pace]'))).not.toThrow();
   });
 
   it('passes a line with no speaker prefix, which falls back to the default', () => {
@@ -39,9 +40,9 @@ describe('the freshness gate', () => {
   });
 
   it('fails a retired preset name, so a dropped label cannot creep back in', () => {
-    // `fast` and `fastest` were retired because the frame-quantized reveal cannot
-    // make them distinct from `normal` (`lib/pace-presets.mjs`). A script that
-    // still writes one is a build failure, not a silent normal.
+    // `fastest` is not in the vocabulary: there is no faster *step* than `fast`
+    // (`lib/pace-presets.mjs`). A script that still writes one is a build failure,
+    // not a silent normal.
     expect(() => validateDialogue(program('Cam: [pace=fastest]go[/pace]'))).toThrow(/fastest.*is not a declared preset/);
   });
 });

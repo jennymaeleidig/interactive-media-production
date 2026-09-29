@@ -19,11 +19,16 @@ const writer = vi.hoisted(() => ({
   callFunction: vi.fn(),
 }));
 const { speakLine, stopVoice } = vi.hoisted(() => ({ speakLine: vi.fn(() => 1), stopVoice: vi.fn() }));
+/** The last options the reveal handed the typewriter, so the splitter is checkable. */
+const lastOptions = vi.hoisted(() => ({
+  current: null as null | { stringSplitter?: (text: string) => string[] },
+}));
 
 vi.mock('typewriter-effect', async () => {
   const { useEffect } = await import('react');
   return {
-    default: ({ onInit }: { onInit?: (typewriter: unknown) => void }) => {
+    default: ({ onInit, options }: { onInit?: (typewriter: unknown) => void; options?: typeof lastOptions.current }) => {
+      lastOptions.current = options ?? null;
       useEffect(() => {
         onInit?.(writer);
       }, []);
@@ -76,8 +81,8 @@ describe('the character seam', () => {
       type: 'text',
       text: 'wait now',
       segments: [
-        { text: 'wait ', pace: 'slowest' },
-        { text: 'now', pace: 'slow' },
+        { text: 'wait ', pace: 'slow' },
+        { text: 'now', pace: 'fast' },
       ],
     };
     render(<Message message={message([block], { speaker: 'cam' })} />);
@@ -87,8 +92,12 @@ describe('the character seam', () => {
     // The second stretch changes the delay before its text is queued, so the two
     // stretches really type at two paces. The value is the requested delay, not
     // the frame-rounded step the schedule reads.
-    const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'slow'));
+    const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fast'));
     expect(writer.changeDelay).toHaveBeenCalledWith(expected);
+    // The fast stretch rides two characters per step: the splitter the reveal
+    // handed the typewriter groups the run's text in pairs, which is what makes
+    // `fast` outrun `normal` at all.
+    expect(lastOptions.current?.stringSplitter?.('now')).toEqual(['no', 'w']);
     // The voice gets the whole line and the speaker, once; the typewriter's
     // completion event is where it is stopped.
     expect(speakLine).toHaveBeenCalledWith('wait now', 'cam');

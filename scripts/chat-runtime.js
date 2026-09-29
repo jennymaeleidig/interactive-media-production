@@ -1561,7 +1561,7 @@
   }
 
   // lib/pace-presets.mjs
-  var PACE_PRESETS = ["slowest", "slow", "normal"];
+  var PACE_PRESETS = ["slow", "normal", "fast"];
   var PACE_MARKER = "pace";
 
   // lib/session-store.mjs

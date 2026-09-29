@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import { composingChars, planTurn, revealDelay, composingDelay, revealRuns, revealWordsPerMinuteFor } from '../lib/turn-plan';
-import { FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
+import { FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealCharsPerStep, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
@@ -106,9 +106,9 @@ describe('the paced reveal', () => {
   });
 
   it('types an authored line in preset stretches, and the schedule sums them', () => {
-    const block = paced([{ text: 'aa', pace: 'slowest' }, { text: 'bb', pace: 'normal' }]);
-    const slow = revealMsPerChar(revealWordsForPreset(400, 'slowest'));
-    const quick = revealMsPerChar(revealWordsForPreset(400, 'normal'));
+    const block = paced([{ text: 'aa', pace: 'slow' }, { text: 'bb', pace: 'normal' }]);
+    const slow = revealMsPerChar(revealWordsForPreset(400, 'slow'), revealCharsPerStep('slow'));
+    const quick = revealMsPerChar(revealWordsForPreset(400, 'normal'), revealCharsPerStep('normal'));
     // Two opening events plus the first stretch, the changeDelay event at the
     // first stretch's pace, then the second stretch — every char at its own
     // frame-rounded step, not its requested delay.
@@ -118,14 +118,30 @@ describe('the paced reveal', () => {
     expect(revealDelay([block])).toBeGreaterThan(revealDelay([cam('aabb')]));
   });
 
+  it('rides a fast stretch two characters per step, so the whole run halves', () => {
+    const [run] = revealRuns(paced([{ text: 'abcd', pace: 'fast' }]));
+    expect(run.charsPerStep).toBe(2);
+    // Same wall time per step as normal, but two characters ride it.
+    expect(run.stepMs).toBe(revealMsPerChar(revealWordsForPreset(400, 'normal')));
+    expect(run.msPerChar).toBe(run.stepMs / 2);
+    // Four characters at two per step is two steps, after the two opening events.
+    const fast = paced([{ text: 'abcd', pace: 'fast' }]);
+    expect(revealDelay([fast])).toBe(Math.ceil(2 * run.stepMs + 2 * run.stepMs) + FRAME_MS);
+    // An odd tail is still its own step, so the schedule never under-waits it.
+    const odd = paced([{ text: 'abc', pace: 'fast' }]);
+    expect(revealDelay([odd])).toBe(Math.ceil(2 * run.stepMs + 2 * run.stepMs) + FRAME_MS);
+  });
+
   it('leaves a line without a segment at the speaker’s resting pace', () => {
     const runs = revealRuns(cam('plain'));
     expect(runs).toHaveLength(1);
     expect(runs[0].text).toBe('plain');
     // The requested delay is what the typewriter is handed; the step is the
-    // frame-rounded wall time the schedule reads.
+    // frame-rounded wall time the schedule reads, and an unmarked line rides one
+    // character per step.
     expect(runs[0].delayMs).toBe(revealDelayMs(revealWordsPerMinuteFor(cam('plain'))));
     expect(runs[0].stepMs).toBe(revealMsPerChar(revealWordsPerMinuteFor(cam('plain'))));
+    expect(runs[0].charsPerStep).toBe(1);
     expect(runs[0].stepMs).toBeGreaterThan(runs[0].delayMs);
   });
 });

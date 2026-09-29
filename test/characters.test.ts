@@ -16,6 +16,7 @@ import {
   PACE_PRESETS,
   REVEAL_CEILING_WORDS_PER_MINUTE,
   REVEAL_FLOOR_WORDS_PER_MINUTE,
+  revealCharsPerStep,
   revealMsPerChar,
   revealWordsForPreset,
 } from '@/lib/pacing';
@@ -75,17 +76,21 @@ describe('the cast', () => {
     }
   });
 
-  it('gives every preset its own frame step for every character, so none is a dead label', () => {
-    // The reveal is frame-quantized, so two presets can be "distinct" in the
-    // requested number and identical in wall time. This is the check that the
-    // closed vocabulary is exactly as large as the frame can distinguish.
+  it('gives every preset its own real pace for every character, so none is a dead label', () => {
+    // The reveal is frame-quantized and `fast` is a step size, so a preset can be
+    // "distinct" in the requested number and identical in wall time. This is the
+    // check that each name means something on each character: slow is slower than
+    // normal, and fast is genuinely faster.
     for (const character of Object.values(CHAT_CHARACTERS)) {
       const resting = character.paceWordsPerMinute;
       if (resting === undefined) continue;
-      const steps = PACE_PRESETS.map((preset) =>
-        revealMsPerChar(revealWordsForPreset(resting, preset)),
-      );
-      expect(new Set(steps).size, character.id).toBe(PACE_PRESETS.length);
+      const paceOf = (preset: string): number =>
+        revealMsPerChar(revealWordsForPreset(resting, preset), revealCharsPerStep(preset));
+      const [slow, normal, fast] = PACE_PRESETS;
+      const paces = { slow: paceOf(slow), normal: paceOf(normal), fast: paceOf(fast) };
+      expect(new Set(Object.values(paces)).size, character.id).toBe(PACE_PRESETS.length);
+      expect(paces.slow, character.id).toBeGreaterThan(paces.normal);
+      expect(paces.fast, character.id).toBeLessThan(paces.normal);
     }
   });
 

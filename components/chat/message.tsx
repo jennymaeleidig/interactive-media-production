@@ -20,12 +20,13 @@
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { memo, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 // Citation: Tameem Safi — typewriter-effect (v2.22.0) [MIT]
 // Source: https://github.com/tameemsafi/typewriterjs
 import Typewriter from 'typewriter-effect';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { characterFor, type Character } from '@/lib/chat-characters.mjs';
+import { splitIntoSteps } from '@/lib/pacing';
 import { revealRuns } from '@/lib/turn-plan';
 import { cn } from '@/lib/utils';
 import { speakLine, stopVoice } from '@/lib/voice';
@@ -61,13 +62,18 @@ function TextPart({ block, animate = false }: AdapterProps) {
   // turn, a resume, a remount) renders whole, so the reveal never replays.
   if (typed.who !== 'bot' || !animate) return <p className={prose}>{typed.text}</p>;
   // The line types itself out in runs: the engine split it at every authored
-  // `[pace=...]` boundary, and each run's per-character delay is its speaker's
-  // own pace scaled by its preset (`lib/turn-plan.ts`). Cursorless — the reveal
-  // is the arrival, so no cursor is left blinking behind it. Motion is the piece
-  // (`CODING_STANDARDS.md`). The voice (`lib/voice`) starts with the reveal, in
-  // the speaker's own pitch; the typing is the clock, so the voice is stopped
-  // when the line has finished typing, never the reverse.
+  // `[pace=...]` boundary, and each run reads its speaker's own pace scaled by its
+  // preset (`lib/turn-plan.ts`). Cursorless — the reveal is the arrival, so no
+  // cursor is left blinking behind it. Motion is the piece (`CODING_STANDARDS.md`).
+  // The voice (`lib/voice`) starts with the reveal, in the speaker's own pitch;
+  // the typing is the clock, so the voice is stopped when the line has finished
+  // typing, never the reverse.
   const runs = revealRuns(typed);
+  // The reveal rides one queue entry per frame, so a `fast` run packs several
+  // characters into each entry rather than asking for an unreachably short
+  // delay. The splitter reads this ref when `typeString` runs, so it is set to the
+  // run's own step right before that run is queued.
+  const charsPerStep = useRef(runs[0]?.charsPerStep ?? 1);
   return (
     <p className={prose}>
       <Typewriter
@@ -75,6 +81,7 @@ function TextPart({ block, animate = false }: AdapterProps) {
         onInit={(writer) => {
           const token = speakLine(typed.text, typed.speaker);
           runs.forEach((run, index) => {
+            charsPerStep.current = run.charsPerStep;
             // The first run's delay is the wrapper's own; a later run changes it
             // before its text is queued, so each stretch types at its own pace.
             if (index > 0) writer.changeDelay(run.delayMs);
@@ -88,7 +95,12 @@ function TextPart({ block, animate = false }: AdapterProps) {
           writer.callFunction(() => stopVoice(token));
           writer.start();
         }}
-        options={{ cursor: '', delay: runs[0]?.delayMs, skipAddStyles: true }}
+        options={{
+          cursor: '',
+          delay: runs[0]?.delayMs,
+          skipAddStyles: true,
+          stringSplitter: (text) => splitIntoSteps(text, charsPerStep.current),
+        }}
       />
     </p>
   );

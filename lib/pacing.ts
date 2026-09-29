@@ -48,23 +48,24 @@ export const REVEAL_WORDS_PER_MINUTE = 400;
  * is a guard on the arithmetic rather than a pace either one is meant to hit. */
 export const REVEAL_FLOOR_WORDS_PER_MINUTE = 120;
 
-/** The ceiling on any character's reveal pace. It is the frame bound read as a
- * clock: a delay of one frame is the fastest any *positive* delay can be before
- * the strict `>` comparison costs a second frame, so this is where a faster
- * request stops changing the step. It is not the one-frame pace — that needs a
- * zero delay and is not reachable by a preset. Derived from `FRAME_MS`, so it is
- * a consequence of the frame and not an independent knob. */
+/** The ceiling on the pace a character's *delay* can ask for. It is the frame
+ * bound read as a clock: a delay of one frame is the fastest any positive delay
+ * can be before the strict `>` comparison costs a second frame, so this is where
+ * a shorter delay stops changing the step. It is not the ceiling on the reveal
+ * itself — a preset that packs several characters per step (`fast`) outruns it,
+ * because the queue entry, not the clock, is what grows. Derived from `FRAME_MS`,
+ * so it is a consequence of the frame and not an independent knob. */
 export const REVEAL_CEILING_WORDS_PER_MINUTE = Math.floor(60_000 / (FRAME_MS * CHARS_PER_WORD));
 
 // The closed pace vocabulary — the five authored preset names and what each
 // multiplies a character's resting pace by — lives in `lib/pace-presets.mjs`,
 // because the build's freshness gate runs in Node and cannot import this
 // TypeScript. Re-exported here so the levers read as one table.
-export { PACE_MARKER, PACE_PRESETS, PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
-import { PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
+export { PACE_MARKER, PACE_PRESETS, PACE_PRESET_CHARS, PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
+import { PACE_PRESET_CHARS, PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
 
 /** A pace override's preset name: one of `PACE_PRESETS`. */
-export type PacePreset = 'slowest' | 'slow' | 'normal';
+export type PacePreset = 'slow' | 'normal' | 'fast';
 
 /** The pacing levers a turn schedule reads, as a value: the composing clock, the
  * reveal clock, and the floor under a beat. `lib/turn-plan.ts` takes this rather
@@ -104,6 +105,30 @@ export function revealWordsForPreset(
   return clampRevealWordsPerMinute(baseWordsPerMinute * multiplier);
 }
 
+/** How many characters one typewriter step reveals at this preset: `fast` rides
+ * two, everything else one. The step is the reveal's true lever — the delay can
+ * never beat two frames (`REVEAL_CEILING_WORDS_PER_MINUTE`), so a preset only
+ * types faster than `normal` by putting more characters on each step. An absent
+ * or unknown preset is one character, matching `normal`. */
+export function revealCharsPerStep(preset?: string): number {
+  return preset !== undefined && Object.prototype.hasOwnProperty.call(PACE_PRESET_CHARS, preset)
+    ? PACE_PRESET_CHARS[preset]
+    : 1;
+}
+
+/** One line's text in the pieces one typewriter step reveals: a run types as
+ * whole steps of `charsPerStep` characters, and a tail shorter than a step types
+ * as its own step. The renderer hands each piece to `typewriter-effect` through
+ * its `stringSplitter`, so one queue entry (one frame's work) types a whole
+ * step. */
+export function splitIntoSteps(text: string, charsPerStep: number): string[] {
+  if (!Number.isFinite(charsPerStep) || charsPerStep <= 1) return text === '' ? [] : text.split('');
+  const size = Math.floor(charsPerStep);
+  const steps: string[] = [];
+  for (let index = 0; index < text.length; index += size) steps.push(text.slice(index, index + size));
+  return steps;
+}
+
 /** The per-character delay asked of `typewriter-effect`, in milliseconds: the
  * reveal clock read off `wordsPerMinute`, clamped to the readable band. This is
  * what the typewriter is *requested*; what it achieves is `revealMsPerChar`. */
@@ -123,14 +148,19 @@ export function typewriterStepMs(delayMs: number): number {
 }
 
 /** The reveal's true pace, in milliseconds per character: what the rAF
- * typewriter achieves at `revealDelayMs`, i.e. the requested delay carried to the
- * next whole animation frame (strictly next, so one frame of delay is two frames
- * of wall time). The turn schedule (`lib/turn-plan.ts`) waits a still-typing line
- * out on it rather than landing the next one on top of it, and the voice —
- * stopped when the line has finished typing (`lib/voice.ts`) — is never cut
- * early. */
-export function revealMsPerChar(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
-  return typewriterStepMs(revealDelayMs(wordsPerMinute));
+ * typewriter achieves at `revealDelayMs` (the requested delay carried to the next
+ * whole animation frame, strictly next, so one frame of delay is two frames of
+ * wall time), divided by how many characters one step carries. One step takes the
+ * same wall time whatever it holds, so a two-character step is twice the pace.
+ * The turn schedule (`lib/turn-plan.ts`) waits a still-typing line out on it
+ * rather than landing the next one on top of it, and the voice — stopped when the
+ * line has finished typing (`lib/voice.ts`) — is never cut early. */
+export function revealMsPerChar(
+  wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE,
+  charsPerStep: number = 1,
+): number {
+  const perStep = Number.isFinite(charsPerStep) && charsPerStep >= 1 ? charsPerStep : 1;
+  return typewriterStepMs(revealDelayMs(wordsPerMinute)) / perStep;
 }
 
 /** The voice's volume lever, 0 silent to 1 full. Read live through a gain node
