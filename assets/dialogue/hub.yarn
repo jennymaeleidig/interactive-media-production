@@ -1,0 +1,28 @@
+// The return hub: the gate every shallow flow lands on, and the floor a deep
+// flow's sub-hub hands back to. One line and one chip set, identical on every
+// return and never a second greeting (CONTEXT.md "Hub"). Extracted from
+// core.yarn so the return gates read as one concern; the products sub-hub
+// (products.yarn) is the first of them.
+//
+// The provenance markers (OBSERVED / ADAPTED / AUTHORED), the `// src:` rule,
+// and the authoring rules for the whole tree are at the top of core.yarn.
+
+title: hub
+position: 212,464
+---
+// The return gate. The shallow flows (general, support, demo, privacy) land
+// here, and it is the same five chips every time it is reached — no first-return
+// variant. `#newmessage` keeps the follow-up question out of the beat's bubble.
+Cam: Is there anything else I can help you with today? #newmessage
+-> Products & offerings
+  <<jump products>>
+-> Get a Demo
+  <<set $demoRequested = true>>
+  <<jump demo>>
+-> Privacy & safety
+  <<jump privacy>>
+-> Support
+  <<jump support>>
+-> That's all for now ~ talk soon
+  <<jump end>>
+===

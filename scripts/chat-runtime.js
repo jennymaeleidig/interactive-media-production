@@ -38,7 +38,7 @@
     nodes: {
       Start: {
         headers: {
-          position: "18,12",
+          position: "-194,-28",
           title: "Start"
         },
         instructions: [
@@ -167,19 +167,19 @@
           }
         ],
         sourceFile: "core.yarn",
-        startLine: 43,
+        startLine: 49,
         title: "Start"
       },
       demo: {
         headers: {
-          position: "12,687",
+          position: "-785,533",
           title: "demo"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:f11e4b3b"
+              "line:96f18853"
             ],
             text: "Cam: A demo walks you through the Flock Difference: the largest public-private safety network, technology that's always up-to-date, and privacy-first accountability."
           },
@@ -187,19 +187,19 @@
             op: "runLine",
             tags: [
               "newmessage",
-              "line:672e4c4c"
+              "line:00c18f24"
             ],
             text: "Cam: Everything connected, with no silos."
           },
           {
-            content: 'block "flock-demo" join',
+            content: 'block "flock-demo" new',
             op: "runCommand"
           },
           {
             op: "runLine",
             tags: [
               "newmessage",
-              "line:dd7f45d5",
+              "line:e8da263c",
               "lastline"
             ],
             text: "Cam: I'd be happy to help you book a demo! Could you please provide your email address? That way, we can set up a meeting to explore our solutions further."
@@ -212,7 +212,7 @@
             destination: 8,
             op: "addOption",
             tags: [
-              "line:4b4f42a2"
+              "line:7eea214b"
             ],
             text: "Maybe later"
           },
@@ -233,7 +233,7 @@
           }
         ],
         sourceFile: "core.yarn",
-        startLine: 96,
+        startLine: 83,
         title: "demo"
       },
       end: {
@@ -245,7 +245,7 @@
           {
             op: "runLine",
             tags: [
-              "line:72140092"
+              "line:6cfdd572"
             ],
             text: "Cam: Thanks for stopping by \u2014 take care!"
           },
@@ -255,19 +255,19 @@
           }
         ],
         sourceFile: "core.yarn",
-        startLine: 112,
+        startLine: 100,
         title: "end"
       },
       general: {
         headers: {
-          position: "79,237",
+          position: "-198,517",
           title: "general"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:48db317b"
+              "line:7d03fe11"
             ],
             text: "Cam: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?"
           },
@@ -277,12 +277,12 @@
           }
         ],
         sourceFile: "core.yarn",
-        startLine: 82,
+        startLine: 69,
         title: "general"
       },
       hub: {
         headers: {
-          position: "79,462",
+          position: "212,464",
           title: "hub"
         },
         instructions: [
@@ -290,7 +290,7 @@
             op: "runLine",
             tags: [
               "newmessage",
-              "line:bb3fd7f7",
+              "line:84ca7470",
               "lastline"
             ],
             text: "Cam: Is there anything else I can help you with today?"
@@ -303,7 +303,7 @@
             destination: 13,
             op: "addOption",
             tags: [
-              "line:2d0fd080"
+              "line:275f10ee"
             ],
             text: "Products & offerings"
           },
@@ -315,7 +315,7 @@
             destination: 15,
             op: "addOption",
             tags: [
-              "line:bc126f10"
+              "line:b16f1799"
             ],
             text: "Get a Demo"
           },
@@ -327,7 +327,7 @@
             destination: 19,
             op: "addOption",
             tags: [
-              "line:2a226867"
+              "line:0b3e1e00"
             ],
             text: "Privacy & safety"
           },
@@ -339,7 +339,7 @@
             destination: 21,
             op: "addOption",
             tags: [
-              "line:ddf4dee7"
+              "line:9d0e1977"
             ],
             text: "Support"
           },
@@ -351,7 +351,7 @@
             destination: 23,
             op: "addOption",
             tags: [
-              "line:4bc4d990"
+              "line:0c13a6e7"
             ],
             text: "That's all for now ~ talk soon"
           },
@@ -411,25 +411,25 @@
             op: "jumpTo"
           }
         ],
-        sourceFile: "core.yarn",
-        startLine: 63,
+        sourceFile: "hub.yarn",
+        startLine: 10,
         title: "hub"
       },
       privacy: {
         headers: {
-          position: "72,12",
+          position: "93,12",
           title: "privacy"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:eb38c263"
+              "line:17756804"
             ],
             text: "Cam: Safety is a fundamental right. Public safety technology affects real people and neighborhoods, so Flock builds clear limits into the product, keeps decisions with local agencies, and records system use so it can be reviewed."
           },
           {
-            content: 'block "flock-trust" join',
+            content: 'block "flock-trust" new',
             op: "runCommand"
           },
           {
@@ -440,7 +440,7 @@
             destination: 12,
             op: "addOption",
             tags: [
-              "line:0eb10503"
+              "line:81456f73"
             ],
             text: "Data & retention"
           },
@@ -452,7 +452,7 @@
             destination: 14,
             op: "addOption",
             tags: [
-              "line:98810274"
+              "line:3b1466ea"
             ],
             text: "Facial recognition"
           },
@@ -464,7 +464,7 @@
             destination: 16,
             op: "addOption",
             tags: [
-              "line:22d00bed"
+              "line:ad24619d"
             ],
             text: "Who can access it"
           },
@@ -476,7 +476,7 @@
             destination: 18,
             op: "addOption",
             tags: [
-              "line:b4e00c9a"
+              "line:3c39de0d"
             ],
             text: "Myths & facts"
           },
@@ -521,19 +521,19 @@
           }
         ],
         sourceFile: "trust.yarn",
-        startLine: 7,
+        startLine: 9,
         title: "privacy"
       },
       privacy_access: {
         headers: {
-          position: "12,237",
+          position: "271,496",
           title: "privacy_access"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:edccb356"
+              "line:a6464cea"
             ],
             text: "Cam: You own your data, and Flock cannot and does not sell it."
           },
@@ -541,29 +541,29 @@
             op: "runLine",
             tags: [
               "newmessage",
-              "line:7bfcb421"
+              "line:05d32874"
             ],
             text: "Cam: Nothing is shared unless your organization turns sharing on, and there is no public database \u2014 no public browsing, no open access."
           },
           {
-            node: "hub",
+            node: "privacy_hub",
             op: "runNode"
           }
         ],
         sourceFile: "trust.yarn",
-        startLine: 40,
+        startLine: 42,
         title: "privacy_access"
       },
       privacy_facial: {
         headers: {
-          position: "852,237",
+          position: "-502,485",
           title: "privacy_facial"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:826fcb04"
+              "line:e2a982b1"
             ],
             text: "Cam: No. The system does not use facial recognition, and it does not collect biometric data or driver information."
           },
@@ -571,29 +571,156 @@
             op: "runLine",
             tags: [
               "newmessage",
-              "line:145fcc73"
+              "line:58f88b28"
             ],
             text: "Cam: Searches are based on vehicle details, not people, so it cannot identify someone by their face."
           },
           {
-            node: "hub",
+            node: "privacy_hub",
             op: "runNode"
           }
         ],
         sourceFile: "trust.yarn",
-        startLine: 31,
+        startLine: 33,
         title: "privacy_facial"
+      },
+      privacy_hub: {
+        headers: {
+          position: "75,1048",
+          title: "privacy_hub"
+        },
+        instructions: [
+          {
+            op: "runLine",
+            tags: [
+              "newmessage",
+              "line:5b4a6666",
+              "lastline"
+            ],
+            text: "Cam: Is there anything else about privacy and safety I can help you with?"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 13,
+            op: "addOption",
+            tags: [
+              "line:ca57d9f6"
+            ],
+            text: "Data & retention"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 15,
+            op: "addOption",
+            tags: [
+              "line:5c67de81"
+            ],
+            text: "Facial recognition"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 17,
+            op: "addOption",
+            tags: [
+              "line:b9ee19e1"
+            ],
+            text: "Who can access it"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 19,
+            op: "addOption",
+            tags: [
+              "line:2fde1e96"
+            ],
+            text: "Myths & facts"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 21,
+            op: "addOption",
+            tags: [
+              "line:958f170f"
+            ],
+            text: "Back to the main topics"
+          },
+          {
+            op: "showOptions"
+          },
+          {
+            index: 23,
+            op: "jumpTo"
+          },
+          {
+            node: "privacy_retention",
+            op: "runNode"
+          },
+          {
+            index: 23,
+            op: "jumpTo"
+          },
+          {
+            node: "privacy_facial",
+            op: "runNode"
+          },
+          {
+            index: 23,
+            op: "jumpTo"
+          },
+          {
+            node: "privacy_access",
+            op: "runNode"
+          },
+          {
+            index: 23,
+            op: "jumpTo"
+          },
+          {
+            node: "privacy_myths",
+            op: "runNode"
+          },
+          {
+            index: 23,
+            op: "jumpTo"
+          },
+          {
+            node: "hub",
+            op: "runNode"
+          },
+          {
+            index: 23,
+            op: "jumpTo"
+          }
+        ],
+        sourceFile: "trust.yarn",
+        startLine: 60,
+        title: "privacy_hub"
       },
       privacy_myths: {
         headers: {
-          position: "292,237",
+          position: "644,496",
           title: "privacy_myths"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:222941b7"
+              "line:addd2bc7"
             ],
             text: "Cam: Is LPR mass surveillance? No. It is used for specific public safety investigations under rules set by your local agency."
           },
@@ -601,29 +728,29 @@
             op: "runLine",
             tags: [
               "newmessage",
-              "line:b41946c0"
+              "line:178c225e"
             ],
             text: "Cam: Flock has also reduced its recommended default data retention from 30 days to 7 days, expanded audit requirements and proactive monitoring to detect misuse, and made multi-factor authentication mandatory for every customer."
           },
           {
-            node: "hub",
+            node: "privacy_hub",
             op: "runNode"
           }
         ],
         sourceFile: "trust.yarn",
-        startLine: 49,
+        startLine: 51,
         title: "privacy_myths"
       },
       privacy_retention: {
         headers: {
-          position: "572,237",
+          position: "-105,500",
           title: "privacy_retention"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:b8150ee8"
+              "line:0569bf96"
             ],
             text: "Cam: Your local agency controls who can access the information, and images and footage are deleted automatically after a set period."
           },
@@ -631,22 +758,22 @@
             op: "runLine",
             tags: [
               "newmessage",
-              "line:2e25099f"
+              "line:62824ec4"
             ],
             text: "Cam: In most communities that's 7 days unless local law says otherwise, and every search is tied to a specific user and recorded in a log."
           },
           {
-            node: "hub",
+            node: "privacy_hub",
             op: "runNode"
           }
         ],
         sourceFile: "trust.yarn",
-        startLine: 22,
+        startLine: 24,
         title: "privacy_retention"
       },
       products: {
         headers: {
-          position: "122,12",
+          position: "129,12",
           title: "products"
         },
         instructions: [
@@ -658,7 +785,7 @@
             text: "Cam: Flock brings the tools together: solar-powered cameras and devices that capture actionable evidence, drones that arrive on-scene in seconds, and software that turns real-time intel into faster investigations."
           },
           {
-            content: 'block "flock-products" join',
+            content: 'block "flock-products" new',
             op: "runCommand"
           },
           {
@@ -730,12 +857,12 @@
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 8,
+        startLine: 10,
         title: "products"
       },
       products_911: {
         headers: {
-          position: "572,462",
+          position: "2134,462",
           title: "products_911"
         },
         instructions: [
@@ -747,17 +874,17 @@
             text: "Cam: Flock911 streams live 911 calls and transcripts en route and shows calls across jurisdictions, so responders can bypass dispatch delays."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 121,
+        startLine: 123,
         title: "products_911"
       },
       products_audio: {
         headers: {
-          position: "1412,462",
+          position: "852,462",
           title: "products_audio"
         },
         instructions: [
@@ -769,17 +896,17 @@
             text: "Cam: Audio detection finds critical sounds in real time, from gunfire to street takeovers or car accidents."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 82,
+        startLine: 84,
         title: "products_audio"
       },
       products_cameras: {
         headers: {
-          position: "1192,237",
+          position: "124,256",
           title: "products_cameras"
         },
         instructions: [
@@ -880,12 +1007,12 @@
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 21,
+        startLine: 23,
         title: "products_cameras"
       },
       products_das: {
         headers: {
-          position: "2532,462",
+          position: "1353,462",
           title: "products_das"
         },
         instructions: [
@@ -897,17 +1024,17 @@
             text: "Cam: A drone in a dock for private sites. Every alert gets an immediate aerial view, at roughly the cost of a single guard."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 98,
+        startLine: 100,
         title: "products_das"
       },
       products_dfr: {
         headers: {
-          position: "2252,462",
+          position: "1073,462",
           title: "products_dfr"
         },
         instructions: [
@@ -927,17 +1054,17 @@
             text: "Cam: Alpha reads license plates from up to 2,000 feet away, and one in five calls is resolved without dispatching patrol."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 89,
+        startLine: 91,
         title: "products_dfr"
       },
       products_drones: {
         headers: {
-          position: "2285,237",
+          position: "1123,237",
           title: "products_drones"
         },
         instructions: [
@@ -998,12 +1125,12 @@
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 35,
+        startLine: 37,
         title: "products_drones"
       },
       products_freeform: {
         headers: {
-          position: "292,462",
+          position: "2414,462",
           title: "products_freeform"
         },
         instructions: [
@@ -1015,17 +1142,124 @@
             text: "Cam: FreeForm searches your existing video and LPR systems in natural language to cut review time \u2014 without facial recognition."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 128,
+        startLine: 130,
         title: "products_freeform"
+      },
+      products_hub: {
+        headers: {
+          position: "1332,802",
+          title: "products_hub"
+        },
+        instructions: [
+          {
+            op: "runLine",
+            tags: [
+              "newmessage",
+              "line:028cc667",
+              "lastline"
+            ],
+            text: "Cam: Is there anything else about our products I can help you with?"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 11,
+            op: "addOption",
+            tags: [
+              "line:e7050107"
+            ],
+            text: "Cameras & Devices"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 13,
+            op: "addOption",
+            tags: [
+              "line:71350670"
+            ],
+            text: "Flock Drones"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 15,
+            op: "addOption",
+            tags: [
+              "line:cb640fe9"
+            ],
+            text: "Software"
+          },
+          {
+            op: "pushBool",
+            value: true
+          },
+          {
+            destination: 17,
+            op: "addOption",
+            tags: [
+              "line:5d54089e"
+            ],
+            text: "Back to the main topics"
+          },
+          {
+            op: "showOptions"
+          },
+          {
+            index: 19,
+            op: "jumpTo"
+          },
+          {
+            node: "products_cameras",
+            op: "runNode"
+          },
+          {
+            index: 19,
+            op: "jumpTo"
+          },
+          {
+            node: "products_drones",
+            op: "runNode"
+          },
+          {
+            index: 19,
+            op: "jumpTo"
+          },
+          {
+            node: "products_software",
+            op: "runNode"
+          },
+          {
+            index: 19,
+            op: "jumpTo"
+          },
+          {
+            node: "hub",
+            op: "runNode"
+          },
+          {
+            index: 19,
+            op: "jumpTo"
+          }
+        ],
+        sourceFile: "products.yarn",
+        startLine: 137,
+        title: "products_hub"
       },
       products_lpr: {
         headers: {
-          position: "1692,462",
+          position: "12,462",
           title: "products_lpr"
         },
         instructions: [
@@ -1045,17 +1279,17 @@
             text: "Cam: They feed the nation's largest connected LPR network, which helps law enforcement, businesses, and communities share vehicle evidence securely."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 59,
+        startLine: 61,
         title: "products_lpr"
       },
       products_os: {
         headers: {
-          position: "12,462",
+          position: "1854,462",
           title: "products_os"
         },
         instructions: [
@@ -1067,17 +1301,17 @@
             text: "Cam: FlockOS connects your devices, data, and departments in one secure RTCC-like hub \u2014 4,800+ connected agencies and 5,000+ neighborhoods and businesses, 24/7."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 114,
+        startLine: 116,
         title: "products_os"
       },
       products_platform: {
         headers: {
-          position: "852,462",
+          position: "1574,462",
           title: "products_platform"
         },
         instructions: [
@@ -1097,17 +1331,17 @@
             text: "Cam: The platform also carries the National LPR Network, the largest agency-controlled LPR network in the country."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 105,
+        startLine: 107,
         title: "products_platform"
       },
       products_software: {
         headers: {
-          position: "72,237",
+          position: "1641,237",
           title: "products_software"
         },
         instructions: [
@@ -1208,12 +1442,12 @@
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 45,
+        startLine: 47,
         title: "products_software"
       },
       products_trailers: {
         headers: {
-          position: "1132,462",
+          position: "572,462",
           title: "products_trailers"
         },
         instructions: [
@@ -1225,17 +1459,17 @@
             text: "Cam: Mobile security trailers put video coverage where you need it most, with no power or Wi-Fi required \u2014 fully solar-powered, LTE-connected, and in most cases no permits needed."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 75,
+        startLine: 77,
         title: "products_trailers"
       },
       products_video: {
         headers: {
-          position: "1972,462",
+          position: "292,462",
           title: "products_video"
         },
         instructions: [
@@ -1247,24 +1481,24 @@
             text: "Cam: Fixed and PTZ cameras, AC or solar, monitor key areas and link footage with AI-powered analytics to accelerate investigations."
           },
           {
-            node: "hub",
+            node: "products_hub",
             op: "runNode"
           }
         ],
         sourceFile: "products.yarn",
-        startLine: 68,
+        startLine: 70,
         title: "products_video"
       },
       support: {
         headers: {
-          position: "572,687",
+          position: "418,507",
           title: "support"
         },
         instructions: [
           {
             op: "runLine",
             tags: [
-              "line:b9e4b22d"
+              "line:dfe10256"
             ],
             text: "Cam: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?"
           },
@@ -1274,7 +1508,7 @@
           }
         ],
         sourceFile: "core.yarn",
-        startLine: 89,
+        startLine: 76,
         title: "support"
       }
     },

@@ -1,16 +1,18 @@
-// The Products & offerings flow: the menu, its three groups, and one beat per
-// product. Every leaf lands on `hub` (core.yarn), which asks the "anything else"
-// question.
+// The Products & offerings flow: the menu, its three groups, one beat per
+// product, and the sub-hub every leaf lands on. The sub-hub asks its own
+// "anything else about products" question and hands back to `hub` (hub.yarn),
+// the main gate — so a viewer picking through the product tree returns here
+// before returning there.
 //
 // The provenance markers (OBSERVED / ADAPTED / AUTHORED), the `// src:` rule,
 // and the authoring rules for the whole tree are at the top of core.yarn.
 
 title: products
-position: 122,12
+position: 129,12
 ---
 // src: https://www.flocksafety.com/products
 Cam: Flock brings the tools together: solar-powered cameras and devices that capture actionable evidence, drones that arrive on-scene in seconds, and software that turns real-time intel into faster investigations.
-<<block "flock-products" join>>
+<<block "flock-products" new>>
 -> Cameras & Devices
   <<jump products_cameras>>
 -> Flock Drones
@@ -19,7 +21,7 @@ Cam: Flock brings the tools together: solar-powered cameras and devices that cap
   <<jump products_software>>
 ===
 title: products_cameras
-position: 1192,237
+position: 124,256
 ---
 // src: https://www.flocksafety.com/products
 Cam: Solar-powered devices that detect threats and capture actionable evidence.
@@ -33,7 +35,7 @@ Cam: Solar-powered devices that detect threats and capture actionable evidence.
   <<jump products_audio>>
 ===
 title: products_drones
-position: 2285,237
+position: 1123,237
 ---
 // src: https://www.flocksafety.com/products
 Cam: Arrive on-scene in seconds with Drone as First Responder.
@@ -43,7 +45,7 @@ Cam: Arrive on-scene in seconds with Drone as First Responder.
   <<jump products_das>>
 ===
 title: products_software
-position: 72,237
+position: 1641,237
 ---
 // src: https://www.flocksafety.com/products
 Cam: Real-time intel turned into better decisions and faster investigations, all in one platform.
@@ -57,78 +59,95 @@ Cam: Real-time intel turned into better decisions and faster investigations, all
   <<jump products_freeform>>
 ===
 title: products_lpr
-position: 1692,462
+position: 12,462
 ---
 // src: https://www.flocksafety.com/products/license-plate-readers and /faq
 Cam: Solar-powered license plate readers capture accurate plates and vehicle details in any condition — up to 100 mph, day and night, and up to 75 feet away.
 // src: https://www.flocksafety.com/products/license-plate-readers
 Cam: They feed the nation's largest connected LPR network, which helps law enforcement, businesses, and communities share vehicle evidence securely. #newmessage
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_video
-position: 1972,462
+position: 292,462
 ---
 // src: https://www.flocksafety.com/products/video-cameras
 Cam: Fixed and PTZ cameras, AC or solar, monitor key areas and link footage with AI-powered analytics to accelerate investigations.
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_trailers
-position: 1132,462
+position: 572,462
 ---
 // src: https://www.flocksafety.com/products/mobile-security-trailer
 Cam: Mobile security trailers put video coverage where you need it most, with no power or Wi-Fi required — fully solar-powered, LTE-connected, and in most cases no permits needed.
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_audio
-position: 1412,462
+position: 852,462
 ---
 // src: https://www.flocksafety.com/products/gunshot-detection
 Cam: Audio detection finds critical sounds in real time, from gunfire to street takeovers or car accidents.
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_dfr
-position: 2252,462
+position: 1073,462
 ---
 // src: https://www.flocksafety.com/products/flock-dfr
 Cam: An all-in-one, fully automated air support system: first eyes on scene, reaching calls in about 86 seconds.
 // src: https://www.flocksafety.com/products/flock-dfr
 Cam: Alpha reads license plates from up to 2,000 feet away, and one in five calls is resolved without dispatching patrol. #newmessage
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_das
-position: 2532,462
+position: 1353,462
 ---
 // src: https://www.flocksafety.com/products/flock-aerodome-drone-as-automated-security
 Cam: A drone in a dock for private sites. Every alert gets an immediate aerial view, at roughly the cost of a single guard.
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_platform
-position: 852,462
+position: 1574,462
 ---
 // src: https://www.flocksafety.com/products/flock-safety-platform
 Cam: Unify your safety tools in one connected system — 4,800+ agencies, live in 49 states, with over a million cases supported in 2025.
 // src: https://www.flocksafety.com/products (National LPR Network, folded in)
 Cam: The platform also carries the National LPR Network, the largest agency-controlled LPR network in the country. #newmessage
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_os
-position: 12,462
+position: 1854,462
 ---
 // src: https://www.flocksafety.com/products/flock-os
 Cam: FlockOS connects your devices, data, and departments in one secure RTCC-like hub — 4,800+ connected agencies and 5,000+ neighborhoods and businesses, 24/7.
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_911
-position: 572,462
+position: 2134,462
 ---
 // src: https://www.flocksafety.com/products/flock911
 Cam: Flock911 streams live 911 calls and transcripts en route and shows calls across jurisdictions, so responders can bypass dispatch delays.
-<<jump hub>>
+<<jump products_hub>>
 ===
 title: products_freeform
-position: 292,462
+position: 2414,462
 ---
 // src: https://www.flocksafety.com/products/flock-freeform
 Cam: FreeForm searches your existing video and LPR systems in natural language to cut review time — without facial recognition.
-<<jump hub>>
+<<jump products_hub>>
+===
+title: products_hub
+position: 1332,802
+---
+// The sub-hub: the return gate for the deep products flow. Every product leaf
+// lands here, and the groups it offers are the menu's own three, so picking
+// another product never re-runs the intro beat. "Back to the main topics"
+// hands back to `hub` (hub.yarn), the gate every flow shares.
+Cam: Is there anything else about our products I can help you with? #newmessage
+-> Cameras & Devices
+  <<jump products_cameras>>
+-> Flock Drones
+  <<jump products_drones>>
+-> Software
+  <<jump products_software>>
+-> Back to the main topics
+  <<jump hub>>
 ===

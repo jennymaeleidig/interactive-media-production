@@ -1,15 +1,17 @@
-// The Privacy & safety flow: the trust menu and its four topics. Every topic
-// lands on `hub` (core.yarn), which asks the "anything else" question.
+// The Privacy & safety flow: the trust menu, its four topics, and the sub-hub
+// every topic lands on. The sub-hub asks its own "anything else about privacy
+// and safety" question and hands back to `hub` (hub.yarn), the main gate — so a
+// viewer following topics returns here before returning there.
 //
 // The provenance markers (OBSERVED / ADAPTED / AUTHORED), the `// src:` rule,
 // and the authoring rules for the whole tree are at the top of core.yarn.
 
 title: privacy
-position: 72,12
+position: 93,12
 ---
 // src: https://www.flocksafety.com/trust
 Cam: Safety is a fundamental right. Public safety technology affects real people and neighborhoods, so Flock builds clear limits into the product, keeps decisions with local agencies, and records system use so it can be reviewed.
-<<block "flock-trust" join>>
+<<block "flock-trust" new>>
 -> Data & retention
   <<jump privacy_retention>>
 -> Facial recognition
@@ -20,38 +22,57 @@ Cam: Safety is a fundamental right. Public safety technology affects real people
   <<jump privacy_myths>>
 ===
 title: privacy_retention
-position: 572,237
+position: -105,500
 ---
 // src: https://www.flocksafety.com/trust/data-privacy
 Cam: Your local agency controls who can access the information, and images and footage are deleted automatically after a set period.
 // src: https://www.flocksafety.com/trust/data-privacy and /legal/lpr-policy
 Cam: In most communities that's 7 days unless local law says otherwise, and every search is tied to a specific user and recorded in a log. #newmessage
-<<jump hub>>
+<<jump privacy_hub>>
 ===
 title: privacy_facial
-position: 852,237
+position: -502,485
 ---
 // src: https://www.flocksafety.com/trust/data-privacy and /faq
 Cam: No. The system does not use facial recognition, and it does not collect biometric data or driver information.
 // src: https://www.flocksafety.com/trust/data-privacy
 Cam: Searches are based on vehicle details, not people, so it cannot identify someone by their face. #newmessage
-<<jump hub>>
+<<jump privacy_hub>>
 ===
 title: privacy_access
-position: 12,237
+position: 271,496
 ---
 // src: https://www.flocksafety.com/legal/data-ownership
 Cam: You own your data, and Flock cannot and does not sell it.
 // src: https://www.flocksafety.com/trust/data-privacy and /legal/data-ownership
 Cam: Nothing is shared unless your organization turns sharing on, and there is no public database — no public browsing, no open access. #newmessage
-<<jump hub>>
+<<jump privacy_hub>>
 ===
 title: privacy_myths
-position: 292,237
+position: 644,496
 ---
 // src: https://www.flocksafety.com/trust/myths-facts
 Cam: Is LPR mass surveillance? No. It is used for specific public safety investigations under rules set by your local agency.
 // src: https://www.flocksafety.com/ and https://www.flocksafety.com/faq
 Cam: Flock has also reduced its recommended default data retention from 30 days to 7 days, expanded audit requirements and proactive monitoring to detect misuse, and made multi-factor authentication mandatory for every customer. #newmessage
-<<jump hub>>
+<<jump privacy_hub>>
+===
+title: privacy_hub
+position: 75,1048
+---
+// The sub-hub: the return gate for the deep Privacy & safety flow. Every topic
+// lands here, and the topics it offers are the menu's own four, so following
+// another topic never re-runs the intro beat. "Back to the main topics" hands
+// back to `hub` (hub.yarn), the gate every flow shares.
+Cam: Is there anything else about privacy and safety I can help you with? #newmessage
+-> Data & retention
+  <<jump privacy_retention>>
+-> Facial recognition
+  <<jump privacy_facial>>
+-> Who can access it
+  <<jump privacy_access>>
+-> Myths & facts
+  <<jump privacy_myths>>
+-> Back to the main topics
+  <<jump hub>>
 ===

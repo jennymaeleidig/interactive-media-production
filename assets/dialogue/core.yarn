@@ -1,11 +1,12 @@
-// Cam's script — the spine: the greeting, the return hub, the general and
-// support answers, the demo ask, and the closing.
+// Cam's script — the spine: the greeting, the general and support answers, the
+// demo ask, and the closing.
 //
-// The tree is three files, all compiled by the one project (`flock.yarnproject`
+// The tree is four files, all compiled by the one project (`flock.yarnproject`
 // globs `**/*.yarn`), so node titles are shared across them:
 //
-//   core.yarn      Start, hub, general, support, demo, end   (this file)
-//   products.yarn  the Products & offerings flow
+//   core.yarn      Start, general, support, demo, end   (this file)
+//   hub.yarn       the return hub
+//   products.yarn  the Products & offerings flow and its sub-hub
 //   trust.yarn     the Privacy & safety flow
 //
 // Provenance, marked on every Cam line:
@@ -35,13 +36,18 @@
 //     chip itself shows the first segment only.
 //   * `<<block "id">>` resolves against the block inventory
 //     (lib/chat-blocks.mjs) — never a URL here. The bare form joins the current
-//     bubble, `new` opens its own.
-//   * Flows: Start greets, every spoke lands on `hub` and its "anything else"
-//     line, `end` closes. Support, Products & offerings, Get a Demo, and
-//     Privacy & safety are the four branches.
+//     bubble, `new` opens its own. A block that follows a typed line is always
+//     `new`: the renderer types only text, so a joined block lands whole the
+//     moment the bubble does and jumps the typewriter — `new` makes it the next
+//     message, held behind the line above's reveal.
+//   * Flows: Start greets; a shallow spoke lands on `hub` and its "anything
+//     else" line; a deep flow (products, privacy) lands on its sub-hub
+//     (`products_hub`, `privacy_hub`), which hands back to `hub`; `end` closes.
+//     Support, Products & offerings, Get a Demo, and Privacy & safety are the
+//     four branches.
 
 title: Start
-position: 18,12
+position: -194,-28
 ---
 // ADAPTED from the observed greeting: the name is the piece's, the rest is
 // verbatim. The greeting carries the general beat as a first-contact offer and
@@ -60,48 +66,30 @@ Cam: Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do y
 -> Support
   <<jump support>>
 ===
-title: hub
-position: 79,462
----
-// The return gate. Every spoke lands here, and it is the same five chips every
-// time it is reached — no first-return variant. `#newmessage` keeps the
-// follow-up question out of the beat's bubble.
-Cam: Is there anything else I can help you with today? #newmessage
--> Products & offerings
-  <<jump products>>
--> Get a Demo
-  <<set $demoRequested = true>>
-  <<jump demo>>
--> Privacy & safety
-  <<jump privacy>>
--> Support
-  <<jump support>>
--> That's all for now ~ talk soon
-  <<jump end>>
-===
 title: general
-position: 79,237
+position: -198,517
 ---
 // OBSERVED (s10). The old fixture's "What can you help me with?" answer.
 Cam: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
 <<jump hub>>
 ===
 title: support
-position: 572,687
+position: 418,507
 ---
 // OBSERVED (s10) — the phone number and address are Flock's, verbatim.
 Cam: You can reach our support team through the following channels: - Call us at +1 (866) 901-1781 - Email us at support@flocksafety.com Is there anything specific you'd like assistance with, or any other way I can help you today?
 <<jump hub>>
 ===
 title: demo
-position: 12,687
+position: -785,533
 ---
 // src: https://www.flocksafety.com/book-a-demo
 Cam: A demo walks you through the Flock Difference: the largest public-private safety network, technology that's always up-to-date, and privacy-first accountability.
-// src: https://www.flocksafety.com/book-a-demo. The link joins this bubble; the
-// inventory holds the href, so a destination is one edit in lib/chat-blocks.mjs.
+// src: https://www.flocksafety.com/book-a-demo. The link opens its own bubble;
+// the inventory holds the href, so a destination is one edit in
+// lib/chat-blocks.mjs.
 Cam: Everything connected, with no silos. #newmessage
-<<block "flock-demo" join>>
+<<block "flock-demo" new>>
 // OBSERVED (s12) — the email gate. The piece never collects the address and the
 // booker opens nowhere: "Maybe later" is the only way on, and it returns to the
 // hub rather than re-greeting (CONTEXT.md "Email gate").

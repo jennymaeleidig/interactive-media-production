@@ -13,7 +13,7 @@ reach is a viewer's own click on an external link.
 ## Working on the script
 
 The dialogue compiles out of the Yarn sources in `assets/dialogue/`
-(`core.yarn`, `products.yarn`, `trust.yarn`) into two generated,
+(`core.yarn`, `hub.yarn`, `products.yarn`, `trust.yarn`) into two generated,
 committed files (`scripts/chat-program.json`, `scripts/chat-runtime.js`), and
 the asset route reads the runtime from disk on every request — so the dev loop
 needs no server restart, only a recompile:

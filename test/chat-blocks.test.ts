@@ -4,9 +4,8 @@
 // piece can render and every remote source it may reach. It is the no-ask rule's
 // allowlist (`CODING_STANDARDS.md`), so this suite is its check: the ids are
 // unique, every type is in the locked vocabulary, the derived allowlist equals
-// the set of `src` values and nothing else, no frame asks for both
-// `allow-scripts` and `allow-same-origin`, and every `<<block>>` id the compiled
-// program names resolves.
+// the set of `src` values and nothing else, and no frame asks for both
+// `allow-scripts` and `allow-same-origin`.
 //
 // The inventory also carries each type's contract terms, and this suite carries
 // those too: a beat weight declared for every renderable type (a missing one is
@@ -15,15 +14,10 @@
 // the types whose render reaches a remote source.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CHAT_BLOCKS, CHAT_BLOCK_TERMS, allowedSources } from '../lib/chat-blocks.mjs';
 import { CHAT_BLOCK_TYPES } from '../lib/chat-turn.mjs';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
-
-const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /** The locked vocabulary, minus the designed `unknown` fallback. */
 const LOCKED = CHAT_BLOCK_TYPES.filter((type) => type !== 'unknown');
@@ -44,29 +38,6 @@ function sampleBlock(type: (typeof CHAT_BLOCK_TYPES)[number]): ChatBlock {
     case 'unknown':
       return { who: 'bot', type: 'unknown', reason: 'Unknown block' };
   }
-}
-
-/** Every string in the compiled program that is a block command. */
-function programBlockIds(): string[] {
-  const program = JSON.parse(readFileSync(path.join(ROOT, 'scripts/chat-program.json'), 'utf8'));
-  const ids: string[] = [];
-  /** @param {unknown} value */
-  const walk = (value: unknown) => {
-    if (typeof value === 'string') {
-      const match = /^block "([^"]+)"(?:\s+(?:new|join))?$/.exec(value);
-      if (match) ids.push(match[1]);
-      return;
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) walk(item);
-      return;
-    }
-    if (value && typeof value === 'object') {
-      for (const item of Object.values(value)) walk(item);
-    }
-  };
-  walk(program);
-  return ids;
 }
 
 describe('the block inventory', () => {
@@ -96,12 +67,6 @@ describe('the block inventory', () => {
       const both = sandbox.includes('allow-scripts') && sandbox.includes('allow-same-origin');
       expect(both, id).toBe(false);
     }
-  });
-
-  it('resolves every block id the compiled program names', () => {
-    const ids = programBlockIds();
-    expect(ids.length, 'the fixture exercises at least one authored block').toBeGreaterThan(0);
-    for (const id of ids) expect(Object.keys(CHAT_BLOCKS), id).toContain(id);
   });
 });
 

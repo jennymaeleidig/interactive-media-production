@@ -6,7 +6,7 @@
 // directly: an in-page memory store proves the store is the only thing the
 // engine persists through, and that the constructor's injection point is real
 // rather than exported-but-unexercised. The published `localStorage` wiring is
-// driven by the engine seam (`test/chat.seam.test.ts`).
+// exercised through the published runtime (`test/chat-interface.test.ts`).
 //
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
