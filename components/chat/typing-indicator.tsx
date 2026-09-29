@@ -12,9 +12,9 @@
 //
 // The composing character is named twice without a position jump: the mark
 // rides just off the bubble's bottom-left corner, minified, so the moment the
-// message lands the full-size mark appears in the run's usual left column, and
-// the `role="status"` label reads the character's display name to assistive
-// tech.
+// message lands the full-size mark appears on the landed bubble's own
+// bottom-left corner, in the same column, and the `role="status"` label reads
+// the character's display name to assistive tech.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { motion } from 'framer-motion';

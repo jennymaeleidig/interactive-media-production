@@ -185,9 +185,10 @@ export function BlockPart({ block, animate }: BlockProps) {
   }
 }
 
-/** One character's mark on its disc, set beside the first bubble of a run — the
- * reference widget's own placement — or minified at the typing indicator's
- * bubble corner. The image is a local, self-hosted asset
+/** One character's mark on its disc, set on the first bubble of a run — the
+ * reference widget's own placement, moved to the bubble's bottom-left corner
+ * for parity with the composing bubble — or minified just off the typing
+ * indicator's corner. The image is a local, self-hosted asset
  * (`lib/chat-characters.mjs`), so the page requests no third party; its alt is
  * the character's display name, so the mark names its speaker to assistive tech.
  * Exported for the typing indicator, which borrows the same mark. */
@@ -256,11 +257,10 @@ export const Message = memo(function Message({
   return (
     <div className={cn('flex w-full gap-2', user ? 'justify-end' : 'justify-start', className)}>
       {user ? null : (
-        // A continued bubble holds the column open with nothing in it, so a run's
-        // bubbles stay aligned under the one mark.
-        <div aria-hidden={continues ? true : undefined} className="w-7 shrink-0">
-          {continues ? null : <CharacterMark character={characterFor(message.speaker)} />}
-        </div>
+        // A bubble continues a run by holding this column open with nothing in
+        // it, so every bubble starts at the same x. The mark itself is drawn on
+        // the bubble (below), where its own box anchors it.
+        <div aria-hidden="true" className="w-7 shrink-0" />
       )}
       {/* The bubble and its dev timer share a column: the tag holds its own
           line under the bubble's trailing corner, so a message that lands
@@ -268,7 +268,7 @@ export const Message = memo(function Message({
       <div className={cn('flex min-w-0 max-w-[85%] flex-col', user ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'font-serif flex flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
+            'font-serif relative flex flex-col gap-2 rounded-card px-4 py-2.5 text-base leading-relaxed text-bubble-content',
             user ? 'bg-bubble-me' : 'bg-bubble-bot',
             continues && (user ? 'rounded-tr-none' : 'rounded-tl-none'),
             continued && (user ? 'rounded-br-none' : 'rounded-bl-none'),
@@ -287,6 +287,17 @@ export const Message = memo(function Message({
               <BlockPart animate={message.fresh === true} block={part} />
             </motion.div>
           ))}
+          {user || continues ? null : (
+            // The mark hangs on the bubble's own box rather than in the column
+            // above it, so it sits at the bubble's bottom-left corner — level
+            // with the composing bubble's mark — and the dev timer below the
+            // bubble cannot drag it down. `-left-9` is the reserved column plus
+            // its gap, so the disc lands exactly in the column with its usual
+            // 8px clear of the bubble's edge.
+            <span className="absolute -bottom-2 -left-9">
+              <CharacterMark character={characterFor(message.speaker)} />
+            </span>
+          )}
         </div>
         <LoadTimer message={message} />
       </div>
