@@ -77,33 +77,45 @@ function TextPart({ block, animate = false, charsPerStep }: AdapterProps) {
   // typing, never the reverse.
   const runs = revealRuns(typed);
   return (
-    <p className={prose}>
-      <Typewriter
-        component="span"
-        onInit={(writer) => {
-          const token = speakLine(typed.text, typed.speaker);
-          runs.forEach((run, index) => {
-            charsPerStep.current = run.charsPerStep;
-            // The first run's delay is the wrapper's own; a later run changes it
-            // before its text is queued, so each stretch types at its own pace.
-            if (index > 0) writer.changeDelay(run.delayMs);
-            writer.typeString(run.text);
-          });
-          // The typing is the turn's clock, and this is the one place that knows
-          // when it actually ends: the voice is stopped on the completion event,
-          // by token, so a slower voice is never cut before the line it belongs
-          // to has finished — and a late completion cannot silence the line
-          // that replaced it.
-          writer.callFunction(() => stopVoice(token));
-          writer.start();
-        }}
-        options={{
-          cursor: '',
-          delay: runs[0]?.delayMs,
-          skipAddStyles: true,
-          stringSplitter: (text) => splitIntoSteps(text, charsPerStep.current),
-        }}
-      />
+    <p className={cn(prose, 'relative')}>
+      {/* The finished line holds the box open, drawn as generated content
+          (`.reveal-ghost`), so the bubble is the size it will end at from its
+          first frame. Without it the paragraph has no line box until the
+          typewriter's first character lands, and the bubble — and the whole
+          transcript under it — grows a line at a time as the line types. The
+          reveal then fills a shape that is already there instead of pushing one
+          into place. Generated content, not a hidden copy, so the DOM still
+          holds one line. */}
+      <span className="reveal-ghost" data-reveal={typed.text} />
+      <span className="absolute inset-0">
+        <Typewriter
+          component="span"
+          onInit={(writer) => {
+            const token = speakLine(typed.text, typed.speaker);
+            runs.forEach((run, index) => {
+              charsPerStep.current = run.charsPerStep;
+              // The first run's delay is the wrapper's own; a later run changes
+              // it before its text is queued, so each stretch types at its own
+              // pace.
+              if (index > 0) writer.changeDelay(run.delayMs);
+              writer.typeString(run.text);
+            });
+            // The typing is the turn's clock, and this is the one place that
+            // knows when it actually ends: the voice is stopped on the
+            // completion event, by token, so a slower voice is never cut before
+            // the line it belongs to has finished — and a late completion cannot
+            // silence the line that replaced it.
+            writer.callFunction(() => stopVoice(token));
+            writer.start();
+          }}
+          options={{
+            cursor: '',
+            delay: runs[0]?.delayMs,
+            skipAddStyles: true,
+            stringSplitter: (text) => splitIntoSteps(text, charsPerStep.current),
+          }}
+        />
+      </span>
     </p>
   );
 }
