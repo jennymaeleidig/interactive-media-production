@@ -100,14 +100,31 @@ export function revealWordsForPreset(
   return clampRevealWordsPerMinute(baseWordsPerMinute * multiplier);
 }
 
-/** The reveal's true pace, in milliseconds per character: the typewriter
- * advances at most one character per frame, so a per-character delay below a
- * frame is inert and the real pace is the slower of the clock and a frame. The
- * pace is clamped to the readable band first, so the frame floor and the ceiling
- * agree. The turn schedule (`lib/turn-plan.ts`) waits a still-typing line out on
- * it rather than landing the next one on top of it. */
+/** The per-character delay asked of `typewriter-effect`, in milliseconds: the
+ * reveal clock read off `wordsPerMinute`, clamped to the readable band. This is
+ * what the typewriter is *requested*; what it achieves is `revealMsPerChar`. */
+export function revealDelayMs(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
+  return msPerChar(clampRevealWordsPerMinute(wordsPerMinute));
+}
+
+/** The wall time one typed character actually takes at a requested delay: the
+ * rAF typewriter advances at most one queued character per animation frame, and
+ * only on a frame whose elapsed time is strictly past the delay, so a character
+ * lands on the first frame boundary at or after `delayMs`. A delay of one frame
+ * is therefore two frames of wall time, and this is the true step — not
+ * `max(delay, frame)`. */
+export function typewriterStepMs(delayMs: number): number {
+  return Math.ceil(delayMs / FRAME_MS) * FRAME_MS;
+}
+
+/** The reveal's true pace, in milliseconds per character: what the rAF
+ * typewriter achieves at `revealDelayMs`, i.e. the requested delay rounded up to
+ * a whole animation frame. The turn schedule (`lib/turn-plan.ts`) waits a
+ * still-typing line out on it rather than landing the next one on top of it, and
+ * the voice — stopped when the line has finished typing (`lib/voice.ts`) — is
+ * never cut early. */
 export function revealMsPerChar(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
-  return Math.max(msPerChar(clampRevealWordsPerMinute(wordsPerMinute)), FRAME_MS);
+  return typewriterStepMs(revealDelayMs(wordsPerMinute));
 }
 
 /** The voice's volume lever, 0 silent to 1 full. Read live through a gain node

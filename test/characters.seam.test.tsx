@@ -16,8 +16,9 @@ const writer = vi.hoisted(() => ({
   changeDelay: vi.fn(),
   start: vi.fn(),
   typeString: vi.fn(),
+  callFunction: vi.fn(),
 }));
-const { speakLine } = vi.hoisted(() => ({ speakLine: vi.fn() }));
+const { speakLine, stopVoice } = vi.hoisted(() => ({ speakLine: vi.fn(() => 1), stopVoice: vi.fn() }));
 
 vi.mock('typewriter-effect', async () => {
   const { useEffect } = await import('react');
@@ -30,12 +31,12 @@ vi.mock('typewriter-effect', async () => {
     },
   };
 });
-vi.mock('@/lib/voice', () => ({ speakLine }));
+vi.mock('@/lib/voice', () => ({ speakLine, stopVoice }));
 
 import { Message } from '@/components/chat/message';
 import { TypingIndicator } from '@/components/chat/typing-indicator';
 import { characterFor } from '@/lib/chat-characters.mjs';
-import { revealMsPerChar, revealWordsForPreset } from '@/lib/pacing';
+import { revealDelayMs, revealWordsForPreset } from '@/lib/pacing';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import type { ChatMessage } from '@/lib/transcript';
 
@@ -84,11 +85,16 @@ describe('the character seam', () => {
     expect(writer.typeString).toHaveBeenCalledWith('wait ');
     expect(writer.typeString).toHaveBeenCalledWith('now');
     // The second stretch changes the delay before its text is queued, so the two
-    // stretches really type at two paces.
-    const expected = revealMsPerChar(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fastest'));
+    // stretches really type at two paces. The value is the requested delay, not
+    // the frame-rounded step the schedule reads.
+    const expected = revealDelayMs(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fastest'));
     expect(writer.changeDelay).toHaveBeenCalledWith(expected);
-    // The voice gets the whole line and the speaker, once.
+    // The voice gets the whole line and the speaker, once; the typewriter's
+    // completion event is where it is stopped.
     expect(speakLine).toHaveBeenCalledWith('wait now', 'cam');
+    expect(writer.callFunction).toHaveBeenCalledTimes(1);
+    (writer.callFunction.mock.calls[0]?.[0] as () => void)();
+    expect(stopVoice).toHaveBeenCalledWith(1);
   });
 
   it('does not change the delay for a line with one unmarked stretch', () => {

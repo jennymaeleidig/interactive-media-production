@@ -175,9 +175,10 @@ export function useDialogue(): Dialogue {
         // done, so a choice cannot cut the reveal off.
         setIsTyping(false);
         timer.current = setTimeout(() => {
-          // The line has finished typing, which is the turn's clock: stop its
-          // voice rather than holding the next message on a slower voice.
-          stopVoice();
+          // The line has finished typing — the typewriter's own completion
+          // stopped its voice (`components/chat/message.tsx`) — so the turn can
+          // move on. Waiting on the schedule here would cut a voice whose line is
+          // still typing, which is the bug this order avoids.
           if (last) {
             finish();
             return;

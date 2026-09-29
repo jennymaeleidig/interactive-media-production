@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import { describe, expect, it } from 'vitest';
 import { composingChars, planTurn, revealDelay, composingDelay, revealRuns, revealWordsPerMinuteFor } from '../lib/turn-plan';
-import { FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
+import { FRAME_MS, MIN_COMPOSING_BEAT_MS, msPerChar, revealDelayMs, revealMsPerChar, revealWordsForPreset, type Pacing } from '../lib/pacing';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
 const cam = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
@@ -109,7 +109,10 @@ describe('the paced reveal', () => {
     const block = paced([{ text: 'aa', pace: 'slowest' }, { text: 'bb', pace: 'fastest' }]);
     const slow = revealMsPerChar(revealWordsForPreset(400, 'slowest'));
     const fast = revealMsPerChar(revealWordsForPreset(400, 'fastest'));
-    expect(revealDelay([block])).toBe(Math.ceil(2 * slow + 2 * fast) + FRAME_MS);
+    // Two opening events plus the first stretch, the changeDelay event at the
+    // first stretch's pace, then the second stretch — every char at its own
+    // frame-rounded step, not its requested delay.
+    expect(revealDelay([block])).toBe(Math.ceil(5 * slow + 2 * fast) + FRAME_MS);
     // The slow stretch makes the whole line hold longer than the same characters
     // read at one pace — the override is real, not decorative.
     expect(revealDelay([block])).toBeGreaterThan(revealDelay([cam('aabb')]));
@@ -119,6 +122,10 @@ describe('the paced reveal', () => {
     const runs = revealRuns(cam('plain'));
     expect(runs).toHaveLength(1);
     expect(runs[0].text).toBe('plain');
-    expect(runs[0].delayMs).toBe(revealMsPerChar(revealWordsPerMinuteFor(cam('plain'))));
+    // The requested delay is what the typewriter is handed; the step is the
+    // frame-rounded wall time the schedule reads.
+    expect(runs[0].delayMs).toBe(revealDelayMs(revealWordsPerMinuteFor(cam('plain'))));
+    expect(runs[0].stepMs).toBe(revealMsPerChar(revealWordsPerMinuteFor(cam('plain'))));
+    expect(runs[0].stepMs).toBeGreaterThan(runs[0].delayMs);
   });
 });

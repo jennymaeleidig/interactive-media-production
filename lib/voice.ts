@@ -52,6 +52,12 @@ let fade: GainNode | null = null;
 let engine: Animalese | null = null;
 let loading: Promise<void> | null = null;
 let active: SpeechHandle | null = null;
+/** The line the voice belongs to. `speakLine` claims a fresh token per line, and
+ * `stopVoice(token)` is a no-op for a token that is no longer live — so a line
+ * that finished typing after a newer line had already started cannot cut the
+ * newer line's voice. Zero means nothing is live. */
+let activeToken = 0;
+let nextToken = 0;
 /** The pending stop of an outgoing line, held until its fade has landed. */
 let stopTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -105,12 +111,16 @@ function ensureVoice(): { context: AudioContext; engine: Animalese; fade: GainNo
 }
 
 /** Speak one line in the speaking character's own voice, from the first
- * character. Called when a fresh line's typewriter starts; a line still speaking
- * is stopped first, since only one line types at a time (the turn schedule
- * guarantees it, but a remount need not). */
-export function speakLine(text: string, speaker: string): void {
+ * character, and return the token that names it. Called when a fresh line's
+ * typewriter starts; a line still speaking is faded out first, since only one
+ * line types at a time (the turn schedule guarantees it, but a remount need not).
+ * The caller passes the token back to `stopVoice` when its own typing ends, so a
+ * superseded line cannot stop the line that replaced it. */
+export function speakLine(text: string, speaker: string): number {
+  const token = (nextToken += 1);
+  activeToken = token;
   const voice = ensureVoice();
-  if (!voice) return;
+  if (!voice) return token;
   const { context, engine, gain } = voice;
   const { volume } = getSettings();
   // The pitch pair belongs to the character (`lib/chat-characters.mjs`), so two
@@ -118,11 +128,15 @@ export function speakLine(text: string, speaker: string): void {
   const { basePitch, pitchRange } = characterFor(speaker).voice;
   gain.gain.value = volume;
   const start = () => {
+    // A newer line claimed the voice while this one waited for the samples, or
+    // this line was stopped before it began: it must not speak over its
+    // successor.
+    if (activeToken !== token) return;
     if (active) {
       // A line is still speaking or mid-fade — a remount, or a line so short the
       // next began inside the last one's fade. Fade it out and come back once the
       // envelope has landed, rather than hard-cutting a source and clicking.
-      stopVoice();
+      cutActive();
       if (stopTimer) {
         setTimeout(start, VOICE_FADE_S * 1000);
         return;
@@ -138,15 +152,12 @@ export function speakLine(text: string, speaker: string): void {
   void context.resume().catch(() => undefined);
   // The first line waits for the samples; afterwards `loading` has settled.
   void (loading ?? Promise.resolve()).then(start, () => undefined);
+  return token;
 }
 
-/** Cut the line's voice off now. The typing is the turn's clock, so the caller
- * (`hooks/use-dialogue.ts`) runs this the moment the line has finished typing:
- * a voice slower than the reveal stops there rather than talking over the next
- * message. The cut is a fade, not a stop — the sources are stopped only once the
- * ramp has landed, so the waveform is never severed mid-sample. A no-op when
- * nothing is speaking. */
-export function stopVoice(): void {
+/** Fade the active speech and stop its sources once the ramp has landed. Leaves
+ * the token alone: a line cutting its predecessor is still the live line. */
+function cutActive(): void {
   const handle = active;
   if (!handle || stopTimer) return;
   if (!context || !fade) {
@@ -162,4 +173,19 @@ export function stopVoice(): void {
     handle.stop();
     if (active === handle) active = null;
   }, VOICE_FADE_S * 1000);
+}
+
+/** Cut a line's voice off now. The typing is the turn's clock, so the line's own
+ * typewriter calls this — with the token `speakLine` returned — the moment it has
+ * finished typing: a voice slower than the reveal stops there rather than talking
+ * over the next message, and the voice is never cut before the typing it belongs
+ * to is done. A token that is not the live one is ignored, so a late completion
+ * cannot silence the line that replaced it; no token is a forced stop (a reset),
+ * which also cancels a line still waiting for its samples. The cut is a fade, not
+ * a stop — the sources are stopped only once the ramp has landed, so the waveform
+ * is never severed mid-sample. A no-op when nothing is speaking. */
+export function stopVoice(token?: number): void {
+  if (token !== undefined && token !== activeToken) return;
+  activeToken = 0;
+  cutActive();
 }

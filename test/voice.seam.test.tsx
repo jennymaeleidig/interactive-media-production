@@ -9,8 +9,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
-const { speakLine } = vi.hoisted(() => ({ speakLine: vi.fn() }));
-vi.mock('@/lib/voice', () => ({ speakLine }));
+const { speakLine, stopVoice } = vi.hoisted(() => ({ speakLine: vi.fn(() => 1), stopVoice: vi.fn() }));
+vi.mock('@/lib/voice', () => ({ speakLine, stopVoice }));
 
 import { Message } from '@/components/chat/message';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';

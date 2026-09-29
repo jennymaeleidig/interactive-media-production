@@ -90,6 +90,22 @@ describe('the voice and the character', () => {
     expect(master?.gain.value).toBe(0.1);
   });
 
+  it('ignores a superseded line’s stop, so a late completion cannot silence the new line', async () => {
+    const stale = speakLine('one', 'cam');
+    await waitFor(() => expect(fake.speak).toHaveBeenCalledTimes(1));
+    const fresh = speakLine('two', 'cam');
+    await waitFor(() => expect(fake.speak).toHaveBeenCalledTimes(2));
+
+    const handle = fake.speak.mock.results.at(-1)?.value as unknown as { stop: () => void };
+    // The first line's typewriter finishes later: its token is no longer live, so
+    // its stop is ignored and the second line keeps speaking.
+    stopVoice(stale);
+    expect(handle.stop).not.toHaveBeenCalled();
+
+    stopVoice(fresh);
+    await waitFor(() => expect(handle.stop).toHaveBeenCalled());
+  });
+
   it('gives each character its own pitch, so two speakers read as two people', async () => {
     speakLine('one', 'flock');
     await waitFor(() => expect(fake.speak).toHaveBeenCalled());

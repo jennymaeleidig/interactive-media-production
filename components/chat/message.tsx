@@ -28,7 +28,7 @@ import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { characterFor, type Character } from '@/lib/chat-characters.mjs';
 import { revealRuns } from '@/lib/turn-plan';
 import { cn } from '@/lib/utils';
-import { speakLine } from '@/lib/voice';
+import { speakLine, stopVoice } from '@/lib/voice';
 import { ExternalLinkIcon } from './icons';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 import type { ChatMessage as ChatMessageType } from '@/lib/transcript';
@@ -73,13 +73,19 @@ function TextPart({ block, animate = false }: AdapterProps) {
       <Typewriter
         component="span"
         onInit={(writer) => {
-          speakLine(typed.text, typed.speaker);
+          const token = speakLine(typed.text, typed.speaker);
           runs.forEach((run, index) => {
             // The first run's delay is the wrapper's own; a later run changes it
             // before its text is queued, so each stretch types at its own pace.
             if (index > 0) writer.changeDelay(run.delayMs);
             writer.typeString(run.text);
           });
+          // The typing is the turn's clock, and this is the one place that knows
+          // when it actually ends: the voice is stopped on the completion event,
+          // by token, so a slower voice is never cut before the line it belongs
+          // to has finished — and a late completion cannot silence the line
+          // that replaced it.
+          writer.callFunction(() => stopVoice(token));
           writer.start();
         }}
         options={{ cursor: '', delay: runs[0]?.delayMs, skipAddStyles: true }}
