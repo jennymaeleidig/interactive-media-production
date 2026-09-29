@@ -26,12 +26,26 @@ import { CharacterMark } from './message';
  * name the right speaker rather than the piece's title. */
 export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: string }) {
   const character = characterFor(speaker);
+  // The wait slides up from the foot of the transcript and back down as the
+  // reply lands, so the composing bubble reads as a placeholder that makes way
+  // for the message rather than a thing that blinks on and off. It animates on
+  // the transcript's own axis — the same direction the next line will arrive.
   return (
-    <div
+    <motion.div
+      animate={{ opacity: 1, y: 0 }}
+      aria-label={`${character.name} is typing`}
       className="mt-5 flex w-full justify-start gap-2"
       data-testid="typing-indicator"
+      exit={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 16 }}
       role="status"
-      aria-label={`${character.name} is typing`}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 28,
+        mass: 0.9,
+        opacity: { duration: 0.2, ease: 'easeOut' },
+      }}
     >
       {/* The mark's column is reserved but empty: the composing character sits
           just off the bubble's corner instead, and the dots still start where
@@ -53,6 +67,6 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
           <CharacterMark character={character} compact />
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }

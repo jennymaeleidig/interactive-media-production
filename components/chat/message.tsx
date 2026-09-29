@@ -254,8 +254,27 @@ export const Message = memo(function Message({
   continued?: boolean;
 }) {
   const user = message.role === 'user';
+  // The arrival: a bubble pops into place the way a message lands in a thread —
+  // a short spring from its own bottom corner, so it grows out of the edge it
+  // shares with the mark, rather than fading in from nowhere. Only a fresh
+  // turn's bubbles animate; a restored transcript renders at rest
+  // (`CODING_STANDARDS.md`: motion is scoped to arrival). The exit is the same
+  // shape backwards, for a bubble that leaves when the conversation resets.
   return (
-    <div className={cn('flex w-full gap-2', user ? 'justify-end' : 'justify-start', className)}>
+    <motion.div
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className={cn('flex w-full gap-2', user ? 'justify-end' : 'justify-start', className)}
+      exit={{ opacity: 0, scale: 0.96, y: 6 }}
+      initial={message.fresh === true ? { opacity: 0, scale: 0.86, y: 12 } : false}
+      style={{ transformOrigin: user ? 'bottom right' : 'bottom left' }}
+      transition={{
+        type: 'spring',
+        stiffness: 420,
+        damping: 30,
+        mass: 0.9,
+        opacity: { duration: 0.2, ease: 'easeOut' },
+      }}
+    >
       {user ? null : (
         // A bubble continues a run by holding this column open with nothing in
         // it, so every bubble starts at the same x. The mark itself is drawn on
@@ -278,14 +297,7 @@ export const Message = memo(function Message({
           data-testid={`message-${message.role}`}
         >
           {message.parts.map((part, index) => (
-            <motion.div
-              animate={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 12 }}
-              key={`${message.id}-${index}`}
-              transition={{ delay: index * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <BlockPart animate={message.fresh === true} block={part} />
-            </motion.div>
+            <BlockPart animate={message.fresh === true} block={part} key={`${message.id}-${index}`} />
           ))}
           {user || continued ? null : (
             // The mark hangs on the bubble's own box rather than in the column
@@ -303,6 +315,6 @@ export const Message = memo(function Message({
         </div>
         <LoadTimer message={message} />
       </div>
-    </div>
+    </motion.div>
   );
 });

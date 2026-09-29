@@ -11,7 +11,7 @@
 // `lib/transcript.ts`; this component is the map from its rows to JSX.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { Fragment } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { StickToBottom } from 'use-stick-to-bottom';
 import { transcriptRows, type ChatMessage } from '@/lib/transcript';
 import { cn } from '@/lib/utils';
@@ -49,40 +49,47 @@ export function Messages({
         {isLoading && messages.length === 0 ? (
           <Loading />
         ) : (
-          rows.map(({ message, divider, continues, continued }, index) => {
-            return (
-              <Fragment key={message.id}>
-                {divider ? (
-                  // The Flowbite "HR with text" separator: a full-width rule
-                  // with the stamp set in the gap it opens
-                  // (github.com/themesberg/flowbite, content/typography/hr.md;
-                  // MIT). Drawn as line–text–line rather than Flowbite's
-                  // absolutely-positioned span, so no page-background color
-                  // has to be faked over the transcript's frost.
-                  <div
-                    aria-label={divider}
-                    className="mb-5 flex items-center gap-3"
-                    data-testid="day-divider"
-                    role="separator"
-                  >
-                    <hr className="h-px flex-1 border-0 bg-edge" />
-                    <span className="font-chrome text-sm whitespace-nowrap text-muted-foreground">
-                      {divider}
-                    </span>
-                    <hr className="h-px flex-1 border-0 bg-edge" />
-                  </div>
-                ) : null}
-                <Message
-                  className={cn(index === 0 ? null : continues ? SAME_SPEAKER : BETWEEN_SPEAKERS)}
-                  continued={continued}
-                  continues={continues}
-                  message={message}
-                />
-              </Fragment>
-            );
-          })
+          // Presence is what lets a bubble and the composing wait animate on the
+          // way out as well as in. Each row is a direct child, so the transcript
+          // keeps a leaving row mounted until its exit has run.
+          <AnimatePresence initial={false}>
+            {rows.flatMap(({ message, divider, continues, continued }, index) => [
+              ...(divider
+                ? [
+                    // The Flowbite "HR with text" separator: a full-width rule
+                    // with the stamp set in the gap it opens
+                    // (github.com/themesberg/flowbite, content/typography/hr.md;
+                    // MIT). Drawn as line–text–line rather than Flowbite's
+                    // absolutely-positioned span, so no page-background color
+                    // has to be faked over the transcript's frost.
+                    <div
+                      aria-label={divider}
+                      className="mb-5 flex items-center gap-3"
+                      data-testid="day-divider"
+                      key={`${message.id}:divider`}
+                      role="separator"
+                    >
+                      <hr className="h-px flex-1 border-0 bg-edge" />
+                      <span className="font-chrome text-sm whitespace-nowrap text-muted-foreground">
+                        {divider}
+                      </span>
+                      <hr className="h-px flex-1 border-0 bg-edge" />
+                    </div>,
+                  ]
+                : []),
+              <Message
+                className={cn(index === 0 ? null : continues ? SAME_SPEAKER : BETWEEN_SPEAKERS)}
+                continued={continued}
+                continues={continues}
+                key={message.id}
+                message={message}
+              />,
+            ])}
+          </AnimatePresence>
         )}
-        {isTyping ? <TypingIndicator speaker={typingSpeaker} /> : null}
+        <AnimatePresence>
+          {isTyping ? <TypingIndicator key="typing" speaker={typingSpeaker} /> : null}
+        </AnimatePresence>
       </StickToBottom.Content>
     </StickToBottom>
   );
