@@ -132,9 +132,25 @@ const Reveal = function Reveal({
     };
   }
   const options = cache.current;
-  // The adapter unmounting before the typing ends is one of the reveal's two
+  // The adapter unmounting before the typing ends is one of the reveal's
   // completion paths: the turn must not hang on a line that left the transcript.
-  useEffect(() => () => line.end(), [line]);
+  // But React StrictMode (on by default in Next's App Router dev) simulates an
+  // unmount and remount of every effect, so the cleanup cannot report the end
+  // outright — that would end every line the instant it mounted, advancing the
+  // turn under a still-typing line and stopping the voice before its samples
+  // even loaded. The cleanup defers the report one microtask and the re-run
+  // setup cancels it; only a real unmount reaches `line.end()`. The completion
+  // is idempotent, so the typewriter's own path and this one cannot both fire.
+  const departed = useRef(false);
+  useEffect(() => {
+    departed.current = false;
+    return () => {
+      departed.current = true;
+      queueMicrotask(() => {
+        if (departed.current) line.end();
+      });
+    };
+  }, [line]);
   return (
     <Typewriter
       component="span"

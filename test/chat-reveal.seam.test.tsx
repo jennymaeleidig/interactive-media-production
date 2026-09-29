@@ -13,7 +13,8 @@
 // line and the viewer's own line report nothing, because neither is revealed.
 //
 // SPDX-License-Identifier: CC0-1.0
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Messages } from '@/components/chat/messages';
 import { BLOCK_ADAPTERS } from '@/components/chat/message';
@@ -129,11 +130,14 @@ describe('the reveal’s end', () => {
     expect(onRevealEnd).toHaveBeenCalledTimes(1);
   });
 
-  it('reports the end when the adapter unmounts before the typing finishes', () => {
+  it('reports the end when the adapter unmounts before the typing finishes', async () => {
     const onRevealEnd = vi.fn();
     const { unmount } = render(<Messages messages={[message('run-0', 'assistant', 'hello there')]} onRevealEnd={onRevealEnd} />);
     expect(onRevealEnd).not.toHaveBeenCalled();
     unmount();
+    // The cleanup defers the report a microtask, so StrictMode's remount can
+    // cancel it; a real unmount reaches the end on the next tick.
+    await act(async () => {});
     expect(onRevealEnd).toHaveBeenCalledTimes(1);
     expect(onRevealEnd).toHaveBeenCalledWith('run-0');
   });
@@ -169,6 +173,23 @@ describe('the reveal’s end', () => {
     } finally {
       BLOCK_ADAPTERS.text = original;
     }
+  });
+
+  it('does not report the end from React StrictMode’s simulated unmount', () => {
+    // Next's App Router runs dev under StrictMode, which mounts, unmounts, and
+    // remounts every effect. A cleanup that reported the end outright would end
+    // the line the instant it mounted: the next dots would rise under a
+    // still-typing line and the voice would be stopped before it spoke.
+    const onRevealEnd = vi.fn();
+    render(
+      <StrictMode>
+        <Messages messages={[message('run-0', 'assistant', 'hello there')]} onRevealEnd={onRevealEnd} />
+      </StrictMode>,
+    );
+    expect(onRevealEnd).not.toHaveBeenCalled();
+    complete();
+    expect(onRevealEnd).toHaveBeenCalledTimes(1);
+    expect(onRevealEnd).toHaveBeenCalledWith('run-0');
   });
 
   it('reports nothing for a restored line or the viewer’s own line', () => {
