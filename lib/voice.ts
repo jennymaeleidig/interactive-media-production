@@ -7,10 +7,10 @@
 // the gain node, and the decoded sample library are module-level singletons,
 // built lazily on the first line that speaks and reused for the conversation's
 // life. A line speaks when its typewriter starts
-// (`components/chat/message.tsx`), at the viewer's settings (`lib/settings`) —
-// pitch, pitch spread, and speed read per call, volume pushed live through the
-// gain node, so the knob is heard before the next letter rather than the next
-// line.
+// (`components/chat/message.tsx`), in the speaking character's own pitch
+// (`lib/chat-characters.mjs`) at the piece's voice speed, with volume pushed
+// live through the gain node, so the knob is heard before the next letter
+// rather than the next line.
 //
 // Autoplay policy: a context created before a viewer gesture starts suspended, so
 // every speak resumes it and the first gesture resumes it too. A line the browser
@@ -33,7 +33,8 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { Animalese, type SpeechHandle } from 'animalese-web';
-import { msPerChar } from '@/lib/pacing';
+import { characterFor } from '@/lib/chat-characters.mjs';
+import { ANIMALESE_WORDS_PER_MINUTE, msPerChar } from '@/lib/pacing';
 import { getSettings, subscribeSettings } from '@/lib/settings';
 
 /** Where the self-hosted sample library is served from (`public/audio`). */
@@ -103,15 +104,18 @@ function ensureVoice(): { context: AudioContext; engine: Animalese; fade: GainNo
   return { context, engine, fade, gain };
 }
 
-/** Speak one line at the viewer's settings, from the first character. Called when
- * a fresh line's typewriter starts; a line still speaking is stopped first, since
- * only one line types at a time (the turn schedule guarantees it, but a remount
- * need not). */
-export function speakLine(text: string): void {
+/** Speak one line in the speaking character's own voice, from the first
+ * character. Called when a fresh line's typewriter starts; a line still speaking
+ * is stopped first, since only one line types at a time (the turn schedule
+ * guarantees it, but a remount need not). */
+export function speakLine(text: string, speaker: string): void {
   const voice = ensureVoice();
   if (!voice) return;
   const { context, engine, gain } = voice;
-  const { basePitch, pitchRange, voiceWordsPerMinute, volume } = getSettings();
+  const { volume } = getSettings();
+  // The pitch pair belongs to the character (`lib/chat-characters.mjs`), so two
+  // speakers read as two people; the pace stays one piece constant.
+  const { basePitch, pitchRange } = characterFor(speaker).voice;
   gain.gain.value = volume;
   const start = () => {
     if (active) {
@@ -127,7 +131,7 @@ export function speakLine(text: string): void {
     fadeIn();
     active = engine.speak(text, {
       basePitch,
-      letterDuration: msPerChar(voiceWordsPerMinute) / 1000,
+      letterDuration: msPerChar(ANIMALESE_WORDS_PER_MINUTE) / 1000,
       pitchRange,
     });
   };

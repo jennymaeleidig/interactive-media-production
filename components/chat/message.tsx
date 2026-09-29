@@ -24,10 +24,9 @@ import { memo, useState } from 'react';
 // Citation: Tameem Safi — typewriter-effect (v2.22.0) [MIT]
 // Source: https://github.com/tameemsafi/typewriterjs
 import Typewriter from 'typewriter-effect';
-import { Mark } from '@/components/brand/mark';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
-import { msPerChar } from '@/lib/pacing';
-import { getSettings } from '@/lib/settings';
+import { characterFor, type Character } from '@/lib/chat-characters.mjs';
+import { revealRuns } from '@/lib/turn-plan';
 import { cn } from '@/lib/utils';
 import { speakLine } from '@/lib/voice';
 import { ExternalLinkIcon } from './icons';
@@ -56,25 +55,34 @@ export function UnknownBlock({ reason }: { reason: string }) {
 type AdapterProps = { block: ChatBlock; animate?: boolean };
 
 function TextPart({ block, animate = false }: AdapterProps) {
-  const text = (block as Extract<ChatBlock, { type: 'text' }>).text;
+  const typed = block as Extract<ChatBlock, { type: 'text' }>;
   // The viewer's own line is never composed for them: it lands as log, whole.
   // Only a fresh message types itself out — a restored transcript (the opening
   // turn, a resume, a remount) renders whole, so the reveal never replays.
-  if (block.who === 'me' || !animate) return <p className={prose}>{text}</p>;
-  // The line types itself out at the viewer's typing speed (`lib/settings`),
-  // cursorless — the reveal is the arrival, so no cursor is left blinking behind
-  // it. Motion is the piece (`CODING_STANDARDS.md`). The voice (`lib/voice`)
-  // starts with the reveal; the typing is the clock, so the voice is stopped when
-  // the line has finished typing, never the reverse.
+  if (typed.who !== 'bot' || !animate) return <p className={prose}>{typed.text}</p>;
+  // The line types itself out in runs: the engine split it at every authored
+  // `[pace=...]` boundary, and each run's per-character delay is its speaker's
+  // own pace scaled by its preset (`lib/turn-plan.ts`). Cursorless — the reveal
+  // is the arrival, so no cursor is left blinking behind it. Motion is the piece
+  // (`CODING_STANDARDS.md`). The voice (`lib/voice`) starts with the reveal, in
+  // the speaker's own pitch; the typing is the clock, so the voice is stopped
+  // when the line has finished typing, never the reverse.
+  const runs = revealRuns(typed);
   return (
     <p className={prose}>
       <Typewriter
         component="span"
         onInit={(writer) => {
-          speakLine(text);
-          writer.typeString(text).start();
+          speakLine(typed.text, typed.speaker);
+          runs.forEach((run, index) => {
+            // The first run's delay is the wrapper's own; a later run changes it
+            // before its text is queued, so each stretch types at its own pace.
+            if (index > 0) writer.changeDelay(run.delayMs);
+            writer.typeString(run.text);
+          });
+          writer.start();
         }}
-        options={{ cursor: '', delay: msPerChar(getSettings().revealWordsPerMinute), skipAddStyles: true }}
+        options={{ cursor: '', delay: runs[0]?.delayMs, skipAddStyles: true }}
       />
     </p>
   );
@@ -149,16 +157,23 @@ export function BlockPart({ block, animate }: AdapterProps) {
   }
 }
 
-/** The assistant's mark on its disc, set beside the first bubble of a run —
- * the reference widget's own placement. Decorative: the bubble is the message.
- * Exported for the typing indicator, which borrows the same placement. */
-export function AssistantMark() {
+/** One character's mark on its disc, set beside the first bubble of a run — the
+ * reference widget's own placement — or minified at the typing indicator's
+ * bubble corner. The image is a local, self-hosted asset
+ * (`lib/chat-characters.mjs`), so the page requests no third party; its alt is
+ * the character's display name, so the mark names its speaker to assistive tech.
+ * Exported for the typing indicator, which borrows the same mark. */
+export function CharacterMark({ character, compact = false }: { character: Character; compact?: boolean }) {
   return (
     <span
-      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-content text-grey-1"
-      data-testid="assistant-mark"
+      className={cn(
+        'flex shrink-0 items-center justify-center rounded-full bg-content',
+        compact ? 'size-5' : 'size-7',
+      )}
+      data-testid={`character-mark-${character.id}`}
     >
-      <Mark className="h-4 w-auto" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt={character.mark.alt} className={compact ? 'h-3 w-auto' : 'h-4 w-auto'} src={character.mark.src} />
     </span>
   );
 }
@@ -215,8 +230,8 @@ export const Message = memo(function Message({
       {user ? null : (
         // A continued bubble holds the column open with nothing in it, so a run's
         // bubbles stay aligned under the one mark.
-        <div aria-hidden="true" className="w-7 shrink-0">
-          {continues ? null : <AssistantMark />}
+        <div aria-hidden={continues ? true : undefined} className="w-7 shrink-0">
+          {continues ? null : <CharacterMark character={characterFor(message.speaker)} />}
         </div>
       )}
       {/* The bubble and its dev timer share a column: the tag holds its own

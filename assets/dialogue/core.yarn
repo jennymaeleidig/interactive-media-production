@@ -1,4 +1,4 @@
-// Cam's script — the spine: the greeting, the general and support answers, the
+// The script — the spine: the greeting, the general and support answers, the
 // demo ask, and the closing.
 //
 // The tree is four files, all compiled by the one project (`flock.yarnproject`
@@ -9,13 +9,14 @@
 //   products.yarn  the Products & offerings flow and its sub-hub
 //   trust.yarn     the Privacy & safety flow
 //
-// Provenance, marked on every Cam line:
+// Provenance, marked on every Cam and Flock line:
 //
 //   OBSERVED  transcribed verbatim from the one observed Qualified session
 //             (s9 greeting, s10 general + support, s12 demo ask, closing).
-//   ADAPTED   an OBSERVED string whose speaker name changed to the piece's own
-//             character (the greeting — the one deliberate deviation, see
-//             CONTEXT.md "Cam").
+//   ADAPTED   an OBSERVED string whose speaker name changed, so it reads as
+//             another character's: the greeting (to the piece's own Cam) and the
+//             general answer (to Flock, the side character), the one deliberate
+//             deviation, see CONTEXT.md "Cam" and "Flock".
 //   AUTHORED  written for the piece. Every AUTHORED claim carries
 //             `// src: <url>` naming the Flock page it comes from, and an
 //             AUTHORED line never says something no source says
@@ -69,8 +70,11 @@ Cam: Hey there! I’m Cam, your friendly AI Sales Assistant. What questions do y
 title: general
 position: -198,517
 ---
-// OBSERVED (s10). The old fixture's "What can you help me with?" answer.
-Cam: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
+// ADAPTED (s10): the observed general answer, re-attributed from the piece's
+// assistant to Flock, the side character — the one line Flock speaks, so a reply
+// hands off from Flock back to Cam at the hub and the transcript shows two
+// speakers' runs and two marks.
+Flock: I'm here to assist with any questions you have about Flock's safety technology, including our products, services, and how we can help improve public safety in your community or organization. How can I help you today?
 <<jump hub>>
 ===
 title: support

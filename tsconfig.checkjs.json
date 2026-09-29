@@ -19,6 +19,8 @@
   },
   "include": [
     "lib/chat-turn.mjs",
+    "lib/chat-characters.mjs",
+    "lib/pace-presets.mjs",
     "scripts/chat-engine.mjs",
     "lib/chat-blocks.mjs",
     "scripts/build-chat-runtime.mjs",

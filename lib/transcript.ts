@@ -31,7 +31,8 @@ export interface MessageTiming {
   elapsedMs: number;
 }
 
-/** One speaker-run: a role, the blocks it renders, in order, the moment it
+/** One speaker-run: a role, the character id of the run's bot speaker (absent
+ * for the viewer's own runs), the blocks it renders, in order, the moment it
  * landed in the transcript (stamped at grouping time, so the shell can draw
  * iMessage-style time separators between turns that arrive far apart), and its
  * `timing` — set only by the hook's ledger, for the dev-only load timer. The id
@@ -43,6 +44,8 @@ export interface MessageTiming {
 export interface ChatMessage {
   id: string;
   role: ChatRole;
+  /** The bot speaker's character id, for a run's mark and voice; absent for the viewer. */
+  speaker?: string;
   parts: ChatBlock[];
   at: Date;
   fresh?: boolean;
@@ -76,11 +79,14 @@ export function groupBlocks(blocks: readonly ChatBlock[]): ChatMessage[] {
   for (let index = 0; index < blocks.length; index += 1) {
     const block = blocks[index];
     const role: ChatRole = block.who === 'me' ? 'user' : 'assistant';
+    const speaker = block.who === 'bot' ? block.speaker : undefined;
     const last = messages.at(-1);
-    if (last && last.role === role && !block.newMessage) {
+    // A run is one speaker: two characters' consecutive lines are two messages,
+    // each with its own mark, even inside one authored reply.
+    if (last && last.role === role && last.speaker === speaker && !block.newMessage) {
       last.parts.push(block);
     } else {
-      messages.push({ id: `run-${index}`, role, parts: [block], at: new Date() });
+      messages.push({ id: `run-${index}`, role, speaker, parts: [block], at: new Date() });
     }
   }
   return messages;
@@ -103,12 +109,19 @@ export function transcriptRows(messages: readonly ChatMessage[]): TranscriptRow[
       if (newDay) divider = dayLabel(message.at);
       else if (gap >= TIME_GAP_MS) divider = timeLabel(message.at);
     }
-    const continues = previous !== undefined && previous.role === message.role && divider === null;
+    // A run is one speaker, not just one role: a Cam bubble directly under a
+    // Flock bubble is a new run, so it keeps its own mark and the wider gap.
+    const sameRun =
+      previous !== undefined && previous.role === message.role && previous.speaker === message.speaker;
+    const continues = sameRun && divider === null;
     return { message, divider, continues, continued: false };
   });
   for (let index = 0; index < rows.length - 1; index += 1) {
+    const next = rows[index + 1];
     rows[index].continued =
-      rows[index + 1].divider === null && rows[index + 1].message.role === rows[index].message.role;
+      next.divider === null &&
+      next.message.role === rows[index].message.role &&
+      next.message.speaker === rows[index].message.speaker;
   }
   return rows;
 }

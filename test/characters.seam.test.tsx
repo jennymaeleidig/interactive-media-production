@@ -1,0 +1,109 @@
+// @vitest-environment jsdom
+//
+// The character seam, on real DOM: the mark beside a run, the segmented reveal
+// through `typewriter-effect`, the typing indicator's composing character, and
+// the voice's new argument. It extends the reveal seam
+// (`chat-typewriter.seam.test.tsx`, `chat-reveal.seam.test.tsx`) with the two
+// speakers the piece now has, and mocks the typewriter and the voice so the
+// wiring — not the library — is what is under test.
+//
+// SPDX-License-Identifier: CC0-1.0
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+
+/** The typewriter's writer API, captured so the reveal's calls are assertable. */
+const writer = vi.hoisted(() => ({
+  changeDelay: vi.fn(),
+  start: vi.fn(),
+  typeString: vi.fn(),
+}));
+const { speakLine } = vi.hoisted(() => ({ speakLine: vi.fn() }));
+
+vi.mock('typewriter-effect', async () => {
+  const { useEffect } = await import('react');
+  return {
+    default: ({ onInit }: { onInit?: (typewriter: unknown) => void }) => {
+      useEffect(() => {
+        onInit?.(writer);
+      }, []);
+      return <span data-testid="tw" />;
+    },
+  };
+});
+vi.mock('@/lib/voice', () => ({ speakLine }));
+
+import { Message } from '@/components/chat/message';
+import { TypingIndicator } from '@/components/chat/typing-indicator';
+import { characterFor } from '@/lib/chat-characters.mjs';
+import { revealMsPerChar, revealWordsForPreset } from '@/lib/pacing';
+import type { ChatBlock } from '@/lib/chat-turn.mjs';
+import type { ChatMessage } from '@/lib/transcript';
+
+const message = (parts: ChatBlock[], overrides: Partial<ChatMessage> = {}): ChatMessage => ({
+  id: 'test',
+  role: 'assistant',
+  parts,
+  at: new Date(),
+  fresh: true,
+  ...overrides,
+});
+
+describe('the character seam', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(cleanup);
+
+  it('draws the speaking character’s mark beside the run', () => {
+    const { rerender } = render(
+      <Message message={message([{ who: 'bot', speaker: 'flock', type: 'text', text: 'one' }], { speaker: 'flock' })} />,
+    );
+    const flockMark = screen.getByTestId('character-mark-flock').querySelector('img');
+    expect(flockMark?.getAttribute('src')).toBe(characterFor('flock').mark.src);
+    expect(flockMark?.getAttribute('alt')).toBe('Flock');
+
+    rerender(<Message message={message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'two' }], { speaker: 'cam' })} />);
+    expect(screen.getByTestId('character-mark-cam')).toBeTruthy();
+    expect(screen.queryByTestId('character-mark-flock')).toBeNull();
+  });
+
+  it('types a line in its authored stretches, at each stretch’s own pace', () => {
+    const block: ChatBlock = {
+      who: 'bot',
+      speaker: 'cam',
+      type: 'text',
+      text: 'wait now',
+      segments: [
+        { text: 'wait ', pace: 'slowest' },
+        { text: 'now', pace: 'fastest' },
+      ],
+    };
+    render(<Message message={message([block], { speaker: 'cam' })} />);
+
+    expect(writer.typeString).toHaveBeenCalledWith('wait ');
+    expect(writer.typeString).toHaveBeenCalledWith('now');
+    // The second stretch changes the delay before its text is queued, so the two
+    // stretches really type at two paces.
+    const expected = revealMsPerChar(revealWordsForPreset(characterFor('cam').paceWordsPerMinute ?? 400, 'fastest'));
+    expect(writer.changeDelay).toHaveBeenCalledWith(expected);
+    // The voice gets the whole line and the speaker, once.
+    expect(speakLine).toHaveBeenCalledWith('wait now', 'cam');
+  });
+
+  it('does not change the delay for a line with one unmarked stretch', () => {
+    render(<Message message={message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'plain' }], { speaker: 'cam' })} />);
+    expect(writer.typeString).toHaveBeenCalledWith('plain');
+    expect(writer.changeDelay).not.toHaveBeenCalled();
+  });
+
+  it('attributes the typing indicator to the character composing', () => {
+    const { rerender } = render(<TypingIndicator speaker="flock" />);
+    expect(screen.getByTestId('typing-indicator').getAttribute('aria-label')).toBe('Flock is typing');
+    expect(screen.getByTestId('character-mark-flock')).toBeTruthy();
+
+    rerender(<TypingIndicator />);
+    expect(screen.getByTestId('typing-indicator').getAttribute('aria-label')).toBe('Cam is typing');
+    expect(screen.getByTestId('character-mark-cam')).toBeTruthy();
+  });
+});

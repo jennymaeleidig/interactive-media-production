@@ -43,7 +43,10 @@ afterEach(cleanup);
 const message = (id: string, role: ChatMessage['role'], text: string, fresh = true): ChatMessage => ({
   id,
   role,
-  parts: [{ who: role === 'user' ? 'me' : 'bot', type: 'text', text }],
+  parts:
+    role === 'user'
+      ? [{ who: 'me', type: 'text', text }]
+      : [{ who: 'bot', speaker: 'cam', type: 'text', text }],
   at: new Date(),
   fresh,
 });

@@ -31,6 +31,14 @@ describe('the engine the shell calls', () => {
     const res: ChatResponse = await window.__flockChatEngine!.turn({ type: 'start' });
     expect(Array.isArray(res.turn.blocks)).toBe(true);
     expect(res.turn).not.toHaveProperty('lines');
-    expect(res.turn.blocks[0]).toMatchObject({ who: 'bot', type: 'text' });
+    // Every bot block carries its speaker; the opening greeting is Cam's.
+    expect(res.turn.blocks[0]).toMatchObject({ who: 'bot', speaker: 'cam', type: 'text' });
+  });
+
+  it('attributes a reply to the character the script names', async () => {
+    const res: ChatResponse = await window.__flockChatEngine!.turn({ type: 'option', optionIndex: 0 });
+    const speakers = res.turn.blocks.flatMap((block) => (block.who === 'bot' ? [block.speaker] : []));
+    expect(speakers).toContain('flock');
+    expect(speakers.every((speaker) => typeof speaker === 'string')).toBe(true);
   });
 });

@@ -5,9 +5,12 @@
 // A non-modal popover anchored to the `?` in the capsule header, drawn as the
 // reference widget's tooltip: a laminate bubble with a dink, landing from below
 // the button. It carries two pages, tabs across the top. **Settings** is first
-// and default — it is the accessibility surface, where a viewer quiets the voice
-// or slows the piece, and its levers are the settings' one declaration
-// (`lib/settings`, defaults in `lib/pacing`). **About** is second: the plain
+// and default — it is the accessibility surface, where a viewer quiets the
+// voice, and its one lever is the settings' whole declaration (`lib/settings`).
+// The pacing levers are gone: the typing and the voice's pitch belong to the
+// speaking character (`lib/chat-characters.mjs`, `lib/pacing.ts`), and a control
+// that moves nothing is worse than no control at all. **About** is second: the
+// plain
 // sentence, the marks' provenance, the pointer to the real Flock, and the
 // privacy policy.
 //

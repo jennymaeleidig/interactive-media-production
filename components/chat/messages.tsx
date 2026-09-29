@@ -28,10 +28,13 @@ export function Messages({
   messages,
   isTyping = false,
   isLoading = false,
+  typingSpeaker,
 }: {
   messages: ChatMessage[];
   isTyping?: boolean;
   isLoading?: boolean;
+  /** The character composing the reply the dots wait on (`use-dialogue`). */
+  typingSpeaker?: string;
 }) {
   const rows = transcriptRows(messages);
 
@@ -79,7 +82,7 @@ export function Messages({
             );
           })
         )}
-        {isTyping ? <TypingIndicator /> : null}
+        {isTyping ? <TypingIndicator speaker={typingSpeaker} /> : null}
       </StickToBottom.Content>
     </StickToBottom>
   );

@@ -1,7 +1,8 @@
 /*
- * Flock's mark — the tree from the wordmark, on its own so the transcript can
- * carry it beside the assistant's bubbles without a second copy of the
- * geometry. Inline SVG, like the wordmark, so the page requests no image.
+ * Flock's mark — the tree from the wordmark, on its own so the wordmark can
+ * compose the geometry without a second copy. The transcript's per-character
+ * marks are local image assets instead (`lib/chat-characters.mjs`,
+ * `public/marks/`), so this module alone does not render.
  *
  * The mark is a trademark of Flock Group Inc, used here as part of a
  * knowingly-recorded reproduction (docs/adr/0002-accept-impersonation-risk.md);
@@ -22,17 +23,3 @@ export function MarkPaths() {
   );
 }
 
-/** The mark alone, sized by its caller. */
-export function Mark({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 21.048 31.5153"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <MarkPaths />
-    </svg>
-  );
-}

@@ -26,17 +26,17 @@ const LOCKED = CHAT_BLOCK_TYPES.filter((type) => type !== 'unknown');
 function sampleBlock(type: (typeof CHAT_BLOCK_TYPES)[number]): ChatBlock {
   switch (type) {
     case 'text':
-      return { who: 'bot', type: 'text', text: 'Hello there, friend.' };
+      return { who: 'bot', speaker: 'cam', type: 'text', text: 'Hello there, friend.' };
     case 'link':
-      return { who: 'bot', type: 'link', href: 'https://www.flocksafety.com/', label: 'Flock Safety' };
+      return { who: 'bot', speaker: 'cam', type: 'link', href: 'https://www.flocksafety.com/', label: 'Flock Safety' };
     case 'me':
       return { who: 'me', type: 'me' };
     case 'image':
-      return { who: 'bot', type: 'image', src: 'https://example.com/one.png', alt: 'A camera at an intersection' };
+      return { who: 'bot', speaker: 'cam', type: 'image', src: 'https://example.com/one.png', alt: 'A camera at an intersection' };
     case 'frame':
-      return { who: 'bot', type: 'frame', src: 'https://example.com/', sandbox: '', title: 'Example' };
+      return { who: 'bot', speaker: 'cam', type: 'frame', src: 'https://example.com/', sandbox: '', title: 'Example' };
     case 'unknown':
-      return { who: 'bot', type: 'unknown', reason: 'Unknown block' };
+      return { who: 'bot', speaker: 'cam', type: 'unknown', reason: 'Unknown block' };
   }
 }
 
@@ -94,9 +94,9 @@ describe('the block contract terms', () => {
     // piece's pacing — floor included, which stays the hook's — is unchanged.
     const text = 'You can reach our support team through the following channels.';
     const label = 'Flock Safety';
-    expect(CHAT_BLOCK_TERMS.text.beat({ who: 'bot', type: 'text', text })).toBe(text.length);
+    expect(CHAT_BLOCK_TERMS.text.beat({ who: 'bot', speaker: 'cam', type: 'text', text })).toBe(text.length);
     expect(
-      CHAT_BLOCK_TERMS.link.beat({ who: 'bot', type: 'link', href: 'https://www.flocksafety.com/', label }),
+      CHAT_BLOCK_TERMS.link.beat({ who: 'bot', speaker: 'cam', type: 'link', href: 'https://www.flocksafety.com/', label }),
     ).toBe(label.length);
     // The viewer's own turn never types.
     expect(CHAT_BLOCK_TERMS.me.beat({ who: 'me', type: 'me' })).toBe(0);

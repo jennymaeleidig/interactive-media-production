@@ -28,13 +28,18 @@ const message = (parts: ChatBlock[], overrides: Partial<ChatMessage> = {}): Chat
 describe('the voice', () => {
   beforeEach(() => speakLine.mockClear());
 
-  it('speaks a fresh assistant line from its first character', async () => {
-    render(<Message message={message([{ who: 'bot', type: 'text', text: 'hello there' }])} />);
-    await waitFor(() => expect(speakLine).toHaveBeenCalledWith('hello there'));
+  it('speaks a fresh assistant line from its first character, in its speaker’s voice', async () => {
+    render(<Message message={message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'hello there' }])} />);
+    await waitFor(() => expect(speakLine).toHaveBeenCalledWith('hello there', 'cam'));
+  });
+
+  it('speaks each character’s line in that character’s voice', async () => {
+    render(<Message message={message([{ who: 'bot', speaker: 'flock', type: 'text', text: 'hello there' }])} />);
+    await waitFor(() => expect(speakLine).toHaveBeenCalledWith('hello there', 'flock'));
   });
 
   it('stays silent for a restored line', async () => {
-    render(<Message message={message([{ who: 'bot', type: 'text', text: 'hello there' }], { fresh: false })} />);
+    render(<Message message={message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'hello there' }], { fresh: false })} />);
     expect(await screen.findByText('hello there')).toBeTruthy();
     expect(speakLine).not.toHaveBeenCalled();
   });

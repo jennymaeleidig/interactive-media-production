@@ -13,6 +13,13 @@ viewer input — still holds: settings are never sent anywhere, and no request r
 device state, not data about them. Two local keys now exist, and this record is the one that
 admits the second.
 
+## Amended by 0007
+
+[0007](0007-the-character-owns-the-feel.md) narrows this record to the volume preference: the
+piece's typing pace belongs to the speaking character and the voice's pitch to the character too,
+so `lib/settings` declares one control and the key becomes `flock-chat-settings-v2`. The rule
+above is unchanged; the lever list and the `flock-chat-settings` key below are superseded.
+
 ## Consequences
 
 - `localStorage` holds two keys: `flock-chat-state` (the session, owned by the engine) and

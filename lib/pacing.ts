@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: CC0-1.0
 //
 // The piece's pacing levers, in one place so its whole feel is tuned from here:
-// how long Cam's dots hold before a message lands, the floor under even the
-// shortest hold, how fast a landed line types itself out, and the voice that
-// speaks as it does. Every clock reads the same shape — words per minute, five
-// characters to the word — so the speeds are directly comparable. The typing is
-// the turn's clock: a line is held for exactly as long as it takes to type, and
-// its voice is stopped when the typing stops (`lib/turn-plan.ts`, `lib/voice.ts`).
+// how long the dots hold before a message lands, the floor under even the
+// shortest hold, how fast a landed line types itself out, the closed vocabulary
+// of authored pace overrides, and the voice that speaks as it does. Every clock
+// reads the same shape — words per minute, five characters to the word — so the
+// speeds are directly comparable. The typing is the turn's clock: a line is held
+// for exactly as long as it takes to type, and its voice is stopped when the
+// typing stops (`lib/turn-plan.ts`, `lib/voice.ts`).
+//
+// The dialog's two clocks are deliberately separate. The composing clock decides
+// how long the dots hold before a reply lands, and belongs to the viewer's
+// settings; the reveal clock decides how fast a landed line types itself out, and
+// belongs to the speaking character (`lib/chat-characters.mjs`), scaled by an
+// authored `[pace=...]` preset. Retune one without touching the other.
 
 /** Five characters to the word: the one conversion both clocks read. */
 const CHARS_PER_WORD = 5;
@@ -27,19 +34,39 @@ export const MIN_COMPOSING_BEAT_MS = 750;
  * is still typing rather than landing the next one on top of it. */
 export const FRAME_MS = 1000 / 60;
 
-/** The reveal clock, in words per minute: the pace a landed line's own
- * characters appear at, at its fastest. The requested delay sits just under a
- * frame, so the rAF-driven typewriter advances one character per frame and no
- * faster — a value at or above the frame is the same speed, so this is also the
- * reveal lever's ceiling (`lib/settings`) and the control has no dead zone.
- * Deliberately separate from the composing clock above, so the reveal can be
- * retuned without touching the hold; retune it down to slow the reveal. */
-export const REVEAL_WORDS_PER_MINUTE = 800;
+/** The piece's own reveal clock, in words per minute: the resting pace a landed
+ * line types itself out at, and the default a character without a
+ * `paceWordsPerMinute` of its own inherits (`lib/chat-characters.mjs`). Cam sits
+ * near this and Flock below it, so the two read as different people. Retune it
+ * down to slow the piece. */
+export const REVEAL_WORDS_PER_MINUTE = 400;
+
+/** The floor under any character's reveal pace, preset included: below this the
+ * line crawls. It sits under the slowest pace either character can reach, so it
+ * is a guard on the arithmetic rather than a pace either one is meant to hit. */
+export const REVEAL_FLOOR_WORDS_PER_MINUTE = 120;
+
+/** The ceiling on any character's reveal pace: the frame-bound pace, above which
+ * a faster clock cannot advance any faster (`typewriter-effect` is rAF-driven)
+ * and would leave `fastest` a dead label. Derived from `FRAME_MS`, so it is a
+ * consequence of the frame and not an independent knob. */
+export const REVEAL_CEILING_WORDS_PER_MINUTE = Math.floor(60_000 / (FRAME_MS * CHARS_PER_WORD));
+
+// The closed pace vocabulary — the five authored preset names and what each
+// multiplies a character's resting pace by — lives in `lib/pace-presets.mjs`,
+// because the build's freshness gate runs in Node and cannot import this
+// TypeScript. Re-exported here so the levers read as one table.
+export { PACE_MARKER, PACE_PRESETS, PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
+import { PACE_PRESET_MULTIPLIERS } from '@/lib/pace-presets.mjs';
+
+/** A pace override's preset name: one of `PACE_PRESETS`. */
+export type PacePreset = 'slowest' | 'slow' | 'normal' | 'fast' | 'fastest';
 
 /** The pacing levers a turn schedule reads, as a value: the composing clock, the
  * reveal clock, and the floor under a beat. `lib/turn-plan.ts` takes this rather
- * than reaching for the module constants, so a viewer's settings (`lib/settings`)
- * tune a turn without the schedule owning global state. */
+ * than reaching for the module constants, so the piece's tuning is one
+ * substitution; the reveal override per character and per `[pace=...]` marker
+ * layers on top of `revealWordsPerMinute` (`lib/turn-plan.ts`). */
 export interface Pacing {
   composingWordsPerMinute: number;
   revealWordsPerMinute: number;
@@ -51,23 +78,37 @@ export function msPerChar(wordsPerMinute: number): number {
   return 60_000 / (wordsPerMinute * CHARS_PER_WORD);
 }
 
-/** The reveal's true pace, in milliseconds per character: the typewriter
- * advances at most one character per frame, so a per-character delay below a
- * frame is inert and the real pace is the slower of `REVEAL_WORDS_PER_MINUTE`
- * and a frame. The turn schedule (`lib/turn-plan.ts`) waits a still-typing line
- * out on it rather than landing the next one on top of it. */
-export function revealMsPerChar(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
-  return Math.max(msPerChar(wordsPerMinute), FRAME_MS);
+/** A reveal pace held inside the readable band: no faster than a frame can draw
+ * (`REVEAL_CEILING_WORDS_PER_MINUTE`) and no slower than the floor. */
+export function clampRevealWordsPerMinute(wordsPerMinute: number): number {
+  return Math.min(REVEAL_CEILING_WORDS_PER_MINUTE, Math.max(REVEAL_FLOOR_WORDS_PER_MINUTE, wordsPerMinute));
 }
 
-/** The voice's base pitch lever (`animalese-web`): the sample-pitch multiplier,
- * 1.0 the library's own, above it higher and below it lower. Tune here. */
-export const ANIMALESE_BASE_PITCH = 1;
+/** A character's resting pace (or the piece default) scaled by an authored
+ * preset, then clamped to the readable band. An absent or unknown preset is
+ * `normal`: the build's freshness gate rejects an unknown preset before the
+ * runtime ships, so this is the render-time safety net, not the script's escape
+ * hatch. */
+export function revealWordsForPreset(
+  baseWordsPerMinute: number,
+  preset?: string,
+): number {
+  const multiplier =
+    preset !== undefined && Object.prototype.hasOwnProperty.call(PACE_PRESET_MULTIPLIERS, preset)
+      ? PACE_PRESET_MULTIPLIERS[preset]
+      : 1;
+  return clampRevealWordsPerMinute(baseWordsPerMinute * multiplier);
+}
 
-/** The voice's pitch-spread lever: the range each letter's pitch jitters over,
- * so the speech is not a monotone. The library reads a range `r` as ±`r`/2 per
- * letter; its own default is 0.25. Tune here. */
-export const ANIMALESE_PITCH_RANGE = 0.25;
+/** The reveal's true pace, in milliseconds per character: the typewriter
+ * advances at most one character per frame, so a per-character delay below a
+ * frame is inert and the real pace is the slower of the clock and a frame. The
+ * pace is clamped to the readable band first, so the frame floor and the ceiling
+ * agree. The turn schedule (`lib/turn-plan.ts`) waits a still-typing line out on
+ * it rather than landing the next one on top of it. */
+export function revealMsPerChar(wordsPerMinute: number = REVEAL_WORDS_PER_MINUTE): number {
+  return Math.max(msPerChar(clampRevealWordsPerMinute(wordsPerMinute)), FRAME_MS);
+}
 
 /** The voice's volume lever, 0 silent to 1 full. Read live through a gain node
  * (`lib/voice.ts`), so a change is heard on the next letter, not the next line. */
@@ -82,9 +123,8 @@ export const ANIMALESE_VOLUME = 1;
  * about nine would, and the speech turns to a wash. */
 export const ANIMALESE_WORDS_PER_MINUTE = 160;
 
-/** The piece's own pacing — the settings' defaults (`lib/settings`). The typing
- * is the turn's clock; the voice is its own and is stopped when the typing
- * stops, so a voice slower than the reveal simply does not finish every letter. */
+/** The piece's own pacing — a first visit's reveal clock before any character
+ * has a say (`lib/settings.ts`). */
 export const DEFAULT_PACING: Pacing = {
   composingWordsPerMinute: COMPOSING_WORDS_PER_MINUTE,
   minimumBeatMs: MIN_COMPOSING_BEAT_MS,

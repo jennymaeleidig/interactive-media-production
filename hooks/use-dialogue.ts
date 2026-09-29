@@ -29,7 +29,6 @@ import type { ChatOption, ChatResponse } from '@/lib/chat-turn.mjs';
 import { acquireEngine, currentEngine } from '@/lib/engine-reach.mjs';
 import { stopVoice } from '@/lib/voice';
 import { groupBlocks, type ChatMessage } from '@/lib/transcript';
-import { getSettings } from '@/lib/settings';
 import { composingDelay, planTurn } from '@/lib/turn-plan';
 
 export interface Dialogue {
@@ -39,6 +38,9 @@ export interface Dialogue {
   sendOption: (option: ChatOption) => void;
   /** True while a reply is held behind its typing beat. */
   isTyping: boolean;
+  /** The character composing the reply the dots wait on, or null when nothing
+   * is composing: the typing bubble's mark and label name the right speaker. */
+  typingSpeaker: string | null;
   /** True from the press until the reply's last line has finished typing: the
    * composer stays inert across the reveal, not only while the dots are up. */
   busy: boolean;
@@ -57,6 +59,7 @@ export function useDialogue(): Dialogue {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [options, setOptions] = useState<ChatOption[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingSpeaker, setTypingSpeaker] = useState<string | null>(null);
   // True from the press until the reply's last line has finished typing: the
   // composer stays inert across the reveal too, not only while the dots are up.
   const [busy, setBusy] = useState(false);
@@ -104,6 +107,7 @@ export function useDialogue(): Dialogue {
       pending.current = false;
       setBusy(false);
       setIsTyping(false);
+      setTypingSpeaker(null);
     };
     /** Land the log through `through` blocks. The final land takes the turn's
      * choice set in; the echo's land does not. */
@@ -120,7 +124,7 @@ export function useDialogue(): Dialogue {
           // (the hold it would be given, read off its parts), and that weight
           // plus the turn's engine time. `engineMs` is the turn's, not this
           // land's, so a later message never inherits an earlier one's hold.
-          const composingMs = composingDelay(run.parts, getSettings());
+          const composingMs = composingDelay(run.parts);
           const fresh: ChatMessage = {
             ...run,
             at: new Date(),
@@ -144,7 +148,7 @@ export function useDialogue(): Dialogue {
 
     // The schedule is pure (`lib/turn-plan.ts`); this executes it. A turn that
     // appends no reply, or is not held, collapses to one immediate step.
-    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, { hold, pacing: getSettings() });
+    const { echoEnd, steps } = planTurn(logLength.current, res.turn.blocks, { hold });
     const immediate = steps.length === 1 && steps[0].beatMs === 0;
     if (immediate) {
       land(steps[0].through, true);
@@ -161,6 +165,9 @@ export function useDialogue(): Dialogue {
       // The dots hold for this message's composing weight, then it lands. The
       // line above must finish typing before the next dots appear, so a line
       // types itself out with no dots under it and only one typewriter runs.
+      // The dots are attributed to the speaker of the message about to land.
+      const landing = res.turn.blocks[step.through - 1];
+      setTypingSpeaker(landing && landing.who === 'bot' ? landing.speaker : null);
       setIsTyping(true);
       timer.current = setTimeout(() => {
         land(step.through, last);
@@ -256,5 +263,5 @@ export function useDialogue(): Dialogue {
       });
   }, [apply]);
 
-  return { messages, options, sendOption, isTyping, busy, isLoading, complete, reset };
+  return { messages, options, sendOption, isTyping, typingSpeaker, busy, isLoading, complete, reset };
 }

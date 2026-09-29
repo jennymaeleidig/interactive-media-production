@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 //
-// The voice's settings wiring (`lib/voice`): pitch and speed are read when a line
-// starts, volume is carried by a gain node and follows the knob live. The audio
-// engine is mocked — `animalese-web` and a fake `AudioContext` — because what is
-// under test is the mapping from settings to engine, not the synthesis.
+// The voice's character wiring (`lib/voice`): each character speaks in its own
+// pitch, at the piece's one voice speed, and volume is carried by a gain node
+// that follows the knob live. The audio engine is mocked — `animalese-web` and a
+// fake `AudioContext` — because what is under test is the mapping from character
+// and settings to engine, not the synthesis.
 //
 // SPDX-License-Identifier: CC0-1.0
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -54,31 +55,33 @@ const fake = vi.hoisted(() => {
 
 vi.mock('animalese-web', () => ({ Animalese: fake.Animalese }));
 
-import { msPerChar } from '@/lib/pacing';
+import { characterFor } from '@/lib/chat-characters.mjs';
+import { ANIMALESE_WORDS_PER_MINUTE, msPerChar } from '@/lib/pacing';
 import { resetSettings, updateSettings } from '@/lib/settings';
 import { speakLine, stopVoice } from '@/lib/voice';
 
-describe('the voice settings', () => {
+/** The options the library was last asked to speak with. */
+const lastOptions = () =>
+  fake.speak.mock.calls.at(-1)?.[1] as unknown as { basePitch: number; letterDuration: number; pitchRange: number };
+
+describe('the voice and the character', () => {
   beforeEach(() => {
     vi.stubGlobal('AudioContext', fake.AudioContext);
     resetSettings();
     fake.speak.mockClear();
   });
 
-  it("speaks at the viewer's pitch and speed, and follows the volume knob live", async () => {
-    updateSettings({ basePitch: 1.5, pitchRange: 0.1, voiceWordsPerMinute: 300, volume: 0.4 });
+  it("speaks in the character's own pitch, at the piece's voice speed", async () => {
+    updateSettings({ volume: 0.4 });
 
-    speakLine('hello there');
+    speakLine('hello there', 'cam');
     await waitFor(() => expect(fake.speak).toHaveBeenCalled());
 
-    const options = fake.speak.mock.calls.at(-1)?.[1] as unknown as {
-      basePitch: number;
-      letterDuration: number;
-      pitchRange: number;
-    };
-    expect(options.basePitch).toBe(1.5);
-    expect(options.pitchRange).toBe(0.1);
-    expect(options.letterDuration).toBeCloseTo(msPerChar(300) / 1000, 9);
+    const cam = characterFor('cam').voice;
+    const options = lastOptions();
+    expect(options.basePitch).toBe(cam.basePitch);
+    expect(options.pitchRange).toBe(cam.pitchRange);
+    expect(options.letterDuration).toBeCloseTo(msPerChar(ANIMALESE_WORDS_PER_MINUTE) / 1000, 9);
 
     // The gain node carries the knob: a change is heard without a new line.
     const master = fake.gains.at(-1);
@@ -87,8 +90,19 @@ describe('the voice settings', () => {
     expect(master?.gain.value).toBe(0.1);
   });
 
+  it('gives each character its own pitch, so two speakers read as two people', async () => {
+    speakLine('one', 'flock');
+    await waitFor(() => expect(fake.speak).toHaveBeenCalled());
+    const flock = lastOptions();
+    fake.speak.mockClear();
+    speakLine('two', 'cam');
+    await waitFor(() => expect(fake.speak).toHaveBeenCalled());
+    const cam = lastOptions();
+    expect(cam.basePitch).not.toBe(flock.basePitch);
+  });
+
   it('fades a line in at its start and out before cutting it', async () => {
-    speakLine('hello there');
+    speakLine('hello there', 'cam');
     await waitFor(() => expect(fake.speak).toHaveBeenCalled());
     // Two nodes in series: the envelope first, the volume knob's master second.
     const envelope = fake.gains[0];

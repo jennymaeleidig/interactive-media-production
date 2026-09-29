@@ -27,7 +27,7 @@ export default defineConfig({
         resolve: { alias: { '@': root } },
         test: {
           name: 'chat-shell-seam',
-          include: ['test/chat-typewriter.seam.test.tsx', 'test/chat-reveal.seam.test.tsx', 'test/voice.seam.test.tsx'],
+          include: ['test/chat-typewriter.seam.test.tsx', 'test/chat-reveal.seam.test.tsx', 'test/voice.seam.test.tsx', 'test/characters.seam.test.tsx'],
           environment: 'jsdom',
           setupFiles: ['test/setup-jsdom.ts'],
           // The suite runs the piece's real motion (see `test/setup-jsdom.ts`):
@@ -52,7 +52,7 @@ export default defineConfig({
       // The transcript's grouping and row layout: pure, so it runs without a DOM.
       {
         resolve: { alias: { '@': root } },
-        test: { name: 'chat-pure', include: ['test/transcript.test.ts', 'test/turn-plan.test.ts', 'test/session-store.test.ts', 'test/voice-levers.test.ts'] },
+        test: { name: 'chat-pure', include: ['test/transcript.test.ts', 'test/turn-plan.test.ts', 'test/session-store.test.ts', 'test/voice-levers.test.ts', 'test/characters.test.ts'] },
       },
       // The drift guard: the published runtime's one surface
       // matches what the shell calls.
@@ -65,7 +65,7 @@ export default defineConfig({
         },
       },
       {
-        test: { name: 'chat-assets', include: ['test/chat-assets.test.ts', 'test/copy.test.ts'] },
+        test: { name: 'chat-assets', include: ['test/chat-assets.test.ts', 'test/copy.test.ts', 'test/freshness-gate.test.ts'] },
       },
       // The day divider's format is the piece's own, not the viewer's locale's,
       // so it is pinned without a DOM.

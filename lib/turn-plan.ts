@@ -14,7 +14,8 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 import { CHAT_BLOCK_TERMS } from '@/lib/chat-blocks.mjs';
-import { DEFAULT_PACING, FRAME_MS, msPerChar, type Pacing, revealMsPerChar } from '@/lib/pacing';
+import { characterFor } from '@/lib/chat-characters.mjs';
+import { DEFAULT_PACING, FRAME_MS, msPerChar, revealMsPerChar, revealWordsForPreset, type Pacing } from '@/lib/pacing';
 import { groupBlocks } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
@@ -53,17 +54,60 @@ export function composingDelay(blocks: readonly ChatBlock[], pacing: Pacing = DE
   return Math.max(pacing.minimumBeatMs, Math.round(composingChars(blocks) * msPerChar(pacing.composingWordsPerMinute)));
 }
 
-/** The wall time a landed message holds before the next one may start: the
- * typing reveal, plus a frame of margin. The typing is the turn's clock — the
- * voice is bounded by it, not the reverse: when the line has finished typing the
- * voice is stopped (`lib/voice.ts`), so a voice slower than the reveal simply
- * does not finish every letter. */
+/** The reveal pace a bot block types at: the speaker's own resting pace
+ * (`lib/chat-characters.mjs`), or the piece default for a character that declares
+ * none. The viewer's own blocks never type, so they read the piece default too. */
+export function revealWordsPerMinuteFor(block: ChatBlock, pacing: Pacing = DEFAULT_PACING): number {
+  if (block.who === 'bot') {
+    const character = characterFor(block.speaker);
+    if (character.paceWordsPerMinute !== undefined) return character.paceWordsPerMinute;
+  }
+  return pacing.revealWordsPerMinute;
+}
+
+/** One stretch of a line's reveal: the text, and the per-character delay it types
+ * at — the speaker's resting pace scaled by the stretch's own preset, clamped to
+ * the readable band (`lib/pacing.ts`). */
+export interface RevealRun {
+  text: string;
+  delayMs: number;
+}
+
+/** A landed block's typed runs. A text block is split at its parse-time
+ * `[pace=...]` boundaries (`lib/chat-engine.mjs`), so each stretch types at its
+ * own pace; a block with no segments — the whole line unmarked — is one run. A
+ * non-text block types in whole and has no runs. */
+export function revealRuns(block: ChatBlock, pacing: Pacing = DEFAULT_PACING): RevealRun[] {
+  if (block.type !== 'text') return [];
+  const base = revealWordsPerMinuteFor(block, pacing);
+  const segments = block.segments && block.segments.length > 0 ? block.segments : [{ text: block.text }];
+  return segments.map((segment) => ({
+    text: segment.text,
+    delayMs: revealMsPerChar(revealWordsForPreset(base, segment.pace)),
+  }));
+}
+
+/** The wall time a landed message holds before the next one may start: each typed
+ * stretch at its own preset-scaled pace, plus a frame of margin. The typing is
+ * the turn's clock — the voice is bounded by it, not the reverse: when the line
+ * has finished typing the voice is stopped (`lib/voice.ts`), so a voice slower
+ * than the reveal simply does not finish every letter. A non-text block types in
+ * whole at the speaker's resting pace. */
 export function revealDelay(blocks: readonly ChatBlock[], pacing: Pacing = DEFAULT_PACING): number {
   // The reveal advances at most one character per animation frame, so its true
   // pace is floored. One frame of margin: the wrapper queues its setup events
   // before the first character, so a line finishes a frame or so past a pure
   // per-character read.
-  return Math.ceil(composingChars(blocks) * revealMsPerChar(pacing.revealWordsPerMinute)) + FRAME_MS;
+  let total = 0;
+  for (const block of blocks) {
+    const runs = revealRuns(block, pacing);
+    if (runs.length > 0) {
+      for (const run of runs) total += run.text.length * run.delayMs;
+    } else {
+      total += CHAT_BLOCK_TERMS[block.type].beat(block) * revealMsPerChar(revealWordsPerMinuteFor(block, pacing));
+    }
+  }
+  return Math.ceil(total) + FRAME_MS;
 }
 
 /** Plan one turn. `hold` is whether replies are withheld behind their beat at

@@ -15,6 +15,10 @@
                 {
                     "name": "cam",
                     "colour": "#4c8962"
+                },
+                {
+                    "name": "flock",
+                    "colour": "#84da6c"
                 }
             ],
             "projectGraphPositions": {

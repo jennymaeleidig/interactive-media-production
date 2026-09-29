@@ -20,10 +20,12 @@
 
 import programJson from './chat-program.json';
 import { CHAT_BLOCKS } from '../lib/chat-blocks.mjs';
+import { DEFAULT_CHARACTER_ID } from '../lib/chat-characters.mjs';
 import { CHAT_BLOCK_TYPES } from '../lib/chat-turn.mjs';
 import { installEngine } from '../lib/engine-reach.mjs';
+import { PACE_MARKER, PACE_PRESETS } from '../lib/pace-presets.mjs';
 import { localStorageStore, memoryStore, resilientStore } from '../lib/session-store.mjs';
-import { Dialogue, InMemoryVariableStorage, runUntilCompleteEvents } from 'yarnspinner-typescript';
+import { Dialogue, InMemoryVariableStorage, runUntilCompleteEvents, tryGetProperty } from 'yarnspinner-typescript';
 
 // `chat-program.json` is deployment data, not source; its type — the runtime's
 // `Program` — is declared beside it (`chat-program.d.json.ts`), out of the
@@ -70,7 +72,7 @@ function isCurrentSnapshot(parsed) {
         typeof block === 'object' &&
         typeof block.type === 'string' &&
         CHAT_BLOCK_TYPES.includes(block.type) &&
-        (block.who === 'bot' || block.who === 'me'),
+        (block.who === 'me' || (block.who === 'bot' && typeof block.speaker === 'string')),
     )
   );
 }
@@ -139,6 +141,47 @@ export function createEngine(store) {
   // per command, so the same block can sit in a run or stand alone.
   const BLOCK_COMMAND = /^block\s+"([^"]+)"(?:\s+(new|join))?\s*$/;
 
+  /** The character a line's parsed speaker names, lowercased into an id; a line
+   * with no prefix falls back to the piece's default character. The build's
+   * freshness gate fails an undeclared speaker before the runtime ships, so an
+   * id here is always one `lib/chat-characters.mjs` declares.
+   * @param {string} [speaker] */
+  function speakerId(speaker) {
+    return speaker === undefined ? DEFAULT_CHARACTER_ID : speaker.toLowerCase();
+  }
+
+  /**
+   * A line's parsed text split at its `[pace=...]` boundaries, or one unmarked
+   * stretch when the line carries none. Positions and lengths are the runtime's,
+   * relative to the text it hands over (the speaker prefix already stripped); a
+   * value outside the closed preset vocabulary is ignored here and rejected by
+   * the build's freshness gate, so only a preset ever reaches a block.
+   * @param {string} text
+   * @param {import('yarnspinner-typescript').MarkupParseResult} [markup]
+   * @returns {{ text: string, pace?: string }[]}
+   */
+  function segmentsFrom(text, markup) {
+    const markers = (markup?.attributes ?? []).filter((attribute) => attribute.name === PACE_MARKER);
+    if (markers.length === 0) return [{ text }];
+    /** @type {(string|undefined)[]} */
+    const paces = new Array(text.length).fill(undefined);
+    for (const marker of markers) {
+      const value = tryGetProperty(marker, PACE_MARKER)?.stringValue;
+      if (typeof value !== 'string' || !PACE_PRESETS.includes(value)) continue;
+      const start = Math.max(0, marker.position);
+      const end = Math.min(text.length, marker.position + marker.length);
+      for (let index = start; index < end; index += 1) paces[index] = value;
+    }
+    /** @type {{ text: string, pace?: string }[]} */
+    const segments = [];
+    for (let index = 0; index < text.length; index += 1) {
+      const last = segments.at(-1);
+      if (last && last.pace === paces[index]) last.text += text[index];
+      else segments.push({ text: text[index], pace: paces[index] });
+    }
+    return segments;
+  }
+
   /**
    * Resolve one command into a block, or null when the command is not a block.
    * An id the inventory does not name degrades to a designed unknown block, so an
@@ -148,9 +191,10 @@ export function createEngine(store) {
    * A trailing `new` opens a fresh bubble for this block; the default (`join`)
    * keeps it in the current speaker-run. Text lines always join.
    * @param {string} command
+   * @param {string} speaker
    * @returns {ChatBlock|null}
    */
-  function blockFromCommand(command) {
+  function blockFromCommand(command, speaker) {
     const match = BLOCK_COMMAND.exec(command);
     if (!match) return null;
     const id = match[1];
@@ -158,8 +202,8 @@ export function createEngine(store) {
     /** @type {ChatBlock} */
     const block =
       payload === undefined
-        ? { who: 'bot', type: 'unknown', id, reason: 'Unknown block' }
-        : { who: 'bot', ...payload };
+        ? { who: 'bot', speaker, type: 'unknown', id, reason: 'Unknown block' }
+        : { who: 'bot', speaker, ...payload };
     if (match[2] === 'new') block.newMessage = true;
     return block;
   }
@@ -178,18 +222,25 @@ export function createEngine(store) {
     /** @type {YarnOption[]|null} */
     let options = null;
     let complete = false;
+    // The speaker the sweep is currently in: a bot line's own name, so every
+    // block a line produces — a link, a frame, an unknown — is attributed to
+    // whoever spoke last. A line with no prefix inherits the default.
+    let speaker = DEFAULT_CHARACTER_ID;
     for (const event of runUntilCompleteEvents(dialogue)) {
       if (event.type === 'line') {
+        speaker = speakerId(event.speaker);
         blocks.push({
           who: 'bot',
+          speaker,
           type: 'text',
           text: event.text,
+          segments: segmentsFrom(event.text, event.markup),
           // `#newmessage` on the line cuts the bubble before it, exactly as the
           // `new` placement on a block command does.
           ...(event.tags?.includes(NEW_MESSAGE_TAG) ? { newMessage: true } : {}),
         });
       } else if (event.type === 'command') {
-        const block = blockFromCommand(event.command);
+        const block = blockFromCommand(event.command, speaker);
         if (block) blocks.push(block);
       } else if (event.type === 'options') {
         options = event.options;
@@ -297,6 +348,7 @@ export function createEngine(store) {
       who: 'me',
       type: 'text',
       text: part,
+      segments: [{ text: part }],
       ...(index > 0 ? { newMessage: true } : {}),
     }));
     const log = snapshot.log.concat([...echo, ...swept.blocks]);

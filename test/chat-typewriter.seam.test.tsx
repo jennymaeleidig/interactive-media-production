@@ -17,7 +17,7 @@ const message = (parts: ChatBlock[]): ChatMessage => ({ id: 'test', role: 'assis
 describe('the animated reveal', () => {
   it('draws a landed line through the typewriter, cursorless', async () => {
     const { container } = render(
-      <Message message={message([{ who: 'bot', type: 'text', text: 'hello there' }])} />,
+      <Message message={message([{ who: 'bot', speaker: 'cam', type: 'text', text: 'hello there' }])} />,
     );
     // The typewriter owns the line: its wrapper is what renders, and the
     // authored `cursor: ''` leaves no cursor behind the reveal.

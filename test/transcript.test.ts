@@ -11,8 +11,9 @@ import { describe, expect, it } from 'vitest';
 import { groupBlocks, transcriptRows, TIME_GAP_MS, type ChatMessage } from '../lib/transcript';
 import type { ChatBlock } from '../lib/chat-turn.mjs';
 
-const cam = (text: string): ChatBlock => ({ who: 'bot', type: 'text', text });
-const cut = (text: string): ChatBlock => ({ who: 'bot', type: 'text', text, newMessage: true });
+const cam = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text });
+const cut = (text: string): ChatBlock => ({ who: 'bot', speaker: 'cam', type: 'text', text, newMessage: true });
+const flock = (text: string): ChatBlock => ({ who: 'bot', speaker: 'flock', type: 'text', text });
 
 const at = (day: number, hours: number, minutes: number): Date => new Date(2026, 0, day, hours, minutes);
 const message = (id: string, role: ChatMessage['role'], when: Date): ChatMessage => ({
@@ -34,6 +35,21 @@ describe('grouping blocks into messages', () => {
     expect(grouped).toHaveLength(2);
     expect(grouped[0].parts).toHaveLength(1);
     expect(grouped[1].parts).toHaveLength(1);
+  });
+
+  it('cuts a new message when the speaker changes', () => {
+    // Two characters' lines are two messages even inside one authored reply, so
+    // each run carries its own mark: a Flock line then a Cam line is not one run.
+    const grouped = groupBlocks([flock('one'), cam('two')]);
+    expect(grouped).toHaveLength(2);
+    expect(grouped.map((message) => message.speaker)).toEqual(['flock', 'cam']);
+  });
+
+  it('groups consecutive lines from one character, mark and all', () => {
+    const grouped = groupBlocks([flock('one'), flock('two')]);
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0].speaker).toBe('flock');
+    expect(grouped[0].parts).toHaveLength(2);
   });
 
   it('derives each id from the log position of the run’s first block', () => {
@@ -78,6 +94,21 @@ describe('laying messages out as rows', () => {
       [false, true],
       [true, false],
       [false, false],
+    ]);
+  });
+
+  it('pairs only one character’s bubbles, not two speakers in one reply', () => {
+    // A Flock line directly above a Cam line is two runs, so the second keeps
+    // its own mark and the wider between-speakers gap: the corners never point
+    // at each other across a speaker change.
+    const flock = { ...message('run-0', 'assistant', at(1, 12, 0)), speaker: 'flock' };
+    const cam = { ...message('run-1', 'assistant', at(1, 12, 1)), speaker: 'cam' };
+    const again = { ...message('run-2', 'assistant', at(1, 12, 2)), speaker: 'cam' };
+    const rows = transcriptRows([flock, cam, again]);
+    expect(rows.map((row) => [row.continues, row.continued])).toEqual([
+      [false, false],
+      [false, true],
+      [true, false],
     ]);
   });
 
