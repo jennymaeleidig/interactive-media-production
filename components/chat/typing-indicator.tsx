@@ -11,7 +11,7 @@
 // popping in after a fixed beat.
 //
 // The composing character is named twice without a position jump: the mark
-// rides the bubble's bottom-right corner, minified, so the moment the message
+// rides the bubble's bottom-left corner, minified, so the moment the message
 // lands the full-size mark appears in the run's usual left column, and the
 // `role="status"` label reads the character's display name to assistive tech.
 //
@@ -36,7 +36,7 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
           the bubble's corner instead, and the dots still start where every
           landed bubble does. */}
       <div aria-hidden="true" className="w-7 shrink-0" />
-      <div className="bg-bubble-bot text-bubble-content relative flex max-w-[85%] items-center gap-1.5 rounded-card rounded-tl-none px-4 py-3.5">
+      <div className="bg-bubble-bot text-bubble-content relative flex max-w-[85%] items-center gap-1.5 rounded-card rounded-bl-none px-4 py-3.5">
         {[0, 1, 2].map((dot) => (
           <motion.span
             animate={{ opacity: [0.4, 1, 0.4] }}
@@ -45,7 +45,7 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
             transition={{ duration: 1.1, ease: 'easeInOut', repeat: Infinity, delay: dot * 0.22 }}
           />
         ))}
-        <span aria-hidden="true" className="absolute -right-1 -bottom-1">
+        <span aria-hidden="true" className="absolute -bottom-1 -left-1">
           <CharacterMark character={character} compact />
         </span>
       </div>
