@@ -159,14 +159,6 @@ export function splitIntoSteps(text: string, charsPerStep: number): string[] {
   return steps;
 }
 
-/** How many typewriter steps a run of `text` costs at `charsPerStep`: whole
- * steps plus a short tail's own. The reveal's queue reads the same step size
- * (`revealCharsPerStep`), so a count derived here matches what the typewriter
- * queues — code points, not code units. */
-export function stepsFor(text: string, charsPerStep: number): number {
-  return Math.ceil(Array.from(text).length / stepSize(charsPerStep));
-}
-
 /** The per-character delay asked of `typewriter-effect`, in milliseconds: the
  * reveal clock read off `wordsPerMinute`, clamped to the readable band. This is
  * what the typewriter is *requested*; what it achieves is `revealMsPerChar`. */

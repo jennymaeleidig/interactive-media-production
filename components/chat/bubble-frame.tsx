@@ -12,6 +12,7 @@
 // SPDX-License-Identifier: CC0-1.0
 import type { ReactNode } from 'react';
 import {
+  BUBBLE_BASE_CLASS,
   BUBBLE_WIDTH_CLASS,
   MARK_ANCHOR_CLASS,
   MARK_COLUMN_CLASS,
@@ -29,6 +30,7 @@ export function BubbleFrame({
   bubbleAttrs,
   below,
   mark,
+  markAriaHidden = false,
   children,
 }: {
   role: ChatRole;
@@ -44,6 +46,9 @@ export function BubbleFrame({
   below?: ReactNode;
   /** The mark, anchored to the bubble's bottom-left corner. */
   mark?: ReactNode;
+  /** Whether the mark is decorative. The composing wait labels itself already,
+   * so its mark is hidden; the landed bubble's mark names its speaker. */
+  markAriaHidden?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -56,7 +61,7 @@ export function BubbleFrame({
       <div className={cn('flex min-w-0 flex-col', BUBBLE_WIDTH_CLASS, role === 'user' ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'relative text-bubble-content',
+            BUBBLE_BASE_CLASS,
             bubbleBackgroundClass(role),
             bubbleCornerClass(role, { continues, continued }),
             className,
@@ -64,7 +69,11 @@ export function BubbleFrame({
           {...bubbleAttrs}
         >
           {children}
-          {mark ? <span className={MARK_ANCHOR_CLASS}>{mark}</span> : null}
+          {mark ? (
+            <span aria-hidden={markAriaHidden || undefined} className={MARK_ANCHOR_CLASS}>
+              {mark}
+            </span>
+          ) : null}
         </div>
         {below}
       </div>

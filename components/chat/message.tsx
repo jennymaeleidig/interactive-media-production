@@ -27,7 +27,7 @@ import Typewriter, { type Options } from 'typewriter-effect';
 import { allowedSources } from '@/lib/chat-blocks.mjs';
 import { characterFor, type Character } from '@/lib/chat-characters.mjs';
 import { splitIntoSteps } from '@/lib/pacing';
-import { createReveal, hasTypewriter, type Reveal } from '@/lib/reveal';
+import { createReveal, hasTypewriter, type Reveal as RevealHandle } from '@/lib/reveal';
 import { speakLine, type VoiceHandle } from '@/lib/voice';
 import { cn } from '@/lib/utils';
 import { BubbleFrame } from './bubble-frame';
@@ -109,7 +109,7 @@ const Reveal = function Reveal({
   // The line's voice, held so its own reveal can stop it. A superseded handle is
   // a no-op inside `lib/voice`, so a late completion cannot silence its successor.
   const voice = useRef<VoiceHandle | null>(null);
-  const reveal = useRef<Reveal | null>(null);
+  const reveal = useRef<RevealHandle | null>(null);
   if (reveal.current === null) {
     reveal.current = createReveal(block, {
       onStart: () => {
@@ -242,6 +242,17 @@ export const BLOCK_ADAPTERS: Record<ChatBlock['type'] | 'failed', (props: Adapte
   failed: () => <UnknownBlock reason="Its renderer failed." />,
 };
 
+/** A failed adapter never mounted a reveal, but the turn still awaits this
+ * land's end (user story: a message that fails to render must not stall the
+ * conversation). This rides inside the catch path and reports the end once on
+ * mount, exactly as a line with nothing to type does. */
+function EndedReveal({ onEnd }: { onEnd?: () => void }) {
+  useEffect(() => {
+    onEnd?.();
+  }, [onEnd]);
+  return null;
+}
+
 /** Render one block through its adapter, containing any throw. */
 export function BlockPart({ block, animate, onRevealEnd }: BlockProps) {
   // The adapters are invoked as plain functions so a throw is contained here and
@@ -256,7 +267,14 @@ export function BlockPart({ block, animate, onRevealEnd }: BlockProps) {
   try {
     return <>{adapter(props)}</>;
   } catch {
-    return BLOCK_ADAPTERS.failed(props);
+    // The fallback renders no reveal, so a fresh land must still report its end
+    // here or the hook's wait would never resolve.
+    return (
+      <>
+        {BLOCK_ADAPTERS.failed(props)}
+        <EndedReveal onEnd={onRevealEnd} />
+      </>
+    );
   }
 }
 
@@ -389,7 +407,9 @@ export const Message = memo(function Message({
             animate={message.fresh === true}
             block={part}
             key={`${message.id}-${index}`}
-            onRevealEnd={reportRevealEnd}
+            // A failed adapter reports the end through its own mount; a restored
+            // message reports nothing, because it is never awaited.
+            onRevealEnd={revealing ? reportRevealEnd : undefined}
           />
         ))}
       </BubbleFrame>

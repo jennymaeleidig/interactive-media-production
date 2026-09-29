@@ -16,6 +16,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Messages } from '@/components/chat/messages';
+import { BLOCK_ADAPTERS } from '@/components/chat/message';
 import type { ChatMessage } from '@/lib/transcript';
 import type { ChatBlock } from '@/lib/chat-turn.mjs';
 
@@ -150,6 +151,24 @@ describe('the reveal’s end', () => {
     render(<Messages messages={[mute('run-0')]} onRevealEnd={onRevealEnd} />);
     expect(onRevealEnd).toHaveBeenCalledTimes(1);
     expect(onRevealEnd).toHaveBeenCalledWith('run-0');
+  });
+
+  it('reports the end when an adapter throws before its reveal mounts', () => {
+    // A message that fails to render must not stall the turn (spec user story 3):
+    // the fallback carries no reveal, so the catch path reports the end itself.
+    const onRevealEnd = vi.fn();
+    const original = BLOCK_ADAPTERS.text;
+    BLOCK_ADAPTERS.text = () => {
+      throw new Error('boom');
+    };
+    try {
+      render(<Messages messages={[message('run-0', 'assistant', 'hello there')]} onRevealEnd={onRevealEnd} />);
+      expect(screen.getByText(/could not be shown/)).toBeTruthy();
+      expect(onRevealEnd).toHaveBeenCalledTimes(1);
+      expect(onRevealEnd).toHaveBeenCalledWith('run-0');
+    } finally {
+      BLOCK_ADAPTERS.text = original;
+    }
   });
 
   it('reports nothing for a restored line or the viewer’s own line', () => {

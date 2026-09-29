@@ -66,6 +66,7 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
         className="flex items-center gap-1.5 px-4 py-3.5"
         continued
         mark={<CharacterMark character={character} />}
+        markAriaHidden
         role="assistant"
       >
         {[0, 1, 2].map((dot) => (

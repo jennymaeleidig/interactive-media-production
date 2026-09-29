@@ -23,7 +23,6 @@ import {
   revealMsPerChar,
   revealWordsForPreset,
   splitIntoSteps,
-  stepsFor,
 } from '@/lib/pacing';
 
 /** One letter's wall time at a pace, in seconds — the library's own slot. */
@@ -107,10 +106,8 @@ describe('the pace presets', () => {
         expect(step, `${text} step is whole code points`).toBe(Array.from(step).join(''));
         expect(Array.from(step).length, `${text} step width`).toBeLessThanOrEqual(2);
       }
-      // The count the schedule charges is the count the typewriter queues.
-      expect(stepsFor(text, 2), `${text} count`).toBe(steps.length);
     }
     expect(splitIntoSteps('a\u{1F600}b', 2)).toEqual(['a\u{1F600}', 'b']);
-    expect(stepsFor('abc', 2)).toBe(2);
+    expect(splitIntoSteps('abc', 2)).toEqual(['ab', 'c']);
   });
 });

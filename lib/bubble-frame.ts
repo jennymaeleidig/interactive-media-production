@@ -52,13 +52,3 @@ export function bubbleCornerClass(
     continued && (role === 'user' ? 'rounded-br-none' : 'rounded-bl-none'),
   );
 }
-
-/** The whole bubble's class list: the shared base, the role's background, the
- * corner rules, and the caller's own layout and padding. */
-export function bubbleClass(
-  role: ChatRole,
-  options: { continues?: boolean; continued?: boolean; className?: string } = {},
-): string {
-  const { continues, continued, className } = options;
-  return cn(BUBBLE_BASE_CLASS, bubbleBackgroundClass(role), bubbleCornerClass(role, { continues, continued }), className);
-}
