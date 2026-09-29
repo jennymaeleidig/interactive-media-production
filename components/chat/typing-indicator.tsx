@@ -27,11 +27,15 @@ export function TypingIndicator({ speaker = DEFAULT_CHARACTER_ID }: { speaker?: 
   const character = characterFor(speaker);
   return (
     <div
-      className="mt-5 flex w-full justify-start"
+      className="mt-5 flex w-full justify-start gap-2"
       data-testid="typing-indicator"
       role="status"
       aria-label={`${character.name} is typing`}
     >
+      {/* The mark's column is reserved but empty: the composing character rides
+          the bubble's corner instead, and the dots still start where every
+          landed bubble does. */}
+      <div aria-hidden="true" className="w-7 shrink-0" />
       <div className="bg-bubble-bot text-bubble-content relative flex max-w-[85%] items-center gap-1.5 rounded-card rounded-tl-none px-4 py-3.5">
         {[0, 1, 2].map((dot) => (
           <motion.span
